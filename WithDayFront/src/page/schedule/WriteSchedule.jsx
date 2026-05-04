@@ -34,6 +34,8 @@ const WriteSchedule = () => {
     thumbnail: "",
   });
 
+  const [schedule, setSchedule] = useState([]);
+
   const categories = ["전체", "여행", "팝업", "식사", "액티비티"];
 
   const categoryOptions = categories.map((item, index) => ({
@@ -198,9 +200,21 @@ const WriteSchedule = () => {
                     maxDate={post.startDate - 1}
                     dateFormat="yyyy년 MM월 dd일"
                     placeholderText="날짜 선택"
+                    customInput={
+                      <button className={styles.dateButton}>
+                        <span>📅</span>
+                        {post.recruitmentPeriod
+                          ? post.recruitmentPeriod.toLocaleDateString()
+                          : "날짜 선택"}
+                      </button>
+                    }
                   />
                 </li>
               </ul>
+            </div>
+            <div className={styles.input_content_wrap}>
+              <h2 className={styles.input_title}>상세 일정</h2>
+              <ScheduleTable schedule={schedule} setSchedule={setSchedule} />
             </div>
           </form>
         </div>
@@ -265,6 +279,78 @@ const CalendarRange = ({ post, setPost }) => {
         </ul>
       </div>
     </div>
+  );
+};
+
+const ScheduleTable = ({ schedule, setSchedule }) => {
+  const handleChange = (rowIndex, colIndex, value) => {
+    setSchedule((prev) =>
+      prev.map((row, i) =>
+        i === rowIndex
+          ? row.map((cell, j) => (j === colIndex ? value : cell))
+          : row,
+      ),
+    );
+  };
+
+  return (
+    <>
+      <div className={styles.scheduleTableWrap}>
+        <table className={styles.scheduleTable}>
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>일정 종류</th>
+              <th>일정 제목</th>
+              <th>일정 소개</th>
+            </tr>
+          </thead>
+          <tbody>
+            {schedule.map((row, i) => (
+              <tr key={i}>
+                <td>{i + 1}</td>
+                {row.map((cell, j) => (
+                  <td className={styles.scheduleTd} key={j}>
+                    {j === 2 ? (
+                      <textarea
+                        className={styles.scheduleTextarea}
+                        value={cell}
+                        onChange={(e) => handleChange(i, j, e.target.value)}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        className={styles.scheduleInput}
+                        value={cell}
+                        onChange={(e) => handleChange(i, j, e.target.value)}
+                      />
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button
+        className={styles.scheduleAddBtn}
+        onClick={() => {
+          schedule.length <= 20
+            ? setSchedule((prev) => [...prev, ["", "", ""]])
+            : null;
+        }}
+      >
+        +
+      </button>
+      <button
+        className={styles.scheduleMinusBtn}
+        onClick={() => {
+          schedule.length > 0 ? setSchedule((prev) => prev.slice(0, -1)) : null;
+        }}
+      >
+        -
+      </button>
+    </>
   );
 };
 
