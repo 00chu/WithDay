@@ -55,13 +55,15 @@
   overflow: hidden; /* 전체 페이지 스크롤 방지 */
 }
 
+/* 🌟 새로 추가하는 메인 영역 스타일 */
 .mainContent {
-  flex: 1;
-  min-height: 0; /* 🌟 이 줄 추가 */
-  overflow-y: auto;
+  flex: 1; /* Header와 BottomNav가 차지한 높이를 제외한 나머지 공간을 꽉 채움 */
+  min-height: 0; /* 🔥 핵심! flex 아이템이 컨텐츠 크기에 따라 늘어나는 것을 방지 */
+  overflow-y: auto; /* 내용이 길어지면 이 영역 안에서만 스크롤 발생 */
 
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  /* (선택) 스크롤바 숨기기 - 디자인을 더 깔끔하게 유지하고 싶을 때 */
+  -ms-overflow-style: none; /* IE, Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .mainContent::-webkit-scrollbar {
