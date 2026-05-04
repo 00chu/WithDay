@@ -262,19 +262,28 @@
 }
 
 .scheduleTable th:nth-child(1) {
-  width: 5%; /* 번호 */
+  width: 5%;
 }
 
 .scheduleTable th:nth-child(2) {
-  width: 15%; /* 일정 종류 */
+  width: 5%;
 }
 
 .scheduleTable th:nth-child(3) {
-  width: 30%; /* 일정 제목 */
+  width: 10%;
 }
 
 .scheduleTable th:nth-child(4) {
-  width: 40%; /* 일정 소개 */
+  width: 20%;
+}
+
+.scheduleTable th:nth-child(5) {
+  width: 40%;
+}
+
+.scheduleInput,
+.scheduleTextarea {
+  font-size: 15px;
 }
 
 .scheduleInput {
@@ -345,6 +354,46 @@
   border: 1px solid var(--color-border);
   border-radius: 4px;
   padding: 10px 80px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cost_input::-webkit-outer-spin-button,
+.cost_input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.cost_input {
+  width: 120px;
+  font-size: 16px;
+  border: none;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.cost_sharing_content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cost_sharing {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 20px;
+}
+
+.cost_sharing label {
+  font-size: 17px;
+}
+
+.cost_sharing div {
+  margin-left: 22px;
+  font-size: 15px;
+  color: var(--color-text-secondary);
 }
 
 .cost_wrap {

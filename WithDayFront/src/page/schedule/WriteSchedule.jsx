@@ -29,8 +29,8 @@ const WriteSchedule = () => {
     minAge: "",
     maxAge: "",
     gender: "",
-    cost: "",
-    costSharing: "",
+    cost: 0,
+    costSharing: 0,
     thumbnail: "",
   });
 
@@ -220,18 +220,33 @@ const WriteSchedule = () => {
               <h2 className={styles.input_title}>정산 방식</h2>
               <ul className={`${styles.input_wrap} ${styles.cost_wrap}`}>
                 <li>총액</li>
-                <li className={styles.cost}>100,000{/*`${post.cost}`*/} \</li>
+                <li className={styles.cost}>
+                  <input
+                    type="number"
+                    className={styles.cost_input}
+                    value={post.cost}
+                    onChange={(e) =>
+                      setPost((prev) => ({
+                        ...prev,
+                        cost: e.target.value,
+                      }))
+                    }
+                  />
+                  <span className={styles.won}>₩</span>
+                </li>
               </ul>
-              <ul className={`${styles.input_wrap} ${styles.costSharing}`}>
+              <ul
+                className={`${styles.input_wrap} ${styles.cost_sharing_wrap}`}
+              >
                 <li>정산 방식</li>
-                <li>
-                  <div>
-                    <div>
+                <li className={styles.cost_sharing_content}>
+                  <div className={styles.cost_sharing}>
+                    <label>
                       <input
                         type="radio"
                         name="costSharing"
                         value="1"
-                        checked={costSharing === "1"}
+                        checked={post.costSharing === "1"}
                         onChange={(e) =>
                           setPost((prev) => ({
                             ...prev,
@@ -239,7 +254,43 @@ const WriteSchedule = () => {
                           }))
                         }
                       />
-                    </div>
+                      총액 1 / N<div>총액을 인원수만큼 나누어 지불합니다.</div>
+                    </label>
+                  </div>
+                  <div className={styles.cost_sharing}>
+                    <label>
+                      <input
+                        type="radio"
+                        name="costSharing"
+                        value="2"
+                        checked={post.costSharing === "2"}
+                        onChange={(e) =>
+                          setPost((prev) => ({
+                            ...prev,
+                            costSharing: e.target.value,
+                          }))
+                        }
+                      />
+                      인당 고정 금액
+                      <div>정해진 금액을 인원만큼 추가합니다.</div>
+                    </label>
+                  </div>
+                  <div className={styles.cost_sharing}>
+                    <label>
+                      <input
+                        type="radio"
+                        name="costSharing"
+                        value="3"
+                        checked={post.costSharing === "3"}
+                        onChange={(e) =>
+                          setPost((prev) => ({
+                            ...prev,
+                            costSharing: e.target.value,
+                          }))
+                        }
+                      />
+                      무료<div>무료로 일정을 진행합니다.</div>
+                    </label>
                   </div>
                 </li>
               </ul>
@@ -249,6 +300,10 @@ const WriteSchedule = () => {
                 <li>인당 지불 금액</li>
                 <li className={styles.cost}>100,000{/*`${post.cost}`*/} \</li>
               </ul>
+            </div>
+            <div className={styles.input_content_wrap}>
+              <h2 className={styles.input_title}>첨부 이미지</h2>
+              <AddThumbnail />
             </div>
           </form>
         </div>
@@ -334,6 +389,7 @@ const ScheduleTable = ({ schedule, setSchedule }) => {
           <thead>
             <tr>
               <th>번호</th>
+              <th>일차</th>
               <th>일정 종류</th>
               <th>일정 제목</th>
               <th>일정 소개</th>
@@ -345,7 +401,18 @@ const ScheduleTable = ({ schedule, setSchedule }) => {
                 <td>{i + 1}</td>
                 {row.map((cell, j) => (
                   <td className={styles.scheduleTd} key={j}>
-                    {j === 2 ? (
+                    {j === 0 ? (
+                      <input
+                        type="number"
+                        className={styles.scheduleInput}
+                        value={cell}
+                        min={1}
+                        max={20}
+                        onChange={(e) =>
+                          handleChange(i, j, Number(e.target.value))
+                        }
+                      />
+                    ) : j === 3 ? (
                       <textarea
                         className={styles.scheduleTextarea}
                         value={cell}
@@ -372,7 +439,7 @@ const ScheduleTable = ({ schedule, setSchedule }) => {
           className={styles.scheduleAddBtn}
           onClick={() => {
             schedule.length <= 20
-              ? setSchedule((prev) => [...prev, ["", "", ""]])
+              ? setSchedule((prev) => [...prev, ["", "", "", ""]])
               : null;
           }}
         >
@@ -390,6 +457,45 @@ const ScheduleTable = ({ schedule, setSchedule }) => {
         </button>
       </div>
     </>
+  );
+};
+
+const AddThumbnail = () => {
+  const [image, setImage] = useState(null);
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    setImage(url);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault(); // 이거 없으면 드롭 안됨!
+  };
+
+  return (
+    <div
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      style={{
+        width: "300px",
+        height: "200px",
+        border: "2px dashed gray",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {image ? (
+        <img src={image} alt="preview" style={{ width: "100%" }} />
+      ) : (
+        "이미지를 여기에 드롭하세요"
+      )}
+    </div>
   );
 };
 
