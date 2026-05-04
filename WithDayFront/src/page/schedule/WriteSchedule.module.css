@@ -234,6 +234,11 @@
   border-radius: 4px;
 }
 
+.recruitmentPeriod > li {
+  display: flex;
+  align-items: center;
+}
+
 .scheduleTableWrap {
   border: 1px solid var(--color-border);
   border-radius: 4px;
@@ -256,6 +261,22 @@
   padding: 8px;
 }
 
+.scheduleTable th:nth-child(1) {
+  width: 5%; /* 번호 */
+}
+
+.scheduleTable th:nth-child(2) {
+  width: 15%; /* 일정 종류 */
+}
+
+.scheduleTable th:nth-child(3) {
+  width: 30%; /* 일정 제목 */
+}
+
+.scheduleTable th:nth-child(4) {
+  width: 40%; /* 일정 소개 */
+}
+
 .scheduleInput {
   width: 100%;
   border: none;
@@ -269,19 +290,27 @@
   border: none;
   outline: none;
   background: transparent;
-  height: 80px;
+  height: 50px;
   resize: none;
 }
 
 .dateButton {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
+  padding: 8px 50px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
   background: white;
   cursor: pointer;
+  font-size: 16px;
 }
 
 .dateButton span {
   margin-right: 20px;
+}
+
+.scheduleBtnWrap {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 .scheduleAddBtn {
@@ -304,4 +333,40 @@
   border-radius: 50%;
   font-size: 20px;
   color: var(--color-text-secondary);
+}
+
+.cost_wrap > li {
+  display: flex;
+  align-items: center;
+}
+
+.cost {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 10px 80px;
+}
+
+.cost_wrap {
+  display: flex;
+}
+
+.cost_wrap > li:first-child {
+  width: 15%;
+}
+
+.cost_wrap > li:last-child {
+  width: auto;
+}
+
+.cost_wrap_per_person {
+  display: flex;
+}
+
+.cost_wrap_per_person > li:first-child {
+  width: 15%;
+}
+
+.cost_wrap_per_person > li:last-child {
+  width: auto;
 }

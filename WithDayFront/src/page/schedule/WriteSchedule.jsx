@@ -96,7 +96,7 @@ const WriteSchedule = () => {
               <h2 className={styles.input_title}>기본 정보</h2>
               <ul className={`${styles.input_wrap} ${styles.title}`}>
                 <li>
-                  <label htmlFor="title">Title</label>
+                  <label htmlFor="title">일정명</label>
                 </li>
                 <li>
                   <Input
@@ -113,7 +113,7 @@ const WriteSchedule = () => {
               </ul>
               <ul className={`${styles.input_wrap} ${styles.description}`}>
                 <li>
-                  <label htmlFor="description">Description</label>
+                  <label htmlFor="description">일정 설명</label>
                 </li>
                 <li>
                   <TextArea
@@ -129,7 +129,7 @@ const WriteSchedule = () => {
               </ul>
               <ul className={`${styles.input_wrap} ${styles.category}`}>
                 <li>
-                  <label htmlFor="category">Category</label>
+                  <label htmlFor="category">일정 종류</label>
                 </li>
                 <li>
                   <select>
@@ -143,7 +143,7 @@ const WriteSchedule = () => {
               </ul>
               <ul className={`${styles.input_wrap} ${styles.region}`}>
                 <li>
-                  <label htmlFor="region">Region</label>
+                  <label htmlFor="region">지역(시/도)</label>
                 </li>
                 <li>
                   <select>
@@ -158,7 +158,7 @@ const WriteSchedule = () => {
               </ul>
               <ul className={`${styles.input_wrap} ${styles.detailRegion}`}>
                 <li>
-                  <label htmlFor="detailRegion">DetailRegion</label>
+                  <label htmlFor="detailRegion">지역(시/군/구)</label>
                 </li>
                 <li>
                   <select>
@@ -215,6 +215,40 @@ const WriteSchedule = () => {
             <div className={styles.input_content_wrap}>
               <h2 className={styles.input_title}>상세 일정</h2>
               <ScheduleTable schedule={schedule} setSchedule={setSchedule} />
+            </div>
+            <div className={styles.input_content_wrap}>
+              <h2 className={styles.input_title}>정산 방식</h2>
+              <ul className={`${styles.input_wrap} ${styles.cost_wrap}`}>
+                <li>총액</li>
+                <li className={styles.cost}>100,000{/*`${post.cost}`*/} \</li>
+              </ul>
+              <ul className={`${styles.input_wrap} ${styles.costSharing}`}>
+                <li>정산 방식</li>
+                <li>
+                  <div>
+                    <div>
+                      <input
+                        type="radio"
+                        name="costSharing"
+                        value="1"
+                        checked={costSharing === "1"}
+                        onChange={(e) =>
+                          setPost((prev) => ({
+                            ...prev,
+                            costSharing: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                </li>
+              </ul>
+              <ul
+                className={`${styles.input_wrap} ${styles.cost_wrap_per_person}`}
+              >
+                <li>인당 지불 금액</li>
+                <li className={styles.cost}>100,000{/*`${post.cost}`*/} \</li>
+              </ul>
             </div>
           </form>
         </div>
@@ -332,24 +366,29 @@ const ScheduleTable = ({ schedule, setSchedule }) => {
           </tbody>
         </table>
       </div>
-      <button
-        className={styles.scheduleAddBtn}
-        onClick={() => {
-          schedule.length <= 20
-            ? setSchedule((prev) => [...prev, ["", "", ""]])
-            : null;
-        }}
-      >
-        +
-      </button>
-      <button
-        className={styles.scheduleMinusBtn}
-        onClick={() => {
-          schedule.length > 0 ? setSchedule((prev) => prev.slice(0, -1)) : null;
-        }}
-      >
-        -
-      </button>
+
+      <div className={styles.scheduleBtnWrap}>
+        <button
+          className={styles.scheduleAddBtn}
+          onClick={() => {
+            schedule.length <= 20
+              ? setSchedule((prev) => [...prev, ["", "", ""]])
+              : null;
+          }}
+        >
+          +
+        </button>
+        <button
+          className={styles.scheduleMinusBtn}
+          onClick={() => {
+            schedule.length > 0
+              ? setSchedule((prev) => prev.slice(0, -1))
+              : null;
+          }}
+        >
+          -
+        </button>
+      </div>
     </>
   );
 };
