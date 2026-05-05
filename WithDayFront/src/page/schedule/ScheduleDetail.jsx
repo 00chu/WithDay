@@ -57,7 +57,7 @@ export default function ScheduleDetail() {
   // 🌟 1. 단일 썸네일 이미지 처리 (배열 형태가 아니므로 배열로 감싸줌)
   const imageUrls = schedule.thumbnailImage
     ? [schedule.thumbnailImage]
-    : ["https://via.placeholder.com/800x400?text=No+Image"];
+    : ["https://placehold.co/800x400?text=No+Image"];
 
   const nextSlide = () =>
     setCurrentImg((prev) => (prev === imageUrls.length - 1 ? 0 : prev + 1));
@@ -195,19 +195,6 @@ export default function ScheduleDetail() {
           >
             {schedule.description}
           </p>
-
-          {/* 미팅 장소 및 시간 추가 정보 */}
-          <div
-            style={{
-              marginTop: "1rem",
-              padding: "1rem",
-              backgroundColor: "#f5f5f5",
-              borderRadius: "8px",
-            }}
-          >
-            <strong>📍 집결 장소:</strong> {schedule.meetingLocation} <br />
-            <strong>⏰ 집결 시간:</strong> {schedule.meetingTime}
-          </div>
         </section>
 
         <hr className={styles.divider} />
