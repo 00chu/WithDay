@@ -25,10 +25,11 @@ const WriteSchedule = () => {
     startDate: new Date(),
     endDate: new Date(),
     recruitmentPeriod: new Date(),
-    maxParticipants: "",
-    minAge: "",
-    maxAge: "",
-    gender: "",
+    minParticipants: 2,
+    maxParticipants: 100,
+    minAge: 0,
+    maxAge: 100,
+    gender: "all",
     cost: 0,
     costSharing: 0,
     thumbnail: "",
@@ -173,6 +174,136 @@ const WriteSchedule = () => {
               </ul>
             </div>
             <div className={styles.input_content_wrap}>
+              <h2 className={styles.input_title}>인원 정보</h2>
+              <div>
+                <ul className={`${styles.input_wrap} ${styles.peopleInfo}`}>
+                  <li>최소 인원</li>
+                  <li>
+                    <Input
+                      type="number"
+                      name="minParticipants"
+                      id="minParticipants"
+                      placeholder="최소 인원"
+                      min={2}
+                      max={100}
+                      value={post.minParticipants}
+                      onChange={(e) => {
+                        setPost({ ...post, minParticipants: e.target.value });
+                      }}
+                    ></Input>
+                  </li>
+                </ul>
+                <ul className={`${styles.input_wrap} ${styles.peopleInfo}`}>
+                  <li>최대 인원</li>
+                  <li>
+                    <Input
+                      type="number"
+                      name="maxParticipants"
+                      id="maxParticipants"
+                      placeholder="최대 인원"
+                      min={2}
+                      max={100}
+                      value={post.maxParticipants}
+                      onChange={(e) => {
+                        setPost({ ...post, maxParticipants: e.target.value });
+                      }}
+                    ></Input>
+                  </li>
+                </ul>
+                <ul className={`${styles.input_wrap} ${styles.peopleInfo}`}>
+                  <li>최소 연령</li>
+                  <li>
+                    <Input
+                      type="number"
+                      name="minAge"
+                      id="minAge"
+                      placeholder="최소 연령"
+                      min={0}
+                      max={100}
+                      value={post.minAge}
+                      onChange={(e) => {
+                        setPost({ ...post, minAge: e.target.value });
+                      }}
+                    ></Input>
+                  </li>
+                </ul>
+                <ul className={`${styles.input_wrap} ${styles.peopleInfo}`}>
+                  <li>최대 연령</li>
+                  <li>
+                    <Input
+                      type="number"
+                      name="maxAge"
+                      id="maxAge"
+                      placeholder="최대 연령"
+                      min={0}
+                      max={100}
+                      value={post.maxAge}
+                      onChange={(e) => {
+                        setPost({ ...post, maxAge: e.target.value });
+                      }}
+                    ></Input>
+                  </li>
+                </ul>
+
+                <ul className={`${styles.input_wrap} ${styles.genderInfo}`}>
+                  <li>성별 제한</li>
+                  <li>
+                    <div className={styles.genderWrap}>
+                      <label>
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="all"
+                          checked={post.gender === "all"}
+                          onChange={(e) =>
+                            setPost((prev) => ({
+                              ...prev,
+                              gender: e.target.value,
+                            }))
+                          }
+                        />
+                        성별 무관
+                      </label>
+                    </div>
+                    <div className={styles.genderWrap}>
+                      <label>
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="male"
+                          checked={post.gender === "male"}
+                          onChange={(e) =>
+                            setPost((prev) => ({
+                              ...prev,
+                              gender: e.target.value,
+                            }))
+                          }
+                        />
+                        남성
+                      </label>
+                    </div>
+                    <div className={styles.genderWrap}>
+                      <label>
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="female"
+                          checked={post.gender === "female"}
+                          onChange={(e) =>
+                            setPost((prev) => ({
+                              ...prev,
+                              gender: e.target.value,
+                            }))
+                          }
+                        />
+                        여성
+                      </label>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className={styles.input_content_wrap}>
               <h2 className={styles.input_title}>일정 정보</h2>
               <CalendarRange
                 post={post}
@@ -214,7 +345,12 @@ const WriteSchedule = () => {
             </div>
             <div className={styles.input_content_wrap}>
               <h2 className={styles.input_title}>상세 일정</h2>
-              <ScheduleTable schedule={schedule} setSchedule={setSchedule} />
+              <ScheduleTable
+                startDate={post.startDate}
+                endDate={post.endDate}
+                schedule={schedule}
+                setSchedule={setSchedule}
+              />
             </div>
             <div className={styles.input_content_wrap}>
               <h2 className={styles.input_title}>정산 방식</h2>
@@ -245,8 +381,8 @@ const WriteSchedule = () => {
                       <input
                         type="radio"
                         name="costSharing"
-                        value="1"
-                        checked={post.costSharing === "1"}
+                        value="per_person"
+                        checked={post.costSharing === "per_person"}
                         onChange={(e) =>
                           setPost((prev) => ({
                             ...prev,
@@ -262,8 +398,42 @@ const WriteSchedule = () => {
                       <input
                         type="radio"
                         name="costSharing"
-                        value="2"
-                        checked={post.costSharing === "2"}
+                        value="host_covered"
+                        checked={post.costSharing === "host_covered"}
+                        onChange={(e) =>
+                          setPost((prev) => ({
+                            ...prev,
+                            costSharing: e.target.value,
+                          }))
+                        }
+                      />
+                      호스트 지불<div>호스트가 모든 비용을 지불합니다.</div>
+                    </label>
+                  </div>
+                  <div className={styles.cost_sharing}>
+                    <label>
+                      <input
+                        type="radio"
+                        name="costSharing"
+                        value="free"
+                        checked={post.costSharing === "free"}
+                        onChange={(e) =>
+                          setPost((prev) => ({
+                            ...prev,
+                            costSharing: e.target.value,
+                          }))
+                        }
+                      />
+                      무료<div>무료로 일정을 진행합니다.</div>
+                    </label>
+                  </div>
+                  <div className={styles.cost_sharing}>
+                    <label>
+                      <input
+                        type="radio"
+                        name="costSharing"
+                        value="custom"
+                        checked={post.costSharing === "custom"}
                         onChange={(e) =>
                           setPost((prev) => ({
                             ...prev,
@@ -275,34 +445,14 @@ const WriteSchedule = () => {
                       <div>정해진 금액을 인원만큼 추가합니다.</div>
                     </label>
                   </div>
-                  <div className={styles.cost_sharing}>
-                    <label>
-                      <input
-                        type="radio"
-                        name="costSharing"
-                        value="3"
-                        checked={post.costSharing === "3"}
-                        onChange={(e) =>
-                          setPost((prev) => ({
-                            ...prev,
-                            costSharing: e.target.value,
-                          }))
-                        }
-                      />
-                      무료<div>무료로 일정을 진행합니다.</div>
-                    </label>
-                  </div>
                 </li>
-              </ul>
-              <ul
-                className={`${styles.input_wrap} ${styles.cost_wrap_per_person}`}
-              >
-                <li>인당 지불 금액</li>
-                <li className={styles.cost}>100,000{/*`${post.cost}`*/} \</li>
               </ul>
             </div>
             <div className={styles.input_content_wrap}>
-              <h2 className={styles.input_title}>첨부 이미지</h2>
+              <div className={styles.title_wrap}>
+                <h2 className={styles.input_title}>첨부 이미지</h2>
+                <label>{"(최대 3장, 첫 이미지는 썸네일 이미지)"}</label>
+              </div>
               <AddThumbnail />
             </div>
           </form>
@@ -371,7 +521,26 @@ const CalendarRange = ({ post, setPost }) => {
   );
 };
 
-const ScheduleTable = ({ schedule, setSchedule }) => {
+const ScheduleTable = ({ startDate, endDate, schedule, setSchedule }) => {
+  const getDays = (startDate, endDate) => {
+    const diff = endDate - startDate;
+    return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1; // ⭐ +1 중요
+  };
+
+  useEffect(() => {
+    const days = getDays(startDate, endDate);
+
+    setSchedule((prev) => {
+      const newArr = [...prev];
+
+      while (newArr.length < days) {
+        newArr.push(["", ""]);
+      }
+
+      return newArr.slice(0, days);
+    });
+  }, [startDate, endDate]);
+
   const handleChange = (rowIndex, colIndex, value) => {
     setSchedule((prev) =>
       prev.map((row, i) =>
@@ -388,9 +557,7 @@ const ScheduleTable = ({ schedule, setSchedule }) => {
         <table className={styles.scheduleTable}>
           <thead>
             <tr>
-              <th>번호</th>
               <th>일차</th>
-              <th>일정 종류</th>
               <th>일정 제목</th>
               <th>일정 소개</th>
             </tr>
@@ -403,25 +570,14 @@ const ScheduleTable = ({ schedule, setSchedule }) => {
                   <td className={styles.scheduleTd} key={j}>
                     {j === 0 ? (
                       <input
-                        type="number"
+                        type="text"
                         className={styles.scheduleInput}
-                        value={cell}
-                        min={1}
-                        max={20}
-                        onChange={(e) =>
-                          handleChange(i, j, Number(e.target.value))
-                        }
-                      />
-                    ) : j === 3 ? (
-                      <textarea
-                        className={styles.scheduleTextarea}
                         value={cell}
                         onChange={(e) => handleChange(i, j, e.target.value)}
                       />
                     ) : (
-                      <input
-                        type="text"
-                        className={styles.scheduleInput}
+                      <textarea
+                        className={styles.scheduleTextarea}
                         value={cell}
                         onChange={(e) => handleChange(i, j, e.target.value)}
                       />
@@ -433,35 +589,12 @@ const ScheduleTable = ({ schedule, setSchedule }) => {
           </tbody>
         </table>
       </div>
-
-      <div className={styles.scheduleBtnWrap}>
-        <button
-          className={styles.scheduleAddBtn}
-          onClick={() => {
-            schedule.length <= 20
-              ? setSchedule((prev) => [...prev, ["", "", "", ""]])
-              : null;
-          }}
-        >
-          +
-        </button>
-        <button
-          className={styles.scheduleMinusBtn}
-          onClick={() => {
-            schedule.length > 0
-              ? setSchedule((prev) => prev.slice(0, -1))
-              : null;
-          }}
-        >
-          -
-        </button>
-      </div>
     </>
   );
 };
 
 const AddThumbnail = () => {
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([]);
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -469,32 +602,45 @@ const AddThumbnail = () => {
     const file = e.dataTransfer.files[0];
     if (!file) return;
 
+    if (images.length >= 3) {
+      alert("최대 3장까지 가능합니다.");
+      return;
+    }
+
     const url = URL.createObjectURL(file);
-    setImage(url);
+    setImages((prev) => [...prev, url]);
   };
 
   const handleDragOver = (e) => {
-    e.preventDefault(); // 이거 없으면 드롭 안됨!
+    e.preventDefault();
   };
 
   return (
-    <div
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      style={{
-        width: "300px",
-        height: "200px",
-        border: "2px dashed gray",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      {image ? (
-        <img src={image} alt="preview" style={{ width: "100%" }} />
-      ) : (
-        "이미지를 여기에 드롭하세요"
-      )}
+    <div className={styles.imageZone}>
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        className={styles.dropZone}
+      >
+        이미지를 여기에 드롭하세요
+      </div>
+
+      <div className={styles.previewGrid}>
+        {images.map((img, i) => (
+          <div key={i} className={styles.imageWrap}>
+            <img src={img} alt={`preview-${i}`} className={styles.image} />
+
+            <button
+              onClick={() =>
+                setImages((prev) => prev.filter((_, idx) => idx !== i))
+              }
+              className={styles.deleteBtn}
+            >
+              X
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

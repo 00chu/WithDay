@@ -11,6 +11,7 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 .main::-webkit-scrollbar {
   display: none;
 }
@@ -58,6 +59,31 @@
 .input_wrap li:nth-of-type(2) {
   width: 85%;
   text-align: start;
+}
+
+.peopleInfo li:last-child {
+  width: 150px;
+}
+
+.peopleInfo input {
+  text-align: center;
+}
+
+.genderInfo li:last-child {
+  display: flex;
+  width: 400px;
+  gap: 10px;
+}
+
+.genderInfo label {
+  font-size: 15px;
+}
+
+.genderWrap {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 20px;
 }
 
 .input_title {
@@ -262,23 +288,15 @@
 }
 
 .scheduleTable th:nth-child(1) {
-  width: 5%;
-}
-
-.scheduleTable th:nth-child(2) {
-  width: 5%;
-}
-
-.scheduleTable th:nth-child(3) {
   width: 10%;
 }
 
-.scheduleTable th:nth-child(4) {
+.scheduleTable th:nth-child(2) {
   width: 20%;
 }
 
-.scheduleTable th:nth-child(5) {
-  width: 40%;
+.scheduleTable th:nth-child(3) {
+  width: 70%;
 }
 
 .scheduleInput,
@@ -418,4 +436,77 @@
 
 .cost_wrap_per_person > li:last-child {
   width: auto;
+}
+
+.title_wrap {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title_wrap > h2 {
+  margin-bottom: 0;
+  border: none;
+}
+
+.imageZone {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  margin-top: 20px;
+}
+
+.dropZone {
+  width: 100%;
+  height: 100px;
+  border: 2px dashed gray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.previewGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.imageWrap {
+  position: relative;
+}
+
+.image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border: 1px solid #ccc;
+}
+
+.deleteBtn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.deleteBtn {
+  opacity: 0;
+  transition: 0.2s;
+}
+
+.imageWrap:hover .deleteBtn {
+  opacity: 1;
 }
