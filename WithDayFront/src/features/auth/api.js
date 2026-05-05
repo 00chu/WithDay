@@ -1,25 +1,21 @@
 import axios from 'axios';
 
-// Vite 환경 변수 활용. .env 파일의 VITE_BACKSERVER 값을 가져옴
 const API_BASE_URL = `http://${import.meta.env.VITE_BACKSERVER}/api/users`;
 
-// 회원가입 요청 API
-export const signupUser = async (userData) => {
-  const response = await axios.post(`${API_BASE_URL}/signup`, userData);
+// 회원가입 요청 API (formData를 직접 인자로 받음)
+export const signupUser = async (formData) => {
+  const response = await axios.post(`${API_BASE_URL}/signup`, formData, {
+    headers: {
+      // 💡 브라우저가 boundary를 자동으로 생성할 수 있도록 설정
+      'Content-Type': 'multipart/form-data'
+    }
+  });
   return response.data;
 };
 
 // 로그인 요청 API
 export const loginUser = async (loginData) => {
+  // 로그인 데이터는 여전히 JSON 형식이므로 그대로 유지
   const response = await axios.post(`${API_BASE_URL}/login`, loginData);
-  return response.data; // 성공하면 백엔드에서 만든 JWT 토큰이 리턴될 거야!
-};
-
-// 주소를 위도/경도로 변환하는 API 호출
-export const getGeocode = async (address) => {
-  // 백엔드(Spring Boot)로 요청
-  const response = await axios.get(`http://${import.meta.env.VITE_BACKSERVER}/api/geocode`, {
-    params: { address }
-  });
-  return response.data; // { lat: 37.xxx, lng: 127.xxx } 형태로 돌아올 거야!
+  return response.data; 
 };

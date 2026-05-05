@@ -6,7 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface UserDao {
-
     void insertUser(User user);
 
     void insertUserTerms(UserTerms userTerms);

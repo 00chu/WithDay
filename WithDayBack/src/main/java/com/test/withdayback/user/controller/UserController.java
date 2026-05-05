@@ -4,8 +4,10 @@ import com.test.withdayback.user.dto.SignupRequestDTO;
 import com.test.withdayback.user.vo.User;
 import com.test.withdayback.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile; // 💡 필수 임포트!
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -15,23 +17,24 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody SignupRequestDTO signupRequest) {
-        try {
-            String result = userService.signup(signupRequest);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("회원가입 실패: " + e.getMessage());
-        }
+    @PostMapping(value = "/signup", consumes = {"multipart/form-data"})
+    public ResponseEntity<String> signup(
+            @RequestPart("signupData") SignupRequestDTO signupRequest,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
+
+        // 서비스에 DTO와 파일을 함께 넘겨줌
+        String result = userService.signup(signupRequest, profileImage);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User loginRequest) {
-        try {
-            String token = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
+    public ResponseEntity<?> loginUser(@RequestBody User user) {
+        String token = userService.login(user.getEmail(), user.getPassword());
+
+        if (token != null) {
             return ResponseEntity.ok(token);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("로그인 실패: " + e.getMessage());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이메일 또는 비밀번호가 틀렸습니다.");
         }
     }
 }

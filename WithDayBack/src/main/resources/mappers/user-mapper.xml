@@ -7,7 +7,7 @@
         SELECT
             id, email, password, provider, provider_id as providerId,
             nickname, profile_image as profileImage, birthday, gender,
-            phone, status, postcode, address, detail_address as detailAdress,
+            phone, status, postcode, address, detail_address as detailAddress,
             Lat as lat, Lng as lng, created_at as createdAt
         FROM User
         WHERE email = #{email}
@@ -15,34 +15,13 @@
 
     <insert id="insertUser" parameterType="User" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO User (
-        email, password, provider, provider_id, nickname,
-        profile_image, birthday, gender, phone,
-        status, postcode, address, detail_address, Lat, Lng, created_at
+            email, password, provider, provider_id, nickname,
+            profile_image, birthday, gender, phone,
+            status, postcode, address, detail_address, Lat, Lng, created_at
         ) VALUES (
-        #{email},
-        #{password},
-        #{provider},
-        #{providerId},
-        #{nickname},
-        #{profileImage},
-        #{birthday},
-        #{gender},
-        #{phone},
-        'active',           <!-- 프론트 데이터 안 믿고 Mapper에서 무조건 active 하드코딩! -->
-        #{postcode},
-        #{address},
-        #{detailAddress},
-        #{lat},
-        #{lng},
-        NOW()               <!-- Mapper가 DB 서버의 현재 날짜/시간을 자동으로 박아줌! -->
-        )
-    </insert>
-
-    <insert id="insertUserTerms" parameterType="UserTerms">
-        INSERT INTO user_terms (
-            user_id, terms_id, agreed
-        ) VALUES (
-                     #{userId}, #{termsId}, #{agreed}
+                     #{email}, #{password}, #{provider}, #{providerId}, #{nickname},
+                     #{profileImage}, #{birthday}, #{gender}, #{phone},
+                     'active', #{postcode}, #{address}, #{detailAddress}, #{lat}, #{lng}, NOW()
                  )
     </insert>
 
