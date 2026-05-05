@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useMutation, useQuery } from '@tanstack/react-query'; // 💡 useQuery 추가
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import DaumPostcode from 'react-daum-postcode';
 import { Snackbar, Alert, Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 import { signupSchema } from '../../features/auth/validation/authSchema';
-import { signupUser, fetchTerms } from '../../features/auth/api'; // 💡 fetchTerms 추가
+import { signupUser, fetchTerms } from '../../features/auth/api';
 import FormField from '../../shared/ui/Form/FormField';
 import { Input } from '../../shared/ui/Form/Form';
 import Button from '../../shared/ui/Button/Button';
@@ -18,13 +18,11 @@ import styles from './Auth.module.css';
 const Signup = () => {
   const navigate = useNavigate();
 
-  // 💡 오늘 날짜 구하기 (미래 날짜 막기용)
   const todayDate = new Date().toISOString().split('T')[0];
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
   
-  // 💡 어떤 약관 모달창을 띄울지 관리하는 State (null 이면 닫힘)
   const [openTerms, setOpenTerms] = useState(null);
 
   const handleCloseToast = (event, reason) => {
@@ -42,13 +40,11 @@ const Signup = () => {
     }
   });
 
-  // 💡 백엔드에서 약관 데이터 불러오기
   const { data: termsData } = useQuery({
     queryKey: ['terms'],
     queryFn: fetchTerms
   });
 
-  // 💡 모달창 제목을 동적으로 가져오는 함수
   const getTermTitle = (type) => {
     if (type === 'TOS') return '이용약관';
     if (type === 'PRIVACY') return '개인정보 수집 및 이용';
@@ -56,7 +52,6 @@ const Signup = () => {
     return '약관';
   };
 
-  // 💡 서버에서 받아온 데이터 중 해당 약관의 내용을 찾아오는 함수
   const getTermContent = (type) => {
     if (!termsData) return '약관 데이터를 불러오는 중입니다...';
     const term = termsData.find(t => t.type === type);
@@ -88,26 +83,6 @@ const Signup = () => {
     setValue('postcode', data.zonecode);
     setValue('address', fullAddress); 
     setIsPostcodeOpen(false);
-
-    if (window.naver && window.naver.maps) {
-      window.naver.maps.Service.geocode({ query: data.address }, function(status, response) {
-        if (status === window.naver.maps.Service.Status.ERROR) {
-          setToast({ open: true, message: '좌표 변환 중 오류가 발생했습니다.', severity: 'error' });
-          return;
-        }
-        
-        if (response.v2.meta.totalCount > 0) {
-          const item = response.v2.addresses[0];
-          setValue('lat', parseFloat(item.y)); 
-          setValue('lng', parseFloat(item.x)); 
-          setToast({ open: true, message: '주소와 좌표가 성공적으로 입력되었습니다.', severity: 'success' });
-        } else {
-          setToast({ open: true, message: '정확한 좌표를 찾을 수 없는 주소입니다.', severity: 'warning' });
-        }
-      });
-    } else {
-      setToast({ open: true, message: '네이버 지도 API를 불러오지 못했습니다.', severity: 'error' });
-    }
   };
 
   const onSubmit = (data) => {
@@ -184,12 +159,7 @@ const Signup = () => {
             <Input type="text" placeholder="상세 주소를 입력해주세요" {...register('detailAddress')} error={errors.detailAddress} />
           </FormField>
 
-          <input type="hidden" {...register('lat')} />
-          <input type="hidden" {...register('lng')} />
-
-          {/* 💡 깔끔해진 약관 체크 및 보기 버튼 영역 */}
           <div className={styles.termsContainer}>
-            
             <label className={styles.termLabel}>
               <input type="checkbox" {...register('agreeTos')} />
               <span className={styles.termText}>[필수] 이용약관에 동의합니다.</span>
@@ -209,7 +179,6 @@ const Signup = () => {
               <span className={styles.termText}>[선택] 마케팅 정보 수신에 동의합니다.</span>
               <span className={styles.termLink} onClick={(e) => { e.preventDefault(); setOpenTerms('MARKETING'); }}>보기</span>
             </label>
-
           </div>
 
           <Button type="submit" variant="primary" size="lg" fullWidth disabled={mutation.isPending}>
@@ -233,7 +202,6 @@ const Signup = () => {
         </DialogContent>
       </Dialog>
 
-      {/* 💡 약관 내용 팝업(모달) 창 */}
       <Dialog open={openTerms !== null} onClose={() => setOpenTerms(null)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold' }}>
           {openTerms ? getTermTitle(openTerms) : ''}

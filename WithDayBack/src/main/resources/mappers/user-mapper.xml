@@ -1,30 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="com.test.withdayback.user.dao.UserDao">
-
-    <select id="findByEmail" resultType="User">
-        SELECT
-            id, email, password, provider, provider_id as providerId,
-            nickname, profile_image as profileImage, birthday, gender,
-            phone, status, postcode, address, detail_address as detailAddress,
-            Lat as lat, Lng as lng, created_at as createdAt
-        FROM User
-        WHERE email = #{email}
-    </select>
 
     <insert id="insertUser" parameterType="User" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO User (
             email, password, provider, provider_id, nickname,
             profile_image, birthday, gender, phone,
-            status, postcode, address, detail_address, Lat, Lng, created_at
+            status, postcode, address, detail_address, created_at
         ) VALUES (
                      #{email}, #{password}, #{provider}, #{providerId}, #{nickname},
                      #{profileImage}, #{birthday}, #{gender}, #{phone},
-                     'active', #{postcode}, #{address}, #{detailAddress}, #{lat}, #{lng}, NOW()
+                     'active', #{postcode}, #{address}, #{detailAddress}, NOW()
                  )
     </insert>
 
+    <select id="findByEmail" parameterType="String" resultType="User">
+        SELECT * FROM User WHERE email = #{email}
+    </select>
+
+    <!-- 약관 동의 내역 저장 -->
     <insert id="insertUserTerms" parameterType="UserTerms">
         INSERT INTO user_terms (user_id, terms_id, agreed, agreed_at)
         VALUES (#{userId}, #{termsId}, #{agreed}, NOW())
@@ -35,5 +29,4 @@
         SELECT type, version, content, is_required AS isRequired
         FROM terms
     </select>
-
 </mapper>

@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,18 +36,33 @@ public class UserService {
     @Autowired
     private Cloudinary cloudinary;
 
-    // 💡 Insert가 2번(User, UserTerms)이나 일어나므로 트랜잭션 필수!
+    // 💡 제한할 나이 설정
+    private static final int MIN_AGE = 18;
+
     @Transactional
     public String signup(SignupRequestDTO signupRequest, MultipartFile profileFile) {
         try {
             User user = signupRequest.getUser();
+
+            // ==========================================================
+            // 💡 백엔드 나이 검증: 프론트 우회 가입 방지 (만 나이 계산)
+            // ==========================================================
+            if (user.getBirthday() != null && !user.getBirthday().isEmpty()) {
+                LocalDate birthDate = LocalDate.parse(user.getBirthday(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                LocalDate currentDate = LocalDate.now();
+                int age = Period.between(birthDate, currentDate).getYears();
+
+                if (age < MIN_AGE) {
+                    throw new RuntimeException("만 " + MIN_AGE + "세 이상만 가입할 수 있습니다.");
+                }
+            }
 
             user.setProvider("local");
             user.setProviderId("");
 
             // 1. 프로필 이미지 Cloudinary 업로드
             if (profileFile != null && !profileFile.isEmpty()) {
-                Map uploadParams = com.cloudinary.utils.ObjectUtils.asMap(
+                Map uploadParams = ObjectUtils.asMap(
                         "folder", "withday/profiles", "use_filename", true, "unique_filename", true);
                 Map uploadResult = cloudinary.uploader().upload(profileFile.getBytes(), uploadParams);
                 user.setProfileImage((String) uploadResult.get("secure_url"));
@@ -55,7 +72,7 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userDao.insertUser(user);
 
-            // 3. 약관 동의 내역 저장 (진짜 DB 구조에 맞게 매핑)
+            // 3. 약관 동의 내역 저장
             Map<String, Boolean> terms = signupRequest.getTerms();
             if (terms != null && user.getId() != null) {
                 for (Map.Entry<String, Boolean> entry : terms.entrySet()) {
@@ -63,22 +80,21 @@ public class UserService {
 
                     userTerms.setUserId(((Number) user.getId()).longValue());
 
-                    // 💡 프론트에서 온 글자(String)를 terms 테이블의 ID(숫자)로 변환!
                     Long termsId = 0L;
                     switch (entry.getKey()) {
                         case "TOS":
-                            termsId = 1L; // 1번: 이용약관
+                            termsId = 1L;
                             break;
                         case "PRIVACY":
-                            termsId = 2L; // 2번: 개인정보처리방침
+                            termsId = 2L;
                             break;
                         case "MARKETING":
-                            termsId = 3L; // 3번: 마케팅 수신동의
+                            termsId = 3L;
                             break;
                     }
 
                     userTerms.setTermsId(termsId);
-                    userTerms.setAgreed(entry.getValue()); // 동의 여부 (true/false)
+                    userTerms.setAgreed(entry.getValue());
 
                     userDao.insertUserTerms(userTerms);
                 }
@@ -87,11 +103,10 @@ public class UserService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("회원가입 처리 중 오류가 발생했습니다: " + e.getMessage());
+            throw new RuntimeException(e.getMessage()); // 💡 에러 메시지를 그대로 프론트로 던짐
         }
     }
 
-    // 💡 login은 데이터베이스를 읽기(Select)만 하니까 트랜잭션이 없어도 괜찮아!
     public Map<String, Object> login(String email, String rawPassword) {
         User dbUser = userDao.findByEmail(email);
 
