@@ -5,8 +5,7 @@ import Signup from "./page/login/Signup";
 import ScheduleDetail from "./page/schedule/ScheduleDetail";
 import BottomNav from "./widgets/BottomNav/BottomeNav";
 import Header from "./widgets/Header/Header";
-import { Routes, Route } from "react-router-dom";
-import SignupForm from "./page/login/SignupForm";
+// import SignupForm from "./page/login/SignupForm";
 import WriteSchedule from "./page/schedule/WriteSchedule";
 
 function App() {
