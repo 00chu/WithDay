@@ -6,7 +6,7 @@
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: var(--transition-fast);
+  /* transition: var(--transition-fast); */
 }
 
 /* ===== Size ===== */

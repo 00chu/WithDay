@@ -12,7 +12,7 @@ import { ko } from "date-fns/locale";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
-import { Button } from "../../shared/ui/Button/Button";
+import Button from "../../shared/ui/Button/Button";
 
 registerLocale("ko", ko);
 
@@ -278,7 +278,9 @@ const WriteSchedule = () => {
                   <li>성별 제한</li>
                   <li>
                     <Button
-                      variant="outline"
+                      variant={
+                        post.genderLimit === "all" ? "primary" : "outline"
+                      }
                       onClick={() =>
                         setPost((prev) => ({
                           ...prev,
@@ -289,7 +291,9 @@ const WriteSchedule = () => {
                       성별 무관
                     </Button>
                     <Button
-                      variant="outline"
+                      variant={
+                        post.genderLimit === "male" ? "primary" : "outline"
+                      }
                       onClick={() =>
                         setPost((prev) => ({
                           ...prev,
@@ -300,7 +304,9 @@ const WriteSchedule = () => {
                       남성
                     </Button>
                     <Button
-                      variant="outline"
+                      variant={
+                        post.genderLimit === "female" ? "primary" : "outline"
+                      }
                       onClick={() =>
                         setPost((prev) => ({
                           ...prev,
