@@ -63,6 +63,12 @@
 
 .peopleInfo li:last-child {
   width: 150px;
+  display: flex;
+  gap: 10px;
+}
+
+.peopleInfo li:last-child {
+  align-items: center;
 }
 
 .peopleInfo input {
@@ -206,12 +212,6 @@
 .calendarWrapper :global(.rdrDayPassive) {
   background: transparent !important;
   box-shadow: none !important;
-}
-
-/* hover 시 동그라미만 */
-.calendarWrapper :global(.rdrDay:hover .rdrDayNumber span) {
-  background: rgba(0, 110, 255, 0.2);
-  border-radius: 50% !important;
 }
 
 /* ========================= */

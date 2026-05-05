@@ -12,6 +12,7 @@ import { ko } from "date-fns/locale";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
+import { Button } from "../../shared/ui/Button/Button";
 
 registerLocale("ko", ko);
 
@@ -22,16 +23,18 @@ const WriteSchedule = () => {
     category: "",
     region: "",
     detailRegion: "",
+    chat_link: "",
     startDate: new Date(),
     endDate: new Date(),
-    recruitmentPeriod: new Date(),
+    recruitStartDate: new Date(),
+    recruitEndDate: new Date(),
     minParticipants: 2,
     maxParticipants: 100,
     minAge: 0,
     maxAge: 100,
-    gender: "all",
-    cost: 0,
-    costSharing: 0,
+    genderLimit: "all",
+    total_price: "",
+    costType: 0,
     thumbnail: "",
   });
 
@@ -79,6 +82,11 @@ const WriteSchedule = () => {
       label: item,
     }));
   }, [post.region]);
+
+  const formatNumber = (value) => {
+    if (!value) return "";
+    return Number(value).toLocaleString();
+  };
 
   return (
     <>
@@ -172,6 +180,23 @@ const WriteSchedule = () => {
                   </select>
                 </li>
               </ul>
+              <ul className={`${styles.input_wrap} ${styles.link}`}>
+                <li>
+                  <label htmlFor="link">오픈 채팅 링크</label>
+                </li>
+                <li>
+                  <Input
+                    type="text"
+                    name="link"
+                    id="link"
+                    placeholder="Link"
+                    value={post.chat_link}
+                    onChange={(e) => {
+                      setPost({ ...post, chat_link: e.target.value });
+                    }}
+                  ></Input>
+                </li>
+              </ul>
             </div>
             <div className={styles.input_content_wrap}>
               <h2 className={styles.input_title}>인원 정보</h2>
@@ -191,6 +216,7 @@ const WriteSchedule = () => {
                         setPost({ ...post, minParticipants: e.target.value });
                       }}
                     ></Input>
+                    <span>명</span>
                   </li>
                 </ul>
                 <ul className={`${styles.input_wrap} ${styles.peopleInfo}`}>
@@ -208,6 +234,7 @@ const WriteSchedule = () => {
                         setPost({ ...post, maxParticipants: e.target.value });
                       }}
                     ></Input>
+                    <span>명</span>
                   </li>
                 </ul>
                 <ul className={`${styles.input_wrap} ${styles.peopleInfo}`}>
@@ -225,6 +252,7 @@ const WriteSchedule = () => {
                         setPost({ ...post, minAge: e.target.value });
                       }}
                     ></Input>
+                    <span>세</span>
                   </li>
                 </ul>
                 <ul className={`${styles.input_wrap} ${styles.peopleInfo}`}>
@@ -242,63 +270,46 @@ const WriteSchedule = () => {
                         setPost({ ...post, maxAge: e.target.value });
                       }}
                     ></Input>
+                    <span>세</span>
                   </li>
                 </ul>
 
                 <ul className={`${styles.input_wrap} ${styles.genderInfo}`}>
                   <li>성별 제한</li>
                   <li>
-                    <div className={styles.genderWrap}>
-                      <label>
-                        <input
-                          type="radio"
-                          name="gender"
-                          value="all"
-                          checked={post.gender === "all"}
-                          onChange={(e) =>
-                            setPost((prev) => ({
-                              ...prev,
-                              gender: e.target.value,
-                            }))
-                          }
-                        />
-                        성별 무관
-                      </label>
-                    </div>
-                    <div className={styles.genderWrap}>
-                      <label>
-                        <input
-                          type="radio"
-                          name="gender"
-                          value="male"
-                          checked={post.gender === "male"}
-                          onChange={(e) =>
-                            setPost((prev) => ({
-                              ...prev,
-                              gender: e.target.value,
-                            }))
-                          }
-                        />
-                        남성
-                      </label>
-                    </div>
-                    <div className={styles.genderWrap}>
-                      <label>
-                        <input
-                          type="radio"
-                          name="gender"
-                          value="female"
-                          checked={post.gender === "female"}
-                          onChange={(e) =>
-                            setPost((prev) => ({
-                              ...prev,
-                              gender: e.target.value,
-                            }))
-                          }
-                        />
-                        여성
-                      </label>
-                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        setPost((prev) => ({
+                          ...prev,
+                          genderLimit: "all",
+                        }))
+                      }
+                    >
+                      성별 무관
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        setPost((prev) => ({
+                          ...prev,
+                          genderLimit: "male",
+                        }))
+                      }
+                    >
+                      남성
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        setPost((prev) => ({
+                          ...prev,
+                          genderLimit: "female",
+                        }))
+                      }
+                    >
+                      여성
+                    </Button>
                   </li>
                 </ul>
               </div>
@@ -320,11 +331,11 @@ const WriteSchedule = () => {
                 <li>
                   <DatePicker
                     locale="ko"
-                    selected={post.recruitmentPeriod}
+                    selected={post.recruitEndDate}
                     onChange={(date) =>
                       setPost((prev) => ({
                         ...prev,
-                        recruitmentPeriod: date,
+                        recruitmentEndDate: date,
                       }))
                     }
                     // 마감일은 일정 시작일 하루 전 날까지
@@ -358,15 +369,19 @@ const WriteSchedule = () => {
                 <li>총액</li>
                 <li className={styles.cost}>
                   <input
-                    type="number"
+                    type="text"
                     className={styles.cost_input}
-                    value={post.cost}
-                    onChange={(e) =>
-                      setPost((prev) => ({
-                        ...prev,
-                        cost: e.target.value,
-                      }))
-                    }
+                    value={formatNumber(post.total_price)}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, "");
+
+                      if (!isNaN(raw)) {
+                        setPost((prev) => ({
+                          ...prev,
+                          total_price: raw,
+                        }));
+                      }
+                    }}
                   />
                   <span className={styles.won}>₩</span>
                 </li>
@@ -380,13 +395,13 @@ const WriteSchedule = () => {
                     <label>
                       <input
                         type="radio"
-                        name="costSharing"
+                        name="costType"
                         value="per_person"
-                        checked={post.costSharing === "per_person"}
+                        checked={post.costType === "per_person"}
                         onChange={(e) =>
                           setPost((prev) => ({
                             ...prev,
-                            costSharing: e.target.value,
+                            costType: e.target.value,
                           }))
                         }
                       />
@@ -397,13 +412,13 @@ const WriteSchedule = () => {
                     <label>
                       <input
                         type="radio"
-                        name="costSharing"
+                        name="costType"
                         value="host_covered"
-                        checked={post.costSharing === "host_covered"}
+                        checked={post.costType === "host_covered"}
                         onChange={(e) =>
                           setPost((prev) => ({
                             ...prev,
-                            costSharing: e.target.value,
+                            costType: e.target.value,
                           }))
                         }
                       />
@@ -414,13 +429,13 @@ const WriteSchedule = () => {
                     <label>
                       <input
                         type="radio"
-                        name="costSharing"
+                        name="costType"
                         value="free"
-                        checked={post.costSharing === "free"}
+                        checked={post.costType === "free"}
                         onChange={(e) =>
                           setPost((prev) => ({
                             ...prev,
-                            costSharing: e.target.value,
+                            costType: e.target.value,
                           }))
                         }
                       />
@@ -431,13 +446,13 @@ const WriteSchedule = () => {
                     <label>
                       <input
                         type="radio"
-                        name="costSharing"
+                        name="costType"
                         value="custom"
-                        checked={post.costSharing === "custom"}
+                        checked={post.costType === "custom"}
                         onChange={(e) =>
                           setPost((prev) => ({
                             ...prev,
-                            costSharing: e.target.value,
+                            costType: e.target.value,
                           }))
                         }
                       />
