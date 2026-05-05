@@ -85,3 +85,57 @@
 .linkText span:hover {
   text-decoration: underline;
 }
+
+/* =========================================
+   💡 새롭게 추가/수정된 약관 전용 CSS
+   ========================================= */
+
+.termsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #f9fafb; /* 살짝 회색 배경을 줘서 영역 구분 */
+}
+
+.termLabel {
+  display: flex;
+  align-items: center; /* 수직 중앙 정렬 */
+  gap: 8px;
+  cursor: pointer;
+  text-align: left; /* 가운데 정렬되는 문제 완벽 해결! */
+}
+
+.termLabel input[type="checkbox"] {
+  flex-shrink: 0; /* 화면이 좁아져도 체크박스 크기는 찌그러지지 않게 방어 */
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.termText {
+  flex-grow: 1; /* 남은 공간을 얘가 다 차지함 */
+  font-size: 13px; /* 글씨 크기를 살짝 줄임 */
+  color: #374151; /* 너무 까맣지 않은 부드러운 진회색 */
+  line-height: 1.4;
+  word-break: keep-all; /* 단어 단위로 줄바꿈되게 해서 글씨가 안 예쁘게 찢어지는 걸 방지 */
+}
+
+.termLink {
+  color: #3b82f6;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap; /* 💡 "보기" 글자가 절대 줄바꿈되지 않게 방어! */
+  flex-shrink: 0; /* 화면이 좁아져도 "보기" 영역은 찌그러지지 않음 */
+}
+
+.termError {
+  color: #ef4444;
+  font-size: 12px;
+  margin: -6px 0 0 24px; /* 체크박스 너비만큼 살짝 들여쓰기해서 에러 메시지 띄움 */
+}

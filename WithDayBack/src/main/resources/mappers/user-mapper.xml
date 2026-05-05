@@ -25,4 +25,15 @@
                  )
     </insert>
 
+    <insert id="insertUserTerms" parameterType="UserTerms">
+        INSERT INTO user_terms (user_id, terms_id, agreed, agreed_at)
+        VALUES (#{userId}, #{termsId}, #{agreed}, NOW())
+    </insert>
+
+    <!-- 약관 데이터 불러오기 -->
+    <select id="getAllTerms" resultType="Terms">
+        SELECT type, version, content, is_required AS isRequired
+        FROM terms
+    </select>
+
 </mapper>

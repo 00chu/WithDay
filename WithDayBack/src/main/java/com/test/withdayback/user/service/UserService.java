@@ -1,18 +1,22 @@
 package com.test.withdayback.user.service;
 
 import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils; // 💡 팀장님 코드에 있던 유틸!
+import com.cloudinary.utils.ObjectUtils;
 import com.test.withdayback.common.util.JwtUtil;
 import com.test.withdayback.user.dao.UserDao;
 import com.test.withdayback.user.dto.SignupRequestDTO;
+import com.test.withdayback.user.vo.Terms;
 import com.test.withdayback.user.vo.User;
+import com.test.withdayback.user.vo.UserTerms;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -27,50 +31,70 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    // 💡 FileUtil 대신 Cloudinary를 주입받아!
     @Autowired
     private Cloudinary cloudinary;
 
+    // 💡 Insert가 2번(User, UserTerms)이나 일어나므로 트랜잭션 필수!
+    @Transactional
     public String signup(SignupRequestDTO signupRequest, MultipartFile profileFile) {
         try {
             User user = signupRequest.getUser();
 
-            // ==================================================
-            // 💡 팀장님의 Cloudinary 로직을 프로필 이미지에 적용!
-            // ==================================================
+            user.setProvider("local");
+            user.setProviderId("");
+
+            // 1. 프로필 이미지 Cloudinary 업로드
             if (profileFile != null && !profileFile.isEmpty()) {
-                // 1. 업로드 설정 (폴더명을 우리 프로젝트에 맞게 'withday/profiles'로 바꿈)
-                Map uploadParams = ObjectUtils.asMap(
-                        "folder", "withday/profiles",
-                        "use_filename", true,
-                        "unique_filename", true
-                );
-
-                // 2. Cloudinary로 업로드 슛!
+                Map uploadParams = com.cloudinary.utils.ObjectUtils.asMap(
+                        "folder", "withday/profiles", "use_filename", true, "unique_filename", true);
                 Map uploadResult = cloudinary.uploader().upload(profileFile.getBytes(), uploadParams);
-
-                // 3. 업로드된 결과에서 안전한 URL (https://...) 추출
-                String profileImageUrl = (String) uploadResult.get("secure_url");
-
-                // 4. DB에 저장될 User 객체에 URL 세팅
-                user.setProfileImage(profileImageUrl);
+                user.setProfileImage((String) uploadResult.get("secure_url"));
             }
 
-            // 2. 비밀번호 암호화
+            // 2. 유저 정보 저장
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-            // 3. DB 저장
             userDao.insertUser(user);
+
+            // 3. 약관 동의 내역 저장 (진짜 DB 구조에 맞게 매핑)
+            Map<String, Boolean> terms = signupRequest.getTerms();
+            if (terms != null && user.getId() != null) {
+                for (Map.Entry<String, Boolean> entry : terms.entrySet()) {
+                    UserTerms userTerms = new UserTerms();
+
+                    userTerms.setUserId(((Number) user.getId()).longValue());
+
+                    // 💡 프론트에서 온 글자(String)를 terms 테이블의 ID(숫자)로 변환!
+                    Long termsId = 0L;
+                    switch (entry.getKey()) {
+                        case "TOS":
+                            termsId = 1L; // 1번: 이용약관
+                            break;
+                        case "PRIVACY":
+                            termsId = 2L; // 2번: 개인정보처리방침
+                            break;
+                        case "MARKETING":
+                            termsId = 3L; // 3번: 마케팅 수신동의
+                            break;
+                    }
+
+                    userTerms.setTermsId(termsId);
+                    userTerms.setAgreed(entry.getValue()); // 동의 여부 (true/false)
+
+                    userDao.insertUserTerms(userTerms);
+                }
+            }
             return "success";
 
-        } catch (IOException e) {
-            throw new RuntimeException("Cloudinary 프로필 사진 저장 중 오류가 발생했습니다: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("회원가입 처리 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 
-    // login 메서드는 아까 짰던 코드 (Map 리턴하는 방식) 그대로 유지!
+    // 💡 login은 데이터베이스를 읽기(Select)만 하니까 트랜잭션이 없어도 괜찮아!
     public Map<String, Object> login(String email, String rawPassword) {
         User dbUser = userDao.findByEmail(email);
+
         if (dbUser == null || !passwordEncoder.matches(rawPassword, dbUser.getPassword())) {
             return null;
         }
@@ -89,5 +113,9 @@ public class UserService {
 
         responseData.put("user", userInfo);
         return responseData;
+    }
+
+    public List<Terms> getAllTerms() {
+        return userDao.getAllTerms();
     }
 }

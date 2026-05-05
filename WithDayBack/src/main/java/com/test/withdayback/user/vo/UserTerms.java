@@ -10,9 +10,8 @@ import org.apache.ibatis.type.Alias;
 @AllArgsConstructor
 @Alias("UserTerms")
 public class UserTerms {
-    private Integer id;       // int -> Integer
-    private Integer userId;   // int -> Integer
-    private Integer termsId;  // int -> Integer
+    private Long id;
+    private Long userId;
+    private Long termsId;
     private boolean agreed;
-    private String agreedAt;
 }

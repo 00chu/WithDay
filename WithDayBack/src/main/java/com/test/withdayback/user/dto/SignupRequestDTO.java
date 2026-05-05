@@ -1,12 +1,16 @@
 package com.test.withdayback.user.dto;
 
 import com.test.withdayback.user.vo.User;
-import com.test.withdayback.user.vo.UserTerms;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import java.util.List;
+import lombok.NoArgsConstructor;
+
+import java.util.Map;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SignupRequestDTO {
     private User user;
-    private List<UserTerms> termsList;
+    private Map<String, Boolean> terms;
 }

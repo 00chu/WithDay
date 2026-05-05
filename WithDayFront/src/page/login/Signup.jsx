@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query'; // 💡 useQuery 추가
 
 import DaumPostcode from 'react-daum-postcode';
 import { Snackbar, Alert, Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 import { signupSchema } from '../../features/auth/validation/authSchema';
-import { signupUser } from '../../features/auth/api';
+import { signupUser, fetchTerms } from '../../features/auth/api'; // 💡 fetchTerms 추가
 import FormField from '../../shared/ui/Form/FormField';
 import { Input } from '../../shared/ui/Form/Form';
 import Button from '../../shared/ui/Button/Button';
@@ -18,8 +18,14 @@ import styles from './Auth.module.css';
 const Signup = () => {
   const navigate = useNavigate();
 
+  // 💡 오늘 날짜 구하기 (미래 날짜 막기용)
+  const todayDate = new Date().toISOString().split('T')[0];
+
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
+  
+  // 💡 어떤 약관 모달창을 띄울지 관리하는 State (null 이면 닫힘)
+  const [openTerms, setOpenTerms] = useState(null);
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -28,8 +34,34 @@ const Signup = () => {
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm({
     resolver: yupResolver(signupSchema),
-    mode: 'onBlur', 
+    mode: 'onChange', 
+    defaultValues: {
+      agreeTos: false,
+      agreePrivacy: false,
+      agreeMarketing: false
+    }
   });
+
+  // 💡 백엔드에서 약관 데이터 불러오기
+  const { data: termsData } = useQuery({
+    queryKey: ['terms'],
+    queryFn: fetchTerms
+  });
+
+  // 💡 모달창 제목을 동적으로 가져오는 함수
+  const getTermTitle = (type) => {
+    if (type === 'TOS') return '이용약관';
+    if (type === 'PRIVACY') return '개인정보 수집 및 이용';
+    if (type === 'MARKETING') return '마케팅 정보 수신';
+    return '약관';
+  };
+
+  // 💡 서버에서 받아온 데이터 중 해당 약관의 내용을 찾아오는 함수
+  const getTermContent = (type) => {
+    if (!termsData) return '약관 데이터를 불러오는 중입니다...';
+    const term = termsData.find(t => t.type === type);
+    return term ? term.content : '약관 내용이 없습니다.';
+  };
 
   const mutation = useMutation({
     mutationFn: signupUser,
@@ -79,33 +111,33 @@ const Signup = () => {
   };
 
   const onSubmit = (data) => {
-    const { profileImage, ...restData } = data;
-    
-    // 💡 1. FormData 객체 생성
     const formData = new FormData();
-
-    // 💡 2. 회원가입 데이터 객체 생성
+    
     const signupData = {
       user: {
-        ...restData,
-        provider: 'local',
-        lat: data.lat ? parseFloat(data.lat) : 0.0, 
-        lng: data.lng ? parseFloat(data.lng) : 0.0, 
+        email: data.email,
+        password: data.password,
+        nickname: data.nickname,
+        birthday: data.birthday,
+        gender: data.gender,
+        phone: data.phone,
+        postcode: data.postcode,
+        address: data.address,
+        detailAddress: data.detailAddress,
       },
-      termsList: [] 
+      terms: {
+        TOS: data.agreeTos,
+        PRIVACY: data.agreePrivacy,
+        MARKETING: data.agreeMarketing || false 
+      }
     };
 
-    // 💡 3. JSON 데이터를 Blob으로 감싸서 'signupData'라는 이름으로 추가
-    formData.append("signupData", new Blob([JSON.stringify(signupData)], {
-      type: "application/json"
-    }));
-
-    // 💡 4. 파일 데이터 추가 (profileImage는 FileList이므로 [0]번 접근)
-    if (profileImage && profileImage[0]) {
-      formData.append("profileImage", profileImage[0]);
+    formData.append('signupData', new Blob([JSON.stringify(signupData)], { type: 'application/json' }));
+    
+    if (data.profileImage && data.profileImage[0]) {
+      formData.append('profileImage', data.profileImage[0]);
     }
 
-    // 💡 5. 완성된 formData 전송
     mutation.mutate(formData);
   };
 
@@ -131,12 +163,12 @@ const Signup = () => {
             <Input type="file" accept="image/*" {...register('profileImage')} />
           </FormField>
           <FormField label="생년월일" error={errors.birthday}>
-            <Input type="date" {...register('birthday')} />
+            <Input type="date" max={todayDate} {...register('birthday')} />
           </FormField>
           <FormField label="성별" error={errors.gender}>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <label><input type="radio" value="1" {...register('gender')} /> 남</label>
-              <label><input type="radio" value="2" {...register('gender')} /> 여</label>
+              <label style={{ cursor: 'pointer' }}><input type="radio" value="1" {...register('gender')} /> 남</label>
+              <label style={{ cursor: 'pointer' }}><input type="radio" value="2" {...register('gender')} /> 여</label>
             </div>
           </FormField>
           <FormField label="전화번호" error={errors.phone}>
@@ -155,11 +187,36 @@ const Signup = () => {
           <input type="hidden" {...register('lat')} />
           <input type="hidden" {...register('lng')} />
 
+          {/* 💡 깔끔해진 약관 체크 및 보기 버튼 영역 */}
+          <div className={styles.termsContainer}>
+            
+            <label className={styles.termLabel}>
+              <input type="checkbox" {...register('agreeTos')} />
+              <span className={styles.termText}>[필수] 이용약관에 동의합니다.</span>
+              <span className={styles.termLink} onClick={(e) => { e.preventDefault(); setOpenTerms('TOS'); }}>보기</span>
+            </label>
+            {errors.agreeTos && <p className={styles.termError}>{errors.agreeTos.message}</p>}
+
+            <label className={styles.termLabel}>
+              <input type="checkbox" {...register('agreePrivacy')} />
+              <span className={styles.termText}>[필수] 개인정보 수집 및 이용에 동의합니다.</span>
+              <span className={styles.termLink} onClick={(e) => { e.preventDefault(); setOpenTerms('PRIVACY'); }}>보기</span>
+            </label>
+            {errors.agreePrivacy && <p className={styles.termError}>{errors.agreePrivacy.message}</p>}
+
+            <label className={styles.termLabel}>
+              <input type="checkbox" {...register('agreeMarketing')} />
+              <span className={styles.termText}>[선택] 마케팅 정보 수신에 동의합니다.</span>
+              <span className={styles.termLink} onClick={(e) => { e.preventDefault(); setOpenTerms('MARKETING'); }}>보기</span>
+            </label>
+
+          </div>
+
           <Button type="submit" variant="primary" size="lg" fullWidth disabled={mutation.isPending}>
             {mutation.isPending ? '가입하는 중...' : '회원가입 완료'}
           </Button>
         </form>
-        <p className={styles.linkText}>이미 계정이 있으신가요? <span onClick={() => navigate('/login')}>로그인하기</span></p>
+        <p className={styles.linkText}>이미 계정이 있으신가요? <span onClick={() => navigate('/login')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>로그인하기</span></p>
       </div>
 
       <Snackbar open={toast.open} autoHideDuration={3000} onClose={handleCloseToast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
@@ -175,6 +232,20 @@ const Signup = () => {
           <DaumPostcode onComplete={handleCompletePostcode} style={{ width: '100%', height: '400px' }} />
         </DialogContent>
       </Dialog>
+
+      {/* 💡 약관 내용 팝업(모달) 창 */}
+      <Dialog open={openTerms !== null} onClose={() => setOpenTerms(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold' }}>
+          {openTerms ? getTermTitle(openTerms) : ''}
+          <IconButton onClick={() => setOpenTerms(null)}><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'inherit', margin: 0, fontSize: '14px', lineHeight: '1.6', color: '#333' }}>
+            {openTerms ? getTermContent(openTerms) : ''}
+          </pre>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };

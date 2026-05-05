@@ -51,3 +51,10 @@ export const loginUser = async (loginData) => {
   const response = await api.post(`/api/users/login`, loginData);
   return response.data; 
 };
+
+// 💡 4. 약관 데이터 불러오기 함수 추가!
+export const fetchTerms = async () => {
+  // GET 요청으로 백엔드에서 약관 목록을 가져옵니다.
+  const response = await api.get(`/api/users/terms`);
+  return response.data;
+};
