@@ -476,6 +476,12 @@ const WriteSchedule = () => {
               </div>
               <AddThumbnail />
             </div>
+            <div className={styles.input_content_wrap}>
+              <Button type="submit">등록</Button>
+              <Button type="button" variant="outline">
+                취소
+              </Button>
+            </div>
           </form>
         </div>
       </main>
