@@ -381,6 +381,7 @@ const WriteSchedule = () => {
                     type="text"
                     className={styles.cost_input}
                     value={formatNumber(post.total_price)}
+                    placeholder="금액"
                     onChange={(e) => {
                       const raw = e.target.value.replace(/[^0-9]/g, "");
 

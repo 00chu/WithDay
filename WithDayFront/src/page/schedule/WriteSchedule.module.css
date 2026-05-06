@@ -402,6 +402,7 @@
   border: none;
   outline: none;
   -moz-appearance: textfield;
+  text-align: center;
 }
 
 .cost_sharing_content {
