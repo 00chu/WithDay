@@ -25,7 +25,7 @@ const WriteSchedule = () => {
     category: "",
     region: "",
     detailRegion: "",
-    chat_link: "",
+    chatLink: "",
     startDate: new Date(),
     endDate: new Date(),
     recruitStartDate: new Date(),
@@ -35,7 +35,7 @@ const WriteSchedule = () => {
     minAge: 15,
     maxAge: 100,
     genderLimit: "all",
-    total_price: "",
+    totalPrice: "",
     costType: 0,
     thumbnail: "",
   });
@@ -96,16 +96,16 @@ const WriteSchedule = () => {
         <BackButton />
       </header>
       <main className={styles.main}>
-        <div className={styles.content_wrap}>
+        <div className={styles.contentWrap}>
           <form
             onSubmit={(e) => {
               e.preventDefault();
             }}
             autoComplete="off"
           >
-            <div className={styles.input_content_wrap}>
-              <h2 className={styles.input_title}>기본 정보</h2>
-              <ul className={`${styles.input_wrap} ${styles.title}`}>
+            <div className={styles.inputContentWrap}>
+              <h2 className={styles.inputTitle}>기본 정보</h2>
+              <ul className={`${styles.inputWrap} ${styles.title}`}>
                 <li>
                   <label htmlFor="title">일정명</label>
                 </li>
@@ -122,7 +122,7 @@ const WriteSchedule = () => {
                   ></Input>
                 </li>
               </ul>
-              <ul className={`${styles.input_wrap} ${styles.description}`}>
+              <ul className={`${styles.inputWrap} ${styles.description}`}>
                 <li>
                   <label htmlFor="description">일정 설명</label>
                 </li>
@@ -138,7 +138,7 @@ const WriteSchedule = () => {
                   ></TextArea>
                 </li>
               </ul>
-              <ul className={`${styles.input_wrap} ${styles.category}`}>
+              <ul className={`${styles.inputWrap} ${styles.category}`}>
                 <li>
                   <label htmlFor="category">일정 종류</label>
                 </li>
@@ -152,7 +152,7 @@ const WriteSchedule = () => {
                   </select>
                 </li>
               </ul>
-              <ul className={`${styles.input_wrap} ${styles.region}`}>
+              <ul className={`${styles.inputWrap} ${styles.region}`}>
                 <li>
                   <label htmlFor="region">지역(시/도)</label>
                 </li>
@@ -167,7 +167,7 @@ const WriteSchedule = () => {
                   </select>
                 </li>
               </ul>
-              <ul className={`${styles.input_wrap} ${styles.detailRegion}`}>
+              <ul className={`${styles.inputWrap} ${styles.detailRegion}`}>
                 <li>
                   <label htmlFor="detailRegion">지역(시/군/구)</label>
                 </li>
@@ -182,7 +182,7 @@ const WriteSchedule = () => {
                   </select>
                 </li>
               </ul>
-              <ul className={`${styles.input_wrap} ${styles.link}`}>
+              <ul className={`${styles.inputWrap} ${styles.link}`}>
                 <li>
                   <label htmlFor="link">오픈 채팅 링크</label>
                 </li>
@@ -192,18 +192,18 @@ const WriteSchedule = () => {
                     name="link"
                     id="link"
                     placeholder="Link"
-                    value={post.chat_link}
+                    value={post.chatLink}
                     onChange={(e) => {
-                      setPost({ ...post, chat_link: e.target.value });
+                      setPost({ ...post, chatLink: e.target.value });
                     }}
                   ></Input>
                 </li>
               </ul>
             </div>
-            <div className={styles.input_content_wrap}>
-              <h2 className={styles.input_title}>인원 정보</h2>
+            <div className={styles.inputContentWrap}>
+              <h2 className={styles.inputTitle}>인원 정보</h2>
               <div>
-                <ul className={`${styles.input_wrap} ${styles.peopleInfo}`}>
+                <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최소 인원</li>
                   <li>
                     <Input
@@ -221,7 +221,7 @@ const WriteSchedule = () => {
                     <span>명</span>
                   </li>
                 </ul>
-                <ul className={`${styles.input_wrap} ${styles.peopleInfo}`}>
+                <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최대 인원</li>
                   <li>
                     <Input
@@ -239,7 +239,7 @@ const WriteSchedule = () => {
                     <span>명</span>
                   </li>
                 </ul>
-                <ul className={`${styles.input_wrap} ${styles.peopleInfo}`}>
+                <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최소 연령</li>
                   <li>
                     <Input
@@ -257,7 +257,7 @@ const WriteSchedule = () => {
                     <span>세</span>
                   </li>
                 </ul>
-                <ul className={`${styles.input_wrap} ${styles.peopleInfo}`}>
+                <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최대 연령</li>
                   <li>
                     <Input
@@ -276,7 +276,7 @@ const WriteSchedule = () => {
                   </li>
                 </ul>
 
-                <ul className={`${styles.input_wrap} ${styles.genderInfo}`}>
+                <ul className={`${styles.inputWrap} ${styles.genderInfo}`}>
                   <li>성별 제한</li>
                   <li>
                     <Button
@@ -322,17 +322,15 @@ const WriteSchedule = () => {
                 </ul>
               </div>
             </div>
-            <div className={styles.input_content_wrap}>
-              <h2 className={styles.input_title}>일정 정보</h2>
+            <div className={styles.inputContentWrap}>
+              <h2 className={styles.inputTitle}>일정 정보</h2>
               <CalendarRange
                 post={post}
                 setPost={setPost}
                 months={1}
                 direction="horizontal"
               />
-              <ul
-                className={`${styles.input_wrap} ${styles.recruitmentPeriod}`}
-              >
+              <ul className={`${styles.inputWrap} ${styles.recruitmentPeriod}`}>
                 <li>
                   <label>모집 마감일</label>
                 </li>
@@ -363,8 +361,8 @@ const WriteSchedule = () => {
                 </li>
               </ul>
             </div>
-            <div className={styles.input_content_wrap}>
-              <h2 className={styles.input_title}>상세 일정</h2>
+            <div className={styles.inputContentWrap}>
+              <h2 className={styles.inputTitle}>상세 일정</h2>
               <ScheduleTable
                 startDate={post.startDate}
                 endDate={post.endDate}
@@ -372,15 +370,15 @@ const WriteSchedule = () => {
                 setSchedule={setSchedule}
               />
             </div>
-            <div className={styles.input_content_wrap}>
-              <h2 className={styles.input_title}>정산 방식</h2>
-              <ul className={`${styles.input_wrap} ${styles.cost_wrap}`}>
+            <div className={styles.inputContentWrap}>
+              <h2 className={styles.inputTitle}>정산 방식</h2>
+              <ul className={`${styles.inputWrap} ${styles.costWrap}`}>
                 <li>총액</li>
                 <li className={styles.cost}>
                   <input
                     type="text"
-                    className={styles.cost_input}
-                    value={formatNumber(post.total_price)}
+                    className={styles.costInput}
+                    value={formatNumber(post.totalPrice)}
                     placeholder="금액"
                     onChange={(e) => {
                       const raw = e.target.value.replace(/[^0-9]/g, "");
@@ -388,7 +386,7 @@ const WriteSchedule = () => {
                       if (!isNaN(raw)) {
                         setPost((prev) => ({
                           ...prev,
-                          total_price: raw,
+                          totalPrice: raw,
                         }));
                       }
                     }}
@@ -396,12 +394,10 @@ const WriteSchedule = () => {
                   <span className={styles.won}>₩</span>
                 </li>
               </ul>
-              <ul
-                className={`${styles.input_wrap} ${styles.cost_sharing_wrap}`}
-              >
+              <ul className={`${styles.inputWrap} ${styles.costSharingWrap}`}>
                 <li>정산 방식</li>
-                <li className={styles.cost_sharing_content}>
-                  <div className={styles.cost_sharing}>
+                <li className={styles.costSharingContent}>
+                  <div className={styles.costSharing}>
                     <Button
                       variant={
                         post.costType === "per_person" ? "primary" : "outline"
@@ -468,9 +464,9 @@ const WriteSchedule = () => {
                 </li>
               </ul>
             </div>
-            <div className={styles.input_content_wrap}>
-              <div className={styles.title_wrap}>
-                <h2 className={styles.input_title}>첨부 이미지</h2>
+            <div className={styles.inputContentWrap}>
+              <div className={styles.titleWrap}>
+                <h2 className={styles.inputTitle}>첨부 이미지</h2>
                 <label>{"(최대 3장, 첫 이미지는 썸네일 이미지)"}</label>
               </div>
               <AddThumbnail />
@@ -536,10 +532,11 @@ const CalendarRange = ({ post, setPost }) => {
         showMonthAndYearPickers={true}
         months={1}
         direction="horizontal"
+        minDate={new Date()}
       />
 
       <div className={styles.dateWrap}>
-        <ul className={`${styles.input_wrap} ${styles.duringDate}`}>
+        <ul className={`${styles.inputWrap} ${styles.duringDate}`}>
           <li>
             <label>일정</label>
           </li>

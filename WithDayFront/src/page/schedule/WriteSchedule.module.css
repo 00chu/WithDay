@@ -24,11 +24,11 @@
   color: var(--color-text-secondary);
 }
 
-.content_wrap {
+.contentWrap {
   padding: 20px;
 }
 
-.input_wrap {
+.inputWrap {
   list-style-type: none;
   display: flex;
   padding: 0;
@@ -36,27 +36,27 @@
   width: 100%;
 }
 
-.input_wrap li {
+.inputWrap li {
   box-sizing: border-box;
 }
 
-.input_wrap li input,
-.input_wrap li textarea {
+.inputWrap li input,
+.inputWrap li textarea {
   box-sizing: border-box;
 }
 
-.input_wrap textarea {
+.inputWrap textarea {
   width: 100%;
   height: 200px;
   resize: none;
 }
 
-.input_wrap li:first-of-type {
+.inputWrap li:first-of-type {
   width: 15%;
   text-align: start;
 }
 
-.input_wrap li:nth-of-type(2) {
+.inputWrap li:nth-of-type(2) {
   width: 85%;
   text-align: start;
 }
@@ -92,15 +92,16 @@
   padding: 20px;
 }
 
-.input_title {
+.inputTitle {
   padding-bottom: 10px;
   text-align: start;
   border-bottom: 1px solid var(--color-border);
 }
 
-.input_content_wrap {
+.inputContentWrap {
   padding-bottom: 40px;
 }
+
 .calendarWrapper {
   width: 100%;
   font-size: 16px;
@@ -237,6 +238,19 @@
   font-size: 16px;
 }
 
+/* 캘린더 */
+.calendarWrapper {
+  font-size: 14px;
+}
+
+.calendarWrapper :global(.rdrMonthAndYearWrapper) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row !important; /* 핵심 */
+  gap: 8px;
+}
+
 .dateWrap {
   margin-top: 20px;
   display: flex;
@@ -256,8 +270,13 @@
 .duringDate > li > p {
   border: 1px solid var(--color-border);
   background-color: white;
-  padding: 10px 80px;
+  padding: 10px 45px;
   border-radius: 4px;
+
+  width: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-size: 16px;
 }
 
 .recruitmentPeriod > li {
@@ -319,6 +338,7 @@
 .textareaWrap > div {
   text-align: end;
 }
+
 .scheduleTextarea {
   width: 100%;
   border: none;
@@ -329,16 +349,23 @@
 }
 
 .dateButton {
-  padding: 8px 50px;
-  border: 1px solid var(--color-border);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  padding: 10px 50px;
   border-radius: 4px;
-  background: white;
-  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background-color: white;
+
   font-size: 16px;
+  box-sizing: border-box;
+  gap: 6px;
 }
 
 .dateButton span {
-  margin-right: 20px;
+  margin-right: 10px;
 }
 
 .scheduleBtnWrap {
@@ -369,7 +396,7 @@
   color: var(--color-text-secondary);
 }
 
-.cost_wrap > li {
+.costWrap > li {
   display: flex;
   align-items: center;
 }
@@ -390,13 +417,13 @@
   line-height: 1;
 }
 
-.cost_input::-webkit-outer-spin-button,
-.cost_input::-webkit-inner-spin-button {
+.costInput::-webkit-outer-spin-button,
+.costInput::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-.cost_input {
+.costInput {
   width: 120px;
   font-size: 16px;
   border: none;
@@ -405,13 +432,13 @@
   text-align: center;
 }
 
-.cost_sharing_content {
+.costSharingContent {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.cost_sharing {
+.costSharing {
   background: white;
   border: 1px solid var(--color-border);
   border-radius: 4px;
@@ -421,7 +448,7 @@
   gap: 10px;
 }
 
-.cost_sharing button {
+.costSharing button {
   width: 100%;
   text-align: left;
   display: flex;
@@ -429,42 +456,30 @@
   align-items: flex-start;
 }
 
-.cost_sharing div {
+.costSharing div {
   font-size: 14px;
 }
 
-.cost_wrap {
+.costWrap {
   display: flex;
 }
 
-.cost_wrap > li:first-child {
+.costWrap > li:first-child {
   width: 15%;
 }
 
-.cost_wrap > li:last-child {
+.costWrap > li:last-child {
   width: auto;
 }
 
-.cost_wrap_per_person {
-  display: flex;
-}
-
-.cost_wrap_per_person > li:first-child {
-  width: 15%;
-}
-
-.cost_wrap_per_person > li:last-child {
-  width: auto;
-}
-
-.title_wrap {
+W .titleWrap {
   display: flex;
   gap: 8px;
   align-items: baseline;
   border-bottom: 1px solid var(--color-border);
 }
 
-.title_wrap > h2 {
+.titleWrap > h2 {
   margin-bottom: 0;
   border: none;
 }
@@ -534,4 +549,159 @@
   display: flex;
   justify-content: center;
   gap: 10px;
+}
+
+/* ========================= */
+/* 📱 MOBILE (768px 이하) */
+/* ========================= */
+
+@media (max-width: 768px) {
+  /* 전체 패딩 줄이기 */
+  .contentWrap {
+    padding: 12px;
+  }
+
+  .inputWrap {
+    flex-direction: column !important;
+    gap: 6px;
+  }
+
+  .inputWrap li:first-of-type {
+    width: 100%;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+  }
+
+  .inputWrap li:nth-of-type(2) {
+    width: 100%;
+  }
+
+  /* textarea 높이 줄이기 */
+  .inputWrap textarea {
+    height: 140px;
+  }
+
+  /* 인원 입력 */
+  .peopleInfo li:last-child {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* 성별 버튼 */
+  .genderInfo li:last-child {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  /* 날짜 표시 */
+  .duringDate > li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .duringDate > li > p {
+    width: 100%;
+    padding: 10px;
+  }
+
+  /* 테이블 */
+  .scheduleTable th,
+  .scheduleTable td {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  .scheduleTable th:nth-child(1) {
+    width: 20%;
+  }
+
+  .scheduleTable th:nth-child(2) {
+    width: 30%;
+  }
+
+  .scheduleTable th:nth-child(3) {
+    width: 50%;
+  }
+
+  .duringDate {
+    width: 100%;
+  }
+
+  .duringDate > li {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .duringDate > li > p {
+    width: 100%;
+    padding: 10px 16px;
+  }
+
+  .inputWrap {
+    flex-direction: column !important;
+  }
+
+  .recruitmentPeriod {
+    width: 100%;
+  }
+
+  .recruitmentPeriod > li {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .recruitmentPeriod :global(.react-datepicker-wrapper),
+  .recruitmentPeriod :global(.react-datepicker__input-container) {
+    width: 100% !important;
+  }
+
+  .dateButton {
+    width: 100%;
+    padding: 10px 16px;
+  }
+
+  .scheduleBtnWrap {
+    flex-direction: row;
+  }
+
+  /* 비용 */
+  .cost {
+    width: 100%;
+    padding: 10px;
+    justify-content: space-between;
+  }
+
+  .costInput {
+    width: 100%;
+  }
+
+  /* 이미지 */
+  .previewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .image {
+    height: 200px;
+  }
+
+  /* 등록 버튼 */
+  .registButtonWrap {
+    flex-direction: column;
+  }
+}
+
+/* ========================= */
+/* 📱 TABLET (769 ~ 1024px) */
+/* ========================= */
+
+@media (max-width: 1024px) {
+  .previewGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .genderInfo li:last-child {
+    width: 100%;
+  }
 }
