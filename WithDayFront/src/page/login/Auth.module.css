@@ -1,0 +1,141 @@
+/* 화면 전체를 채우는 부드러운 배경 */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f7f6; /* 밝고 깨끗한 쿨그레이 톤 */
+  padding: 20px;
+}
+
+/* 폼을 감싸는 하얀색 카드 영역 */
+.card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 420px;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.title {
+  font-size: 26px;
+  color: #111827;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.submitButton {
+  width: 100%; /* 버튼이 부모(card)의 너비를 꽉 채우도록 추가! */
+  box-sizing: border-box; /* 패딩을 포함해서 100%를 맞추도록 추가! */
+  margin-top: 10px;
+  background-color: #3b82f6; 
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+/* react-query 통신 중일 때 버튼 상태 */
+.loading {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* 페이지 전환 링크 */
+.linkText {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.linkText span {
+  color: #3b82f6;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 5px;
+}
+.linkText span:hover {
+  text-decoration: underline;
+}
+
+/* =========================================
+   💡 새롭게 추가/수정된 약관 전용 CSS
+   ========================================= */
+
+.termsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #f9fafb; /* 살짝 회색 배경을 줘서 영역 구분 */
+}
+
+.termLabel {
+  display: flex;
+  align-items: center; /* 수직 중앙 정렬 */
+  gap: 8px;
+  cursor: pointer;
+  text-align: left; /* 가운데 정렬되는 문제 완벽 해결! */
+}
+
+.termLabel input[type="checkbox"] {
+  flex-shrink: 0; /* 화면이 좁아져도 체크박스 크기는 찌그러지지 않게 방어 */
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.termText {
+  flex-grow: 1; /* 남은 공간을 얘가 다 차지함 */
+  font-size: 13px; /* 글씨 크기를 살짝 줄임 */
+  color: #374151; /* 너무 까맣지 않은 부드러운 진회색 */
+  line-height: 1.4;
+  word-break: keep-all; /* 단어 단위로 줄바꿈되게 해서 글씨가 안 예쁘게 찢어지는 걸 방지 */
+}
+
+.termLink {
+  color: #3b82f6;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap; /* 💡 "보기" 글자가 절대 줄바꿈되지 않게 방어! */
+  flex-shrink: 0; /* 화면이 좁아져도 "보기" 영역은 찌그러지지 않음 */
+}
+
+.termError {
+  color: #ef4444;
+  font-size: 12px;
+  margin: -6px 0 0 24px; /* 체크박스 너비만큼 살짝 들여쓰기해서 에러 메시지 띄움 */
+}

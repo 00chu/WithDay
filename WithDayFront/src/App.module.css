@@ -48,94 +48,24 @@
 .container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  /* 화면 전체 높이를 차지하도록 설정 (모바일 브라우저 고려 dVH 추천) */
+  height: 100dvh;
   background-color: var(--color-bg);
   color: var(--color-text-primary);
+  overflow: hidden; /* 전체 페이지 스크롤 방지 */
 }
 
-/* ===== Common Components ===== */
+/* 🌟 새로 추가하는 메인 영역 스타일 */
+.mainContent {
+  flex: 1; /* Header와 BottomNav가 차지한 높이를 제외한 나머지 공간을 꽉 채움 */
+  min-height: 0; /* 🔥 핵심! flex 아이템이 컨텐츠 크기에 따라 늘어나는 것을 방지 */
+  overflow-y: auto; /* 내용이 길어지면 이 영역 안에서만 스크롤 발생 */
 
-/* 카드 */
-.card {
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  padding: 16px;
-  border: 1px solid var(--color-border);
+  /* (선택) 스크롤바 숨기기 - 디자인을 더 깔끔하게 유지하고 싶을 때 */
+  -ms-overflow-style: none; /* IE, Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
-/* 버튼 기본 */
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-weight: 500;
-  cursor: pointer;
-  transition: var(--transition-fast);
-  border: none;
-}
-
-/* Primary 버튼 */
-.buttonPrimary {
-  background-color: var(--color-primary);
-  color: var(--color-text-inverse);
-}
-
-.buttonPrimary:hover {
-  background-color: var(--color-primary-light);
-}
-
-/* Accent 버튼 */
-.buttonAccent {
-  background-color: var(--color-accent);
-  color: var(--color-text-inverse);
-}
-
-.buttonAccent:hover {
-  background-color: var(--color-accent-dark);
-}
-
-/* 아웃라인 버튼 */
-.buttonOutline {
-  background: transparent;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-primary);
-}
-
-.buttonOutline:hover {
-  background: var(--color-border-light);
-}
-
-/* ===== Input ===== */
-.input {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  transition: var(--transition-fast);
-}
-
-.input:focus {
-  outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
-}
-
-/* ===== Text ===== */
-.textSecondary {
-  color: var(--color-text-secondary);
-}
-
-.textMuted {
-  color: var(--color-text-muted);
-}
-
-/* ===== Divider ===== */
-.divider {
-  height: 1px;
-  background-color: var(--color-border);
-  margin: 12px 0;
+.mainContent::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
