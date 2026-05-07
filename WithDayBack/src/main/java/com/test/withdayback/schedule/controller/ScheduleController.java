@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("schedules")
+@RequestMapping("/api/schedules")
 @CrossOrigin("*")
 public class ScheduleController {
 
@@ -34,7 +34,7 @@ public class ScheduleController {
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping(value = "/schedules", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/post-schedule", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> postSchedule(
             @RequestPart("postData") ScheduleRequestDTO postData,
             @RequestPart(value = "images", required = false) List<MultipartFile> images

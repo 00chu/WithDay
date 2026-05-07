@@ -7,3 +7,12 @@ export const api = axios.create({
     },
 });
 
+export const getRegion = async()=>{
+    const response = await api.get('/api/schedules/region');
+    return response.data;
+}
+
+export const getDetailRegion = async()=>{
+    const response = await api.get('/api/schedules/detail-region');
+    return response.data;
+}
