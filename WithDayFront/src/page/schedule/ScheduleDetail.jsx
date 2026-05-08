@@ -31,7 +31,7 @@ export default function ScheduleDetail() {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:10400/schedules/${scheduleId}`,
+          `${import.meta.env.VITE_BACKSERVER}/schedules/${scheduleId}`,
         );
         setData(response.data);
       } catch (err) {
