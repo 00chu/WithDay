@@ -1,10 +1,10 @@
-import styles from "../../../page/home/Home.module.css";
+import styles from "../../../page/schedule/ScheduleDetail.module.css";
 
 export default function ScheduleDailyPlan({ details }) {
   if (!details || details.length === 0) return null;
 
   return (
-    <section className={styles.descriptionSection}>
+    <section className={styles.contentWrapper}>
       <h2 className={styles.subTitle}>세부 일정 (Day-by-Day)</h2>
       <div
         style={{
