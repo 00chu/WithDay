@@ -84,7 +84,7 @@ export default function Home() {
 
   const handleCategoryChange = (category) => {
     setActiveCategory(category);
-    setSubmittedKeyword(""); // 카테고리 변경 시 검색어 초기화
+    setSubmittedKeyword("");
   };
 
   return (
@@ -99,6 +99,7 @@ export default function Home() {
 
       <section className={styles.section}>
         <SearchForm
+          key={activeCategory}
           submittedKeyword={submittedKeyword}
           onSearchSubmit={setSubmittedKeyword}
           onResetSubmit={() => setSubmittedKeyword("")}

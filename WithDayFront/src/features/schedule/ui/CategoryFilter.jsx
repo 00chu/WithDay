@@ -13,7 +13,9 @@ export default function CategoryFilter({ activeCategory, onCategoryChange }) {
           className={clsx(styles.categoryChip, {
             [styles.categoryChipActive]: activeCategory === category,
           })}
-          onClick={() => onCategoryChange(category)}
+          onClick={() => {
+            onCategoryChange(category);
+          }}
         >
           {category}
         </button>
