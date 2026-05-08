@@ -1,6 +1,5 @@
 package com.test.withdayback.schedule.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +7,6 @@ import org.apache.ibatis.type.Alias;
 
 import java.time.LocalDateTime;
 
-@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 
 @NoArgsConstructor
 @AllArgsConstructor

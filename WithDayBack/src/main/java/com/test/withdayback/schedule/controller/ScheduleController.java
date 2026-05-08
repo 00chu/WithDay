@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -34,13 +35,12 @@ public class ScheduleController {
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping(value = "/post-schedule", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> postSchedule(
+    @PostMapping(value = "/insert-schedule", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> insertSchedule(
             @RequestPart("postData") ScheduleRequestDTO postData,
             @RequestPart(value = "images", required = false) List<MultipartFile> images
-    ) {
-
-
-        return ResponseEntity.ok("모임 생성 완료");
+    ) throws IOException {
+        int result = scheduleService.insertSchedule(postData, images);
+        return ResponseEntity.ok(result);
     }
 }

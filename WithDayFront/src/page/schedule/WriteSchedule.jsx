@@ -1,7 +1,6 @@
 import { Input, TextArea } from "../../shared/ui/Form/Form";
 import styles from "./WriteSchedule.module.css";
 import { useEffect, useState, useRef } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import { DateRange } from "react-date-range";
@@ -15,6 +14,7 @@ import { registerLocale } from "react-datepicker";
 import Button from "../../shared/ui/Button/Button";
 import { useQuery } from "@tanstack/react-query";
 import { getDetailRegion, getRegion } from "../../features/region/api";
+import { useAuthStore } from "../../features/auth/store/authStore";
 
 registerLocale("ko", ko);
 
@@ -22,6 +22,7 @@ const WriteSchedule = () => {
   const navigate = useNavigate();
 
   const [post, setPost] = useState({
+    memberId: useAuthStore.getState().user.memberId, //이거어케하지
     title: "",
     description: "",
     category: "",
@@ -34,8 +35,8 @@ const WriteSchedule = () => {
     recruitEndDate: new Date(),
     minParticipants: 2,
     maxParticipants: 100,
-    minAge: 15,
-    maxAge: 100,
+    ageMin: 15,
+    ageMax: 100,
     genderLimit: "all",
     totalPrice: "",
     costType: 0,
@@ -162,7 +163,15 @@ const WriteSchedule = () => {
                   <label htmlFor="detailRegion">지역(시/군/구)</label>
                 </li>
                 <li>
-                  <select>
+                  <select
+                    value={post.detailRegion || ""}
+                    onChange={(e) =>
+                      setPost({
+                        ...post,
+                        description: e.target.value,
+                      })
+                    }
+                  >
                     <option value="">시/군/구</option>
                     {detailRegions?.map((item) => (
                       <option key={item.detailId} value={item.detailName}>
@@ -234,14 +243,14 @@ const WriteSchedule = () => {
                   <li>
                     <Input
                       type="number"
-                      name="minAge"
-                      id="minAge"
+                      name="ageMin"
+                      id="ageMin"
                       placeholder="최소 연령"
                       min={0}
                       max={100}
-                      value={post.minAge}
+                      value={post.ageMin}
                       onChange={(e) => {
-                        setPost({ ...post, minAge: e.target.value });
+                        setPost({ ...post, ageMin: e.target.value });
                       }}
                     ></Input>
                     <span>세</span>
@@ -252,14 +261,14 @@ const WriteSchedule = () => {
                   <li>
                     <Input
                       type="number"
-                      name="maxAge"
-                      id="maxAge"
+                      name="ageMax"
+                      id="ageMax"
                       placeholder="최대 연령"
                       min={0}
                       max={100}
-                      value={post.maxAge}
+                      value={post.ageMax}
                       onChange={(e) => {
-                        setPost({ ...post, maxAge: e.target.value });
+                        setPost({ ...post, ageMax: e.target.value });
                       }}
                     ></Input>
                     <span>세</span>
