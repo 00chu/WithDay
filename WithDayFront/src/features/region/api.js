@@ -7,12 +7,20 @@ export const api = axios.create({
     },
 });
 
-export const getRegion = async()=>{
-    const response = await api.get('/region');
-    return response.data;
-}
+export const getRegion = async () => {
+     try {
+        const response = await api.get(`/region`);
+        return response.data;
+    } catch (e) {
+        console.log(e);
+        return [];
+    }
+};
 
-export const getDetailRegion = async()=>{
-    const response = await api.get('/detail-region');
+export const getDetailRegion = async(regionName)=>{
+    const response = await api.get(`/region/detail-region`, {
+        params: { regionName },
+    });
+    console.log(response)
     return response.data;
 }

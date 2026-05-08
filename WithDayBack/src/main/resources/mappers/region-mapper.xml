@@ -7,4 +7,15 @@
         select * from region
     </select>
 
+    <select id="getRegionId" resultType="int">
+        select region_id
+        from region
+        where region_name = #{regionName}
+    </select>
+
+    <select id="getDetailRegion" resultType="DetailRegion">
+        select *
+        from detail_region
+        where region_id = #{regionId}
+    </select>
 </mapper>

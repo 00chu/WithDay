@@ -32,7 +32,8 @@ public class SecurityConfig {
                                 "/api/users/signup",
                                 "/api/users/login",
                                 "/api/users/terms",
-                                "/schedules/**"     // <-- 이 부분이 추가되어야 403이 안 뜹니다.
+                                "/schedules/**",
+                                "/region/**"// <-- 이 부분이 추가되어야 403이 안 뜹니다.
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

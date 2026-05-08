@@ -14,7 +14,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import Button from "../../shared/ui/Button/Button";
 import { useQuery } from "@tanstack/react-query";
-import { getRegion } from "../../features/region/api";
+import { getDetailRegion, getRegion } from "../../features/region/api";
 
 registerLocale("ko", ko);
 
@@ -61,22 +61,11 @@ const WriteSchedule = () => {
   });
 
   /* 군, 구 */
-  const detailRegions = [];
-
-  const detailRegionOptions = regions.map((item, index) => ({
-    value: index,
-    label: item,
-  }));
-
-  /* 시 선택되면 세부 지역 불러옴 */
-  useEffect(() => {
-    axios.get().then(detailRegions).catch();
-
-    const detailRegionOptions = detailRegions.map((item, index) => ({
-      value: index,
-      label: item,
-    }));
-  }, [post.region]);
+  const { data: detailRegions = [] } = useQuery({
+    queryKey: ["detailRegion", post.region],
+    queryFn: () => getDetailRegion(post.region),
+    enabled: !!post.region, // 👈 선택됐을 때만 호출
+  });
 
   const formatNumber = (value) => {
     if (!value) return "";
@@ -150,7 +139,15 @@ const WriteSchedule = () => {
                   <label htmlFor="region">지역(시/도)</label>
                 </li>
                 <li>
-                  <select>
+                  <select
+                    value={post.region || ""}
+                    onChange={(e) =>
+                      setPost({
+                        ...post,
+                        region: e.target.value,
+                      })
+                    }
+                  >
                     <option value="">시/도</option>
                     {regions?.map((item) => (
                       <option key={item.regionId} value={item.regionName}>
@@ -167,9 +164,9 @@ const WriteSchedule = () => {
                 <li>
                   <select>
                     <option value="">시/군/구</option>
-                    {detailRegionOptions.map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
+                    {detailRegions?.map((item) => (
+                      <option key={item.detailId} value={item.detailName}>
+                        {item.detailName}
                       </option>
                     ))}
                   </select>
