@@ -6,13 +6,3 @@ export const api = axios.create({
         'Content-Type': 'application/json',
     },
 });
-
-export const getRegion = async()=>{
-    const response = await api.get('/api/schedules/region');
-    return response.data;
-}
-
-export const getDetailRegion = async()=>{
-    const response = await api.get('/api/schedules/detail-region');
-    return response.data;
-}

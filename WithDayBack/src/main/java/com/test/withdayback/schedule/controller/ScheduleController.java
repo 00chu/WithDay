@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/schedules")
+@RequestMapping("/schedules")
 @CrossOrigin("*")
 public class ScheduleController {
 
@@ -40,7 +40,6 @@ public class ScheduleController {
             @RequestPart(value = "images", required = false) List<MultipartFile> images
     ) {
 
-        scheduleService.postSchedule(postData, images);
 
         return ResponseEntity.ok("모임 생성 완료");
     }

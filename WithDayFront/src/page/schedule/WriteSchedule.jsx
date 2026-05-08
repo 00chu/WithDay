@@ -13,6 +13,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import Button from "../../shared/ui/Button/Button";
+import { useQuery } from "@tanstack/react-query";
+import { getRegion } from "../../features/region/api";
 
 registerLocale("ko", ko);
 
@@ -52,24 +54,13 @@ const WriteSchedule = () => {
   }));
 
   /* 시 */
-  const regions = [];
-
-  const regionOptions = regions.map((item, index) => ({
-    value: index,
-    label: item,
-  }));
-
-  useEffect(() => {
-    axios.get().then(regions).catch();
-
-    const regionOptions = regions.map((item, index) => ({
-      value: index,
-      label: item,
-    }));
-  }, []);
+  const { data: regions = [] } = useQuery({
+    // 이거 주석은 저쪽거 참고
+    queryKey: ["region"],
+    queryFn: getRegion,
+  });
 
   /* 군, 구 */
-
   const detailRegions = [];
 
   const detailRegionOptions = regions.map((item, index) => ({
@@ -161,9 +152,9 @@ const WriteSchedule = () => {
                 <li>
                   <select>
                     <option value="">시/도</option>
-                    {regionOptions.map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
+                    {regions?.map((item) => (
+                      <option key={item.regionId} value={item.regionName}>
+                        {item.regionName}
                       </option>
                     ))}
                   </select>
