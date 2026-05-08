@@ -4,21 +4,21 @@
 <mapper namespace="com.test.withdayback.schedule.dao.ScheduleDao">
     <select id="selectScheduleById" resultType="Schedule">
         SELECT *
-        FROM Schedule
+        FROM schedule
         WHERE id = #{id}
           AND deleted_at IS NULL
     </select>
 
     <select id="selectDetailsByScheduleId" resultType="ScheduleDetail">
         SELECT *
-        FROM ScheduleDetail
+        FROM schedule_detail
         WHERE schedule_id = #{scheduleId}
         ORDER BY day_number ASC
     </select>
 
     <select id="selectImageByScheduleId" resultType="ScheduleImage">
         SELECT *
-        FROM ScheduleImage
+        FROM schedule_image
         WHERE schedule_id = #{scheduleId}
         ORDER BY is_thumbnail DESC
     </select>
