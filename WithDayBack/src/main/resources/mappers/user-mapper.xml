@@ -15,7 +15,7 @@
     </insert>
 
     <select id="findByEmail" parameterType="String" resultType="User">
-        SELECT * FROM User WHERE email = #{email}
+        SELECT * FROM user WHERE email = #{email}
     </select>
 
     <!-- 약관 동의 내역 저장 -->

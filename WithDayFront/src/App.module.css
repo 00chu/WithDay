@@ -44,6 +44,12 @@
   --transition-default: 0.25s ease-in-out;
 }
 
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 /* ===== Layout ===== */
 .container {
   display: flex;
@@ -52,7 +58,6 @@
   height: 100dvh;
   background-color: var(--color-bg);
   color: var(--color-text-primary);
-  overflow: hidden; /* 전체 페이지 스크롤 방지 */
 }
 
 /* 🌟 새로 추가하는 메인 영역 스타일 */

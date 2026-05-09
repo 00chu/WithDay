@@ -1,10 +1,10 @@
-/* 메인 컨텐츠 영역 */
+/* ─── 레이아웃 ─────────────────────────────────────────────── */
 .main {
   padding: 0 16px;
   background-color: var(--color-bg);
 }
 
-/* 배너 영역 */
+/* ─── 배너 ─────────────────────────────────────────────────── */
 .banner {
   margin: 20px 0;
   padding: 10px 0;
@@ -17,12 +17,12 @@
   margin: 0;
 }
 .highlight {
-  color: var(--color-primary); /* 포인트 컬러: Trust Blue */
+  color: var(--color-primary);
 }
 
-/* 공통 섹션 간격 */
+/* ─── 섹션 공통 ─────────────────────────────────────────────── */
 .section {
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 .sectionHeader {
   display: flex;
@@ -37,7 +37,59 @@
   margin: 0;
 }
 
-/* 카테고리 칩 리스트 (가로 스크롤) */
+/* ─── 검색 폼 (react-hook-form + yup) ──────────────────────── */
+.searchForm {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+.searchInputWrapper {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 12px;
+  background: var(--color-surface);
+  transition: border-color 0.2s;
+}
+.searchInputWrapper:focus-within {
+  border-color: var(--color-primary);
+}
+.inputError {
+  border-color: #e53e3e !important;
+}
+.searchIcon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.searchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  padding: 10px 0;
+}
+.searchInput::placeholder {
+  color: var(--color-text-muted);
+}
+.errorMessage {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: #e53e3e;
+}
+.searchResultInfo {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+/* ─── 카테고리 칩 (clsx로 active 토글) ─────────────────────── */
 .categoryList {
   display: flex;
   gap: 8px;
@@ -47,15 +99,75 @@
 .categoryList::-webkit-scrollbar {
   display: none;
 }
+.categoryChip {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.categoryChip:hover {
+  border-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+.categoryChipActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.categoryChipActive:hover {
+  color: #fff;
+}
 
-/* 일정 카드 리스트 (세로 배열) */
+/* ─── 상태 박스 (로딩 / 에러) ──────────────────────────────── */
+.stateBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+.errorBox {
+  color: #e53e3e;
+}
+.loadingSpinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── 카드 리스트 ───────────────────────────────────────────── */
 .cardList {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+.noData {
+  padding: 40px 0;
+  text-align: center;
+  width: 100%;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
 
-/* 개별 일정 카드 디자인 */
+/* ─── 카드 ──────────────────────────────────────────────────── */
 .card {
   background: var(--color-surface);
   border-radius: var(--radius-md);
@@ -71,58 +183,121 @@
   box-shadow: var(--shadow-md);
   border-color: var(--color-primary-light);
 }
+/* clsx: 마감된 카드 */
+.cardFull {
+  opacity: 0.7;
+}
 
+/* ─── 카드 헤더 ─────────────────────────────────────────────── */
 .cardHeader {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 .badge {
-  background-color: rgba(30, 58, 138, 0.1); /* Primary 컬러의 연한 배경 */
+  background-color: rgba(30, 58, 138, 0.1);
   color: var(--color-primary);
   padding: 4px 10px;
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 700;
 }
+
+/* D-Day 배지 (clsx로 스타일 분기) */
+.dday {
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #ebf4ff;
+  color: #2b6cb0;
+}
+.ddayUrgent {
+  background: #fff5f5;
+  color: #c53030;
+}
+.ddayToday {
+  background: #f0fff4;
+  color: #276749;
+}
+
 .region {
   font-size: 0.85rem;
   color: var(--color-text-secondary);
+  margin-left: auto;
 }
 
+/* ─── 카드 본문 ─────────────────────────────────────────────── */
 .cardTitle {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
   line-height: 1.4;
   word-break: keep-all;
 }
-
 .cardInfo {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: 4px;
 }
 .date {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--color-text-secondary);
 }
+/* dayjs fromNow */
+.createdAt {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
 
-/* 카드 하단부 (인원 현황 및 버튼) */
+/* ─── 참여율 프로그레스 바 (clsx로 색상 분기) ──────────────── */
+.progressWrapper {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-border-light, #eee);
+  overflow: hidden;
+}
+.progressBar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-primary-light);
+  transition: width 0.4s ease;
+}
+.progressBarHigh {
+  background: #e88c1a;
+}
+.progressBarFull {
+  background: #e53e3e;
+}
+
+/* ─── 카드 하단 ─────────────────────────────────────────────── */
 .cardFooter {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 8px;
-  padding-top: 16px;
+  margin-top: 4px;
+  padding-top: 14px;
   border-top: 1px solid var(--color-border-light);
 }
 .participants {
   font-size: 0.9rem;
   color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .participants strong {
   color: var(--color-primary-light);
   font-weight: 700;
+}
+.fullBadge {
+  background: #fff5f5;
+  color: #c53030;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-left: 6px;
 }

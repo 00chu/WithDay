@@ -1,58 +1,94 @@
 import React, { useState } from "react";
-import Button from "../../shared/ui/Button/Button";
-import PlaceIcon from "@mui/icons-material/Place";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { useQuery } from "@tanstack/react-query";
+import clsx from "clsx";
 import styles from "./Home.module.css";
+import Button from "../../shared/ui/Button/Button";
+
+// 분리한 컴포넌트 불러오기
+import ScheduleCard from "./ScheduleCard";
+import SearchForm from "../../features/schedule/ui/SearchForm";
+import CategoryFilter from "../../features/schedule/ui/CategoryFilter";
+
+// (Mock API 함수는 백엔드 연결 전까지 이 파일이나 api 폴더에 유지합니다)
+import { dayjs } from "../../shared/lib/dateUtile";
+const MOCK_SCHEDULES = [
+  {
+    id: 1,
+    category: "여행",
+    title: "제주도 3박 4일 렌트카 쉐어 동행 구해요!",
+    region: "제주특별자치도",
+    startDate: "2025-11-15",
+    endDate: "2025-11-18",
+    currentParticipants: 2,
+    maxParticipants: 4,
+    createdAt: dayjs().subtract(3, "minute").toISOString(),
+  },
+  {
+    id: 2,
+    category: "팝업",
+    title: "성수동 인기 디저트 팝업 같이 웨이팅하실 분",
+    region: "서울 성동구",
+    startDate: "2025-10-28",
+    endDate: "2025-10-28",
+    currentParticipants: 1,
+    maxParticipants: 2,
+    createdAt: dayjs().subtract(1, "hour").toISOString(),
+  },
+  {
+    id: 3,
+    category: "식사",
+    title: "강남역 오마카세 예약 1자리 남아서 양도/동행해요",
+    region: "서울 강남구",
+    startDate: "2025-10-30",
+    endDate: "2025-10-30",
+    currentParticipants: 1,
+    maxParticipants: 2,
+    createdAt: dayjs().subtract(2, "day").toISOString(),
+  },
+  {
+    id: 4,
+    category: "액티비티",
+    title: "한강 카약 투어 같이 가실 분 구합니다",
+    region: "서울 마포구",
+    startDate: "2025-11-05",
+    endDate: "2025-11-05",
+    currentParticipants: 3,
+    maxParticipants: 6,
+    createdAt: dayjs().subtract(30, "minute").toISOString(),
+  },
+];
+const fetchSchedules = async ({ category, keyword }) => {
+  await new Promise((r) => setTimeout(r, 500));
+  return MOCK_SCHEDULES.filter((s) => {
+    const matchCategory = category === "전체" || s.category === category;
+    const matchKeyword =
+      !keyword || s.title.includes(keyword) || s.region.includes(keyword);
+    return matchCategory && matchKeyword;
+  });
+};
 
 export default function Home() {
-  // 현재 선택된 카테고리 상태 관리
   const [activeCategory, setActiveCategory] = useState("전체");
+  const [submittedKeyword, setSubmittedKeyword] = useState("");
 
-  // 임시 카테고리 데이터
-  const categories = ["전체", "여행", "팝업", "식사", "액티비티"];
+  const {
+    data: schedules = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["schedules", activeCategory, submittedKeyword],
+    queryFn: () =>
+      fetchSchedules({ category: activeCategory, keyword: submittedKeyword }),
+    staleTime: 1000 * 60,
+  });
 
-  // 임시 일정 데이터 (Mock Data)
-  const mockSchedules = [
-    {
-      id: 1,
-      category: "여행",
-      title: "제주도 3박 4일 렌트카 쉐어 동행 구해요!",
-      region: "제주특별자치도",
-      date: "2023.11.15 - 11.18",
-      currentParticipants: 2,
-      maxParticipants: 4,
-    },
-    {
-      id: 2,
-      category: "팝업",
-      title: "성수동 인기 디저트 팝업 같이 웨이팅하실 분",
-      region: "서울 성동구",
-      date: "2023.10.28",
-      currentParticipants: 1,
-      maxParticipants: 2,
-    },
-    {
-      id: 3,
-      category: "식사",
-      title: "강남역 오마카세 예약 1자리 남아서 양도/동행해요",
-      region: "서울 강남구",
-      date: "2023.10.30",
-      currentParticipants: 1,
-      maxParticipants: 2,
-    },
-  ];
-
-  // [추가] 선택된 카테고리에 따라 필터링된 일정 리스트
-  const filteredSchedules =
-    activeCategory === "전체"
-      ? mockSchedules
-      : mockSchedules.filter(
-          (schedule) => schedule.category === activeCategory
-        );
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category);
+    setSubmittedKeyword(""); // 카테고리 변경 시 검색어 초기화
+  };
 
   return (
     <main className={styles.main}>
-      {/* 히어로/배너 영역 */}
       <section className={styles.banner}>
         <h2 className={styles.bannerTitle}>
           혼자 가기 애매할 때,
@@ -61,97 +97,61 @@ export default function Home() {
         </h2>
       </section>
 
-      {/* 카테고리 필터 영역 */}
       <section className={styles.section}>
-        <div className={styles.categoryList}>
-          {categories.map((category) => (
-            <Button
-              key={category}
-              variant={activeCategory === category ? "accent" : "outline"}
-              size="md"
-              onClick={() => setActiveCategory(category)}
-            >
-              {category}
-            </Button>
-          ))}
-        </div>
+        <SearchForm
+          submittedKeyword={submittedKeyword}
+          onSearchSubmit={setSubmittedKeyword}
+          onResetSubmit={() => setSubmittedKeyword("")}
+        />
       </section>
 
-      {/* 추천/최신 일정 리스트 영역 */}
+      <section className={styles.section}>
+        <CategoryFilter
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryChange}
+        />
+      </section>
+
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>
-            {activeCategory === "전체"
-              ? "방금 올라온 일정"
-              : `${activeCategory} 일정`}
+            {submittedKeyword
+              ? "검색 결과"
+              : activeCategory === "전체"
+                ? "방금 올라온 일정"
+                : `${activeCategory} 일정`}
           </h2>
           <Button variant="outline" size="md">
             더보기
           </Button>
         </div>
 
-        <div className={styles.cardList}>
-          {/* [수정] mockSchedules 대신 filteredSchedules를 사용합니다 */}
-          {filteredSchedules.length > 0 ? (
-            filteredSchedules.map((schedule) => (
-              <div key={schedule.id} className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <span className={styles.badge}>{schedule.category}</span>
-                  <span
-                    className={styles.region}
-                    style={{ display: "flex", alignItems: "center" }}
-                  >
-                    <PlaceIcon
-                      fontSize="small"
-                      style={{
-                        marginRight: "4px",
-                        color: "var(--color-text-muted)",
-                      }}
-                    />
-                    {schedule.region}
-                  </span>
-                </div>
+        {isLoading && (
+          <div className={styles.stateBox}>
+            <div className={styles.loadingSpinner} />
+            <p>일정을 불러오는 중...</p>
+          </div>
+        )}
 
-                <h3 className={styles.cardTitle}>{schedule.title}</h3>
+        {isError && (
+          <div className={clsx(styles.stateBox, styles.errorBox)}>
+            <p>일정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
+          </div>
+        )}
 
-                <div className={styles.cardInfo}>
-                  <span
-                    className={styles.date}
-                    style={{ display: "flex", alignItems: "center" }}
-                  >
-                    <CalendarTodayIcon
-                      fontSize="small"
-                      style={{
-                        marginRight: "4px",
-                        color: "var(--color-text-muted)",
-                      }}
-                    />
-                    {schedule.date}
-                  </span>
-                </div>
-
-                <div className={styles.cardFooter}>
-                  <div className={styles.participants}>
-                    모집 인원
-                    <strong> {schedule.currentParticipants} </strong>/{" "}
-                    {schedule.maxParticipants}
-                  </div>
-                  <Button variant="accent" size="md">
-                    신청하기
-                  </Button>
-                </div>
+        {!isLoading && !isError && (
+          <div className={styles.cardList}>
+            {schedules.length > 0 ? (
+              schedules.map((schedule) => (
+                <ScheduleCard key={schedule.id} schedule={schedule} />
+              ))
+            ) : (
+              <div className={styles.noData}>
+                해당 카테고리의 일정이 없습니다.
               </div>
-            ))
-          ) : (
-            /* 해당 카테고리에 데이터가 없을 경우 처리 */
-            <div
-              className={styles.noData}
-              style={{ padding: "40px 0", textAlign: "center", width: "100%" }}
-            >
-              해당 카테고리의 일정이 없습니다.
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </section>
     </main>
   );
