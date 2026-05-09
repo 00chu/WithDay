@@ -40,6 +40,17 @@ public class UserController {
         }
     }
 
+    // 💡 구글 로그인 전용 엔드포인트 추가
+    @PostMapping("/google-login")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> googleData) {
+        try {
+            Map<String, Object> result = userService.googleLogin(googleData);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("구글 로그인 처리 중 오류가 발생했습니다.");
+        }
+    }
+
     @GetMapping("/terms")
     public ResponseEntity<List<Terms>> getTerms() {
         List<Terms> termsList = userService.getAllTerms();

@@ -42,3 +42,8 @@ export const fetchTerms = async () => {
   const response = await api.get(`/users/terms`);
   return response.data;
 };
+
+export const googleLoginUser = async (googleData) => {
+  const response = await api.post(`/users/google-login`, googleData);
+  return response.data;
+};

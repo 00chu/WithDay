@@ -32,6 +32,7 @@ public class SecurityConfig {
                                 "/users/signup",
                                 "/users/login",
                                 "/users/terms",
+                                "/users/google-login",
                                 "/schedules/**"     // <-- 이 부분이 추가되어야 403이 안 뜹니다.
                         ).permitAll()
                         .anyRequest().authenticated()
