@@ -29,9 +29,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 💡 일정 상세 조회(schedules/...) 주소를 허용 목록에 추가!
                         .requestMatchers(
-                                "/api/users/signup",
-                                "/api/users/login",
-                                "/api/users/terms",
+                                "/users/signup",
+                                "/users/login",
+                                "/users/terms",
                                 "/schedules/**"     // <-- 이 부분이 추가되어야 403이 안 뜹니다.
                         ).permitAll()
                         .anyRequest().authenticated()

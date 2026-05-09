@@ -10,6 +10,10 @@ import { Snackbar, Alert } from '@mui/material';
 // 💡 Zustand 스토어 불러오기
 import { useAuthStore } from '../../features/auth/store/authStore';
 
+// 💡 구글 로그인 컴포넌트와 해독기 임포트 추가!
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
+
 import { loginSchema } from '../../features/auth/validation/authSchema';
 import { loginUser } from '../../features/auth/api';
 import FormField from '../../shared/ui/Form/FormField';
@@ -42,10 +46,7 @@ const Login = () => {
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
-      // 💡 1. 백엔드에서 넘겨준 보따리에서 토큰과 유저 정보(email, birthday 등)를 꺼냄
       const { token, user } = data;
-
-      // 💡 2. Zustand 스토어에 토큰과 유저 상세 정보를 통째로 저장
       setLogin(token, user); 
 
       setToast({
@@ -54,7 +55,6 @@ const Login = () => {
         severity: 'success'
       });
 
-      // 💡 3. 잠시 후 메인 페이지로 이동
       setTimeout(() => {
         navigate('/');
       }, 1000);
@@ -71,6 +71,21 @@ const Login = () => {
 
   const onSubmit = (data) => {
     mutation.mutate(data);
+  };
+
+  // 💡 구글 로그인 성공 시 실행될 함수 추가!
+  const handleGoogleSuccess = (credentialResponse) => {
+    // 1. 구글이 던져준 암호화된 토큰
+    const encryptedToken = credentialResponse.credential;
+    
+    // 2. 토큰 내부 해독!
+    const decodedPayload = jwtDecode(encryptedToken);
+    
+    // 3. 어떤 정보가 들어있는지 콘솔로 확인
+    console.log("🔑 구글에서 넘어온 암호화된 토큰 원본: ", encryptedToken);
+    console.log("🔓 해독된 유저 정보: ", decodedPayload);
+    
+    // TODO: 확인이 끝나면 다음 파트에서 이 정보를 백엔드로 보낼 예정입니다!
   };
 
   return (
@@ -100,6 +115,16 @@ const Login = () => {
             {mutation.isPending ? '로그인 중...' : '로그인'}
           </Button>
         </form>
+
+        {/* 💡 구글 로그인 버튼 배치 (일반 로그인 버튼과 간격을 조금 둠) */}
+        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => {
+              console.log('구글 로그인 창 닫힘 또는 실패');
+            }}
+          />
+        </div>
 
         <p className={styles.linkText}>
           아직 계정이 없으신가요? <span onClick={() => navigate('/signup')}>회원가입하기</span>
