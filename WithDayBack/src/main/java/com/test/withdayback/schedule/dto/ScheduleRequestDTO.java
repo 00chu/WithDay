@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @Data
 @Alias("ScheduleRequest")
 public class ScheduleRequestDTO {
+    private Long id;
+
     private Long userId;
     private String memberEmail;
 

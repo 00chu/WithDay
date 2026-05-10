@@ -88,4 +88,41 @@
         NOW()
         )
     </insert>
+
+    <insert id="insertDetailSchedule">
+        insert into detail_schedule (
+        schedule_id,
+        day_number,
+        title,
+        description
+        )
+        values
+        <foreach collection="detailSchedule" item="item" separator=",">
+            (
+            #{scheduleId},
+            #{item.dayNumber},
+            #{item.title},
+            #{item.description}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="insertScheduleImages">
+        insert into schedule_image (
+        schedule_id,
+        image_url,
+        is_thumbnail
+        )
+        values
+        <foreach collection="imageUrls" item="url" index="index" separator=",">
+            (
+            #{scheduleId},
+            #{url},
+            case
+            when #{index} = 0 then 1
+            else 0
+            end
+            )
+        </foreach>
+    </insert>
 </mapper>

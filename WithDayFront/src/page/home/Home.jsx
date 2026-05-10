@@ -57,6 +57,7 @@ const MOCK_SCHEDULES = [
     createdAt: dayjs().subtract(30, "minute").toISOString(),
   },
 ];
+
 const fetchSchedules = async ({ category, keyword }) => {
   await new Promise((r) => setTimeout(r, 500));
   return MOCK_SCHEDULES.filter((s) => {

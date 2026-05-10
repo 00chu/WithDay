@@ -15,7 +15,7 @@ export default function BottomNav() {
   // 탭이 클릭될 때마다 실행될 함수
   const handleChange = (event, newValue) => {
     setValue(newValue); // 클릭된 탭에 색깔이 들어오도록 상태 업데이트
-    
+
     // 탭 인덱스(0~4)에 따라 알맞은 주소로 이동시키기
     switch (newValue) {
       case 0:
@@ -25,7 +25,7 @@ export default function BottomNav() {
         // navigate("/search"); // 나중에 탐색 페이지 생기면 주석 해제
         break;
       case 2:
-        // navigate("/add"); // 추가 페이지
+        navigate("/write"); // 추가 페이지
         break;
       case 3:
         // navigate("/chat"); // 채팅 페이지

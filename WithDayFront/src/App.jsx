@@ -7,6 +7,7 @@ import ScheduleDetail from "./page/schedule/ScheduleDetail";
 import BottomNav from "./widgets/BottomNav/BottomeNav";
 import Header from "./widgets/Header/Header";
 import WriteSchedule from "./page/schedule/WriteSchedule";
+import PrivateRoute from "./features/ui/PrivateRoute";
 
 function App() {
   return (
@@ -19,7 +20,14 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
-          <Route path="/write" element={<WriteSchedule />} />
+          <Route
+            path="/write"
+            element={
+              <PrivateRoute>
+                <WriteSchedule />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </main>
       <BottomNav />

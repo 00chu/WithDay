@@ -36,10 +36,11 @@ public class ScheduleController {
         return ResponseEntity.ok(result);
     }
 
+    // 일정 등록
     @PostMapping(value = "/insert-schedule", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> insertSchedule(
             @RequestPart("postData") ScheduleRequestDTO postData,
-            @RequestPart("detailSchedule") DetailScheduleRequestDTO detailSchedule,
+            @RequestPart("detailSchedule") List<DetailScheduleRequestDTO> detailSchedule,
             @RequestPart(value = "images", required = false) List<MultipartFile> images
     ) throws IOException {
         int result = scheduleService.insertSchedule(postData, detailSchedule, images);
