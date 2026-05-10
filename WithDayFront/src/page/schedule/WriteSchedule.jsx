@@ -1,6 +1,6 @@
 import { Input, TextArea } from "../../shared/ui/Form/Form";
 import styles from "./WriteSchedule.module.css";
-import { useEffect, useState, useRef, use } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { DateRange } from "react-date-range";
@@ -17,6 +17,8 @@ import { getDetailRegion, getRegion } from "../../features/region/api";
 import { insertSchedule } from "../../features/schedule/api";
 import { useAuthStore } from "../../features/auth/store/authStore";
 
+import { insertSchema } from "../../features/schedule/validation/insertSchema";
+
 registerLocale("ko", ko);
 
 const WriteSchedule = () => {
@@ -27,7 +29,7 @@ const WriteSchedule = () => {
   }, []);
 
   const [post, setPost] = useState({
-    memberEmail: useAuthStore.getState().user.email, //이거어케하지
+    memberEmail: useAuthStore.getState().user.email,
     title: "",
     description: "",
     category: "",
@@ -83,10 +85,26 @@ const WriteSchedule = () => {
     e.preventDefault();
 
     try {
-      const res = await insertSchedule(post, images, detailSchedule);
+      // 1. 검증
+      await insertSchema.validate(post, { abortEarly: false });
+
+      // 2. transform 적용된 최종 데이터
+      const payload = insertSchema.cast(post);
+
+      // 👇 여기서 totalPrice 자동 처리됨
+      // "" → 0
+
+      const res = await insertSchedule(payload, images, detailSchedule);
+
       console.log(res);
     } catch (err) {
-      console.error(err);
+      if (err.name === "ValidationError") {
+        err.inner.forEach((e) => {
+          console.log(e.path, e.message);
+        });
+      } else {
+        console.error(err);
+      }
     }
   };
 
