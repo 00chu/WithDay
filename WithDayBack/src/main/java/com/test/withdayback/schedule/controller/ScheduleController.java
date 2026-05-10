@@ -43,7 +43,12 @@ public class ScheduleController {
             @RequestPart("detailSchedule") List<DetailScheduleRequestDTO> detailSchedule,
             @RequestPart(value = "images", required = false) List<MultipartFile> images
     ) throws IOException {
+        System.out.println(postData);
+        System.out.println(detailSchedule);
+        System.out.println(images);
+
         int result = scheduleService.insertSchedule(postData, detailSchedule, images);
+
         return ResponseEntity.ok(result);
     }
 }

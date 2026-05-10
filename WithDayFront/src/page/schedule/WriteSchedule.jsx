@@ -40,10 +40,10 @@ const WriteSchedule = () => {
     endDate: new Date(),
     recruitStartDate: new Date(),
     recruitEndDate: new Date(),
-    minParticipants: 2,
-    maxParticipants: 100,
-    ageMin: 15,
-    ageMax: 100,
+    minParticipants: null,
+    maxParticipants: null,
+    ageMin: null,
+    ageMax: null,
     genderLimit: "all",
     totalPrice: "",
     costType: 0,
@@ -56,11 +56,6 @@ const WriteSchedule = () => {
   const [detailSchedule, setDetailSchedule] = useState([]);
 
   const categories = ["전체", "여행", "팝업", "식사", "액티비티"]; //카테고리에서뽑아오기
-
-  const categoryOptions = categories.map((item, index) => ({
-    value: index,
-    label: item,
-  }));
 
   /* 시 */
   const { data: regions = [] } = useQuery({
@@ -83,16 +78,27 @@ const WriteSchedule = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(post);
+    console.log(detailSchedule);
+    console.log(images);
 
     try {
-      // 1. 검증
-      await insertSchema.validate(post, { abortEarly: false });
+      // 검증
+      await insertSchema.validate(
+        {
+          post,
+          files,
+          detailSchedule,
+        },
+        { abortEarly: false },
+      );
 
-      // 2. transform 적용된 최종 데이터
-      const payload = insertSchema.cast(post);
-
-      // 👇 여기서 totalPrice 자동 처리됨
-      // "" → 0
+      // transform 적용된 최종 데이터
+      const payload = insertSchema.cast({
+        post,
+        files,
+        detailSchedule,
+      });
 
       const res = await insertSchedule(payload, images, detailSchedule);
 
@@ -156,10 +162,17 @@ const WriteSchedule = () => {
                   <label htmlFor="category">일정 종류</label>
                 </li>
                 <li>
-                  <select>
-                    {categoryOptions.map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
+                  <select
+                    onChange={(e) =>
+                      setPost({
+                        ...post,
+                        category: e.target.value,
+                      })
+                    }
+                  >
+                    {categories.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
                       </option>
                     ))}
                   </select>
@@ -236,17 +249,44 @@ const WriteSchedule = () => {
                   <li>최소 인원</li>
                   <li>
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       name="minParticipants"
-                      id="minParticipants"
-                      placeholder="최소 인원"
-                      min={2}
-                      max={100}
-                      value={post.minParticipants}
+                      placeholder={2}
+                      value={post.minParticipants ?? ""}
                       onChange={(e) => {
-                        setPost({ ...post, minParticipants: e.target.value });
+                        const onlyNumber = e.target.value.replace(
+                          /[^0-9]/g,
+                          "",
+                        );
+
+                        setPost({
+                          ...post,
+                          minParticipants:
+                            onlyNumber === "" ? null : Number(onlyNumber),
+                        });
                       }}
-                    ></Input>
+                      onBlur={() => {
+                        let value = post.minParticipants;
+
+                        if (value == null) return;
+
+                        // 범위 보정
+                        if (value < 2) value = 2;
+                        if (value > 100) value = 100;
+
+                        // max보다 크면 max로 맞춤
+                        if (
+                          post.maxParticipants &&
+                          value > post.maxParticipants
+                        ) {
+                          value = post.maxParticipants;
+                        }
+
+                        setPost({ ...post, minParticipants: value });
+                      }}
+                    />
                     <span>명</span>
                   </li>
                 </ul>
@@ -254,17 +294,44 @@ const WriteSchedule = () => {
                   <li>최대 인원</li>
                   <li>
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       name="maxParticipants"
-                      id="maxParticipants"
-                      placeholder="최대 인원"
-                      min={2}
-                      max={100}
-                      value={post.maxParticipants}
+                      placeholder={100}
+                      value={post.maxParticipants ?? ""}
                       onChange={(e) => {
-                        setPost({ ...post, maxParticipants: e.target.value });
+                        const onlyNumber = e.target.value.replace(
+                          /[^0-9]/g,
+                          "",
+                        );
+
+                        setPost({
+                          ...post,
+                          maxParticipants:
+                            onlyNumber === "" ? null : Number(onlyNumber),
+                        });
                       }}
-                    ></Input>
+                      onBlur={() => {
+                        let value = post.maxParticipants;
+
+                        if (value == null) return;
+
+                        // 범위 보정
+                        if (value < 2) value = 2;
+                        if (value > 100) value = 100;
+
+                        // min보다 작으면 min으로 맞춤
+                        if (
+                          post.minParticipants &&
+                          value < post.minParticipants
+                        ) {
+                          value = post.minParticipants;
+                        }
+
+                        setPost({ ...post, maxParticipants: value });
+                      }}
+                    />
                     <span>명</span>
                   </li>
                 </ul>
@@ -272,17 +339,41 @@ const WriteSchedule = () => {
                   <li>최소 연령</li>
                   <li>
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       name="ageMin"
                       id="ageMin"
-                      placeholder="최소 연령"
-                      min={0}
-                      max={100}
-                      value={post.ageMin}
+                      placeholder="15"
+                      value={post.ageMin ?? ""}
                       onChange={(e) => {
-                        setPost({ ...post, ageMin: e.target.value });
+                        const raw = e.target.value;
+                        const onlyNumber = raw.replace(/[^0-9]/g, "");
+
+                        if (onlyNumber === "") {
+                          setPost({ ...post, ageMin: null });
+                          return;
+                        }
+
+                        setPost({ ...post, ageMin: Number(onlyNumber) });
                       }}
-                    ></Input>
+                      onBlur={() => {
+                        let value = post.ageMin;
+
+                        if (value == null) return;
+
+                        // 범위 보정
+                        if (value < 15) value = 15;
+                        if (value > 100) value = 100;
+
+                        // max보다 크면 max로 맞춤
+                        if (post.ageMax && value > post.ageMax) {
+                          value = post.ageMax;
+                        }
+
+                        setPost({ ...post, ageMin: value });
+                      }}
+                    />
                     <span>세</span>
                   </li>
                 </ul>
@@ -290,17 +381,41 @@ const WriteSchedule = () => {
                   <li>최대 연령</li>
                   <li>
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       name="ageMax"
                       id="ageMax"
-                      placeholder="최대 연령"
-                      min={0}
-                      max={100}
-                      value={post.ageMax}
+                      placeholder="100"
+                      value={post.ageMax ?? ""}
                       onChange={(e) => {
-                        setPost({ ...post, ageMax: e.target.value });
+                        const raw = e.target.value;
+                        const onlyNumber = raw.replace(/[^0-9]/g, "");
+
+                        if (onlyNumber === "") {
+                          setPost({ ...post, ageMax: null });
+                          return;
+                        }
+
+                        setPost({ ...post, ageMax: Number(onlyNumber) });
                       }}
-                    ></Input>
+                      onBlur={() => {
+                        let value = post.ageMax;
+
+                        if (value == null) return;
+
+                        // 범위 보정
+                        if (value < 15) value = 15;
+                        if (value > 100) value = 100;
+
+                        // min보다 작으면 min으로 맞춤
+                        if (post.ageMin && value < post.ageMin) {
+                          value = post.ageMin;
+                        }
+
+                        setPost({ ...post, ageMax: value });
+                      }}
+                    />
                     <span>세</span>
                   </li>
                 </ul>

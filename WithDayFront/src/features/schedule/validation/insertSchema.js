@@ -8,7 +8,7 @@ const isAfter = (start, end) => {
   return new Date(end) >= new Date(start);
 };
 
-export const scheduleSchema = yup.object({
+export const insertSchema = yup.object({
   post: yup.object({
     memberEmail: yup
       .string()
