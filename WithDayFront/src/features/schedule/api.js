@@ -30,11 +30,11 @@ export const insertSchedule = async (post, images, detailSchedule) => {
     formData.append("images", file);
   });
 
-  const response = await api.post(
-    "/schedules/insert-schedule",
-    formData,
-    // axios가 headers 자동 설정
-  );
+  const response = await api.post("/schedules/insert-schedule", formData, {
+    headers: {
+      "Content-Type": undefined,
+    },
+  });
 
   return response.data;
 };

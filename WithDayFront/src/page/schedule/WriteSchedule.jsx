@@ -18,7 +18,8 @@ import { insertSchedule } from "../../features/schedule/api";
 import { useAuthStore } from "../../features/auth/store/authStore";
 
 import { insertSchema } from "../../features/schedule/validation/insertSchema";
-import Swal from "sweetalert2";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 registerLocale("ko", ko);
 
@@ -85,7 +86,7 @@ const WriteSchedule = () => {
     };
   }, []);
 
-  const categories = ["전체", "여행", "팝업", "식사", "문화", "기타"]; //카테고리에서뽑아오기
+  const categories = ["전체", "여행", "팝업", "식사", "문화", "기타"];
 
   /* 시 */
   const { data: regions = [] } = useQuery({
@@ -105,6 +106,9 @@ const WriteSchedule = () => {
     if (!value) return "";
     return Number(value).toLocaleString();
   };
+
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -132,11 +136,8 @@ const WriteSchedule = () => {
       if (err.name === "ValidationError") {
         const messages = err.inner.map((e) => e.message);
 
-        Swal.fire({
-          icon: "warning",
-          title: "입력값을 확인해주세요",
-          html: messages.join("<br/>"),
-        });
+        setAlertMessage(messages.join("\n"));
+        setAlertOpen(true);
       } else {
         console.error(err);
       }
@@ -190,6 +191,7 @@ const WriteSchedule = () => {
                 </li>
                 <li>
                   <select
+                    value={post.category}
                     onChange={(e) =>
                       setPost({
                         ...post,
@@ -521,7 +523,11 @@ const WriteSchedule = () => {
                     dateFormat="yyyy년 MM월 dd일"
                     placeholderText="날짜 선택"
                     customInput={
-                      <button className={styles.dateButton}>
+                      <button
+                        button
+                        type="button"
+                        className={styles.dateButton}
+                      >
                         <span>📅</span>
                         {post.recruitEndDate
                           ? post.recruitEndDate.toLocaleDateString()
@@ -660,6 +666,21 @@ const WriteSchedule = () => {
               </Button>
             </div>
           </form>
+          <Snackbar
+            open={alertOpen}
+            autoHideDuration={3000}
+            onClose={() => setAlertOpen(false)}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert
+              onClose={() => setAlertOpen(false)}
+              severity="warning"
+              variant="filled"
+              sx={{ whiteSpace: "pre-line" }}
+            >
+              {alertMessage}
+            </Alert>
+          </Snackbar>
         </div>
       </main>
     </>
