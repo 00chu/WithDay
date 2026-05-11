@@ -35,4 +35,9 @@ public class ScheduleService {
         // 3. 조립
         return new ScheduleResponseDTO(schedule, details, images);
     }
+
+    // 🌟 파라미터를 받아서 Dao로 넘겨주도록 수정
+    public List<Schedule> getAllSchedules(String category, String keyword) {
+        return scheduleDao.getAllSchedules(category, keyword);
+    }
 }

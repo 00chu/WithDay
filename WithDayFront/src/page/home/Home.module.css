@@ -23,6 +23,7 @@
 /* ─── 섹션 공통 ─────────────────────────────────────────────── */
 .section {
   margin-bottom: 28px;
+  overflow-x: auto;
 }
 .sectionHeader {
   display: flex;

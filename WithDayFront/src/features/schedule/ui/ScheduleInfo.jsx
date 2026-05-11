@@ -7,6 +7,16 @@ import PaymentsIcon from "@mui/icons-material/Payments";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import styles from "../../../page/schedule/ScheduleDetail.module.css";
 
+const CATEGORY_MAP = {
+  all: "전체",
+  travel: "여행",
+  popup: "팝업",
+  food: "식사",
+  activity: "액티비티",
+  culture: "문화",
+  etc: "기타",
+};
+
 const costTypeMap = {
   per_person: "총액 1/N",
   host_covered: "호스트 부담",
@@ -22,10 +32,12 @@ export default function ScheduleInfo({ schedule }) {
       {/* 2. 제목 및 요약 정보 */}
       <section className={styles.headerSection}>
         <div className={styles.badgeWrapper}>
-          <span className={styles.categoryBadge}>{schedule.category}</span>
+          <span className={styles.categoryBadge}>
+            {CATEGORY_MAP[schedule.category] || schedule.category}
+          </span>
           <span
             className={clsx(
-              isRecruiting ? styles.statusOpen : styles.statusClosed
+              isRecruiting ? styles.statusOpen : styles.statusClosed,
             )}
           >
             {isRecruiting ? "모집중" : "모집종료"}

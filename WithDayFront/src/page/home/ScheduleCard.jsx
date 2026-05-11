@@ -4,16 +4,30 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import Button from "../../shared/ui/Button/Button";
 import { getDDay, formatDateRange, dayjs } from "../../shared/lib/dateUtile";
 import styles from "./Home.module.css";
+import { useNavigate } from "react-router-dom";
 
 export default function ScheduleCard({ schedule }) {
+  const navigate = useNavigate();
   const dday = getDDay(schedule.startDate);
   const isFull = schedule.currentParticipants >= schedule.maxParticipants;
   const fillRatio = schedule.currentParticipants / schedule.maxParticipants;
 
+  const CATEGORY_MAP = {
+    travel: "여행",
+    popup: "팝업",
+    food: "식사",
+    activity: "액티비티",
+    culture: "문화",
+    etc: "기타",
+  };
+
   return (
     <div className={clsx(styles.card, { [styles.cardFull]: isFull })}>
       <div className={styles.cardHeader}>
-        <span className={styles.badge}>{schedule.category}</span>
+        {/* 🌟 매핑 객체에 값이 없으면 원본 영어를 그대로 노출하도록 안전장치 추가 */}
+        <span className={styles.badge}>
+          {CATEGORY_MAP[schedule.category] || schedule.category}
+        </span>
         {dday && (
           <span
             className={clsx(styles.dday, {
@@ -77,6 +91,7 @@ export default function ScheduleCard({ schedule }) {
           variant={isFull ? "outline" : "accent"}
           size="md"
           disabled={isFull}
+          onClick={() => navigate(`/schedule/${schedule.id}`)}
         >
           {isFull ? "마감됨" : "신청하기"}
         </Button>
