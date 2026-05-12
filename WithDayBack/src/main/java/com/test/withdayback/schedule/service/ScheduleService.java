@@ -55,10 +55,6 @@ public class ScheduleService {
         Long userId = scheduleDao.findUserIdByEmail(dto.getEmail());
         schedule.setUserId(userId);
 
-        // 기본값 세팅 (필요하면)
-        schedule.setCurrentParticipants(0);
-        schedule.setViewCount(0);
-
         // 2. schedule insert
         scheduleDao.insertSchedule(schedule);
 

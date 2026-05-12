@@ -1,5 +1,5 @@
 package com.test.withdayback.schedule.enums;
 
 public enum ScheduleCategory {
-    travel, popup, meal, activity, culture, hobby
+    travel, popup, food, activity, culture, etc
 }

@@ -4,6 +4,7 @@ import com.test.withdayback.schedule.vo.Schedule;
 import com.test.withdayback.schedule.vo.ScheduleDetail;
 import com.test.withdayback.schedule.vo.ScheduleImage;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -21,5 +22,8 @@ public interface ScheduleDao {
 
     void insertScheduleDetail(ScheduleDetail detail);
 
-    void insertScheduleImage(Long scheduleId, List<String> imageUrls);
+    void insertScheduleImage(
+            @Param("scheduleId") Long scheduleId,
+            @Param("imageUrls") List<String> imageUrls
+    );
 }

@@ -89,19 +89,21 @@
         )
     </insert>
 
-    <insert id="insertScheduleDetails">
+    <insert id="insertScheduleDetail" parameterType="ScheduleDetail">
         INSERT INTO schedule_detail (
         schedule_id,
         day_number,
         title,
         description
-        ) VALUES
-        <foreach collection="list" item="item" separator=",">
-            (#{item.scheduleId}, #{item.dayNumber}, #{item.title}, #{item.description})
-        </foreach>
+        ) VALUES (
+        #{scheduleId},
+        #{dayNumber},
+        #{title},
+        #{description}
+        )
     </insert>
 
-    <insert id="insertScheduleImages">
+    <insert id="insertScheduleImage">
         INSERT INTO schedule_image (schedule_id, image_url, is_thumbnail)
         VALUES
         <foreach collection="imageUrls" item="url" index="idx" separator=",">

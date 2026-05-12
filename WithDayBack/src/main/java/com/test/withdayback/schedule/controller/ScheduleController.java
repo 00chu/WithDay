@@ -35,7 +35,7 @@ public class ScheduleController {
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/schedules")
+    @PostMapping()
     public ResponseEntity<?> insertSchedule(
             @RequestPart("data") ScheduleRequestDTO dto,
             @RequestPart(value = "images", required = false) List<MultipartFile> images

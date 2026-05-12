@@ -2,20 +2,31 @@ import axios from "axios";
 
 export const api = axios.create({
   baseURL: `http://${import.meta.env.VITE_BACKSERVER}`,
+  withCredentials: true,
 });
 
 export const insertSchedule = async (post, images, detailSchedule) => {
   // key로 나눠서 formData에 모든 값을 넣음
   const formData = new FormData();
 
+  const formatDate = (date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0); // 시간 초기화
+    return d.toISOString().slice(0, 19).replace("T", " ");
+  };
+
   // 날짜 변환
   const convertedPost = {
     ...post,
-    startDate: new Date(post.startDate).toISOString(),
-    endDate: new Date(post.endDate).toISOString(),
-    recruitStartDate: new Date(post.recruitStartDate).toISOString(),
-    recruitEndDate: new Date(post.recruitEndDate).toISOString(),
+    startDate: formatDate(post.startDate),
+    endDate: formatDate(post.endDate),
+    recruitStartDate: formatDate(post.recruitStartDate),
+    recruitEndDate: formatDate(post.recruitEndDate),
   };
+
+  console.log(post);
+  console.log(images);
+  console.log(detailSchedule);
 
   formData.append(
     "data",

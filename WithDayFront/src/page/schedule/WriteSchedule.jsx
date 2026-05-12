@@ -125,6 +125,8 @@ const WriteSchedule = () => {
       const res = await insertSchedule(post, files, detailSchedule);
 
       console.log("등록 성공", res);
+
+      navigate("/");
     } catch (err) {
       if (err.name === "ValidationError") {
         const messages = err.inner.map((e) => e.message);

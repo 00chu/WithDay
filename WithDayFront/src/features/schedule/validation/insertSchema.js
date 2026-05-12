@@ -10,7 +10,7 @@ const isAfter = (start, end) => {
 
 export const insertSchema = yup.object({
   post: yup.object({
-    memberEmail: yup
+    email: yup
       .string()
       .email("올바른 이메일 형식이 아닙니다.")
       .required("로그인이 필요합니다."),
