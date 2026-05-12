@@ -37,7 +37,7 @@ public class ScheduleController {
     }
 
     // 일정 등록
-    @PostMapping(value = "/insert-schedule", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> insertSchedule(
             @RequestPart("postData") ScheduleRequestDTO postData,
             @RequestPart("detailSchedule") List<DetailScheduleRequestDTO> detailSchedule,

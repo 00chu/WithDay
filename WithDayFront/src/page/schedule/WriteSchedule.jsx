@@ -42,10 +42,10 @@ const WriteSchedule = () => {
     endDate: new Date(),
     recruitStartDate: new Date(),
     recruitEndDate: new Date(),
-    minParticipants: null,
-    maxParticipants: null,
-    ageMin: null,
-    ageMax: null,
+    minParticipants: 0,
+    maxParticipants: 0,
+    ageMin: 0,
+    ageMax: 0,
     genderLimit: "all",
     totalPrice: "",
     costType: 0,
@@ -120,7 +120,7 @@ const WriteSchedule = () => {
           files,
           detailSchedule,
         },
-        { abortEarly: false },
+        { abortEarly: false }
       );
 
       const payload = insertSchema.cast({
@@ -287,7 +287,7 @@ const WriteSchedule = () => {
                       onChange={(e) => {
                         const onlyNumber = e.target.value.replace(
                           /[^0-9]/g,
-                          "",
+                          ""
                         );
 
                         setPost({
@@ -332,7 +332,7 @@ const WriteSchedule = () => {
                       onChange={(e) => {
                         const onlyNumber = e.target.value.replace(
                           /[^0-9]/g,
-                          "",
+                          ""
                         );
 
                         setPost({
@@ -772,7 +772,7 @@ const ScheduleTable = ({
 
   const handleChange = (index, key, value) => {
     setDetailSchedule((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
+      prev.map((item, i) => (i === index ? { ...item, [key]: value } : item))
     );
   };
 

@@ -1,6 +1,9 @@
 package com.test.withdayback.schedule.vo;
 
 import com.test.withdayback.schedule.enums.CostType;
+import com.test.withdayback.schedule.enums.GenderLimit;
+import com.test.withdayback.schedule.enums.ScheduleCategory;
+import com.test.withdayback.schedule.enums.ScheduleStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -42,18 +45,4 @@ public class Schedule {
     private String deletedAt;
 }
 
-enum ScheduleCategory {
-    travel, popup, meal, activity, culture, hobby
-}
 
-enum GenderLimit {
-    all, male, female
-}
-
-/* enum CostType {
-    per_person, host_covered, free, custom
-} */
-
-enum ScheduleStatus {
-    recruiting, closed, cancelled, completed
-}

@@ -30,7 +30,7 @@ export const insertSchedule = async (post, images, detailSchedule) => {
     formData.append("images", file);
   });
 
-  const response = await api.post("/schedules/insert-schedule", formData, {
+  const response = await api.post("/schedules", formData, {
     headers: {
       "Content-Type": undefined,
     },
