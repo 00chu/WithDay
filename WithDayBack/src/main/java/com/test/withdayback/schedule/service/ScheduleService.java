@@ -3,7 +3,6 @@ package com.test.withdayback.schedule.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.test.withdayback.schedule.dao.ScheduleDao;
-import com.test.withdayback.schedule.dto.DetailScheduleRequestDTO;
 import com.test.withdayback.schedule.dto.ScheduleRequestDTO;
 import com.test.withdayback.schedule.dto.ScheduleResponseDTO;
 import com.test.withdayback.schedule.vo.Schedule;
@@ -14,12 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import com.test.withdayback.schedule.enums.CostType;
+import java.util.UUID;
 
 @Service
 public class ScheduleService {
@@ -50,11 +47,52 @@ public class ScheduleService {
         return new ScheduleResponseDTO(schedule, details, images);
     }
 
-    @Transactional
-    public int insertSchedule(ScheduleRequestDTO postData,
-                              List<DetailScheduleRequestDTO> detailSchedule,
-                              List<MultipartFile> images) throws IOException {
+    public void insertSchedule(ScheduleRequestDTO dto, List<MultipartFile> images) {
 
-        return 0;
+        Schedule schedule = dto.getSchedule();
+
+        // 1. email → userId 변환
+        Long userId = scheduleDao.findUserIdByEmail(dto.getEmail());
+        schedule.setUserId(userId);
+
+        // 기본값 세팅 (필요하면)
+        schedule.setCurrentParticipants(0);
+        schedule.setViewCount(0);
+
+        // 2. schedule insert
+        scheduleDao.insertSchedule(schedule);
+
+        Long scheduleId = schedule.getId();
+
+        // 3. detail insert
+        if (dto.getDetailSchedule() != null) {
+            for (ScheduleDetail detail : dto.getDetailSchedule()) {
+                detail.setScheduleId(scheduleId);
+                scheduleDao.insertScheduleDetail(detail);
+            }
+        }
+
+        // 4. 이미지 insert (파일 저장은 따로 처리)
+        List<String> imageUrls = new ArrayList<>();
+
+        if (images != null && !images.isEmpty()) {
+            for (MultipartFile image : images) {
+                if (image != null && !image.isEmpty()) {
+                    Map uploadParams = ObjectUtils.asMap(
+                            "folder", "withday/schedule/images",
+                            "use_filename", true,
+                            "unique_filename", true
+                    );
+                    try {
+                        Map uploadResult = cloudinary.uploader().upload(image.getBytes(), uploadParams);
+                        imageUrls.add((String) uploadResult.get("secure_url"));
+                    } catch (Exception e) {
+                        throw new RuntimeException("이미지 업로드 실패", e);
+                    }
+                }
+            }
+            scheduleDao.insertScheduleImage(scheduleId, imageUrls);
+        }
     }
+
 }

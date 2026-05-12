@@ -2,27 +2,33 @@ import axios from "axios";
 
 export const api = axios.create({
   baseURL: `http://${import.meta.env.VITE_BACKSERVER}`,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 export const insertSchedule = async (post, images, detailSchedule) => {
   // key로 나눠서 formData에 모든 값을 넣음
   const formData = new FormData();
 
-  // json을 파일처럼 만들어 multipart에 넣음
-  formData.append(
-    "postData",
-    new Blob([JSON.stringify(post)], { type: "application/json" }),
-  );
+  // 날짜 변환
+  const convertedPost = {
+    ...post,
+    startDate: new Date(post.startDate).toISOString(),
+    endDate: new Date(post.endDate).toISOString(),
+    recruitStartDate: new Date(post.recruitStartDate).toISOString(),
+    recruitEndDate: new Date(post.recruitEndDate).toISOString(),
+  };
 
-  // 세부 일정 넣음
   formData.append(
-    "detailSchedule",
-    new Blob([JSON.stringify(detailSchedule)], {
-      type: "application/json",
-    }),
+    "data",
+    new Blob(
+      [
+        JSON.stringify({
+          schedule: convertedPost,
+          detailSchedule: detailSchedule,
+          email: post.email,
+        }),
+      ],
+      { type: "application/json" },
+    ),
   );
 
   // 이미지파일 넣음
@@ -30,11 +36,7 @@ export const insertSchedule = async (post, images, detailSchedule) => {
     formData.append("images", file);
   });
 
-  const response = await api.post("/schedules", formData, {
-    headers: {
-      "Content-Type": undefined,
-    },
-  });
+  const response = await api.post("/schedules", formData);
 
   return response.data;
 };

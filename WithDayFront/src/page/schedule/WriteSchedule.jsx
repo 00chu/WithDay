@@ -41,7 +41,7 @@ const WriteSchedule = () => {
     email: useAuthStore.getState().user.email,
     title: "",
     description: "",
-    category: "", // 초기값 빈 문자열
+    category: "",
     region: "",
     detailRegion: "",
     chatLink: "",
@@ -49,12 +49,12 @@ const WriteSchedule = () => {
     endDate: new Date(),
     recruitStartDate: new Date(),
     recruitEndDate: new Date(),
-    minParticipants: 2,
-    maxParticipants: 10,
-    ageMin: 20,
-    ageMax: 50,
+    minParticipants: null,
+    maxParticipants: null,
+    ageMin: null,
+    ageMax: null,
     genderLimit: "all", // DB Enum: 'all', 'male', 'female'
-    totalPrice: "",
+    totalPrice: null,
     costType: "per_person", // DB Enum: 'per_person', 'host_covered', 'free', 'custom'
     thumbnail: "",
   });
@@ -92,13 +92,13 @@ const WriteSchedule = () => {
     };
   }, []);
 
-  /* 시/도 조회 */
+  // 시/도 조회
   const { data: regions = [] } = useQuery({
     queryKey: ["region"],
     queryFn: getRegion,
   });
 
-  /* 군/구 조회 */
+  // 군/구 조회
   const { data: detailRegions = [] } = useQuery({
     queryKey: ["detailRegion", post.region],
     queryFn: () => getDetailRegion(post.region),
@@ -119,18 +119,12 @@ const WriteSchedule = () => {
     try {
       await insertSchema.validate(
         { post, files, detailSchedule },
-        { abortEarly: false }
+        { abortEarly: false },
       );
 
-      const payload = insertSchema.cast({
-        post,
-        files,
-        detailSchedule,
-      });
+      const res = await insertSchedule(post, files, detailSchedule);
 
-      const res = await insertSchedule(payload, files, detailSchedule);
-      console.log("등록 성공:", res);
-      navigate("/schedules"); // 성공 시 리스트로 이동 예시
+      console.log("등록 성공", res);
     } catch (err) {
       if (err.name === "ValidationError") {
         const messages = err.inner.map((e) => e.message);
@@ -150,8 +144,6 @@ const WriteSchedule = () => {
           <form onSubmit={handleSubmit} autoComplete="off">
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>기본 정보</h2>
-
-              {/* 일정명 */}
               <ul className={`${styles.inputWrap} ${styles.title}`}>
                 <li>
                   <label htmlFor="title">일정명</label>
@@ -162,6 +154,7 @@ const WriteSchedule = () => {
                     name="title"
                     id="title"
                     value={post.title}
+                    placeholder="일정명"
                     onChange={(e) =>
                       setPost({ ...post, title: e.target.value })
                     }
@@ -169,7 +162,6 @@ const WriteSchedule = () => {
                 </li>
               </ul>
 
-              {/* 설명 */}
               <ul className={`${styles.inputWrap} ${styles.description}`}>
                 <li>
                   <label htmlFor="description">일정 설명</label>
@@ -179,6 +171,7 @@ const WriteSchedule = () => {
                     name="description"
                     id="description"
                     value={post.description}
+                    placeholder="일정 설명"
                     onChange={(e) =>
                       setPost({ ...post, description: e.target.value })
                     }
@@ -186,7 +179,6 @@ const WriteSchedule = () => {
                 </li>
               </ul>
 
-              {/* 일정 종류 (Category Enum) */}
               <ul className={`${styles.inputWrap} ${styles.category}`}>
                 <li>
                   <label htmlFor="category">일정 종류</label>
@@ -207,7 +199,6 @@ const WriteSchedule = () => {
                 </li>
               </ul>
 
-              {/* 지역 선택 */}
               <ul className={`${styles.inputWrap} ${styles.region}`}>
                 <li>
                   <label htmlFor="region">지역(시/도)</label>
@@ -253,7 +244,6 @@ const WriteSchedule = () => {
                 </li>
               </ul>
 
-              {/* 오픈채팅 링크 */}
               <ul className={`${styles.inputWrap} ${styles.link}`}>
                 <li>
                   <label htmlFor="link">오픈 채팅 링크</label>
@@ -262,6 +252,7 @@ const WriteSchedule = () => {
                   <Input
                     type="text"
                     value={post.chatLink}
+                    placeholder="오픈 채팅 링크"
                     onChange={(e) =>
                       setPost({ ...post, chatLink: e.target.value })
                     }
@@ -273,41 +264,179 @@ const WriteSchedule = () => {
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>인원 및 성별 정보</h2>
               <div className={styles.gridContainer}>
-                {/* 최소/최대 인원 및 연령 로직 (기존과 동일하되 명칭만 Enum 대응 확인) */}
-                <ul className={styles.inputWrap}>
+                <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최소 인원</li>
                   <li>
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      name="minParticipants"
+                      placeholder={2}
                       value={post.minParticipants ?? ""}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const onlyNumber = e.target.value.replace(
+                          /[^0-9]/g,
+                          "",
+                        );
                         setPost({
                           ...post,
-                          minParticipants: Number(e.target.value),
-                        })
-                      }
-                    />{" "}
-                    명
+                          minParticipants:
+                            onlyNumber === "" ? null : Number(onlyNumber),
+                        });
+                      }}
+                      onBlur={() => {
+                        let value = post.minParticipants;
+
+                        if (value == null) return;
+
+                        // 범위 보정
+                        if (value < 2) value = 2;
+                        if (value > 100) value = 100;
+
+                        // max보다 크면 max로 맞춤
+                        if (
+                          post.maxParticipants &&
+                          value > post.maxParticipants
+                        ) {
+                          value = post.maxParticipants;
+                        }
+
+                        setPost({ ...post, minParticipants: value });
+                      }}
+                    />
+                    <span>명</span>
                   </li>
                 </ul>
-                <ul className={styles.inputWrap}>
+                <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최대 인원</li>
                   <li>
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      name="maxParticipants"
+                      placeholder={100}
                       value={post.maxParticipants ?? ""}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const onlyNumber = e.target.value.replace(
+                          /[^0-9]/g,
+                          "",
+                        );
                         setPost({
                           ...post,
-                          maxParticipants: Number(e.target.value),
-                        })
-                      }
-                    />{" "}
-                    명
+                          maxParticipants:
+                            onlyNumber === "" ? null : Number(onlyNumber),
+                        });
+                      }}
+                      onBlur={() => {
+                        let value = post.maxParticipants;
+
+                        if (value == null) return;
+
+                        // 범위 보정
+                        if (value < 2) value = 2;
+                        if (value > 100) value = 100;
+
+                        // min보다 작으면 min으로 맞춤
+                        if (
+                          post.minParticipants &&
+                          value < post.minParticipants
+                        ) {
+                          value = post.minParticipants;
+                        }
+
+                        setPost({ ...post, maxParticipants: value });
+                      }}
+                    />
+                    <span>명</span>
+                  </li>
+                </ul>
+                <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
+                  <li>최소 연령</li>
+                  <li>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      name="ageMin"
+                      id="ageMin"
+                      placeholder="15"
+                      value={post.ageMin ?? ""}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        const onlyNumber = raw.replace(/[^0-9]/g, "");
+
+                        if (onlyNumber === "") {
+                          setPost({ ...post, ageMin: null });
+                          return;
+                        }
+
+                        setPost({ ...post, ageMin: Number(onlyNumber) });
+                      }}
+                      onBlur={() => {
+                        let value = post.ageMin;
+
+                        if (value == null) return;
+
+                        // 범위 보정
+                        if (value < 15) value = 15;
+                        if (value > 100) value = 100;
+
+                        // max보다 크면 max로 맞춤
+                        if (post.ageMax && value > post.ageMax) {
+                          value = post.ageMax;
+                        }
+
+                        setPost({ ...post, ageMin: value });
+                      }}
+                    />
+                    <span>세</span>
+                  </li>
+                </ul>
+                <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
+                  <li>최대 연령</li>
+                  <li>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      name="ageMax"
+                      id="ageMax"
+                      placeholder="100"
+                      value={post.ageMax ?? ""}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        const onlyNumber = raw.replace(/[^0-9]/g, "");
+
+                        if (onlyNumber === "") {
+                          setPost({ ...post, ageMax: null });
+                          return;
+                        }
+
+                        setPost({ ...post, ageMax: Number(onlyNumber) });
+                      }}
+                      onBlur={() => {
+                        let value = post.ageMax;
+
+                        if (value == null) return;
+
+                        // 범위 보정
+                        if (value < 15) value = 15;
+                        if (value > 100) value = 100;
+
+                        // min보다 작으면 min으로 맞춤
+                        if (post.ageMin && value < post.ageMin) {
+                          value = post.ageMin;
+                        }
+
+                        setPost({ ...post, ageMax: value });
+                      }}
+                    />
+                    <span>세</span>
                   </li>
                 </ul>
 
-                {/* 성별 제한 (GenderLimit Enum) */}
                 <ul className={`${styles.inputWrap} ${styles.genderInfo}`}>
                   <li>성별 제한</li>
                   <li>
@@ -347,7 +476,12 @@ const WriteSchedule = () => {
 
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>일정 및 모집 기간</h2>
-              <CalendarRange post={post} setPost={setPost} />
+              <CalendarRange
+                post={post}
+                setPost={setPost}
+                months={1}
+                direction="horizontal"
+              />
 
               <ul className={`${styles.inputWrap} ${styles.recruitmentPeriod}`}>
                 <li>
@@ -404,7 +538,6 @@ const WriteSchedule = () => {
                 </li>
               </ul>
 
-              {/* 정산 방식 (CostType Enum) */}
               <ul className={`${styles.inputWrap} ${styles.costSharingWrap}`}>
                 <li>정산 방식</li>
                 <li className={styles.costSharingContent}>
@@ -496,8 +629,6 @@ const WriteSchedule = () => {
   );
 };
 
-/* --- 서브 컴포넌트들 (기존 로직 유지) --- */
-
 const CalendarRange = ({ post, setPost }) => {
   const [state, setState] = useState([
     {
@@ -523,11 +654,23 @@ const CalendarRange = ({ post, setPost }) => {
         locale={ko}
         ranges={state}
         onChange={handleChange}
+        moveRangeOnFirstSelection={false}
+        editableDateInputs={true}
+        showMonthAndYearPickers={true}
+        months={1}
+        direction="horizontal"
         minDate={new Date()}
       />
       <div className={styles.dateWrap}>
-        <p>시작: {post.startDate?.toLocaleDateString()}</p>
-        <p>종료: {post.endDate?.toLocaleDateString()}</p>
+        <ul className={`${styles.inputWrap} ${styles.duringDate}`}>
+          <li>
+            <label>일정</label>
+          </li>
+          <li>
+            <p>시작일: {post.startDate?.toLocaleDateString()}</p>
+            <p>종료일: {post.endDate?.toLocaleDateString()}</p>
+          </li>
+        </ul>
       </div>
     </div>
   );
@@ -552,7 +695,7 @@ const ScheduleTable = ({
 
   const handleChange = (index, key, value) => {
     setDetailSchedule((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [key]: value } : item))
+      prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
     );
   };
 
@@ -572,12 +715,14 @@ const ScheduleTable = ({
               <td>{row.dayNumber}</td>
               <td>
                 <input
+                  className={styles.scheduleInput}
                   value={row.title}
                   onChange={(e) => handleChange(i, "title", e.target.value)}
                 />
               </td>
               <td>
                 <textarea
+                  className={styles.scheduleTextarea}
                   value={row.description}
                   onChange={(e) =>
                     handleChange(i, "description", e.target.value)
@@ -594,38 +739,112 @@ const ScheduleTable = ({
 
 const AddThumbnail = ({ images, setImages, files, setFiles }) => {
   const fileInputRef = useRef(null);
+
+  // 이미지 추가
   const addImage = (file) => {
-    if (images.length >= 3) return alert("최대 3장까지 가능합니다.");
-    setImages((prev) => [...prev, URL.createObjectURL(file)]);
-    setFiles((prev) => [...prev, file]);
+    if (!file) return;
+
+    if (images.length >= 3) {
+      alert("최대 3장까지 가능합니다.");
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+
+    setImages((prev) => [...prev, url]); // 미리보기용
+    setFiles((prev) => [...prev, file]); // 업로드용
   };
+
+  // 드롭
+  const handleDrop = (e) => {
+    e.preventDefault();
+
+    const filesArr = Array.from(e.dataTransfer.files);
+    const availableSlots = 3 - images.length;
+
+    if (availableSlots <= 0) {
+      alert("최대 3장까지 업로드 가능합니다.");
+      return;
+    }
+
+    filesArr.slice(0, availableSlots).forEach(addImage);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  // 클릭 업로드
+  const handleClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = (e) => {
+    const filesArr = Array.from(e.target.files);
+    const availableSlots = 3 - images.length;
+
+    if (availableSlots <= 0) {
+      alert("최대 3장까지 업로드 가능합니다.");
+      return;
+    }
+
+    const selectedFiles = filesArr.slice(0, availableSlots);
+
+    if (filesArr.length > availableSlots) {
+      alert(`최대 3장까지 가능합니다. ${availableSlots}장만 추가됩니다.`);
+    }
+
+    selectedFiles.forEach(addImage);
+  };
+
+  // ✅ 삭제 시 revoke (핵심!)
+  const handleDelete = (index) => {
+    const targetUrl = images[index];
+
+    if (targetUrl) {
+      URL.revokeObjectURL(targetUrl);
+    }
+
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // ✅ 컴포넌트 사라질 때만 전체 revoke
+  useEffect(() => {
+    return () => {
+      images.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   return (
     <div className={styles.imageZone}>
       <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onClick={handleClick}
         className={styles.dropZone}
-        onClick={() => fileInputRef.current.click()}
       >
         이미지를 드롭하거나 클릭하세요 (최대 3장)
       </div>
+
       <input
         type="file"
         multiple
         accept="image/*"
         ref={fileInputRef}
-        onChange={(e) => Array.from(e.target.files).forEach(addImage)}
+        onChange={handleFileChange}
         style={{ display: "none" }}
       />
+
       <div className={styles.previewGrid}>
         {images.map((img, i) => (
           <div key={i} className={styles.imageWrap}>
-            <img src={img} alt="preview" className={styles.image} />
+            <img src={img} alt={`preview-${i}`} className={styles.image} />
+
             <button
               type="button"
-              onClick={() => {
-                setImages(images.filter((_, idx) => idx !== i));
-                setFiles(files.filter((_, idx) => idx !== i));
-              }}
+              onClick={() => handleDelete(i)}
+              className={styles.deleteBtn}
             >
               X
             </button>

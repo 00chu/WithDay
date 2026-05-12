@@ -20,6 +20,7 @@ public class Schedule {
     private String description;
     private ScheduleCategory category;
     private String region;
+    private String detailRegion;
     private String startDate;
     private String endDate;
     private String recruitStartDate;
@@ -44,5 +45,3 @@ public class Schedule {
     private String updatedAt;
     private String deletedAt;
 }
-
-

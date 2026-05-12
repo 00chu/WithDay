@@ -89,39 +89,26 @@
         )
     </insert>
 
-    <insert id="insertDetailSchedule">
-        insert into detail_schedule (
+    <insert id="insertScheduleDetails">
+        INSERT INTO schedule_detail (
         schedule_id,
         day_number,
         title,
         description
-        )
-        values
-        <foreach collection="detailSchedule" item="item" separator=",">
-            (
-            #{scheduleId},
-            #{item.dayNumber},
-            #{item.title},
-            #{item.description}
-            )
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.scheduleId}, #{item.dayNumber}, #{item.title}, #{item.description})
         </foreach>
     </insert>
 
     <insert id="insertScheduleImages">
-        insert into schedule_image (
-        schedule_id,
-        image_url,
-        is_thumbnail
-        )
-        values
-        <foreach collection="imageUrls" item="url" index="index" separator=",">
+        INSERT INTO schedule_image (schedule_id, image_url, is_thumbnail)
+        VALUES
+        <foreach collection="imageUrls" item="url" index="idx" separator=",">
             (
             #{scheduleId},
             #{url},
-            case
-            when #{index} = 0 then 1
-            else 0
-            end
+            CASE WHEN #{idx} = 0 THEN 1 ELSE 0 END
             )
         </foreach>
     </insert>
