@@ -33,7 +33,7 @@ public class ScheduleService {
         List<ScheduleImage> images = scheduleDao.selectImageByScheduleId(id);
 
         // 3. 조립
-        return new ScheduleResponseDTO(schedule, details, images);
+        return new ScheduleResponseDTO(null, null, schedule, details, images);
     }
 
     // 🌟 파라미터를 받아서 Dao로 넘겨주도록 수정
