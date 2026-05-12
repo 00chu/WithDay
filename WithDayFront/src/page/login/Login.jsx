@@ -52,11 +52,26 @@ const Login = () => {
 
   const googleMutation = useMutation({
     mutationFn: googleLoginUser,
-    onSuccess: (data) => {
-      const { token, user } = data;
-      setLogin(token, user); 
-      setToast({ open: true, message: '구글 계정으로 로그인되었습니다!', severity: 'success' });
-      setTimeout(() => navigate('/'), 1000);
+    onSuccess: (data, variables) => { // variables는 우리가 방금 구글로그인API로 던졌던 구글 정보!
+      
+      // 💡 백엔드에서 "등록 안 된 유저야!" 라고 신호를 줬을 때
+      if (data.isRegistered === false) {
+        setToast({ 
+          open: true, 
+          message: '환영합니다! 원활한 이용을 위해 추가 정보를 입력해주세요.', 
+          severity: 'info' 
+        });
+        
+        // 구글이 준 데이터를 보따리(state)에 싸서 페이지 이동시킵니다!
+        setTimeout(() => navigate('/signup/extra', { state: { googleData: variables } }), 1000);
+
+      } else {
+        // 기존 회원이면 정상 로그인 처리
+        const { token, user } = data;
+        setLogin(token, user); 
+        setToast({ open: true, message: '구글 계정으로 로그인되었습니다!', severity: 'success' });
+        setTimeout(() => navigate('/'), 1000);
+      }
     },
     onError: (error) => {
       setToast({ open: true, message: '구글 로그인 실패. 다시 시도해주세요.', severity: 'error' });

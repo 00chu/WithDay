@@ -24,7 +24,6 @@ api.interceptors.request.use(
 );
 
 export const signupUser = async (formData) => {
-  // 💡 주소 변경: /api/users/signup -> /users/signup
   const response = await api.post(`/users/signup`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -34,13 +33,11 @@ export const signupUser = async (formData) => {
 };
 
 export const loginUser = async (loginData) => {
-  // 💡 주소 변경: /api/users/login -> /users/login
   const response = await api.post(`/users/login`, loginData);
   return response.data;
 };
 
 export const fetchTerms = async () => {
-  // 💡 주소 변경: /api/users/terms -> /users/terms
   const response = await api.get(`/users/terms`);
   return response.data;
 };
@@ -50,8 +47,13 @@ export const googleLoginUser = async (googleData) => {
   return response.data;
 };
 
-// 이메일 인증번호 발송 요청 API
 export const sendEmailVerification = async (email) => {
   const response = await api.post(`/users/email-verification`, { email });
-  return response.data; // 백엔드에서 보낸 6자리 난수 코드를 받아옵니다.
+  return response.data; 
+};
+
+// 💡 소셜 로그인 추가 정보 업데이트 API (새로 추가)
+export const socialSignupUser = async (signupData) => {
+  const response = await api.post(`/users/social-signup`, signupData);
+  return response.data;
 };

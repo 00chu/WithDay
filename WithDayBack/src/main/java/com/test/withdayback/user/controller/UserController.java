@@ -56,6 +56,16 @@ public class UserController {
         }
     }
 
+    @PostMapping("/social-signup")
+    public ResponseEntity<?> socialSignup(@RequestBody SignupRequestDTO signupRequest) {
+        try {
+            String result = userService.socialSignup(signupRequest);
+            return ResponseEntity.ok(result);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/terms")
     public ResponseEntity<List<Terms>> getTerms() {
         List<Terms> termsList = userService.getAllTerms();

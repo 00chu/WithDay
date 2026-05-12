@@ -33,6 +33,7 @@ public class SecurityConfig {
                                 "/users/login",
                                 "/users/terms",
                                 "/users/google-login",
+                                "/users/social-signup",
                                 "/users/email-verification",
                                 "/schedules/**"     // <-- 이 부분이 추가되어야 403이 안 뜹니다.
                         ).permitAll()
@@ -47,7 +48,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // 💡 만약 리액트가 3000번이라면 "http://localhost:3000"도 추가해주는 게 안전합니다.
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
 
