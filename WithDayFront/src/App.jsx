@@ -8,6 +8,9 @@ import BottomNav from "./widgets/BottomNav/BottomeNav";
 import Header from "./widgets/Header/Header";
 import WriteSchedule from "./page/schedule/WriteSchedule";
 import MySchedulePage from "./page/my-schedule/MySchedulePage";
+import DinnerRsvpForm from "./page/exam/DinnerRsvpForm";
+import EventForm from "./page/exam/EventForm";
+import SocialExtra from "./page/login/SocialExtra";
 
 function App() {
   return (
@@ -19,6 +22,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/signup/extra" element={<SocialExtra />} />
           <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
           <Route path="/write" element={<WriteSchedule />} />
 

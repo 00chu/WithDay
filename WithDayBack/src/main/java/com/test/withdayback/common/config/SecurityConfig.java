@@ -32,7 +32,10 @@ public class SecurityConfig {
                                 "/users/signup",
                                 "/users/login",
                                 "/users/terms",
-                                "/schedules/**",
+                                "/users/google-login",
+                                "/users/social-signup",
+                                "/users/email-verification",
+                                "/schedules/**"
                                 "/participations/**"
                         ).permitAll()
                         .anyRequest().authenticated()

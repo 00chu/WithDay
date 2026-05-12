@@ -14,17 +14,32 @@
                  )
     </insert>
 
+    <update id="updateUser" parameterType="User">
+        UPDATE user
+        <set>
+            <if test="password != null and password != ''">password = #{password},</if>
+            <if test="nickname != null and nickname != ''">nickname = #{nickname},</if>
+            <if test="profileImage != null and profileImage != ''">profile_image = #{profileImage},</if>
+            <if test="birthday != null and birthday != ''">birthday = #{birthday},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="postcode != null and postcode != ''">postcode = #{postcode},</if>
+            <if test="address != null and address != ''">address = #{address},</if>
+            <if test="detailAddress != null and detailAddress != ''">detail_address = #{detailAddress},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
     <select id="findByEmail" parameterType="String" resultType="User">
         SELECT * FROM user WHERE email = #{email}
     </select>
 
-    <!-- 약관 동의 내역 저장 -->
     <insert id="insertUserTerms" parameterType="UserTerms">
         INSERT INTO user_terms (user_id, terms_id, agreed, agreed_at)
         VALUES (#{userId}, #{termsId}, #{agreed}, NOW())
     </insert>
 
-    <!-- 약관 데이터 불러오기 -->
     <select id="getAllTerms" resultType="Terms">
         SELECT type, version, content, is_required AS isRequired
         FROM terms

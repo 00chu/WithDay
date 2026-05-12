@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -8,42 +8,39 @@ import DaumPostcode from 'react-daum-postcode';
 import { Snackbar, Alert, Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { socialExtraSchema } from '../../features/auth/validation/authSchema';
+import { fetchTerms, socialSignupUser } from '../../features/auth/api'; 
 
-import { signupSchema } from '../../features/auth/validation/authSchema';
-import { signupUser, fetchTerms, sendEmailVerification } from '../../features/auth/api';
 import FormField from '../../shared/ui/Form/FormField';
 import { Input } from '../../shared/ui/Form/Form';
 import Button from '../../shared/ui/Button/Button';
 import styles from './Auth.module.css'; 
 
-const Signup = () => {
+const SocialExtra = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const todayDate = new Date().toISOString().split('T')[0];
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
   const [openTerms, setOpenTerms] = useState(null);
 
-  const [showPw, setShowPw] = useState(false);
-  const [showPwConfirm, setShowPwConfirm] = useState(false);
-  const [isSubmitAttempted, setIsSubmitAttempted] = useState(false);
+  useEffect(() => {
+    if (!location.state || !location.state.googleData) {
+      alert("잘못된 접근입니다. 다시 로그인해주세요.");
+      navigate('/login', { replace: true });
+    }
+  }, [location, navigate]);
 
-  const [mailAuth, setMailAuth] = useState(0); 
-  const [mailAuthCode, setMailAuthCode] = useState(null);
-  const [mailAuthInput, setMailAuthInput] = useState('');
-  
-  const [time, setTime] = useState(180);
-  const timerRef = useRef(null);
+  const googleData = location.state?.googleData || {}; 
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;
     setToast((prev) => ({ ...prev, open: false }));
   };
 
-  const { register, handleSubmit, setValue, getValues, watch, formState: { errors } } = useForm({
-    resolver: yupResolver(signupSchema),
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+    resolver: yupResolver(socialExtraSchema),
     mode: 'onChange', 
     defaultValues: {
       agreeTos: false,
@@ -75,101 +72,38 @@ const Signup = () => {
     return term ? term.content : '약관 내용이 없습니다.';
   };
 
-  const mutation = useMutation({
-    mutationFn: signupUser,
-    onSuccess: () => {
-      // 💡 지연 없이 즉시 로그인 페이지로 가면서, 보따리(state)에 성공 메시지를 담아 보냅니다!
-      navigate('/login', { state: { toastMessage: '환영합니다! 회원가입이 완료되었습니다.' } });
-    },
-    onError: (error) => {
-      const errMsg = error.response?.data || '회원가입에 실패했습니다.';
-      setToast({ open: true, message: errMsg, severity: 'error' });
-    }
-  });
-
   const handleCompletePostcode = (data) => {
     let fullAddress = data.address; 
     let extraAddress = ''; 
-
     if (data.addressType === 'R') {
       if (data.bname !== '') extraAddress += data.bname;
       if (data.buildingName !== '') extraAddress += extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName;
       fullAddress += extraAddress !== '' ? ` (${extraAddress})` : '';
     }
-
     setValue('postcode', data.zonecode);
     setValue('address', fullAddress); 
     setIsPostcodeOpen(false);
   };
 
-  const handleSendMail = async () => {
-    const emailValue = getValues('email');
-    if (!emailValue) {
-      setToast({ open: true, message: '이메일을 먼저 입력해주세요.', severity: 'warning' });
-      return;
+  const mutation = useMutation({
+    mutationFn: socialSignupUser,
+    onSuccess: () => {
+      // 💡 딜레이 없이 즉시 로그인 페이지로 가면서 보따리에 성공 메시지 담기!
+      navigate('/login', { state: { toastMessage: '회원가입이 완료되었습니다! 다시 로그인해주세요.' } });
+    },
+    onError: (error) => {
+      const errMsg = error.response?.data || '가입에 실패했습니다.';
+      setToast({ open: true, message: errMsg, severity: 'error' });
     }
-
-    setTime(180); 
-    setMailAuthCode(null);
-    if (timerRef.current) window.clearInterval(timerRef.current);
-
-    setMailAuth(1);
-    setToast({ open: true, message: '인증번호를 발송 중입니다...', severity: 'info' });
-
-    try {
-      const res = await sendEmailVerification(emailValue);
-      setToast({ open: true, message: '이메일로 인증번호가 발송되었습니다!', severity: 'success' });
-      setMailAuthCode(String(res)); 
-      setMailAuth(2);
-
-      timerRef.current = window.setInterval(() => {
-        setTime((prev) => {
-          if (prev <= 1) {
-            window.clearInterval(timerRef.current);
-            setToast({ open: true, message: '인증 시간이 만료되었습니다. 다시 시도해주세요.', severity: 'warning' });
-            setMailAuthCode(null);
-            setMailAuth(0);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } catch (err) {
-      setToast({ open: true, message: '이메일 발송에 실패했습니다. 이메일을 확인해주세요.', severity: 'error' });
-      setMailAuth(0);
-    }
-  };
-
-  const handleVerifyCode = () => {
-    if (mailAuthCode === mailAuthInput && mailAuthInput !== "") {
-      setMailAuth(3);
-      window.clearInterval(timerRef.current); 
-      setToast({ open: true, message: '이메일 인증이 완료되었습니다.', severity: 'success' });
-    } else {
-      setToast({ open: true, message: '인증코드가 올바르지 않습니다.', severity: 'error' });
-    }
-  };
-
-  const showTime = () => {
-    const min = Math.floor(time / 60);
-    const sec = String(time % 60).padStart(2, "0");
-    return `${min}:${sec}`;
-  };
+  });
 
   const onSubmit = (data) => {
-    setIsSubmitAttempted(true); 
-
-    if (mailAuth !== 3) {
-      setToast({ open: true, message: '이메일 인증을 완료해주세요.', severity: 'warning' });
-      return;
-    }
-
-    const formData = new FormData();
     const signupData = {
       user: {
-        email: data.email,
-        password: data.password,
-        nickname: data.nickname,
+        email: googleData.email,
+        nickname: googleData.nickname,
+        providerId: googleData.providerId,
+        profileImage: googleData.profileImage,
         birthday: data.birthday,
         gender: data.gender,
         phone: data.phone,
@@ -180,113 +114,34 @@ const Signup = () => {
       terms: {
         TOS: data.agreeTos,
         PRIVACY: data.agreePrivacy,
-        MARKETING: data.agreeMarketing || false 
+        MARKETING: data.agreeMarketing
       }
     };
 
-    formData.append('signupData', new Blob([JSON.stringify(signupData)], { type: 'application/json' }));
-    
-    if (data.profileImage && data.profileImage[0]) {
-      formData.append('profileImage', data.profileImage[0]);
-    }
-
-    mutation.mutate(formData);
+    mutation.mutate(signupData); 
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.card}>
         <div className={styles.header}>
-          <h1 className={styles.title}>WithDay 시작하기</h1>
-          <p className={styles.subtitle}>새로운 동행을 찾아 떠나볼까요?</p>
+          <h1 className={styles.title}>조금만 더 알려주세요!</h1>
+          <p className={styles.subtitle}>원활한 서비스 이용을 위해 필수 정보를 입력해주세요.</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
           
-          <FormField label="이메일" error={errors.email}>
-            <div className={styles.inputRow}>
-              <div className={styles.flex1}>
-                <Input 
-                  type="email" 
-                  placeholder="example@withday.com" 
-                  {...register('email')} 
-                  readOnly={mailAuth > 0}
-                />
-              </div>
-              <Button type="button" variant="outline" size="sm" onClick={handleSendMail} disabled={mailAuth === 1 || mailAuth === 3}>
-                {mailAuth >= 2 ? "재전송" : "인증번호 전송"}
-              </Button>
-            </div>
-            {isSubmitAttempted && mailAuth !== 3 && (
-              <p className={styles.errorText}>이메일 인증을 완료해주세요.</p>
-            )}
-          </FormField>
-
-          {mailAuth > 1 && (
-            <FormField label="인증번호 확인">
-              <div className={styles.inputRowCenter}>
-                <div className={styles.authInputWrap}>
-                  <Input 
-                    type="text" 
-                    placeholder="인증코드 6자리" 
-                    value={mailAuthInput}
-                    onChange={(e) => setMailAuthInput(e.target.value)}
-                    disabled={mailAuth === 3}
-                    style={{ paddingRight: '60px' }}
-                  />
-                  {mailAuth !== 3 && <span className={styles.timerText}>{showTime()}</span>}
-                </div>
-                <Button type="button" variant="primary" size="sm" onClick={handleVerifyCode} disabled={mailAuth === 3 || !mailAuthInput}>
-                  인증하기
-                </Button>
-              </div>
-              {mailAuth === 3 && <p className={styles.successText}>✔ 이메일 인증이 완료되었습니다.</p>}
-            </FormField>
-          )}
-
-          <FormField label="비밀번호" error={errors.password}>
-            <div className={styles.pwInputWrap}>
-              <Input 
-                type={showPw ? "text" : "password"} 
-                placeholder="8자리 이상" 
-                {...register('password')} 
-                style={{ paddingRight: '40px' }}
-              />
-              <div className={styles.pwIcon} onClick={() => setShowPw(!showPw)}>
-                {showPw ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
-              </div>
-            </div>
-          </FormField>
-          
-          <FormField label="비밀번호 확인" error={errors.passwordConfirm}>
-            <div className={styles.pwInputWrap}>
-              <Input 
-                type={showPwConfirm ? "text" : "password"} 
-                placeholder="비밀번호를 다시 입력하세요" 
-                {...register('passwordConfirm')} 
-                style={{ paddingRight: '40px' }}
-              />
-              <div className={styles.pwIcon} onClick={() => setShowPwConfirm(!showPwConfirm)}>
-                {showPwConfirm ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
-              </div>
-            </div>
-          </FormField>
-
-          <FormField label="닉네임" error={errors.nickname}>
-            <Input type="text" placeholder="멋진 닉네임" {...register('nickname')} />
-          </FormField>
-          <FormField label="프로필 이미지" error={errors.profileImage}>
-            <Input type="file" accept="image/*" {...register('profileImage')} />
-          </FormField>
           <FormField label="생년월일" error={errors.birthday}>
             <Input type="date" max={todayDate} {...register('birthday')} />
           </FormField>
+          
           <FormField label="성별" error={errors.gender}>
             <div className={styles.radioGroup}>
               <label className={styles.radioLabel}><input type="radio" value="1" {...register('gender')} /> 남</label>
               <label className={styles.radioLabel}><input type="radio" value="2" {...register('gender')} /> 여</label>
             </div>
           </FormField>
+          
           <FormField label="전화번호" error={errors.phone}>
             <Input type="tel" placeholder="010-1234-5678" {...register('phone')} />
           </FormField>
@@ -332,12 +187,9 @@ const Signup = () => {
           </div>
 
           <Button type="submit" variant="primary" size="lg" fullWidth disabled={mutation.isPending}>
-            {mutation.isPending ? '가입하는 중...' : '회원가입 완료'}
+            {mutation.isPending ? '가입 처리 중...' : '추가 정보 입력 완료'}
           </Button>
         </form>
-        <p className={styles.linkText}>
-          이미 계정이 있으신가요? <span className={styles.linkClickable} onClick={() => navigate('/login')}>로그인하기</span>
-        </p>
       </div>
 
       <Snackbar open={toast.open} autoHideDuration={3000} onClose={handleCloseToast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
@@ -370,4 +222,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default SocialExtra;
