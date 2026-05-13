@@ -1,20 +1,36 @@
 import { api } from "../../shared/lib/api";
 
+const normalizeEmailParam = (email) => email?.trim() ?? "";
+
+const debugMyScheduleResponse = (label, data) => {
+  if (!import.meta.env.DEV) {
+    return;
+  }
+
+  console.debug(`[my-schedule] ${label}`, data);
+};
+
 export const fetchParticipationList = async ({ email, statuses }) => {
+  const normalizedEmail = normalizeEmailParam(email);
   const { data } = await api.get("/participations/me", {
     params: {
-      email,
+      email: normalizedEmail,
       statuses,
     },
   });
+
+  debugMyScheduleResponse(`participations ${statuses}`, data);
 
   return data;
 };
 
 export const fetchHostingSchedules = async ({ email }) => {
+  const normalizedEmail = normalizeEmailParam(email);
   const { data } = await api.get("/participations/me/hosting", {
-    params: { email },
+    params: { email: normalizedEmail },
   });
+
+  debugMyScheduleResponse("hosting", data);
 
   return data;
 };

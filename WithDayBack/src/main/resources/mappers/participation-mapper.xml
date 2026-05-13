@@ -86,7 +86,7 @@
         s.end_date AS end_date,
         s.current_participants AS current_people,
         s.max_participants AS max_people,
-        p.status AS db_status,
+        <include refid="normalizedStatus" /> AS db_status,
         CASE WHEN s.user_id = u.id THEN TRUE ELSE FALSE END AS host
     </sql>
 

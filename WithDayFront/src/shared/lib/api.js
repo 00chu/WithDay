@@ -1,13 +1,19 @@
-import axios from 'axios'
+import axios from "axios";
+
+const BASE_URL = import.meta.env.VITE_BACKSERVER;
 
 export const api = axios.create({
-    baseURL: 'http://localhost:8080',
-})
+  baseURL: `http://${BASE_URL}`,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-})
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});

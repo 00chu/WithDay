@@ -34,14 +34,17 @@ export const participationQueryKeys = {
   ],
 };
 
-export const useMySchedulesQuery = (email) =>
-  useQuery({
-    queryKey: participationQueryKeys.mySchedules(email),
-    queryFn: () => fetchMySchedules({ email }),
-    enabled: Boolean(email?.trim()),
+export const useMySchedulesQuery = (email) => {
+  const normalizedEmail = email?.trim() ?? "";
+
+  return useQuery({
+    queryKey: participationQueryKeys.mySchedules(normalizedEmail),
+    queryFn: () => fetchMySchedules({ email: normalizedEmail }),
+    enabled: Boolean(normalizedEmail),
     select: normalizeMySchedulesResponse,
     staleTime: 1000 * 60,
   });
+};
 
 export const useParticipationMutation = (email) => {
   const queryClient = useQueryClient();

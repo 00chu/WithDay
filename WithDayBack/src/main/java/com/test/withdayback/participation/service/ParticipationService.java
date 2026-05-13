@@ -24,6 +24,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 @Service
 public class ParticipationService {
@@ -37,14 +38,23 @@ public class ParticipationService {
     private ScheduleDao scheduleDao;
 
     public List<MyScheduleResponseDTO> getMyParticipations(String email, List<String> statuses) {
-        if (statuses == null || statuses.isEmpty()) {
+        String normalizedEmail = normalizeEmail(email);
+        List<String> normalizedStatuses = normalizeStatusFilters(statuses);
+
+        if (normalizedEmail.isBlank() || normalizedStatuses.isEmpty()) {
             return List.of();
         }
-        return participationDao.getMyParticipations(email, statuses);
+
+        return participationDao.getMyParticipations(normalizedEmail, normalizedStatuses);
     }
 
     public List<MyScheduleResponseDTO> getMyHostingSchedules(String email) {
-        return participationDao.getMyHostingSchedules(email);
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail.isBlank()) {
+            return List.of();
+        }
+
+        return participationDao.getMyHostingSchedules(normalizedEmail);
     }
 
     public boolean cancelParticipation(Long participationId, String email) {
@@ -265,5 +275,21 @@ public class ParticipationService {
             }
             throw exception;
         }
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? "" : email.trim();
+    }
+
+    private List<String> normalizeStatusFilters(List<String> statuses) {
+        if (statuses == null || statuses.isEmpty()) {
+            return List.of();
+        }
+
+        return statuses.stream()
+                .map(this::normalizeStatusFilter)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
     }
 }
