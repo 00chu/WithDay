@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_BACKSERVER;
 
@@ -75,6 +75,18 @@ export const insertSchedule = async (post, images, detailSchedule) => {
   });
 
   const response = await api.post("/schedules", formData);
+
+  return response.data;
+};
+
+export const updateSchedule = async (post, detailSchedule) => {
+  const response = await api.patch(`/schedules/${scheduleId}`);
+
+  return response.data;
+};
+
+export const deleteSchedule = async (scheduleId) => {
+  const response = await api.delete(`/schedules/${scheduleId}`);
 
   return response.data;
 };

@@ -15,8 +15,6 @@ import java.util.List;
 @Data
 @Alias("ScheduleResponse")
 public class ScheduleResponseDTO {
-    private Long id;
-    private String userId;
     private String email;
     private Schedule schedule;
     private List<ScheduleDetail> details;
