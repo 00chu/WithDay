@@ -9,6 +9,7 @@ import Header from "./widgets/Header/Header";
 import WriteSchedule from "./page/schedule/WriteSchedule";
 import MySchedulePage from "./page/my-schedule/MySchedulePage";
 import SocialExtra from "./page/login/SocialExtra";
+import PrivateRoute from "./features/ui/PrivateRoute";
 
 function App() {
   return (
@@ -22,10 +23,18 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup/extra" element={<SocialExtra />} />
           <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
-          <Route path="/write" element={<WriteSchedule />} />
 
           {/* 내 일정 보기 */}
           <Route path="/my-schedule" element={<MySchedulePage />} />
+
+          <Route
+            path="/write"
+            element={
+              <PrivateRoute>
+                <WriteSchedule />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </main>
       <BottomNav />

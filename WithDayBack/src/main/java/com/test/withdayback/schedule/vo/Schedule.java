@@ -15,11 +15,12 @@ import org.apache.ibatis.type.Alias;
 @Alias("Schedule")
 public class Schedule {
     private Long id;
-    private Integer userId;
+    private Long userId;
     private String title;
     private String description;
     private ScheduleCategory category;
     private String region;
+    private String detailRegion;
     private String startDate;
     private String endDate;
     private String recruitStartDate;
@@ -44,4 +45,3 @@ public class Schedule {
     private String updatedAt;
     private String deletedAt;
 }
-

@@ -23,6 +23,16 @@ public interface ScheduleDao {
     // 🌟 @Param을 사용해 파라미터 매핑
     List<Schedule> getAllSchedules(
             @Param("category") String category,
-            @Param("keyword") String keyword
+            @Param("keyword") String keyword);
+            
+    Long findUserIdByEmail(String email);
+
+    void insertSchedule(Schedule schedule);
+
+    void insertScheduleDetail(ScheduleDetail detail);
+
+    void insertScheduleImage(
+            @Param("scheduleId") Long scheduleId,
+            @Param("imageUrls") List<String> imageUrls
     );
 }

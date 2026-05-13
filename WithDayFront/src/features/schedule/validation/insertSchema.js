@@ -1,0 +1,135 @@
+// 일정 등록할 때 데이터 검증
+
+import * as yup from "yup";
+
+// 날짜 비교용 helper
+const isAfter = (start, end) => {
+  if (!start || !end) return true;
+  return new Date(end) >= new Date(start);
+};
+
+export const insertSchema = yup.object({
+  post: yup.object({
+    email: yup
+      .string()
+      .email("올바른 이메일 형식이 아닙니다.")
+      .required("로그인이 필요합니다."),
+
+    title: yup
+      .string()
+      .required("제목을 입력해주세요.")
+      .max(50, "제목은 50자 이하로 입력해주세요."),
+
+    description: yup
+      .string()
+      .required("설명을 입력해주세요.")
+      .max(1000, "설명은 1000자 이하로 입력해주세요."),
+
+    category: yup.string().required("카테고리를 선택해주세요."),
+
+    region: yup.string().required("지역을 선택해주세요."),
+
+    detailRegion: yup.string().required("상세 지역을 입력해주세요."),
+
+    chatLink: yup
+      .string()
+      .transform((value) => {
+        if (!value) return null;
+        return value.trim();
+      })
+      .url("올바른 URL 형식이 아닙니다.")
+      .nullable()
+      .notRequired(),
+
+    startDate: yup.date().required("시작일을 선택해주세요."),
+
+    endDate: yup
+      .date()
+      .required("종료일을 선택해주세요.")
+      .test(
+        "is-after-start",
+        "종료일은 시작일 이후여야 합니다.",
+        function (value) {
+          return isAfter(this.parent.startDate, value);
+        },
+      ),
+
+    recruitStartDate: yup.date().required("모집 시작일을 선택해주세요."),
+
+    recruitEndDate: yup
+      .date()
+      .required("모집 종료일을 선택해주세요.")
+      .test(
+        "is-after-recruit-start",
+        "모집 종료일은 모집 시작일 이후여야 합니다.",
+        function (value) {
+          return isAfter(this.parent.recruitStartDate, value);
+        },
+      ),
+
+    minParticipants: yup
+      .number()
+      .min(2, "최소 인원은 2명 이상이어야 합니다.")
+      .required(),
+
+    maxParticipants: yup
+      .number()
+      .min(2)
+      .test(
+        "max-greater-than-min",
+        "최대 인원은 최소 인원보다 커야 합니다.",
+        function (value) {
+          return value >= this.parent.minParticipants;
+        },
+      )
+      .required(),
+
+    ageMin: yup.number().min(15).required(),
+
+    ageMax: yup
+      .number()
+      .max(100)
+      .test(
+        "age-max-check",
+        "최대 나이는 최소 나이보다 커야 합니다.",
+        function (value) {
+          return value >= this.parent.ageMin;
+        },
+      )
+      .required(),
+
+    genderLimit: yup.string().oneOf(["all", "male", "female"]).required(),
+
+    totalPrice: yup
+      .number()
+      .typeError("숫자를 입력해주세요.")
+      .min(0, "금액은 0 이상이어야 합니다.")
+      .nullable(),
+
+    costType: yup
+      .string()
+      .oneOf(["per_person", "host_covered", "free", "custom"])
+      .required(),
+  }),
+
+  files: yup
+    .array()
+    .of(yup.mixed())
+    .max(10, "이미지는 최대 10개까지 업로드 가능합니다."),
+
+  detailSchedule: yup
+    .array()
+    .of(
+      yup.object({
+        dayNumber: yup.number().required(),
+
+        title: yup.string().required("일정 제목을 입력해주세요.").max(50),
+
+        description: yup
+          .string()
+          .required("일정 설명을 입력해주세요.")
+          .max(500),
+      }),
+    )
+    .min(1, "최소 하루 이상의 일정이 필요합니다."),
+});

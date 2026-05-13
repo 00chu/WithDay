@@ -3,23 +3,25 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchScheduleDetail } from "../../features/schedule/api";
 import { getAuthUser } from "../../features/auth/lib/getAuthUser";
-import {
-  useScheduleApplicantsQuery,
-} from "../../features/participation/model/queries";
-import {
-  useUpdateParticipationStatusMutation,
-} from "../../features/participation/model/mutations";
+import { useScheduleApplicantsQuery } from "../../features/participation/model/queries";
+import { useUpdateParticipationStatusMutation } from "../../features/participation/model/mutations";
 import ParticipationFeedback from "../../features/participation/ui/ParticipationFeedback/ParticipationFeedback";
 import HostParticipationList from "../../features/participation/ui/HostParticipationList/HostParticipationList";
 
-// 위젯 및 피처 불러오기
-import ScheduleImageSlider from "../../features/schedule/ui/ScheduleImageSlider";
-import ScheduleInfo from "../../features/schedule/ui/ScheduleInfo";
-import ScheduleDailyPlan from "../../features/schedule/ui/ScheduleDailyPlan";
-import ApplyScheduleButton from "../../features/schedule/ui/ApplyScheduleButton";
-
-// 스타일
+import Button from "../../shared/ui/Button/Button";
+import PlaceIcon from "@mui/icons-material/Place";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import PeopleIcon from "@mui/icons-material/People";
+import PaymentsIcon from "@mui/icons-material/Payments";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import styles from "./ScheduleDetail.module.css";
+
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import "yet-another-react-lightbox/styles.css";
+import ApplyScheduleButton from "../../features/schedule/ui/ApplyScheduleButton";
 
 export default function ScheduleDetail() {
   const { scheduleId } = useParams();
@@ -28,12 +30,9 @@ export default function ScheduleDetail() {
   const authUser = useMemo(() => getAuthUser(), []);
   const authEmail = authUser?.email?.trim() ?? "";
 
-  // 🌟 React Query 적용: 로딩 상태, 에러, 데이터 캐싱을 한 번에 관리
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["schedule", scheduleId],
-    queryFn: () => fetchScheduleDetail(scheduleId),
-    staleTime: 1000 * 60 * 5, // 5분 동안은 새로고침 없이 캐시 데이터 사용
-  });
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const {
     data: applicants = [],
@@ -49,11 +48,12 @@ export default function ScheduleDetail() {
     useUpdateParticipationStatusMutation();
 
   const isApplicantsForbidden = applicantsError?.response?.status === 403;
-  const applicantsErrorMessage = applicantsError && !isApplicantsForbidden
-    ? applicantsError?.response?.data?.message ??
-      applicantsError?.response?.data ??
-      "신청자 목록을 불러오지 못했습니다."
-    : "";
+  const applicantsErrorMessage =
+    applicantsError && !isApplicantsForbidden
+      ? applicantsError?.response?.data?.message ??
+        applicantsError?.response?.data ??
+        "신청자 목록을 불러오지 못했습니다."
+      : "";
 
   const handleCloseFeedback = useCallback((event, reason) => {
     if (reason === "clickaway") {
@@ -107,7 +107,8 @@ export default function ScheduleDetail() {
 
         setFeedback({
           severity: "error",
-          message: typeof message === "string" ? message : "상태 변경에 실패했습니다.",
+          message:
+            typeof message === "string" ? message : "상태 변경에 실패했습니다.",
         });
       }
     },
@@ -122,26 +123,207 @@ export default function ScheduleDetail() {
   if (!data || !data.schedule)
     return <div className={styles.container}>일정 정보가 없습니다.</div>;
 
-  const { schedule, details, images } = data;
+  const schedule = data.schedule;
+  const details = data.details || [];
+  const rawImages = data.images || [];
+
+  // isThumbnail이 1인 이미지를 가장 앞으로 정렬한 뒤 URL 추출
+  const imageUrls =
+    rawImages.length > 0
+      ? [...rawImages]
+          .sort((a, b) => b.isThumbnail - a.isThumbnail)
+          .map((img) => img.imageUrl)
+      : schedule.thumbnailImage
+      ? [schedule.thumbnailImage]
+      : ["https://placehold.co/800x400?text=No+Image"];
+
+  const nextSlide = () =>
+    setCurrentImg((prev) => (prev === imageUrls.length - 1 ? 0 : prev + 1));
+  const prevSlide = () =>
+    setCurrentImg((prev) => (prev === 0 ? imageUrls.length - 1 : prev - 1));
+
+  const handleApply = () => {
+    const confirmJoin = window.confirm("이 일정에 참여 신청을 하시겠습니까?");
+    if (confirmJoin) {
+      alert("신청이 완료되었습니다! 주최자의 승인을 기다려주세요.");
+    }
+  };
+
+  const lightboxSlides = imageUrls.map((url) => ({ src: url }));
+
+  const displayStartTime = schedule.startDate || "미정";
+  const displayEndTime = schedule.endDate || "미정";
+
+  const costTypeMap = {
+    per_person: "총액 1/N",
+    host_covered: "호스트 부담",
+    free: "무료",
+    custom: "인당 고정 금액",
+  };
 
   return (
     <div className={styles.container}>
-      {/* 1. 이미지 슬라이더 영역 */}
-      <ScheduleImageSlider
-        images={images}
-        thumbnail={schedule.thumbnailImage}
-      />
+      {/* 1. 이미지 영역 */}
+      <section className={styles.imageSection}>
+        <div className={styles.slider}>
+          <img
+            src={imageUrls[currentImg]}
+            alt="일정 이미지"
+            className={styles.mainImage}
+            onClick={() => setIsViewerOpen(true)}
+            style={{ cursor: "pointer" }}
+          />
+          {imageUrls.length > 1 && (
+            <>
+              <button className={styles.prevBtn} onClick={prevSlide}>
+                <ChevronLeftIcon />
+              </button>
+              <button className={styles.nextBtn} onClick={nextSlide}>
+                <ChevronRightIcon />
+              </button>
+              <div className={styles.indicator}>
+                {currentImg + 1} / {imageUrls.length}
+              </div>
+            </>
+          )}
+        </div>
+      </section>
 
-      {/* 2. 상세 정보 영역 */}
-      <ScheduleInfo schedule={schedule} />
+      <div className={styles.contentWrapper}>
+        {/* 2. 제목 및 요약 정보 */}
+        <section className={styles.headerSection}>
+          <div className={styles.badgeWrapper}>
+            <span className={styles.categoryBadge}>{schedule.category}</span>
+            <span
+              className={
+                schedule.status === "recruiting"
+                  ? styles.statusOpen
+                  : styles.statusClosed
+              }
+            >
+              {schedule.status === "recruiting" ? "모집중" : "모집종료"}
+            </span>
+          </div>
+          <h1 className={styles.title}>{schedule.title}</h1>
+          <div className={styles.metaInfo}>
+            <span>
+              <VisibilityIcon fontSize="small" /> {schedule.viewCount}
+            </span>
+            <span>
+              <PlaceIcon fontSize="small" /> {schedule.region}
+            </span>
+          </div>
+        </section>
 
-      {/* 3. 세부 일정 (Day-by-Day) */}
-      {details && details.length > 0 && (
-        <>
-          <hr className={styles.divider} />
-          <ScheduleDailyPlan details={details} />
-        </>
-      )}
+        <hr className={styles.divider} />
+
+        {/* 3. 상세 조건 */}
+        <section className={styles.infoGrid}>
+          <div className={styles.infoItem}>
+            <CalendarTodayIcon className={styles.icon} />
+            <div>
+              <p className={styles.label}>일정 기간</p>
+              <p className={styles.value}>
+                {displayStartTime} ~ {displayEndTime}
+              </p>
+            </div>
+          </div>
+          <div className={styles.infoItem}>
+            <PeopleIcon className={styles.icon} />
+            <div>
+              <p className={styles.label}>모집 인원 / 조건</p>
+              <p className={styles.value}>
+                {schedule.currentParticipants} / {schedule.maxParticipants}명
+                (최소 {schedule.minParticipants}명)
+              </p>
+              <p className={styles.subValue}>
+                {schedule.genderLimit === "all"
+                  ? "성별 무관"
+                  : schedule.genderLimit}{" "}
+                | {schedule.ageMin}세 ~ {schedule.ageMax}세
+              </p>
+            </div>
+          </div>
+          <div className={styles.infoItem}>
+            <PaymentsIcon className={styles.icon} />
+            <div>
+              <p className={styles.label}>예상 비용</p>
+              <p className={styles.value}>
+                총{" "}
+                {schedule.totalPrice ? schedule.totalPrice.toLocaleString() : 0}
+                원
+              </p>
+              <p className={styles.subValue}>
+                정산 방식: {costTypeMap[schedule.costType] || schedule.costType}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <hr className={styles.divider} />
+
+        {/* 4. 본문 상세 설명 */}
+        <section className={styles.descriptionSection}>
+          <h2 className={styles.subTitle}>상세 설명</h2>
+          <p
+            className={styles.descriptionText}
+            style={{ whiteSpace: "pre-wrap" }}
+          >
+            {schedule.description}
+          </p>
+        </section>
+
+        <hr className={styles.divider} />
+
+        {/* 5. 세부 일정 */}
+        {details.length > 0 && (
+          <section className={styles.descriptionSection}>
+            <h2 className={styles.subTitle}>세부 일정 (Day-by-Day)</h2>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                marginTop: "1rem",
+              }}
+            >
+              {details.map((detail) => (
+                <div
+                  key={detail.id}
+                  style={{
+                    padding: "1rem",
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <h3
+                    style={{
+                      margin: "0 0 0.5rem 0",
+                      color: "#1976d2",
+                      fontSize: "1.1rem",
+                    }}
+                  >
+                    Day {detail.dayNumber}
+                  </h3>
+                  <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
+                    {detail.title}
+                  </h4>
+                  <p
+                    style={{
+                      margin: 0,
+                      color: "#555",
+                      fontSize: "0.95rem",
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {detail.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
 
       {authEmail && !isApplicantsForbidden && (
         <HostParticipationList
@@ -164,10 +346,16 @@ export default function ScheduleDetail() {
         </div>
 
         {/* 🌟 분리해둔 기능(Feature) 컴포넌트 마운트 */}
-        <ApplyScheduleButton scheduleId={schedule.id} status={schedule.status} />
+        <ApplyScheduleButton
+          scheduleId={schedule.id}
+          status={schedule.status}
+        />
       </footer>
 
-      <ParticipationFeedback feedback={feedback} onClose={handleCloseFeedback} />
+      <ParticipationFeedback
+        feedback={feedback}
+        onClose={handleCloseFeedback}
+      />
     </div>
   );
 }

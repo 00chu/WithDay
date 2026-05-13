@@ -71,8 +71,8 @@ export default function Home() {
             {submittedKeyword
               ? "검색 결과"
               : activeCategory === "all"
-                ? "방금 올라온 일정"
-                : `${CATEGORY_MAP[activeCategory]} 일정`}
+              ? "방금 올라온 일정"
+              : `${CATEGORY_MAP[activeCategory]} 일정`}
           </h2>
           <Button variant="outline" size="md">
             더보기

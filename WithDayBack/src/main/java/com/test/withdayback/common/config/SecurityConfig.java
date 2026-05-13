@@ -2,6 +2,7 @@ package com.test.withdayback.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,8 +28,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 추가하래서 일단 해놨어요
                         // 💡 일정 상세 조회(schedules/...) 주소를 허용 목록에 추가!
                         .requestMatchers(
+
                                 "/users/signup",
                                 "/users/login",
                                 "/users/terms",
@@ -36,7 +39,8 @@ public class SecurityConfig {
                                 "/users/social-signup",
                                 "/users/email-verification",
                                 "/schedules/**",
-                                "/participations/**"
+                                "/participations/**",
+                                "/region/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

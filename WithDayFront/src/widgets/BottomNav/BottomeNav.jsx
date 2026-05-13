@@ -25,7 +25,7 @@ export default function BottomNav() {
         // navigate("/search"); // 나중에 탐색 페이지 생기면 주석 해제
         break;
       case 2:
-        // navigate("/add"); // 추가 페이지
+        navigate("/write"); // 추가 페이지
         break;
       case 3:
         navigate("/my-schedule");
