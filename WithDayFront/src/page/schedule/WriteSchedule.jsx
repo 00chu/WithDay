@@ -595,7 +595,6 @@ const WriteSchedule = () => {
               <AddThumbnail
                 images={images}
                 setImages={setImages}
-                files={files}
                 setFiles={setFiles}
               />
             </div>
@@ -693,7 +692,7 @@ const ScheduleTable = ({
       description: "",
     }));
     setDetailSchedule(arr);
-  }, [startDate, endDate]);
+  }, [startDate, endDate, setDetailSchedule]);
 
   const handleChange = (index, key, value) => {
     setDetailSchedule((prev) =>
@@ -739,8 +738,13 @@ const ScheduleTable = ({
   );
 };
 
-const AddThumbnail = ({ images, setImages, files, setFiles }) => {
+const AddThumbnail = ({ images, setImages, setFiles }) => {
   const fileInputRef = useRef(null);
+  const imageUrlsRef = useRef([]);
+
+  useEffect(() => {
+    imageUrlsRef.current = images;
+  }, [images]);
 
   // 이미지 추가
   const addImage = (file) => {
@@ -778,11 +782,11 @@ const AddThumbnail = ({ images, setImages, files, setFiles }) => {
 
   // 클릭 업로드
   const handleClick = () => {
-    fileInputRef.current.click();
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = (e) => {
-    const filesArr = Array.from(e.target.files);
+    const filesArr = Array.from(e.target.files ?? []);
     const availableSlots = 3 - images.length;
 
     if (availableSlots <= 0) {
@@ -814,7 +818,7 @@ const AddThumbnail = ({ images, setImages, files, setFiles }) => {
   // ✅ 컴포넌트 사라질 때만 전체 revoke
   useEffect(() => {
     return () => {
-      images.forEach((url) => URL.revokeObjectURL(url));
+      imageUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);
 

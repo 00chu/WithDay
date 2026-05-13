@@ -3,7 +3,35 @@
 
 <mapper namespace="com.test.withdayback.schedule.dao.ScheduleDao">
     <select id="selectScheduleById" resultType="Schedule">
-        SELECT *
+        SELECT
+            id,
+            user_id AS userId,
+            title,
+            description,
+            category,
+            region,
+            detail_region AS detailRegion,
+            chat_link AS chatLink,
+            start_date AS startDate,
+            end_date AS endDate,
+            recruit_start_date AS recruitStartDate,
+            recruit_end_date AS recruitEndDate,
+            min_participants AS minParticipants,
+            max_participants AS maxParticipants,
+            current_participants AS currentParticipants,
+            age_min AS ageMin,
+            age_max AS ageMax,
+            gender_limit AS genderLimit,
+            total_price AS totalPrice,
+            cost_type AS costType,
+            thumbnail_image AS thumbnailImage,
+            view_count AS viewCount,
+            status,
+            is_public AS isPublic,
+            cancel_deadline AS cancelDeadline,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            deleted_at AS deletedAt
         FROM schedule
         WHERE id = #{id}
           AND deleted_at IS NULL
@@ -43,7 +71,18 @@
     </update>
 
     <select id="getAllSchedules" resultType="Schedule">
-        SELECT id, user_id, category, title, region, start_date, end_date, current_participants, max_participants, created_at
+        SELECT
+            id,
+            user_id AS userId,
+            category,
+            title,
+            region,
+            detail_region AS detailRegion,
+            start_date AS startDate,
+            end_date AS endDate,
+            current_participants AS currentParticipants,
+            max_participants AS maxParticipants,
+            created_at AS createdAt
         FROM schedule
         <where>
             deleted_at IS NULL
