@@ -4,13 +4,11 @@ import com.test.withdayback.schedule.dto.ScheduleRequestDTO;
 import com.test.withdayback.schedule.dto.ScheduleResponseDTO;
 import com.test.withdayback.schedule.service.ScheduleService;
 import com.test.withdayback.schedule.vo.Schedule;
-import com.test.withdayback.schedule.vo.ScheduleDetail;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 import java.util.List;
 
@@ -54,5 +52,14 @@ public class ScheduleController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(list);
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> insertSchedule(
+            @RequestPart("data") ScheduleRequestDTO dto,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ) {
+        scheduleService.insertSchedule(dto, images);
+        return ResponseEntity.ok("success");
     }
 }

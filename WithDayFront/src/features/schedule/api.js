@@ -4,9 +4,6 @@ const BASE_URL = import.meta.env.VITE_BACKSERVER;
 
 export const api = axios.create({
   baseURL: `http://${BASE_URL}`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 export const fetchScheduleDetail = async (scheduleId) => {
@@ -37,7 +34,6 @@ export const fetchSchedules = async ({ category, keyword }) => {
 };
 
 export const insertSchedule = async (post, images, detailSchedule) => {
-  // key로 나눠서 formData에 모든 값을 넣음
   const formData = new FormData();
 
   const formatDate = (date) => {
