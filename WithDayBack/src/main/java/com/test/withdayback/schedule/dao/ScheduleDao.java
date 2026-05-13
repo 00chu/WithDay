@@ -35,4 +35,6 @@ public interface ScheduleDao {
             @Param("scheduleId") Long scheduleId,
             @Param("imageUrls") List<String> imageUrls
     );
+
+    String getEmailByScheduleId(Long id);
 }

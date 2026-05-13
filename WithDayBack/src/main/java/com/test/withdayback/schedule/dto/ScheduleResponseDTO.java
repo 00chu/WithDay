@@ -17,6 +17,7 @@ import java.util.List;
 public class ScheduleResponseDTO {
     private Long id;
     private String userId;
+    private String email;
     private Schedule schedule;
     private List<ScheduleDetail> details;
     private List<ScheduleImage> images;

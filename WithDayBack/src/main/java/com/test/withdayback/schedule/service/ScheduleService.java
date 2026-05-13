@@ -32,6 +32,8 @@ public class ScheduleService {
     }
 
     public ScheduleResponseDTO getScheduleFullDetails(Long id) {
+        String email = scheduleDao.getEmailByScheduleId(id);
+
         // 1. 일정 기본 정보 조회
         Schedule schedule = scheduleDao.selectScheduleById(id);
 
@@ -44,7 +46,7 @@ public class ScheduleService {
         List<ScheduleImage> images = scheduleDao.selectImageByScheduleId(id);
 
         // 3. 조립
-        return new ScheduleResponseDTO(null, null, schedule, details, images);
+        return new ScheduleResponseDTO(null, null, email, schedule, details, images);
     }
 
     // 🌟 파라미터를 받아서 Dao로 넘겨주도록 수정
