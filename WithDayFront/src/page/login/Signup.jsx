@@ -251,7 +251,7 @@ const Signup = () => {
     }
   };
 
-  // ✅ [인증하기] 버튼을 눌렀을 때
+  // 인증하기 버튼을 눌렀을 때(이메일 인증번호)
   const handleVerifyCode = () => {
     // 내가 입력한 값(mailAuthInput)과 숨겨둔 정답(mailAuthCode)이 완벽히 똑같다면?
     if (mailAuthCode === mailAuthInput && mailAuthInput !== "") {
