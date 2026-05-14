@@ -170,14 +170,16 @@ const UpdateSchedule = () => {
   const queryClient = useQueryClient();
 
   const handleSubmit = async (e) => {
+    // form을 제출했을 때 페이지 새로고침을 방지
     e.preventDefault();
 
     try {
       await insertSchema.validate(
         { post, files, detailSchedule },
-        { abortEarly: false },
+        { abortEarly: false }, // 오류를 한 번에 모음
       );
 
+      // DB 업데이트
       const res = await updateSchedule(
         scheduleId,
         post,
@@ -188,11 +190,14 @@ const UpdateSchedule = () => {
 
       console.log("수정 성공", res);
 
+      // React Query 캐시 갱신 (기존 캐시를 삭제하고 데이터를 서버에서 다시 가져옴)
+      // 새로고침 하지 않아도 변경된 데이터가 반영될 수 있도록 함.
       await queryClient.invalidateQueries({
         queryKey: ["schedule-detail", Number(scheduleId)],
       });
 
-      navigate("/");
+      // 수정 완료 후 수정한 일정 상세 페이지로 이동
+      navigate(`/schedule/${scheduleId}`);
     } catch (err) {
       if (err.name === "ValidationError") {
         const messages = err.inner.map((e) => e.message);
