@@ -46,123 +46,143 @@ const Signup = () => {
     severity: "success", // 알림창의 디자인 테마 (색상, 아이콘)
   });
 
-  const [isPostcodeOpen, setIsPostcodeOpen] = useState(false); // 주소 찾기 팝업 스위치
-  const [openTerms, setOpenTerms] = useState(null); // 약관 팝업 스위치 (어떤 약관을 열었는지 글자로 저장)
+  const [isPostcodeOpen, setIsPostcodeOpen] = useState(false); // 주소 검색창을 킬지 끌지 정하는 state
+  const [openTerms, setOpenTerms] = useState(null); // 약관 팝업용 state(어떤 약관을 열었는지 문자열로 저장, null / "TOS" / "PRIVACY" / "MARKETING")
 
-  const [showPw, setShowPw] = useState(false); // 첫 번째 비번 눈알 스위치
-  const [showPwConfirm, setShowPwConfirm] = useState(false); // 두 번째 비번(확인용) 눈알 스위치
-  const [isSubmitAttempted, setIsSubmitAttempted] = useState(false); // 유저가 [가입 완료] 버튼을 한 번이라도 눌렀는지 기억함 (에러 띄울 때 씀)
+  const [showPw, setShowPw] = useState(false); // 비밀번호 보임/숨김 결정하는 state
+  const [showPwConfirm, setShowPwConfirm] = useState(false); // 비밀번호 확인 보임/숨김 결정하는 state
+  const [isSubmitAttempted, setIsSubmitAttempted] = useState(false); // 회원가입 버튼을 한 번이라도 눌렀는지 체크하는 state(버튼을 누르지 않으면 에러도 안 띄울거기 때문에 버튼을 누르면 에러를 띄울때 사용)
 
-  // 📧 [이메일 인증 전용 상태들]
-  // mailAuth: 현재 진행 단계 (0: 아무것도 안함, 1: 서버로 발송중, 2: 발송완료 및 타이머 도는중, 3: 인증 완벽히 성공!)
-  const [mailAuth, setMailAuth] = useState(0);
-  const [mailAuthCode, setMailAuthCode] = useState(null); // 백엔드가 몰래 보내준 '진짜 정답 번호'
-  const [mailAuthInput, setMailAuthInput] = useState(""); // 유저가 입력창에 열심히 치고 있는 번호
+  const [mailAuth, setMailAuth] = useState(0); // 현재 이메일 인증 상태 state (0: 인증번호 안보낸 상태, 1: 인증번호 보내는중, 2: 인증번호 발송 완료 및 타이머 작동, 3: 인증 성공)
+  const [mailAuthCode, setMailAuthCode] = useState(null); // 백엔드에서 생성한 이메일 인증 번호 state
+  const [mailAuthInput, setMailAuthInput] = useState(""); // 유저가 인증번호 입력창에 입력한 번호 state
 
-  const [time, setTime] = useState(180); // 180초 = 3분 타이머의 남은 시간
-  // useRef: 값이 변해도 화면을 다시 그리지(렌더링) 않는 변수. 타이머(setInterval)의 고유 ID를 저장하는 '리모컨' 역할
-  const timerRef = useRef(null);
+  const [time, setTime] = useState(180); // 인증번호 타이머의 남은 시간 state (180초)
+  const timerRef = useRef(null); // 시간(180초) 자체는 state로 화면에 렌더링하고, 이 ref는 나중에 타이머를 끌 때 필요한 타이머 ID만 화면 렌더링 영향 없이 담아두는 용도
 
-  // 하단 알림창 닫는 함수
+  // 알림창 끄기버튼(X표시) 누르거나 시간 지나면 닫히게(UI 하단의 Snackbar 태그에 있는 autoHideDuration 속성으로 시간이 되면 자동으로 닫힘.)하는 함수,
+  // reason: 알림창(토스트)가 닫히는 이유, event: 여기선 안쓰긴 하는데 마우스의 x,y 좌표및 어떤 html태그를 클릭했는지등의 정보를 가짐
   const handleCloseToast = (event, reason) => {
-    if (reason === "clickaway") return;
-    setToast((prev) => ({ ...prev, open: false }));
+    // reason 즉 닫히는 이유가 바깥 클릭이면 닫히는 걸 막음.
+    if (reason === "clickaway") {
+      return;
+    }
+    setToast((prev) => ({ ...prev, open: false })); // 기존상태 유지하게하고, 토스트의 open을 false로 해야 알람이 닫힘.
   };
 
-  // 📋 React Hook Form: 폼 관리를 맡김
+  // React Hook Form(useForm으로 사용) 초기화 및 설정. 이때 yup이 보안 규칙을 정해놓고 가지고 있는데 그걸 가져올거임.
   const {
-    register,
-    handleSubmit,
-    setValue,
-    getValues,
-    watch,
-    formState: { errors },
+    register, // 아래의 UI에서 email, pw등을 가져올 명찰
+    handleSubmit, // 에러(signupSchema 규칙 틀림)가 있으면 통과 안시켜주고, 규칙을 다 지키면 진짜 제출 함수(onSubmit)를 실행시켜 줌.
+    setValue, // 직접 타이핑하지 않고도 코드를 통해 강제로 값을 넣기위해 사용.
+    getValues, // 인증번호 전송을 눌렀을때 렌더링없이(watch처럼 렌더링이 필요없기에) email input칸에 있는값을 백엔드로 보낼때 사용.
+    watch, // 특정 입력창(체크박스등도 포함)을 보고 값이 바뀔때마다 화면에 반영함(렌더링). 여기선 약관 3개를 다 체크하면 전체체크에도 자동으로 체크되게 만들때 사용.
+    formState: { errors }, // 에러(signupSchema 규칙 틀림)발생시 에러문구를 signupSchema에서 가져옴.
   } = useForm({
-    resolver: yupResolver(signupSchema), // yup 규칙대로 감시
-    mode: "onChange", // 타이핑할 때마다 실시간으로 에러를 잡아내거나 지워줌
+    resolver: yupResolver(signupSchema), // authSchema(yup)의 signupSchema 규칙대로 검사한다고 지정
+    mode: "onChange", // 로그인때는 onSubmit이었지만 이번엔 완전히 반대로 타이핑 할때마다 실시간으로 검사함.
+    // 약관 체크박스는 처음에 모두 false(체크해제) 상태로 시작
     defaultValues: {
-      // 약관 체크박스는 처음에 모두 false(체크해제) 상태로 시작
       agreeTos: false,
       agreePrivacy: false,
       agreeMarketing: false,
     },
-  });
+  }); // 여기서 세팅한 폼은 UI의 <form onSubmit={handleSubmit(onSubmit)}> 와 연결되어 검사 통과 시 onSubmit 함수로 데이터를 넘겨주고 mutation.mutate를 통해 백엔드로 값을 보냄.
 
-  // 💡 [전체 동의 로직] watch로 3개의 체크박스를 째려보고 있다가, 3개 다 true면 allAgreed도 true가 됨
+  // watch로 3개의 체크박스를 실시간으로 확인하여 3개 다 true면 allAgreed도 true가 됨.
   const allAgreed =
     watch("agreeTos") && watch("agreePrivacy") && watch("agreeMarketing");
-  // '전체 동의' 체크박스를 클릭했을 때 발동!
+
+  // 전체 동의 체크박스를 클릭했을 때
   const handleAgreeAll = (e) => {
-    const isChecked = e.target.checked; // 현재 눌린 전체동의 박스가 true인지 false인지
-    // setValue를 통해 강제로 나머지 3개 박스의 값을 똑같이 맞춰버림 (shouldValidate를 켜서 에러 메시지도 즉시 없애줌)
+    const isChecked = e.target.checked; // 전체동의 박스가 체크(true)인지 체크해제(false)인지 저장.
+    // setValue(target이름, 넣을 값(value), 추가 옵션 객체(options))를 통해 강제로 나머지 3개 박스의 값을 똑같이 isChecked로 바꿈.
+    // shouldValidate를 써서 yup의 검사를 다시함. 이유: setValue는 watch처럼 값이 바뀐다고 렌더링되지 않음. setValue만으로는 yup 검사를 하지않음.
     setValue("agreeTos", isChecked, { shouldValidate: true });
     setValue("agreePrivacy", isChecked, { shouldValidate: true });
     setValue("agreeMarketing", isChecked, { shouldValidate: true });
   };
 
-  // 📝 백엔드에서 약관 데이터 가져오기 (GET)
+  // 백엔드에서 약관 데이터 가져오기(useQuery니까 페이지 들어가자마자 데이터 가져옴)
+  // 백엔드에서 가져온 데이터(data)를 termsData라고 부를거임.
   const { data: termsData } = useQuery({
-    queryKey: ["terms"],
-    queryFn: fetchTerms,
+    queryKey: ["terms"], // fetchTerms로 가져온 데이터를 terms라고 저장.
+    queryFn: fetchTerms, // api.js에 있는 fetchTerms로 GET 요청 함수 실행해서 백엔드에서 약관 정보를 가져옴.
   });
 
-  // 모달창 띄울 때 넘겨받은 타입(TOS 등)에 따라 한글 제목을 돌려주는 헬퍼 함수
+  // 백엔드/코드에서 쓰는 약관 이름(TOS 등)을 한글로 바꿔주는 함수 (약관 제목용)
   const getTermTitle = (type) => {
-    if (type === "TOS") return "이용약관";
-    if (type === "PRIVACY") return "개인정보 수집 및 이용";
-    if (type === "MARKETING") return "마케팅 정보 수신";
-    return "약관";
+    if (type === "TOS") {
+      return "이용약관";
+    } else if (type === "PRIVACY") {
+      return "개인정보 수집 및 이용";
+    } else if (type === "MARKETING") {
+      return "마케팅 정보 수신";
+    } else {
+      return "약관"; // 앞의 TOS, PRIVACY등이 안들어왔을때 빈칸이나 에러 대신 약관을 씀.
+    }
   };
 
-  // 모달창 띄울 때 넘겨받은 타입에 해당하는 진짜 '내용'을 서버 데이터에서 찾아오는 함수
+  // 모달창 띄울 때 넘겨받은 데이터(openTerms state)와 같은 내용(백엔드에서 받아온 termsData)을 찾는 함수 (약관 내용용)
   const getTermContent = (type) => {
-    if (!termsData) return "약관 데이터를 불러오는 중입니다...";
-    const term = termsData.find((t) => t.type === type);
+    // 페이지 들어와서 useQuery로 데이터 가져오는중일때 (termsData가 비어있음 -> false)
+    if (!termsData) {
+      return "약관 데이터를 불러오는 중입니다...";
+    }
+    // openTerms state에 설정된 값과 termsData와 같은 것을 찾아서 term에 저장
+    const term = termsData.find((t) => {
+      return t.type === type;
+    });
+    // term은 이용약관 데이터를 다 가지고 있음. 그중 내용을 띄움.
     return term ? term.content : "약관 내용이 없습니다.";
   };
 
-  // 🚀 [핵심] 최종 회원가입 백엔드 요청 (POST)
+  // 회원가입 mutation (백엔드 통신)
   const mutation = useMutation({
-    mutationFn: signupUser, // api.js에 있는 회원가입 전송 함수
+    mutationFn: signupUser, // api.js에 있는 signupUser로 POST 요청 함수 실행해서 백엔드로 회원가입 정보를 보냄
+    // 통신 성공시
     onSuccess: () => {
-      // 통신 성공! 딜레이 없이 즉시 로그인 페이지로 보내면서,
-      // location.state(보따리) 안에 'toastMessage'라는 이름으로 성공 쪽지를 써서 보냄!
       navigate("/login", {
-        state: { toastMessage: "환영합니다! 회원가입이 완료되었습니다." },
+        state: { toastMessage: "환영합니다! 회원가입이 완료되었습니다." }, // login의 useEffect와 연계. login의 location.state?.toastMessage로 알람창(toast)을 보냄.
       });
     },
+    // 통신 실패시
     onError: (error) => {
-      // 실패하면 서버가 보낸 에러 메시지를 꺼내서 알림창에 띄움
-      const errMsg = error.response?.data || "회원가입에 실패했습니다.";
-      setToast({ open: true, message: errMsg, severity: "error" });
+      // 서버가 준 에러 메세지를 알림창에 띄움
+      const errMsg = error.response?.data || "회원가입에 실패했습니다."; // 백엔드 기본 응답(예: "이미 있는 이메일입니다.") or 커스텀"실패"메세지
+      setToast({ open: true, message: errMsg, severity: "error" }); //// 알림창(토스트) 세팅
     },
   });
 
-  // 🏠 주소 찾기 팝업에서 유저가 주소를 딱! 클릭했을 때 실행되는 함수
+  // 주소 찾기 팝업에서 주소를 클릭했을 때 실행되는 함수
   const handleCompletePostcode = (data) => {
-    let fullAddress = data.address; // 카카오가 준 기본 주소
-    let extraAddress = ""; // 괄호 안에 들어갈 추가 주소 (예: 아파트 이름)
+    let fullAddress = data.address; // 카카오가 준 기본 주소 (예: "경기 성남시 분당구 판교역로 166")
+    let extraAddress = ""; // 괄호 안에 들어갈 추가 주소 (아파트 이름, 동이름등)
 
-    // 법정동이나 건물 이름이 있으면 조립해줌
+    // R: Road(도로명 주소), J: Jibun(지번 주소) / 도로명 주소일 때 괄호 치고 (법정동, 건물명) 이런식으로 씀.
     if (data.addressType === "R") {
-      if (data.bname !== "") extraAddress += data.bname;
-      if (data.buildingName !== "")
+      if (data.bname !== "") {
+        extraAddress += data.bname; // 위에서 extraAddress가 괄호에 들어간다 했음. 법정동 이름(예: 백현동)
+      }
+      if (data.buildingName !== "") {
         extraAddress +=
-          extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
-      fullAddress += extraAddress !== "" ? ` (${extraAddress})` : ""; // 최종 완성: 인천 남동구 구월동 (ㅇㅇ아파트)
+          extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName; // buildingName: 건물 이름(예: 카카오 판교아지트) / extraAddress가 비어있지 않으면 (~~, 건물이름)으로 들어가고 비어있으면 (건물이름)만 들어감.
+      }
+      fullAddress += extraAddress !== "" ? ` (${extraAddress})` : ""; // fullAddress + extraAddress 했을때 비어있지 않으면 -> 최종 완성: 인천 남동구 구월동 (ㅇㅇ아파트)
     }
 
-    // 폼 안에 있는 postcode, address 필드에 조립한 값을 억지로 쑤셔넣음
-    setValue("postcode", data.zonecode);
-    setValue("address", fullAddress);
-    setIsPostcodeOpen(false); // 주소 찾았으니 팝업은 닫아줌
+    // 폼(input) 안에 있는 postcode, address에 setValue로 값을 넣음.
+    setValue("postcode", data.zonecode); // 카카오가 준 우편번호
+    setValue("address", fullAddress); // 최종 완성된 주소
+    setIsPostcodeOpen(false); // 주소 찾았으니 팝업은 닫음.
   };
 
-  // ✉️ [인증번호 전송] 버튼을 눌렀을 때
+  // 인증번호 전송 버튼을 눌렀을 때
   const handleSendMail = async () => {
-    const emailValue = getValues("email"); // 현재 이메일 칸에 적힌 글씨 가져오기
+    const emailValue = getValues("email"); // 이메일 input에 적힌 글씨를 getValues로 가져옴.
+    // emailValue가 비어있으면
     if (!emailValue) {
-      // 빈칸이면 욕먹음
+      // 토스트 세팅
       setToast({
         open: true,
         message: "이메일을 먼저 입력해주세요.",
@@ -171,12 +191,16 @@ const Signup = () => {
       return;
     }
 
-    // 전송 시작 전: 3분 타이머 초기화, 예전 정답 삭제, 혹시 돌고 있는 예전 타이머 정지
-    setTime(180);
-    setMailAuthCode(null);
-    if (timerRef.current) window.clearInterval(timerRef.current);
+    // 여기서는 MailAuth(0)으로 기본값이니 전송 시작 전
+    setTime(180); // 180초 세팅
+    setMailAuthCode(null); // 인증번호 초기화
+    // 현재 타이머가 있다면(이전에 작동한 타이머)
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current); // 타이머 정지
+    }
 
-    setMailAuth(1); // 상태변경 -> 버튼 글씨가 '발송 중...'으로 바뀜
+    setMailAuth(1); // 인증번호 전송중인 상태
+    // 토스트 세팅
     setToast({
       open: true,
       message: "인증번호를 발송 중입니다...",
@@ -184,41 +208,46 @@ const Signup = () => {
     });
 
     try {
-      // 백엔드에 이메일 쏘고 응답 기다림
+      // 백엔드에 이메일 보내주고 응답 기다림(await)
       const res = await sendEmailVerification(emailValue);
+
+      // 토스트 세팅(await가 끝나야 이 코드가 작동)
       setToast({
         open: true,
         message: "이메일로 인증번호가 발송되었습니다!",
         severity: "success",
       });
-      setMailAuthCode(String(res)); // 백엔드가 보내준 진짜 정답(숫자)을 문자로 바꿔서 숨겨둠
-      setMailAuth(2); // 상태변경 -> 이제 유저가 입력할 차례!
+      setMailAuthCode(String(res)); // 백엔드가 보내준 인증번호를 문자로 바꿔서 state에 저장
+      setMailAuth(2); // 인증번호 발송 완료 및 타이머 작동 상태
 
-      // 1초(1000ms)마다 1씩 숫자를 깎는 시한폭탄 타이머 가동
+      // 1초(1000ms)마다 1씩 값을 내리는 타이머 작동
       timerRef.current = window.setInterval(() => {
         setTime((prev) => {
+          // 시간이 0이 되면 왜 prev <= 0이 아니지?
           if (prev <= 1) {
-            // 시간이 0이 되면
-            window.clearInterval(timerRef.current); // 타이머 멈춤
+            window.clearInterval(timerRef.current); // 타이머 정지
+            // 토스트 세팅
             setToast({
               open: true,
               message: "인증 시간이 만료되었습니다. 다시 시도해주세요.",
               severity: "warning",
             });
-            setMailAuthCode(null); // 정답 폭파
-            setMailAuth(0); // 다시 처음부터 해라!
+            setMailAuthCode(null); // 인증번호 초기화
+            setMailAuth(0); // 전송 시작 전으로 되돌림
             return 0;
           }
+          // setTime(time - 1)이라고 쓰면, 계속 180 - 1 = 179초만 화면에 띄움. 이유(뭐지..?)
           return prev - 1; // 1초 감소
         });
       }, 1000);
     } catch (err) {
+      // 토스트 세팅 (err일때)
       setToast({
         open: true,
         message: "이메일 발송에 실패했습니다. 이메일을 확인해주세요.",
         severity: "error",
       });
-      setMailAuth(0);
+      setMailAuth(0); // 전송 시작 전으로 되돌림
     }
   };
 
@@ -251,7 +280,7 @@ const Signup = () => {
 
   // 📝 폼에서 [회원가입 완료] 찐 최종 제출 버튼을 눌렀을 때
   const onSubmit = (data) => {
-    setIsSubmitAttempted(true); // "나 지금 가입 시도했음" 상태로 변경 (에러 메시지 띄우는 조건이 됨)
+    setIsSubmitAttempted(true); // "나 지금 가입 시도했음" 상태로 변경 (에러 메세지 띄우는 조건이 됨)
 
     // 인증 안 뚫고 몰래 가입 누르면 여기서 차단당함
     if (mailAuth !== 3) {
@@ -319,6 +348,12 @@ const Signup = () => {
                 <Input
                   type="email"
                   placeholder="example@withday.com"
+                  // 이전 프로젝트에서는 {...register("")} 대신 아래 주석과 같이 사용했었음. 이번엔 react-hook-form 라이브러리를 활용해서 함.
+                  // name="email"
+                  // value={member.email}
+                  // onChange={(e) => {
+                  //   setMember({ ...member, [e.target.name]: e.target.value });
+                  // }}
                   {...register("email")}
                   readOnly={mailAuth > 0}
                 />

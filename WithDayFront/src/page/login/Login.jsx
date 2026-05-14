@@ -84,9 +84,9 @@ const Login = () => {
     },
     // 통신 실패시
     onError: (error) => {
-      // 서버가 준 에러 메시지를 알림창에 띄움
+      // 서버가 준 에러 메세지를 알림창에 띄움
       const errMsg =
-        error.response?.data?.message || error.response?.data || error.message; // 백엔드 커스텀 메시지(예: "비밀번호가 일치하지 않습니다.") -> 백엔드 기본 응답(예: "존재하지 않는 이메일입니다.") -> 네트워크 통신 에러 순으로 탐색(예: "403에러", 백엔드로 못 보낸 상황)
+        error.response?.data?.message || error.response?.data || error.message; // 백엔드 커스텀 메세지(예: "비밀번호가 일치하지 않습니다.") -> 백엔드 기본 응답(예: "존재하지 않는 이메일입니다.") -> 네트워크 통신 에러 순으로 탐색(예: "403에러", 백엔드로 못 보낸 상황)
 
       // 알림창(토스트) 세팅
       setToast({
@@ -157,12 +157,18 @@ const Login = () => {
 
         {/* handleSubmit(onSubmit): HTML 기본 제출 기능을 막고(이게 없으면 html의 form은 누르면 바로 sumbit하려함), React Hook Form의 검증을 거친 후 onSubmit을 실행시킴 */}
         <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-          {/* FormField: 폼 UI의 일관성을 위해 만든 공통 컴포넌트. label과 error 객체만 props로 던져주면, 내부의 children(<Input>)과 조합하여 라벨-입력창-에러메시지 세트를 자동으로 완성해줌. */}
+          {/* FormField: 폼 UI의 일관성을 위해 만든 공통 컴포넌트. label과 error 객체만 props로 던져주면, 내부의 children(<Input>)과 조합하여 라벨-입력창-에러메세지 세트를 자동으로 완성해줌. */}
           <FormField label="이메일" error={errors.email}>
             {/* {...register('email')}: 이 input창을 폼(useForm)이 값을 추적해서, yup(보안규칙)의 'email'규칙과 연결시킴 */}
             <Input
               type="email"
               placeholder="이메일을 입력하세요"
+              // 이전 프로젝트에서는 {...register("")} 대신 아래 주석과 같이 사용했었음. 이번엔 react-hook-form 라이브러리를 활용해서 함.
+              // name="email"
+              // value={member.email}
+              // onChange={(e) => {
+              //   setMember({ ...member, [e.target.name]: e.target.value });
+              // }}
               {...register("email")}
             />
           </FormField>
