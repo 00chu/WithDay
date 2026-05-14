@@ -243,6 +243,7 @@ const Login = () => {
         autoHideDuration={3000}
         onClose={handleCloseToast}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        sx={{ bottom: "80px !important" }}
       >
         <Alert
           onClose={handleCloseToast}

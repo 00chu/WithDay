@@ -319,8 +319,8 @@ const Signup = () => {
     };
 
     // formData 객체에 데이터를 넣은건데 그냥 넣으면 백엔드에서 문자열로 인식함.
-    // 그래서 JSON.stringify(signupData)로 객체를 JSON 문자열로 바꾸고, 
-    // new Blod([...])로 문자열을 마치 하나의 파일덩어리(Blob)처럼 감싸버림. 
+    // 그래서 JSON.stringify(signupData)로 객체를 JSON 문자열로 바꾸고,
+    // new Blod([...])로 문자열을 마치 하나의 파일덩어리(Blob)처럼 감싸버림.
     // { type: "application/json" }은 백엔드에 JSON 파일이라고 알려주는 역할.
     formData.append(
       "signupData",
@@ -388,7 +388,9 @@ const Signup = () => {
                     type="text"
                     placeholder="인증코드 6자리"
                     value={mailAuthInput}
-                    onChange={(e) => {setMailAuthInput(e.target.value)}} // 입력한 값 실시간 저장
+                    onChange={(e) => {
+                      setMailAuthInput(e.target.value);
+                    }} // 입력한 값 실시간 저장
                     disabled={mailAuth === 3} // 인증 완료(mailAuth === 3)면 disabled로 비활성화
                     style={{ paddingRight: "60px" }} // 타이머 자리 만큼 패딩 추가
                   />
@@ -425,7 +427,12 @@ const Signup = () => {
                 style={{ paddingRight: "40px" }} // 눈아이콘 자리만큼 패딩 추가
               />
               {/* 비밀번호 표시/숨기기 아이콘 */}
-              <div className={styles.pwIcon} onClick={() => {setShowPw(!showPw)}}>
+              <div
+                className={styles.pwIcon}
+                onClick={() => {
+                  setShowPw(!showPw);
+                }}
+              >
                 {showPw ? (
                   <VisibilityOffIcon fontSize="small" />
                 ) : (
@@ -509,7 +516,9 @@ const Signup = () => {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => {setIsPostcodeOpen(true)}} // 주소 검색 버튼을 누르면 주소 검색 모달이 열리게 함.
+                onClick={() => {
+                  setIsPostcodeOpen(true);
+                }} // 주소 검색 버튼을 누르면 주소 검색 모달이 열리게 함.
               >
                 주소 검색
               </Button>
@@ -608,7 +617,7 @@ const Signup = () => {
           </Button>
         </form>
         <p className={styles.linkText}>
-          이미 계정이 있으신가요?{" "} {/* {" "}는 띄어쓰기 위해서 */}
+          이미 계정이 있으신가요? {/* {" "}는 띄어쓰기 위해서 */}
           <span
             className={styles.linkClickable}
             onClick={() => navigate("/login")}
@@ -618,12 +627,13 @@ const Signup = () => {
         </p>
       </div>
 
-      {/* MUI 알림창: toast 상태에 따라 화면 하단에 나타났다가 3초(autoHideDuration={3000ms}) 후 사라짐 */}     
+      {/* MUI 알림창: toast 상태에 따라 화면 하단에 나타났다가 3초(autoHideDuration={3000ms}) 후 사라짐 */}
       <Snackbar
         open={toast.open}
         autoHideDuration={3000}
         onClose={handleCloseToast}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        sx={{ bottom: "80px !important" }}
       >
         <Alert
           onClose={handleCloseToast}
@@ -650,14 +660,14 @@ const Signup = () => {
             justifyContent: "space-between",
             alignItems: "center",
           }}
-        > 
+        >
           주소 검색
-          <IconButton onClick={() => setIsPostcodeOpen(false)}> 
+          <IconButton onClick={() => setIsPostcodeOpen(false)}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         {/* DialogContent(내용)의 sx prop으로 스타일링, dividers는 구분선(가로줄)을 생성 */}
-        <DialogContent dividers sx={{ p: 0 }}> 
+        <DialogContent dividers sx={{ p: 0 }}>
           {/* DaumPostcode 컴포넌트 */}
           <DaumPostcode
             onComplete={handleCompletePostcode} // 주소 선택 완료 시 실행되는 함수
