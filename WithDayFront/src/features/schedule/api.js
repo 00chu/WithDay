@@ -16,7 +16,9 @@ export const fetchScheduleDetail = async (scheduleId) => {
   return data;
 };
 
-export const fetchSchedules = async ({ category, keyword }) => {
+const normalizeRegionValue = (value) => value?.trim() ?? "";
+
+export const fetchSchedules = async ({ category, keyword, region }) => {
   const params = {};
 
   // 🌟 "all"이 아닐 때만 백엔드로 카테고리 파라미터를 보냄
@@ -26,6 +28,11 @@ export const fetchSchedules = async ({ category, keyword }) => {
 
   if (keyword) {
     params.keyword = keyword;
+  }
+
+  const normalizedRegion = normalizeRegionValue(region);
+  if (normalizedRegion) {
+    params.region = normalizedRegion;
   }
 
   const { data } = await api.get("/schedules", { params });

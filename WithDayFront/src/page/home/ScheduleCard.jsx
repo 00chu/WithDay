@@ -1,101 +1,87 @@
 import clsx from "clsx";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import Button from "../../shared/ui/Button/Button";
-import { getDDay, formatDateRange, dayjs } from "../../shared/lib/dateUtile";
+import GroupIcon from "@mui/icons-material/Group";
+import { formatDateRange } from "../../shared/lib/dateUtile";
 import styles from "./Home.module.css";
 import { useNavigate } from "react-router-dom";
+import defaultThumbnail from "../../assets/hero.png";
+
+const resolveThumbnail = (schedule) =>
+  schedule?.thumbnailImage?.trim() ||
+  schedule?.thumbnail?.trim() ||
+  schedule?.imageUrl?.trim() ||
+  defaultThumbnail;
 
 export default function ScheduleCard({ schedule }) {
   const navigate = useNavigate();
-  const dday = getDDay(schedule.startDate);
-  const isFull = schedule.currentParticipants >= schedule.maxParticipants;
-  const fillRatio = schedule.currentParticipants / schedule.maxParticipants;
+  const currentParticipants = Number(schedule?.currentParticipants ?? 0);
+  const maxParticipants = Number(schedule?.maxParticipants ?? 0);
+  const isFull = maxParticipants > 0 && currentParticipants >= maxParticipants;
+  const thumbnailSrc = resolveThumbnail(schedule);
+  const locationText = [schedule?.region, schedule?.detailRegion]
+    .filter(Boolean)
+    .join(" · ");
+  const participantText = `${currentParticipants} / ${
+    maxParticipants > 0 ? maxParticipants : "-"
+  }명`;
 
-  const CATEGORY_MAP = {
-    travel: "여행",
-    popup: "팝업",
-    food: "식사",
-    activity: "액티비티",
-    culture: "문화",
-    etc: "기타",
+  const handleCardClick = () => navigate(`/schedule/${schedule.id}`);
+  const handleImageError = (event) => {
+    event.currentTarget.onerror = null;
+    event.currentTarget.src = defaultThumbnail;
   };
 
   return (
-    <div className={clsx(styles.card, { [styles.cardFull]: isFull })}>
-      <div className={styles.cardHeader}>
-        {/* 🌟 매핑 객체에 값이 없으면 원본 영어를 그대로 노출하도록 안전장치 추가 */}
-        <span className={styles.badge}>
-          {CATEGORY_MAP[schedule.category] || schedule.category}
-        </span>
-        {dday && (
-          <span
-            className={clsx(styles.dday, {
-              [styles.ddayUrgent]:
-                dday !== "D-Day" && parseInt(dday.replace("D-", "")) <= 3,
-              [styles.ddayToday]: dday === "D-Day",
-            })}
-          >
-            {dday}
-          </span>
-        )}
-        <span className={styles.region}>
-          <PlaceIcon
-            fontSize="small"
-            style={{
-              marginRight: "4px",
-              color: "var(--color-text-muted)",
-              verticalAlign: "middle",
-            }}
-          />
-          {schedule.region}
-        </span>
-      </div>
-
-      <h3 className={styles.cardTitle}>{schedule.title}</h3>
-
-      <div className={styles.cardInfo}>
-        <span className={styles.date}>
-          <CalendarTodayIcon
-            fontSize="small"
-            style={{
-              marginRight: "4px",
-              color: "var(--color-text-muted)",
-              verticalAlign: "middle",
-            }}
-          />
-          {formatDateRange(schedule.startDate, schedule.endDate)}
-        </span>
-        <span className={styles.createdAt}>
-          {dayjs(schedule.createdAt).fromNow()} 등록
-        </span>
-      </div>
-
-      <div className={styles.progressWrapper}>
-        <div
-          className={clsx(styles.progressBar, {
-            [styles.progressBarFull]: isFull,
-            [styles.progressBarHigh]: fillRatio >= 0.7 && !isFull,
-          })}
-          style={{ width: `${fillRatio * 100}%` }}
+    <article
+      className={clsx(styles.card, styles.cardInteractive, {
+        [styles.cardFull]: isFull,
+      })}
+      onClick={handleCardClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleCardClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      <div className={styles.thumbnailWrap}>
+        <img
+          src={thumbnailSrc}
+          alt={schedule?.title ?? "일정 썸네일"}
+          className={styles.thumbnail}
+          onError={handleImageError}
         />
       </div>
 
-      <div className={styles.cardFooter}>
-        <div className={styles.participants}>
-          모집 인원 <strong>{schedule.currentParticipants}</strong> /{" "}
-          {schedule.maxParticipants}
-          {isFull && <span className={styles.fullBadge}>마감</span>}
+      <div className={styles.cardContent}>
+        <div className={styles.titleRow}>
+          <h3 className={styles.cardTitle}>
+            {schedule?.title ?? "제목 없는 일정"}
+          </h3>
+          {isFull && <span className={styles.fullBadge}>모집 마감</span>}
         </div>
-        <Button
-          variant={isFull ? "outline" : "accent"}
-          size="md"
-          disabled={isFull}
-          onClick={() => navigate(`/schedule/${schedule.id}`)}
-        >
-          {isFull ? "마감됨" : "신청하기"}
-        </Button>
+
+        <div className={styles.participantRow}>
+          <GroupIcon fontSize="small" className={styles.metaIcon} />
+          <span className={styles.participantText}>{participantText}</span>
+        </div>
+
+        <div className={styles.metaList}>
+          <span className={styles.metaItem}>
+            <CalendarTodayIcon fontSize="small" className={styles.metaIcon} />
+            <span className={styles.metaText}>
+              {formatDateRange(schedule?.startDate, schedule?.endDate)}
+            </span>
+          </span>
+          <span className={styles.metaItem}>
+            <PlaceIcon fontSize="small" className={styles.metaIcon} />
+            <span className={styles.metaText}>{locationText || "지역 미정"}</span>
+          </span>
+        </div>
       </div>
-    </div>
+    </article>
   );
 }

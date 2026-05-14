@@ -82,6 +82,7 @@
             end_date AS endDate,
             current_participants AS currentParticipants,
             max_participants AS maxParticipants,
+            thumbnail_image AS thumbnailImage,
             created_at AS createdAt
         FROM schedule
         <where>
@@ -92,7 +93,14 @@
             </if>
 
             <if test="keyword != null and keyword != ''">
-                AND (title LIKE CONCAT('%', #{keyword}, '%') OR region LIKE CONCAT('%', #{keyword}, '%'))
+                AND (
+                    title LIKE CONCAT('%', #{keyword}, '%')
+                    OR description LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <if test="region != null and region != ''">
+                AND UPPER(TRIM(region)) = UPPER(TRIM(#{region}))
             </if>
         </where>
         ORDER BY id DESC

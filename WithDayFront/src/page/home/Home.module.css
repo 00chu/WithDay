@@ -156,9 +156,9 @@
 
 /* ─── 카드 리스트 ───────────────────────────────────────────── */
 .cardList {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 18px;
 }
 .noData {
   padding: 40px 0;
@@ -171,127 +171,114 @@
 /* ─── 카드 ──────────────────────────────────────────────────── */
 .card {
   background: var(--color-surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  padding: 20px;
+  border-radius: 22px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
   border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: var(--transition-default);
+  overflow: hidden;
+  height: 100%;
 }
-.card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-primary-light);
+.card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
 }
-/* clsx: 마감된 카드 */
+.cardInteractive {
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+}
 .cardFull {
   opacity: 0.7;
 }
 
-/* ─── 카드 헤더 ─────────────────────────────────────────────── */
-.cardHeader {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.badge {
-  background-color: rgba(30, 58, 138, 0.1);
-  color: var(--color-primary);
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  font-weight: 700;
+@media (hover: hover) and (pointer: fine) {
+  .cardInteractive:hover {
+    border-color: rgba(59, 130, 246, 0.35);
+    outline-color: rgba(59, 130, 246, 0.14);
+    box-shadow:
+      0 0 0 1px rgba(59, 130, 246, 0.08),
+      0 14px 28px rgba(15, 23, 42, 0.1);
+  }
 }
 
-/* D-Day 배지 (clsx로 스타일 분기) */
-.dday {
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  font-size: 0.7rem;
-  font-weight: 700;
-  background: #ebf4ff;
-  color: #2b6cb0;
-}
-.ddayUrgent {
-  background: #fff5f5;
-  color: #c53030;
-}
-.ddayToday {
-  background: #f0fff4;
-  color: #276749;
-}
-
-.region {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  margin-left: auto;
-}
-
-/* ─── 카드 본문 ─────────────────────────────────────────────── */
-.cardTitle {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0;
-  line-height: 1.4;
-  word-break: keep-all;
-}
-.cardInfo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-}
-.date {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-}
-/* dayjs fromNow */
-.createdAt {
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
-}
-
-/* ─── 참여율 프로그레스 바 (clsx로 색상 분기) ──────────────── */
-.progressWrapper {
-  height: 4px;
-  border-radius: 999px;
-  background: var(--color-border-light, #eee);
+.thumbnailWrap {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
   overflow: hidden;
 }
-.progressBar {
+.thumbnail {
+  width: 100%;
   height: 100%;
-  border-radius: 999px;
-  background: var(--color-primary-light);
-  transition: width 0.4s ease;
-}
-.progressBarHigh {
-  background: #e88c1a;
-}
-.progressBarFull {
-  background: #e53e3e;
+  object-fit: cover;
+  display: block;
 }
 
-/* ─── 카드 하단 ─────────────────────────────────────────────── */
-.cardFooter {
+.cardContent {
   display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-height: 148px;
+  padding: 16px;
+}
+.titleRow {
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
-  padding-top: 14px;
-  border-top: 1px solid var(--color-border-light);
+  gap: 10px;
 }
-.participants {
-  font-size: 0.9rem;
-  color: var(--color-text-secondary);
+.cardTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(1.05rem * 1.45 * 2);
+}
+
+.participantRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border-light);
+  border-radius: 999px;
+  background: #f8fafc;
+  color: var(--color-text-primary);
+}
+
+.metaList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin-top: auto;
+}
+.metaItem {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  min-width: 0;
 }
-.participants strong {
-  color: var(--color-primary-light);
-  font-weight: 700;
+.metaIcon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.participantText {
+  font-weight: 600;
+}
+.metaText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .fullBadge {
   background: #fff5f5;
@@ -300,5 +287,43 @@
   font-weight: 700;
   padding: 2px 7px;
   border-radius: 999px;
-  margin-left: 6px;
+}
+
+@media (min-width: 640px) {
+  .cardList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  .cardContent {
+    gap: 8px;
+    min-height: 138px;
+    padding: 14px;
+  }
+
+  .cardTitle {
+    font-size: 1rem;
+    min-height: calc(1rem * 1.45 * 2);
+  }
+
+  .metaList {
+    gap: 8px 12px;
+  }
+
+  .metaItem {
+    font-size: 0.82rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cardList {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1440px) {
+  .cardList {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }

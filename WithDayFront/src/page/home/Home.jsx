@@ -9,9 +9,19 @@ import SearchForm from "../../features/schedule/ui/SearchForm";
 import CategoryFilter from "../../features/schedule/ui/CategoryFilter";
 import { fetchSchedules } from "../../features/schedule/api";
 
-export default function Home() {
+const getScheduleKey = (schedule) =>
+  String(
+    schedule?.id ??
+      schedule?.scheduleId ??
+      `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`
+  );
+
+const normalizeRegionValue = (value) => value?.trim() ?? "";
+
+export default function Home({ selectedRegion = "" }) {
   const [activeCategory, setActiveCategory] = useState("all");
   const [submittedKeyword, setSubmittedKeyword] = useState("");
+  const normalizedRegion = normalizeRegionValue(selectedRegion);
 
   const CATEGORY_MAP = {
     all: "전체",
@@ -28,9 +38,13 @@ export default function Home() {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["schedules", activeCategory, submittedKeyword],
+    queryKey: ["schedules", activeCategory, submittedKeyword, normalizedRegion],
     queryFn: () =>
-      fetchSchedules({ category: activeCategory, keyword: submittedKeyword }),
+      fetchSchedules({
+        category: activeCategory,
+        keyword: submittedKeyword,
+        region: normalizedRegion,
+      }),
     staleTime: 1000 * 60,
   });
 
@@ -94,10 +108,9 @@ export default function Home() {
 
         {!isLoading && !isError && (
           <div className={styles.cardList}>
-            {/* 🌟 Array.isArray()로 한 번 더 체크하면 절대 안 터집니다 */}
             {Array.isArray(schedules) && schedules.length > 0 ? (
               schedules.map((schedule) => (
-                <ScheduleCard key={schedule.id} schedule={schedule} />
+                <ScheduleCard key={getScheduleKey(schedule)} schedule={schedule} />
               ))
             ) : (
               <div className={styles.noData}>해당 조건의 일정이 없습니다.</div>

@@ -48,8 +48,8 @@ public class ScheduleService {
     }
 
     // 🌟 파라미터를 받아서 Dao로 넘겨주도록 수정
-    public List<Schedule> getAllSchedules(String category, String keyword) {
-        return scheduleDao.getAllSchedules(category, keyword);
+    public List<Schedule> getAllSchedules(String category, String keyword, String region) {
+        return scheduleDao.getAllSchedules(category, keyword, region);
     }
 
     public void insertSchedule(ScheduleRequestDTO dto, List<MultipartFile> images) {

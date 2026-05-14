@@ -23,7 +23,8 @@ public interface ScheduleDao {
     // 🌟 @Param을 사용해 파라미터 매핑
     List<Schedule> getAllSchedules(
             @Param("category") String category,
-            @Param("keyword") String keyword);
+            @Param("keyword") String keyword,
+            @Param("region") String region);
             
     Long findUserIdByEmail(String email);
 

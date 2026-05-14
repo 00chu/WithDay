@@ -45,9 +45,10 @@ public class ScheduleController {
     @GetMapping
     public ResponseEntity<List<Schedule>> getAllSchedules(
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String region
     ) {
-        List<Schedule> list = scheduleService.getAllSchedules(category, keyword);
+        List<Schedule> list = scheduleService.getAllSchedules(category, keyword, region);
         if (list == null) {
             return ResponseEntity.notFound().build();
         }
