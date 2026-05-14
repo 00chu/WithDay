@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class ScheduleService {
@@ -142,5 +141,10 @@ public class ScheduleService {
                 scheduleDao.insertScheduleImage(scheduleId, imageUrls);
             }
         }
+    }
+
+    public int deleteSchedule(Long scheduleId) {
+        int result = scheduleDao.deleteSchedule(scheduleId);
+        return result;
     }
 }

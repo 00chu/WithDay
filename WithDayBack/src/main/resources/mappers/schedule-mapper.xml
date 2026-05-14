@@ -238,4 +238,9 @@
             #{id}
         </foreach>
     </delete>
+
+    <delete id="deleteSchedule">
+        delete from schedule
+        where id = #{scheduleId}
+    </delete>
 </mapper>
