@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -22,6 +23,7 @@ public class ScheduleController {
 
     /**
      * 일정 상세 조회
+     *
      * @param id
      * @return ResponseEntity
      */
@@ -38,6 +40,7 @@ public class ScheduleController {
 
     /**
      * 일정 조회
+     *
      * @param category
      * @param keyword
      * @return ResponseEntity
@@ -69,22 +72,15 @@ public class ScheduleController {
     )
     public ResponseEntity<String> updateSchedule(
             @PathVariable Long scheduleId,
-
-            @RequestPart("data")
-            ScheduleRequestDTO dto,
-
-            @RequestPart(
-                    value = "images",
-                    required = false
-            )
-            List<MultipartFile> images
+            @RequestPart("data") ScheduleRequestDTO dto,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
     ) {
+        if (images == null) {
+            images = new ArrayList<>();
+        }
 
-        scheduleService.updateSchedule(
-                scheduleId,
-                dto,
-                images
-        );
+        System.out.println(images.size());
+        scheduleService.updateSchedule(scheduleId, dto, images);
 
         return ResponseEntity.ok("success");
     }

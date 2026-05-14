@@ -12,7 +12,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import Button from "../../shared/ui/Button/Button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDetailRegion, getRegion } from "../../features/region/api";
 import { insertSchedule, updateSchedule } from "../../features/schedule/api";
 import { useAuthStore } from "../../features/auth/store/authStore";
@@ -78,7 +78,6 @@ const UpdateSchedule = () => {
 
   // preview
   const [images, setImages] = useState([]);
-  const [existingImages, setExistingImages] = useState([]);
   const [files, setFiles] = useState([]);
   const [deletedImageIds, setDeletedImageIds] = useState([]);
 
@@ -113,8 +112,6 @@ const UpdateSchedule = () => {
       costType: data.schedule.costType,
       thumbnail: data.schedule.thumbnailImage,
     });
-
-    setExistingImages(data.images ?? []);
 
     setImages(
       (data.images ?? []).map((img) => ({
@@ -170,14 +167,10 @@ const UpdateSchedule = () => {
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
+  const queryClient = useQueryClient();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log(scheduleId);
-    console.log(post);
-    console.log(files);
-    console.log(detailSchedule);
-    console.log(deletedImageIds);
 
     try {
       await insertSchema.validate(
@@ -194,6 +187,10 @@ const UpdateSchedule = () => {
       );
 
       console.log("수정 성공", res);
+
+      await queryClient.invalidateQueries({
+        queryKey: ["schedule-detail", Number(scheduleId)],
+      });
 
       navigate("/");
     } catch (err) {
@@ -664,8 +661,6 @@ const UpdateSchedule = () => {
               <AddThumbnail
                 images={images}
                 setImages={setImages}
-                existingImages={existingImages}
-                setExistingImages={setExistingImages}
                 files={files}
                 setFiles={setFiles}
                 deletedImageIds={deletedImageIds}
@@ -674,11 +669,11 @@ const UpdateSchedule = () => {
             </div>
 
             <div className={styles.registButtonWrap}>
-              <Button type="submit">등록</Button>
+              <Button type="submit">수정</Button>
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/")}
               >
                 취소
               </Button>
@@ -833,9 +828,6 @@ const AddThumbnail = ({
   images,
   setImages,
 
-  existingImages,
-  setExistingImages,
-
   files,
   setFiles,
 
@@ -921,8 +913,6 @@ const AddThumbnail = ({
     // 기존 서버 이미지 삭제
     if (target.type === "existing") {
       setDeletedImageIds((prev) => [...prev, target.id]);
-
-      setExistingImages((prev) => prev.filter((img) => img.id !== target.id));
     }
 
     // 새 이미지 삭제
@@ -974,7 +964,7 @@ const AddThumbnail = ({
 
       <div className={styles.previewGrid}>
         {images.map((img, i) => (
-          <div key={i} className={styles.imageWrap}>
+          <div key={img.id ?? img.preview} className={styles.imageWrap}>
             <img
               src={img.preview}
               alt={`preview-${i}`}
