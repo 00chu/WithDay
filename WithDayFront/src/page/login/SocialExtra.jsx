@@ -29,21 +29,26 @@ import styles from "./Auth.module.css";
 
 const SocialExtra = () => {
   const navigate = useNavigate();
-  // location 안에 이전 Login.jsx에서 넘겨준 보물(googleData)이 들어있습니다.
-  const location = useLocation();
+  const location = useLocation(); // 현재 페이지 정보 저장. URL에 숨겨서 넘긴 state를 꺼내 쓸 수 있음. (빈 값 에러를 막기 위해 꺼낼 땐 location.state?. 로 접근)
+  // 달력에서 미래 날짜를 선택하지 못하게 하기 위해 현재 날짜를 "YYYY-MM-DD" 형태로 뽑아냄. (HTML의 달력(date)은 반드시 "YYYY-MM-DD" 모양을 사용)
+  // 순서(값은 예시) -> new Date(): Wed May 13 2026 17:35:00 GMT+0900 (한국 표준시), .toISOString(): "2026-05-13T08:35:00.000Z", .split("T"): ["2026-05-13", "08:35:00.000Z"], [0]: "2026-05-13"
   const todayDate = new Date().toISOString().split("T")[0];
 
-  // UI 상태들 (알림창, 주소팝업, 약관팝업)
+  // 알림창(토스트, 기존 윈도우의 alert대신 사용) state
   const [toast, setToast] = useState({
-    open: false,
-    message: "",
-    severity: "success",
+    open: false, // 알림창을 띄울지 말지 (true면 띄움)
+    message: "", // 알림창에 적힐 글씨
+    severity: "success", // 알림창의 디자인 테마 (색상, 아이콘)
   });
-  const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
-  const [openTerms, setOpenTerms] = useState(null);
 
-  // 🛡️ [강력한 보안관] 페이지 접속하자마자 이 사람이 구글 정보 들고 정당하게 왔는지 검사함
+  const [isPostcodeOpen, setIsPostcodeOpen] = useState(false); // 주소 검색창을 킬지 끌지 정하는 state
+  const [openTerms, setOpenTerms] = useState(null); // 약관 팝업용 state(어떤 약관을 열었는지 문자열로 저장, null / "TOS" / "PRIVACY" / "MARKETING")
+
+  // 페이지 접속하자마자 구글 정보를 들고 (개발자가 만든)순서에 맞게 왔는지 검사함.
   useEffect(() => {
+    // location.state: 로그인페이지에서 넘긴 구글 정보가 담긴 state.
+    // location.state?.googleData: location.state에 googleData라는 구글 정보가 담김.
+    // 이때 둘중 하나라도 없으면 접근 금지. 돌려보냄
     if (!location.state || !location.state.googleData) {
       alert("잘못된 접근입니다. 다시 로그인해주세요.");
       // replace: true 옵션으로 뒤로가기 버튼을 망가뜨려서 이 불법 페이지로 못 돌아오게 막음!
