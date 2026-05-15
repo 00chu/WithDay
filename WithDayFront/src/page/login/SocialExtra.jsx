@@ -44,17 +44,17 @@ const SocialExtra = () => {
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false); // 주소 검색창을 킬지 끌지 정하는 state
   const [openTerms, setOpenTerms] = useState(null); // 약관 팝업용 state(어떤 약관을 열었는지 문자열로 저장, null / "TOS" / "PRIVACY" / "MARKETING")
 
-  // 페이지 접속하자마자 구글 정보를 들고 (개발자가 만든)순서에 맞게 왔는지 검사함.
+  // 페이지가 처음 딱 켜졌을 때 1번만 실행됨(useEffect니까). 이때 location 즉 다른페이지에서 넘긴 값(여기선 구글 정보)이 없다면 아래에 if문이 실행됨.
   useEffect(() => {
     // location.state: 로그인페이지에서 넘긴 구글 정보가 담긴 state.
     // location.state?.googleData: location.state에 googleData라는 구글 정보가 담김.
     // 이때 둘중 하나라도 없으면 접근 금지. 돌려보냄
     if (!location.state || !location.state.googleData) {
       alert("잘못된 접근입니다. 다시 로그인해주세요.");
-      // replace: true 옵션으로 뒤로가기 버튼을 망가뜨려서 이 불법 페이지로 못 돌아오게 막음!
+      // replace: true 옵션으로 뒤로가기 버튼을 망가뜨려서 이 불법 페이지로 못 돌아오게 막음 -> 위에 alert랑 해서 location써서 toast 띄우는걸로 바꾸고 싶음.
       navigate("/login", { replace: true });
     }
-  }, [location, navigate]);
+  }, [location, navigate]); // login떄도 생각했는데 location, navigate둘다 없어도 되지 않나? 로직상?
 
   // 보따리에서 구글이 던져준 4가지 정보(이메일, 이름, ID, 프사)를 변수에 고이 모셔둠
   const googleData = location.state?.googleData || {};
