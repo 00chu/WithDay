@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // 보따리를 들고 이동하기 위한 도구들
-import { useForm } from "react-hook-form"; // 폼 감시역
-import { yupResolver } from "@hookform/resolvers/yup"; // 규칙 감시역
-import { useMutation, useQuery } from "@tanstack/react-query"; // 백엔드 통신역
+import { useNavigate, useLocation } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+// useQuery: 데이터를 가져올 때(Read) 사용. (예: 내 프로필 보기, 게시글 목록 가져오기)
+// useMutation: 데이터를 바꾸거나 보낼 때(Create, Update, Delete) 사용. (예: 로그인하기, 회원가입하기, 게시글 삭제하기)
+// 둘다 그때 사용하는 이유는 그것에 특화된 리엑트 쿼리들이라서
+import { useMutation, useQuery } from "@tanstack/react-query";
 
-import DaumPostcode from "react-daum-postcode"; // 카카오 주소
+import DaumPostcode from "react-daum-postcode"; // 카카오(다음)에서 제공하는 "주소 검색" 모달 띄우기용 라이브러리
+
 import {
   Snackbar,
   Alert,
@@ -12,12 +16,11 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-} from "@mui/material"; // MUI 팝업들
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-// 💡 여기서 쓰는 schema는 이메일, 비번 규정이 빠진 '소셜 전용 느슨한 규칙'입니다!
 import { socialExtraSchema } from "../../features/auth/validation/authSchema";
-import { fetchTerms, socialSignupUser } from "../../features/auth/api"; // API
+import { fetchTerms, socialSignupUser } from "../../features/auth/api"; // axios 대신에 api.js로 빼서 백엔드와 소통
 
 import FormField from "../../shared/ui/Form/FormField";
 import { Input } from "../../shared/ui/Form/Form";
