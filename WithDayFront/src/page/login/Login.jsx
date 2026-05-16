@@ -39,13 +39,14 @@ const Login = () => {
 
   // 페이지가 처음 딱 켜졌을 때 1번만 실행됨(useEffect니까). 이때 location 즉 다른페이지에서 넘긴 값이 있다면 아래에 if문이 실행됨.
   useEffect(() => {
-    // 만약 회원가입 페이지에서 "가입 성공"이라는 toastMessage값을 넘겼다면
+    // 만약 회원가입 페이지에서 "잘못된 접근" or "가입 성공"이라는 toastMessage값을 넘겼다면
     if (location.state?.toastMessage) {
+      // 알림창(토스트) 세팅
       setToast({
         open: true,
         message: location.state.toastMessage,
-        severity: "success",
-      }); // "가입 성공" 알림 띄우기
+        severity: location.state?.toastSeverity || "success", 
+      }); // "잘못된 접근" or "가입 성공" 알림 띄우기
 
       // 새로고침(f5) 시 알림 무한반복을 막기 위해 알람창을 띄운 후에 history state 데이터 초기화, 사용법: window.history.replaceState( 1.저장할데이터, 2.페이지제목, 3.바꿀주소(생략가능) )
       window.history.replaceState({}, document.title);

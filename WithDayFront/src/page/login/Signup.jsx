@@ -150,7 +150,7 @@ const Signup = () => {
     onError: (error) => {
       // 서버가 준 에러 메세지를 알림창에 띄움
       const errMsg = error.response?.data || "회원가입에 실패했습니다."; // 백엔드 기본 응답(예: "이미 있는 이메일입니다.") or 커스텀"실패"메세지
-      setToast({ open: true, message: errMsg, severity: "error" }); //// 알림창(토스트) 세팅
+      setToast({ open: true, message: errMsg, severity: "error" }); // 알림창(토스트) 세팅
     },
   });
 
