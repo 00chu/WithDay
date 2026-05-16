@@ -21,7 +21,7 @@ export const signupSchema = yup.object().shape({
     .required('비밀번호는 필수 입력입니다.')
     .min(8, '비밀번호는 최소 8자리 이상이어야 합니다.'),
     
-  // 💡 [핵심] 비밀번호 확인 로직 (이번에 새롭게 분리된 부분!)
+  // 💡 [핵심] 비밀번호 확인 로직
   // yup.ref('password')는 바로 위에 있는 'password' 필드의 현재 값을 거울처럼 실시간으로 참조합니다.
   // oneOf([A, B])는 "입력값이 배열 안에 있는 A나 B 중 하나와 무조건 같아야 해!"라는 뜻입니다.
   // 즉, 아래 코드는 "입력값이 password 필드의 값과 완벽히 똑같아야만 통과시켜줄게!"라는 의미입니다.
@@ -45,7 +45,7 @@ export const signupSchema = yup.object().shape({
       // 오늘 날짜를 "YYYY-MM-DD" 형태로 만듭니다.
       const today = new Date().toISOString().split('T')[0]; 
       
-      // 문자열끼리 비교합니다. (예: "2026-05-12" <= "2026-05-12")
+      // 문자열끼리 비교합니다. (예: "2026-05-12" <= "2026-05-16")
       // 입력값이 오늘이거나 과거여야만 통과(true) 시켜줍니다.
       return value <= today; 
     })
@@ -106,9 +106,12 @@ export const loginSchema = yup.object().shape({
     .required('비밀번호를 입력해주세요.')
 });
 
-// 3. 소셜 로그인 추가 정보용 검사 규칙
+
+// ==========================================
+// 3. 소셜 로그인 추가 정보용 검사 규칙 (Schema)
+// ==========================================
 export const socialExtraSchema = yup.object().shape({
-  // 이메일, 비밀번호, 닉네임 검사가 빠졌습니다!
+  // 💡 구글에서 이메일, 닉네임, 프사를 받아오기 때문에 해당 검사는 제외되었습니다.
   
   birthday: yup.string()
     .required('생년월일을 선택해주세요.')
