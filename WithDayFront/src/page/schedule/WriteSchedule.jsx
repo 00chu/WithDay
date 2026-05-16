@@ -12,14 +12,16 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import Button from "../../shared/ui/Button/Button";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { getDetailRegion, getRegion } from "../../features/region/api";
 import { insertSchedule } from "../../features/schedule/api";
-import { useAuthStore } from "../../features/auth/store/authStore";
 
 import { insertSchema } from "../../features/schedule/validation/insertSchema";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import { useFieldArray, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useAuthStore } from "../../features/auth/store/authStore";
 
 registerLocale("ko", ko);
 
@@ -37,36 +39,22 @@ const WriteSchedule = () => {
     { label: "기타", value: "etc" },
   ];
 
-  const [post, setPost] = useState({
-    email: useAuthStore.getState().user.email,
-    title: "",
-    description: "",
-    category: "",
-    region: "",
-    detailRegion: "",
-    chatLink: "",
-    startDate: new Date(),
-    endDate: new Date(),
-    recruitStartDate: new Date(),
-    recruitEndDate: new Date(),
-    minParticipants: null,
-    maxParticipants: null,
-    ageMin: null,
-    ageMax: null,
-    genderLimit: "all", // DB Enum: 'all', 'male', 'female'
-    totalPrice: null,
-    costType: "per_person", // DB Enum: 'per_person', 'host_covered', 'free', 'custom'
-    thumbnail: "",
-  });
-
+  // 이미지용 useState, RHF가 처리할 수 없어서 그대로 사용
   const [images, setImages] = useState([]);
   const [files, setFiles] = useState([]);
-  const [detailSchedule, setDetailSchedule] = useState([]);
 
-  useEffect(() => {
-    return () => {
-      // 페이지 벗어날 때 초기화
-      setPost({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    watch,
+    control,
+    formState: { errors, isSubmitted },
+  } = useForm({
+    resolver: yupResolver(insertSchema),
+    defaultValues: {
+      post: {
         email: "",
         title: "",
         description: "",
@@ -86,11 +74,50 @@ const WriteSchedule = () => {
         totalPrice: null,
         costType: "per_person",
         thumbnail: "",
-      });
-      setFiles([]);
-      setDetailSchedule([]);
-    };
-  }, []);
+      },
+      detailSchedule: [],
+    },
+  });
+
+  const email = useAuthStore((state) => state.user.email);
+
+  useEffect(() => {
+    if (!email) return;
+
+    setValue("post.email", email);
+  }, [email, setValue]);
+
+  const { fields, replace } = useFieldArray({
+    control,
+    name: "detailSchedule",
+  });
+
+  const region = watch("post.region");
+  const genderLimit = watch("post.genderLimit");
+  const recruitEndDate = watch("post.recruitEndDate");
+  const startDate = watch("post.startDate");
+  const costType = watch("post.costType");
+  const totalPrice = watch("post.totalPrice");
+
+  const flattenErrors = (errorsObj) => {
+    return Object.values(errorsObj).flatMap((err) => {
+      if (!err) return [];
+
+      // nested error (post)
+      if (err?.message) return [err.message];
+
+      // nested object (post.title 등)
+      return Object.values(err ?? {})
+        .map((e) => e?.message)
+        .filter(Boolean);
+    });
+  };
+
+  const errorList = flattenErrors(errors);
+
+  const hasError = isSubmitted && Object.keys(errors).length > 0;
+
+  const errorMessage = errorList.join("\n");
 
   // 시/도 조회
   const { data: regions = [] } = useQuery({
@@ -98,62 +125,61 @@ const WriteSchedule = () => {
     queryFn: getRegion,
   });
 
-  // 군/구 조회
+  // 군/구 조회(RHF)
   const { data: detailRegions = [] } = useQuery({
-    queryKey: ["detailRegion", post.region],
-    queryFn: () => getDetailRegion(post.region),
-    enabled: !!post.region,
+    queryKey: ["detailRegion", region],
+    queryFn: () => getDetailRegion(region),
+    enabled: !!region,
   });
 
   // 시작일보다 모집 마감일이 더 뒤일 때 시작일과 모집 마감일을 동일하게 설정
   useEffect(() => {
-    if (!post.startDate || !post.recruitEndDate) return;
+    if (!startDate || !recruitEndDate) return;
 
-    const start = new Date(post.startDate);
-    const end = new Date(post.recruitEndDate);
+    const start = new Date(startDate);
+    const end = new Date(recruitEndDate);
 
     start.setHours(0, 0, 0, 0);
     end.setHours(0, 0, 0, 0);
 
     if (end > start) {
-      setPost((prev) => ({
-        ...prev,
-        recruitEndDate: prev.startDate,
-      }));
+      setValue("post.recruitEndDate", startDate);
     }
-  }, [post.startDate]);
+  }, [startDate, recruitEndDate, setValue]);
 
   const formatNumber = (value) => {
     if (!value) return "";
     return Number(value).toLocaleString();
   };
 
-  const [alertOpen, setAlertOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
+  const { mutateAsync: submitSchedule } = useMutation({
+    mutationFn: ({ postData, filesData, detailScheduleData }) => {
+      console.log("📦 mutationFn", {
+        postData,
+        filesData,
+        detailScheduleData,
+      });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      await insertSchema.validate(
-        { post, files, detailSchedule },
-        { abortEarly: false },
-      );
-
-      const res = await insertSchedule(post, files, detailSchedule);
-
+      return insertSchedule(postData, filesData, detailScheduleData);
+    },
+    onSuccess: (res) => {
       console.log("등록 성공", res);
-
       navigate("/");
-    } catch (err) {
-      if (err.name === "ValidationError") {
-        const messages = err.inner.map((e) => e.message);
-        setAlertMessage(messages.join("\n"));
-        setAlertOpen(true);
-      } else {
-        console.error(err);
-      }
-    }
+    },
+    onError: (err) => {
+      console.error("error: ", err);
+    },
+  });
+
+  const onSubmit = async (formValues) => {
+    console.log("🔥 formValues", formValues);
+    console.log("🔥 files", files);
+
+    await submitSchedule({
+      postData: formValues.post,
+      filesData: files,
+      detailScheduleData: formValues.detailSchedule,
+    });
   };
 
   return (
@@ -161,7 +187,11 @@ const WriteSchedule = () => {
       <header className={styles.header}></header>
       <main className={styles.main}>
         <div className={styles.contentWrap}>
-          <form onSubmit={handleSubmit} autoComplete="off">
+          <form
+            onSubmit={handleSubmit(onSubmit, (err) => {
+              console.log("validation error", err);
+            })}
+          >
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>기본 정보</h2>
               <ul className={`${styles.inputWrap} ${styles.title}`}>
@@ -173,11 +203,8 @@ const WriteSchedule = () => {
                     type="text"
                     name="title"
                     id="title"
-                    value={post.title}
                     placeholder="일정명"
-                    onChange={(e) =>
-                      setPost({ ...post, title: e.target.value })
-                    }
+                    {...register("post.title")}
                   />
                 </li>
               </ul>
@@ -190,11 +217,8 @@ const WriteSchedule = () => {
                   <TextArea
                     name="description"
                     id="description"
-                    value={post.description}
                     placeholder="일정 설명"
-                    onChange={(e) =>
-                      setPost({ ...post, description: e.target.value })
-                    }
+                    {...register("post.description")}
                   />
                 </li>
               </ul>
@@ -204,12 +228,7 @@ const WriteSchedule = () => {
                   <label htmlFor="category">일정 종류</label>
                 </li>
                 <li>
-                  <select
-                    value={post.category}
-                    onChange={(e) =>
-                      setPost({ ...post, category: e.target.value })
-                    }
-                  >
+                  <select {...register("post.category")}>
                     {categories.map((item) => (
                       <option key={item.value} value={item.value}>
                         {item.label}
@@ -224,16 +243,7 @@ const WriteSchedule = () => {
                   <label htmlFor="region">지역(시/도)</label>
                 </li>
                 <li>
-                  <select
-                    value={post.region || ""}
-                    onChange={(e) =>
-                      setPost({
-                        ...post,
-                        region: e.target.value,
-                        detailRegion: "",
-                      })
-                    }
-                  >
+                  <select {...register("post.region")}>
                     <option value="">시/도</option>
                     {regions?.map((item) => (
                       <option key={item.regionId} value={item.regionName}>
@@ -248,12 +258,7 @@ const WriteSchedule = () => {
                   <label htmlFor="detailRegion">지역(시/군/구)</label>
                 </li>
                 <li>
-                  <select
-                    value={post.detailRegion || ""}
-                    onChange={(e) =>
-                      setPost({ ...post, detailRegion: e.target.value })
-                    }
-                  >
+                  <select {...register("post.detailRegion")}>
                     <option value="">시/군/구</option>
                     {detailRegions?.map((item) => (
                       <option key={item.detailId} value={item.detailName}>
@@ -271,11 +276,8 @@ const WriteSchedule = () => {
                 <li>
                   <Input
                     type="text"
-                    value={post.chatLink}
                     placeholder="오픈 채팅 링크"
-                    onChange={(e) =>
-                      setPost({ ...post, chatLink: e.target.value })
-                    }
+                    {...register("post.chatLink")}
                   />
                 </li>
               </ul>
@@ -284,6 +286,7 @@ const WriteSchedule = () => {
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>인원 및 성별 정보</h2>
               <div className={styles.gridContainer}>
+                {/* 최소 인원 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최소 인원</li>
                   <li>
@@ -291,43 +294,39 @@ const WriteSchedule = () => {
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      name="minParticipants"
                       placeholder={2}
-                      value={post.minParticipants ?? ""}
-                      onChange={(e) => {
-                        const onlyNumber = e.target.value.replace(
-                          /[^0-9]/g,
-                          "",
-                        );
-                        setPost({
-                          ...post,
-                          minParticipants:
-                            onlyNumber === "" ? null : Number(onlyNumber),
-                        });
-                      }}
-                      onBlur={() => {
-                        let value = post.minParticipants;
+                      {...register("post.minParticipants", {
+                        setValueAs: (v) => (v === "" ? null : Number(v)),
 
-                        if (value == null) return;
+                        onChange: (e) => {
+                          const onlyNumber = e.target.value.replace(
+                            /[^0-9]/g,
+                            "",
+                          );
+                          e.target.value = onlyNumber;
+                        },
 
-                        // 범위 보정
-                        if (value < 2) value = 2;
-                        if (value > 100) value = 100;
+                        onBlur: (e) => {
+                          let value = e.target.value;
+                          if (value === "") return;
 
-                        // max보다 크면 max로 맞춤
-                        if (
-                          post.maxParticipants &&
-                          value > post.maxParticipants
-                        ) {
-                          value = post.maxParticipants;
-                        }
+                          value = Number(value);
 
-                        setPost({ ...post, minParticipants: value });
-                      }}
+                          if (value < 2) value = 2;
+                          if (value > 100) value = 100;
+
+                          const max = getValues("post.maxParticipants");
+                          if (max && value > max) value = max;
+
+                          setValue("post.minParticipants", value);
+                        },
+                      })}
                     />
                     <span>명</span>
                   </li>
                 </ul>
+
+                {/* 최대 인원 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최대 인원</li>
                   <li>
@@ -335,43 +334,39 @@ const WriteSchedule = () => {
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      name="maxParticipants"
                       placeholder={100}
-                      value={post.maxParticipants ?? ""}
-                      onChange={(e) => {
-                        const onlyNumber = e.target.value.replace(
-                          /[^0-9]/g,
-                          "",
-                        );
-                        setPost({
-                          ...post,
-                          maxParticipants:
-                            onlyNumber === "" ? null : Number(onlyNumber),
-                        });
-                      }}
-                      onBlur={() => {
-                        let value = post.maxParticipants;
+                      {...register("post.maxParticipants", {
+                        setValueAs: (v) => (v === "" ? null : Number(v)),
 
-                        if (value == null) return;
+                        onChange: (e) => {
+                          const onlyNumber = e.target.value.replace(
+                            /[^0-9]/g,
+                            "",
+                          );
+                          e.target.value = onlyNumber;
+                        },
 
-                        // 범위 보정
-                        if (value < 2) value = 2;
-                        if (value > 100) value = 100;
+                        onBlur: (e) => {
+                          let value = e.target.value;
+                          if (value === "") return;
 
-                        // min보다 작으면 min으로 맞춤
-                        if (
-                          post.minParticipants &&
-                          value < post.minParticipants
-                        ) {
-                          value = post.minParticipants;
-                        }
+                          value = Number(value);
 
-                        setPost({ ...post, maxParticipants: value });
-                      }}
+                          if (value < 2) value = 2;
+                          if (value > 100) value = 100;
+
+                          const min = getValues("post.minParticipants");
+                          if (min && value < min) value = min;
+
+                          setValue("post.maxParticipants", value);
+                        },
+                      })}
                     />
                     <span>명</span>
                   </li>
                 </ul>
+
+                {/* 최소 연령 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최소 연령</li>
                   <li>
@@ -379,41 +374,39 @@ const WriteSchedule = () => {
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      name="ageMin"
-                      id="ageMin"
                       placeholder="18"
-                      value={post.ageMin ?? ""}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        const onlyNumber = raw.replace(/[^0-9]/g, "");
+                      {...register("post.ageMin", {
+                        setValueAs: (v) => (v === "" ? null : Number(v)),
 
-                        if (onlyNumber === "") {
-                          setPost({ ...post, ageMin: null });
-                          return;
-                        }
+                        onChange: (e) => {
+                          const onlyNumber = e.target.value.replace(
+                            /[^0-9]/g,
+                            "",
+                          );
+                          e.target.value = onlyNumber;
+                        },
 
-                        setPost({ ...post, ageMin: Number(onlyNumber) });
-                      }}
-                      onBlur={() => {
-                        let value = post.ageMin;
+                        onBlur: (e) => {
+                          let value = e.target.value;
+                          if (value === "") return;
 
-                        if (value == null) return;
+                          value = Number(value);
 
-                        // 범위 보정
-                        if (value < 18) value = 18;
-                        if (value > 100) value = 100;
+                          if (value < 18) value = 18;
+                          if (value > 100) value = 100;
 
-                        // max보다 크면 max로 맞춤
-                        if (post.ageMax && value > post.ageMax) {
-                          value = post.ageMax;
-                        }
+                          const max = getValues("post.ageMax");
+                          if (max && value > max) value = max;
 
-                        setPost({ ...post, ageMin: value });
-                      }}
+                          setValue("post.ageMin", value);
+                        },
+                      })}
                     />
                     <span>세</span>
                   </li>
                 </ul>
+
+                {/* 최대 연령 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최대 연령</li>
                   <li>
@@ -421,37 +414,33 @@ const WriteSchedule = () => {
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      name="ageMax"
-                      id="ageMax"
                       placeholder="100"
-                      value={post.ageMax ?? ""}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        const onlyNumber = raw.replace(/[^0-9]/g, "");
+                      {...register("post.ageMax", {
+                        setValueAs: (v) => (v === "" ? null : Number(v)),
 
-                        if (onlyNumber === "") {
-                          setPost({ ...post, ageMax: null });
-                          return;
-                        }
+                        onChange: (e) => {
+                          const onlyNumber = e.target.value.replace(
+                            /[^0-9]/g,
+                            "",
+                          );
+                          e.target.value = onlyNumber;
+                        },
 
-                        setPost({ ...post, ageMax: Number(onlyNumber) });
-                      }}
-                      onBlur={() => {
-                        let value = post.ageMax;
+                        onBlur: (e) => {
+                          let value = e.target.value;
+                          if (value === "") return;
 
-                        if (value == null) return;
+                          value = Number(value);
 
-                        // 범위 보정
-                        if (value < 18) value = 18;
-                        if (value > 100) value = 100;
+                          if (value < 18) value = 18;
+                          if (value > 100) value = 100;
 
-                        // min보다 작으면 min으로 맞춤
-                        if (post.ageMin && value < post.ageMin) {
-                          value = post.ageMin;
-                        }
+                          const min = getValues("post.ageMin");
+                          if (min && value < min) value = min;
 
-                        setPost({ ...post, ageMax: value });
-                      }}
+                          setValue("post.ageMax", value);
+                        },
+                      })}
                     />
                     <span>세</span>
                   </li>
@@ -462,29 +451,35 @@ const WriteSchedule = () => {
                   <li>
                     <Button
                       type="button"
-                      variant={
-                        post.genderLimit === "all" ? "primary" : "outline"
+                      variant={genderLimit === "all" ? "primary" : "outline"}
+                      onClick={() =>
+                        setValue("post.genderLimit", "all", {
+                          shouldValidate: true,
+                        })
                       }
-                      onClick={() => setPost({ ...post, genderLimit: "all" })}
                     >
                       성별 무관
                     </Button>
+
                     <Button
                       type="button"
-                      variant={
-                        post.genderLimit === "male" ? "primary" : "outline"
+                      variant={genderLimit === "male" ? "primary" : "outline"}
+                      onClick={() =>
+                        setValue("post.genderLimit", "male", {
+                          shouldValidate: true,
+                        })
                       }
-                      onClick={() => setPost({ ...post, genderLimit: "male" })}
                     >
                       남성
                     </Button>
+
                     <Button
                       type="button"
-                      variant={
-                        post.genderLimit === "female" ? "primary" : "outline"
-                      }
+                      variant={genderLimit === "female" ? "primary" : "outline"}
                       onClick={() =>
-                        setPost({ ...post, genderLimit: "female" })
+                        setValue("post.genderLimit", "female", {
+                          shouldValidate: true,
+                        })
                       }
                     >
                       여성
@@ -497,8 +492,9 @@ const WriteSchedule = () => {
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>일정 및 모집 기간</h2>
               <CalendarRange
-                post={post}
-                setPost={setPost}
+                startDate={watch("post.startDate")}
+                endDate={watch("post.endDate")}
+                setValue={setValue}
                 months={1}
                 direction="horizontal"
               />
@@ -510,17 +506,18 @@ const WriteSchedule = () => {
                 <li>
                   <DatePicker
                     locale="ko"
-                    selected={post.recruitEndDate}
+                    selected={recruitEndDate}
                     onChange={(date) =>
-                      setPost({ ...post, recruitEndDate: date })
+                      setValue("post.recruitEndDate", date, {
+                        shouldValidate: true,
+                      })
                     }
                     minDate={new Date()}
-                    maxDate={post.startDate}
+                    maxDate={startDate}
+                    maxDate={startDate}
                     customInput={
                       <button type="button" className={styles.dateButton}>
-                        📅{" "}
-                        {post.recruitEndDate?.toLocaleDateString() ||
-                          "날짜 선택"}
+                        📅 {recruitEndDate?.toLocaleDateString() || "날짜 선택"}
                       </button>
                     }
                   />
@@ -531,10 +528,12 @@ const WriteSchedule = () => {
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>상세 일정</h2>
               <ScheduleTable
-                startDate={post.startDate}
-                endDate={post.endDate}
-                detailSchedule={detailSchedule}
-                setDetailSchedule={setDetailSchedule}
+                startDate={watch("post.startDate")}
+                endDate={watch("post.endDate")}
+                fields={fields}
+                replace={replace}
+                setValue={setValue}
+                watch={watch}
               />
             </div>
 
@@ -546,13 +545,14 @@ const WriteSchedule = () => {
                   <input
                     type="text"
                     className={styles.costInput}
-                    value={formatNumber(post.totalPrice)}
+                    value={formatNumber(totalPrice)}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, "");
-                      setPost({
-                        ...post,
-                        totalPrice: value === "" ? null : Number(value),
-                      });
+                      const onlyNumber = e.target.value.replace(/[^0-9]/g, "");
+
+                      setValue(
+                        "post.totalPrice",
+                        onlyNumber === "" ? null : Number(onlyNumber),
+                      );
                     }}
                   />
                   <span className={styles.won}>₩</span>
@@ -566,40 +566,37 @@ const WriteSchedule = () => {
                     <Button
                       type="button"
                       variant={
-                        post.costType === "per_person" ? "primary" : "outline"
+                        costType === "per_person" ? "primary" : "outline"
                       }
-                      onClick={() =>
-                        setPost({ ...post, costType: "per_person" })
-                      }
+                      onClick={() => setValue("post.costType", "per_person")}
                     >
                       총액 1 / N<div className={styles.desc}>나누어 지불</div>
                     </Button>
+
                     <Button
                       type="button"
                       variant={
-                        post.costType === "host_covered" ? "primary" : "outline"
+                        costType === "host_covered" ? "primary" : "outline"
                       }
-                      onClick={() =>
-                        setPost({ ...post, costType: "host_covered" })
-                      }
+                      onClick={() => setValue("post.costType", "host_covered")}
                     >
                       호스트 지불
                       <div className={styles.desc}>호스트 전액 부담</div>
                     </Button>
+
                     <Button
                       type="button"
-                      variant={post.costType === "free" ? "primary" : "outline"}
-                      onClick={() => setPost({ ...post, costType: "free" })}
+                      variant={costType === "free" ? "primary" : "outline"}
+                      onClick={() => setValue("post.costType", "free")}
                     >
                       무료
                       <div className={styles.desc}>비용 없음</div>
                     </Button>
+
                     <Button
                       type="button"
-                      variant={
-                        post.costType === "custom" ? "primary" : "outline"
-                      }
-                      onClick={() => setPost({ ...post, costType: "custom" })}
+                      variant={costType === "custom" ? "primary" : "outline"}
+                      onClick={() => setValue("post.costType", "custom")}
                     >
                       인당 고정
                       <div className={styles.desc}>정해진 금액 지불</div>
@@ -632,40 +629,38 @@ const WriteSchedule = () => {
         </div>
       </main>
 
-      <Snackbar
-        open={alertOpen}
-        autoHideDuration={3000}
-        onClose={() => setAlertOpen(false)}
-      >
+      <Snackbar open={hasError} autoHideDuration={3000}>
         <Alert
           severity="warning"
           variant="filled"
           sx={{ whiteSpace: "pre-line" }}
         >
-          {alertMessage}
+          {errorMessage}
         </Alert>
       </Snackbar>
     </>
   );
 };
 
-const CalendarRange = ({ post, setPost }) => {
+const CalendarRange = ({ startDate, endDate, setValue }) => {
   const [state, setState] = useState([
     {
-      startDate: post.startDate || new Date(),
-      endDate: post.endDate || new Date(),
+      startDate: startDate || new Date(),
+      endDate: endDate || new Date(),
       key: "selection",
     },
   ]);
 
   const handleChange = (item) => {
+    console.log("setValue:", setValue);
+
     const selection = item.selection;
+
     setState([selection]);
-    setPost((prev) => ({
-      ...prev,
-      startDate: selection.startDate,
-      endDate: selection.endDate,
-    }));
+
+    // RHF로 값 업데이트
+    setValue("post.startDate", selection.startDate);
+    setValue("post.endDate", selection.endDate);
   };
 
   return (
@@ -687,8 +682,8 @@ const CalendarRange = ({ post, setPost }) => {
             <label>일정</label>
           </li>
           <li>
-            <p>시작일: {post.startDate?.toLocaleDateString()}</p>
-            <p>종료일: {post.endDate?.toLocaleDateString()}</p>
+            <p>시작일: {startDate?.toLocaleDateString()}</p>
+            <p>종료일: {endDate?.toLocaleDateString()}</p>
           </li>
         </ul>
       </div>
@@ -699,24 +694,29 @@ const CalendarRange = ({ post, setPost }) => {
 const ScheduleTable = ({
   startDate,
   endDate,
-  detailSchedule,
-  setDetailSchedule,
+  fields,
+  replace,
+  setValue,
+  watch,
 }) => {
+  // 날짜 변경 시 자동 생성
   useEffect(() => {
-    const diff = endDate - startDate;
+    if (!startDate || !endDate) return;
+
+    const diff = new Date(endDate) - new Date(startDate);
     const days = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+
     const arr = Array.from({ length: days }, (_, i) => ({
       dayNumber: i + 1,
       title: "",
       description: "",
     }));
-    setDetailSchedule(arr);
-  }, [startDate, endDate, setDetailSchedule]);
+
+    replace(arr); // 핵심
+  }, [startDate, endDate, replace]);
 
   const handleChange = (index, key, value) => {
-    setDetailSchedule((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
-    );
+    setValue(`detailSchedule.${index}.${key}`, value);
   };
 
   return (
@@ -729,21 +729,24 @@ const ScheduleTable = ({
             <th>소개</th>
           </tr>
         </thead>
+
         <tbody>
-          {detailSchedule.map((row, i) => (
-            <tr key={i}>
+          {fields.map((row, i) => (
+            <tr key={row.id}>
               <td>{row.dayNumber}</td>
+
               <td>
                 <input
                   className={styles.scheduleInput}
-                  value={row.title}
+                  value={watch(`detailSchedule.${i}.title`) || ""}
                   onChange={(e) => handleChange(i, "title", e.target.value)}
                 />
               </td>
+
               <td>
                 <textarea
                   className={styles.scheduleTextarea}
-                  value={row.description}
+                  value={watch(`detailSchedule.${i}.description`) || ""}
                   onChange={(e) =>
                     handleChange(i, "description", e.target.value)
                   }

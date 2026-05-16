@@ -74,7 +74,7 @@ export const insertSchema = yup.object({
 
     maxParticipants: yup
       .number()
-      .min(2)
+      .min(2, "최소 인원은 2명 이상이어야 합니다.")
       .test(
         "max-greater-than-min",
         "최대 인원은 최소 인원보다 커야 합니다.",
@@ -84,11 +84,14 @@ export const insertSchema = yup.object({
       )
       .required(),
 
-    ageMin: yup.number().min(15).required(),
+    ageMin: yup
+      .number()
+      .min(15, "최소 나이는 18세 이상이어야 합니다.")
+      .required(),
 
     ageMax: yup
       .number()
-      .max(100)
+      .max(100, "최대 나이는 100세 이하여야 합니다.")
       .test(
         "age-max-check",
         "최대 나이는 최소 나이보다 커야 합니다.",
@@ -98,7 +101,10 @@ export const insertSchema = yup.object({
       )
       .required(),
 
-    genderLimit: yup.string().oneOf(["all", "male", "female"]).required(),
+    genderLimit: yup
+      .string()
+      .oneOf(["all", "male", "female"], "성별 제한 값을 올바르게 선택해주세요.")
+      .required("성별 제한을 선택해주세요."),
 
     totalPrice: yup
       .number()
@@ -108,20 +114,26 @@ export const insertSchema = yup.object({
 
     costType: yup
       .string()
-      .oneOf(["per_person", "host_covered", "free", "custom"])
-      .required(),
+      .oneOf(
+        ["per_person", "host_covered", "free", "custom"],
+        "정산 방식을 올바르게 선택해주세요.",
+      )
+      .required("정산 방식을 선택해주세요."),
   }),
 
   files: yup
     .array()
     .of(yup.mixed())
-    .max(10, "이미지는 최대 10개까지 업로드 가능합니다."),
+    .max(3, "이미지는 최대 3개까지 업로드 가능합니다."),
 
   detailSchedule: yup
     .array()
     .of(
       yup.object({
-        dayNumber: yup.number().required(),
+        dayNumber: yup
+          .number()
+          .typeError("일차 값이 올바르지 않습니다.")
+          .required("일차는 필수입니다."),
 
         title: yup.string().required("세부 일정 제목을 입력해주세요.").max(50),
 

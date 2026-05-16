@@ -26,6 +26,13 @@ const PrivateRoute = ({ children }) => {
         open={true}
         autoHideDuration={1500}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        sx={{
+          top: {
+            xs: "100px", // 모바일
+            sm: "80px", // 태블릿
+            md: "100px", // PC
+          },
+        }}
       >
         <Alert severity="warning" variant="filled">
           로그인이 필요한 기능입니다
