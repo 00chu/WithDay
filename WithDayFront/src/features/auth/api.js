@@ -1,47 +1,54 @@
-import axios from "axios";
-import { useAuthStore } from "./store/authStore"; // 토큰을 꺼내오기 위해 전역 금고를 불러옴
+  import axios from "axios"; // 백엔드와 통신(GET, POST등)을 담당하는 라이브러리
+  import { useAuthStore } from "./store/authStore"; // AuthStore는 로그인시 유저 정보가 저장됨. 거기서 토큰 꺼내올 때 쓸 훅
 
-// .env 파일에 숨겨둔 백엔드 주소 가져오기
+// .env 파일에 숨긴 백엔드 주소 가져오기
 const BASE_URL = import.meta.env.VITE_BACKSERVER;
 
-// 💡 1. axios 전용 '커스텀 인스턴스' 생성
-// 이제부터 백엔드랑 통신할 때는 기본 axios 말고, 기본 세팅이 끝난 이 'api'라는 요원을 쓸 겁니다.
+// 매번 통신할 때마다 전체 주소나 형식을 적기 귀찮으므로(axios사용시 매번 새로 세팅해야함.), 기본 세팅이 완료된 api를 만들어 axios대신 사용.
 export const api = axios.create({
-  baseURL: `http://${BASE_URL}`, // 모든 요청 앞에 이 주소가 자동으로 붙음! (일일이 안 적어도 됨)
+  baseURL: `http://${BASE_URL}`, // baseURL: 모든 요청 주소 앞에 이 백엔드 주소가 자동으로 붙음 (예: /users/login만 적어도 됨)
+
+  // headers: 백엔드에 보내는 데이터는 기본적으로 JSON(글자/객체) 형태라고 정함. (파일 업로드처럼 JSON이 아닌 데이터를 보낼 때는, 해당 함수에서 headers를 덮어씌워서 multipart/form-data로 바꿔줌)
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// 💡 2. [초핵심] Axios 인터셉터 (통신 톨게이트)
 // 프론트엔드에서 백엔드로 요청(Request)이 출발하기 '직전'에 무조건 여기를 거쳐갑니다.
+// interceptors.request.use()는 axios의 공식 문법으로, 백엔드 요청을 하기 전에 가로채서(config) 세팅을 할 수 있게 해주는 기능
 api.interceptors.request.use(
   (config) => {
-    // 1) 금고(Zustand)에서 현재 내 로그인 토큰을 꺼냄 (getState()는 리액트 컴포넌트 밖에서 store 값을 꺼낼 때 씁니다)
+    // AuthStore(Zustand)에서 현재 자신의 로그인 토큰을 꺼냄. 리액트 컴포넌트 밖(일반 js 파일)이므로 getState()를 사용(getState: 리액트 컴포넌트 밖에서 store 값을 꺼낼 때 사용)하여 토큰을 직접 꺼내와야 함.
     const token = useAuthStore.getState().token;
     
-    // 2) 토큰이 있다면?
+    // 토큰이 있다면(로그인한 상태라면) 
     if (token) {
-      // 3) 백엔드로 보내는 택배 상자(config)의 헤더에 'Authorization'이라는 이름표를 붙여서 토큰을 동봉함!
-      // 이렇게 하면 API 함수 100개를 만들어도 일일이 토큰을 넣을 필요 없이 여기서 자동으로 다 넣어줌.
+      // config.headers["Authorization"]: 백엔드에 보내는 요청(Request)의 헤더(headers)중 Authorization이라는 칸을 세팅 (Authorization = 권한, 허가증 같은 의미)
+      // `Bearer ${token}`: "Bearer "라는 글자 뒤에 실제 토큰 값을 붙여서 세팅. (예: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
       config.headers["Authorization"] = `Bearer ${token}`;
     }
-    return config; // 세팅 완료된 택배 상자 출발!
+    return config; // 세팅된 config를 백엔드로 보내는 요청(Request)을 할 수 있게 반환(return)함.
   },
   (error) => {
-    // 요청을 보내기 전에 뭔가 문제가 생기면 에러를 뱉음
+    // 백엔드 요청하기전에 문제가 생기면(인터넷 끊김 등), 자바스크립트 확성기(Promise.reject)로 에러를 던짐.
+    // 그래야 React Query의 onError 같은 곳에서 에러를 낚아채서 알림을 띄울 수 있음.
     return Promise.reject(error);
   },
 );
 
 
-// ==========================================
-// 3. 백엔드 통신 함수들 (React Query의 mutationFn/queryFn이 얘네를 가져다 씀)
-// ==========================================
+// 백엔드 통신 함수들 (React Query의 mutationFn/queryFn이 아래의 함수들을 가져다 씀)
+// [공통 원리]
+// 1. async/await: 백엔드와 통신하는 동안 자바스크립트가 기다리게 함. (통신이 느릴 때, 통신이 끝날 때까지 다음 줄로 넘어가지 않고 기다림) -> 백엔드에서 응답이 오면(response) 그때부터 다음 줄 실행
+// 2. api.post / api.get: 위에서 세팅한 api를 통해 데이터를 보내거나(post) 가져옴(get). 
+// -> (백엔드 주소의 뒷부분(예: /users/login), 백엔드로 보낼 데이터(예: { email, password }), 옵션(예: 파일 업로드할 때 headers 덮어씌우기, 생략시 기본값인 JSON 형태로 보냄)) 순서로 작성
+// 3. return response.data: 백엔드가 준 데이터 리턴 (React Query의 onSuccess에서 이 데이터를 받아서 처리할 수 있게 함)
 
+// 갑자기 생각나서 적는 주석. export: 여기서 만든 함수들을 다른 파일에서 쓸수 있게 해줌.
 export const signupUser = async (formData) => {
-  // 💡 사진 파일(profileImage)이 포함되어 있으므로, 톨게이트 기본 설정(json)을 무시하고 강제로 multipart/form-data로 덮어씌움!
   const response = await api.post(`/users/signup`, formData, {
+    // 사진 파일(profileImage)이 포함되어 있으므로, 기본 설정(json)을 강제로 multipart/form-data로 덮어씌움. (파일 업로드할 때는 multipart/form-data로 보내야 백엔드에서 파일을 받을 수 있음)
+    // 아래의 다른 함수들은 파일 업로드가 없으므로, 기본 설정인 JSON 형태로 보내도 백엔드에서 문제없이 받을 수 있어서 옵션을 생략했음.
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -49,10 +56,9 @@ export const signupUser = async (formData) => {
   return response.data;
 };
 
-// 로그인은 파일 전송이 없으므로, 위에서 세팅한 api 요원을 그대로 써서 데이터만 던져주면 끝!
-export const loginUser = async (loginData) => {
-  const response = await api.post(`/users/login`, loginData);
-  return response.data;
+export const sendEmailVerification = async (email) => {
+  const response = await api.post(`/users/email-verification`, { email });
+  return response.data; 
 };
 
 export const fetchTerms = async () => {
@@ -60,14 +66,14 @@ export const fetchTerms = async () => {
   return response.data;
 };
 
-export const googleLoginUser = async (googleData) => {
-  const response = await api.post(`/users/google-login`, googleData);
+export const loginUser = async (loginData) => {
+  const response = await api.post(`/users/login`, loginData);
   return response.data;
 };
 
-export const sendEmailVerification = async (email) => {
-  const response = await api.post(`/users/email-verification`, { email });
-  return response.data; 
+export const googleLoginUser = async (googleData) => {
+  const response = await api.post(`/users/google-login`, googleData);
+  return response.data;
 };
 
 export const socialSignupUser = async (signupData) => {
