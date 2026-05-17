@@ -16,6 +16,12 @@ export const fetchScheduleDetail = async (scheduleId) => {
   return data;
 };
 
+// 조회수 증가는 상세 조회와 분리해서 호출한다.
+// 이렇게 해두면 상세 GET 요청이 캐시되거나 재시도될 때 조회수가 함께 흔들리지 않는다.
+export const incrementScheduleViewCount = async (scheduleId) => {
+  await api.post(`/schedules/${scheduleId}/view`);
+};
+
 const normalizeRegionValue = (value) => value?.trim() ?? "";
 
 export const fetchSchedules = async ({ category, keyword, region }) => {

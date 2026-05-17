@@ -51,6 +51,13 @@
         ORDER BY is_thumbnail DESC
     </select>
 
+    <update id="increaseViewCount">
+        UPDATE schedule
+        SET view_count = view_count + 1
+        WHERE id = #{scheduleId}
+          AND deleted_at IS NULL
+    </update>
+
     <update id="increaseCurrentParticipants">
         UPDATE schedule
         SET current_participants = current_participants + 1

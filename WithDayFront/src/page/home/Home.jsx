@@ -123,10 +123,10 @@ export default function Home({ selectedRegion = "" }) {
       {!isLoading &&
         !isError &&
         groupedSections.map((section) => (
-          <section className={styles.section} key={section.key}>
-            <div className={styles.sectionHeader}>
-              <div>
-                <h2 className={styles.sectionTitle}>{section.title}</h2>
+            <section className={styles.section} key={section.key}>
+              <div className={styles.sectionHeader}>
+                <div>
+                  <h2 className={styles.sectionTitle}>{section.title}</h2>
                 <p className={styles.sectionCaption}>마감 임박 순 TOP {MAX_ITEMS_PER_CATEGORY}</p>
               </div>
               <Button
@@ -144,6 +144,7 @@ export default function Home({ selectedRegion = "" }) {
               ))}
             </div>
           </section>
+       
         ))}
     </main>
   );

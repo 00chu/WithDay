@@ -51,7 +51,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  width: 80%;
+  margin: 0 auto 16px;
 }
 .sectionTitle {
   font-size: 1.25rem;
@@ -299,6 +300,8 @@
   gap: 18px;
   overflow: visible;
   overflow-y: visible;
+  width: 80%;
+  margin: 0 auto;
 }
 .noData {
   padding: 40px 0;
