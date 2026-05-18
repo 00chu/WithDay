@@ -1,25 +1,16 @@
-import { useParams } from "react-router-dom";
-import styles from "./MyPageMain.module.css";
-import Login from "../login/Login";
+// MyPageMain.jsx
 import { getAuthUser } from "../../features/auth/lib/getAuthUser";
+import Login from "../login/Login";
 
 const MyPageMain = () => {
-  const { userId } = useParams();
+  // 팀장님이 말한 튕기기 기능(useRequireAuth) 대신, 순수하게 유저 정보만 쏙 꺼내오기!
   const loginUser = getAuthUser();
 
-  // 로그인 정보나 id 없으면 return
+  // 로그인 안 되어 있으면 주소창 유지한 채 로그인 컴포넌트 띄우기
   if (!loginUser || !loginUser.email) {
     return <Login />;
   }
-  if (String(loginUser.id) !== String(userId)) {
-    return <div className={styles.error}>잘못된 접근입니다.</div>;
-  }
-  return (
-    <div className={styles.container}>
-      <section className={styles.section}>
-        <p>"안녕" {loginUser.name || loginUser.email}님!</p>
-      </section>
-    </div>
-  );
+
+  // 로그인 되어 있으면 마이페이지 보여주기
+  return <div>마이페이지 본문</div>;
 };
-export default MyPageMain;
