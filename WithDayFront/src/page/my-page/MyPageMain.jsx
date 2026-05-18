@@ -14,3 +14,4 @@ const MyPageMain = () => {
   // 로그인 되어 있으면 마이페이지 보여주기
   return <div>마이페이지 본문</div>;
 };
+export default MyPageMain();
