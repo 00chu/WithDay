@@ -7,10 +7,11 @@ import ChatIcon from "@mui/icons-material/Chat";
 import PersonIcon from "@mui/icons-material/Person";
 import { useNavigate } from "react-router-dom";
 import styles from "./BottomNav.module.css";
-
+import { getAuthUser } from "../../features/auth/lib/getAuthUser";
 export default function BottomNav() {
   const [value, setValue] = useState(0);
   const navigate = useNavigate();
+  const loginUser = getAuthUser();
 
   // 탭이 클릭될 때마다 실행될 함수
   const handleChange = (event, newValue) => {
@@ -30,9 +31,16 @@ export default function BottomNav() {
       case 3:
         navigate("/my-schedule");
         break;
-      case 4:
-        navigate("/login"); // 마이 탭 누르면 로그인으로 이동
+      case 4: {
+        if (loginUser && loginUser.email) {
+          //마이페이지or로그인 보내기
+          navigate(`/mypage/${loginUser.email}`);
+        } else {
+          navigate("/login");
+        }
         break;
+      }
+
       default:
         break;
     }

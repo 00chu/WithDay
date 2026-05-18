@@ -11,7 +11,7 @@ import MySchedulePage from "./page/my-schedule/MySchedulePage";
 import SocialExtra from "./page/login/SocialExtra";
 import PrivateRoute from "./features/ui/PrivateRoute";
 import UpdateSchedule from "./page/schedule/UpdateSchedule";
-import MyPage from "./page/my-page/MyPageMain";
+import MyPageMain from "./page/my-page/MyPageMain";
 
 function App() {
   return (
@@ -25,7 +25,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup/extra" element={<SocialExtra />} />
           <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
-          <Route path="/mypage/:userId" element={<MyPage />} />
+          <Route path="/mypage/:userId" element={<MyPageMain />} />
           {/* 내 일정 보기 */}
           <Route path="/my-schedule" element={<MySchedulePage />} />
 
