@@ -12,10 +12,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 
-// 💡 @RestController: "나는 화면(HTML)을 반환하지 않고, 오직 데이터(JSON)만 반환하는 창구야!"라고 선언하는 스프링 부트의 핵심 원리.
-// 프론트엔드(React)와 통신할 때는 무조건 이 어노테이션을 씁니다.
+// @RestController: 프론트엔드(React)와 통신할 때 사용하는 어노테이션, Json 형태로 객체 데이터를 반환함. (REST API 응답을 위한 Controller)
+// Controller는 HTML 화면을 반환하지만, RestController는 프론트엔드에 JSON 데이터를 반환
+// @RequestMapping: 기본 주소를 설정. 아래의 모든 함수는 "/users" 로 주소 시작
 @RestController
-// 💡 @RequestMapping: 이 창구의 기본 주소를 설정함. 즉, 아래의 모든 함수는 기본적으로 "/users" 로 시작하게 됨.
 @RequestMapping("/users")
 public class UserController {
 
@@ -25,9 +25,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // ==========================================
-    // 1. 일반 회원가입 (/users/signup)
-    // ==========================================
+    // 회원가입 (/users/signup)
     @PostMapping("/signup")
     // 💡 ResponseEntity<?>: 프론트엔드에게 단순히 데이터만 주는 게 아니라, HTTP 상태 코드(200 OK, 400 Bad Request 등)를 같이 포장해서 보내주는 박스 역할.
     public ResponseEntity<?> signup(
