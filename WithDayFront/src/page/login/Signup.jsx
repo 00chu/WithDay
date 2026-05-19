@@ -149,6 +149,11 @@ const Signup = () => {
     mutationFn: signupUser, // api.js에 있는 signupUser로 POST 요청 함수 실행해서 백엔드로 회원가입 정보를 보냄
     // 통신 성공시
     onSuccess: () => {
+      // 마케팅 약관 동의 시 알림 처리
+      if (getValues("agreeNotification")) {
+        OneSignal.Notifications.requestPermission();
+      }
+
       navigate("/login", {
         state: { toastMessage: "환영합니다! 회원가입이 완료되었습니다." }, // login의 useEffect와 연계. login의 location.state?.toastMessage로 알람창(toast)을 보냄.
       });
