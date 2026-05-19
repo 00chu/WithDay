@@ -47,7 +47,7 @@ const Signup = () => {
   });
 
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false); // 주소 검색창을 킬지 끌지 정하는 state
-  const [openTerms, setOpenTerms] = useState(null); // 약관 팝업용 state(어떤 약관을 열었는지 문자열로 저장, null / "TOS" / "PRIVACY" / "MARKETING")
+  const [openTerms, setOpenTerms] = useState(null); // 약관 팝업용 state(어떤 약관을 열었는지 문자열로 저장, null / "TOS" / "PRIVACY" / "NOTIFICATION" / "MARKETING")
 
   const [showPw, setShowPw] = useState(false); // 비밀번호 보임/숨김 결정하는 state
   const [showPwConfirm, setShowPwConfirm] = useState(false); // 비밀번호 확인 보임/숨김 결정하는 state
@@ -85,13 +85,17 @@ const Signup = () => {
     defaultValues: {
       agreeTos: false,
       agreePrivacy: false,
+      agreeNotification: false,
       agreeMarketing: false,
     },
   }); // 여기서 세팅한 폼은 UI의 <form onSubmit={handleSubmit(onSubmit)}> 와 연결되어 검사 통과 시 onSubmit 함수로 데이터를 넘겨주고 mutation.mutate를 통해 백엔드로 값을 보냄.
 
   // watch로 3개의 체크박스를 실시간으로 확인하여 3개 다 true면 allAgreed도 true가 됨.
   const allAgreed =
-    watch("agreeTos") && watch("agreePrivacy") && watch("agreeMarketing");
+    watch("agreeTos") &&
+    watch("agreePrivacy") &&
+    watch("agreeNotification") &&
+    watch("agreeMarketing");
 
   // 전체 동의 체크박스를 클릭했을 때
   const handleAgreeAll = (e) => {
@@ -100,6 +104,7 @@ const Signup = () => {
     // shouldValidate를 써서 yup의 검사를 다시함. 이유: setValue는 watch처럼 값이 바뀐다고 렌더링되지 않음. setValue만으로는 yup 검사를 하지않음.
     setValue("agreeTos", isChecked, { shouldValidate: true });
     setValue("agreePrivacy", isChecked, { shouldValidate: true });
+    setValue("agreeNotification", isChecked, { shouldValidate: true });
     setValue("agreeMarketing", isChecked, { shouldValidate: true });
   };
 
@@ -116,6 +121,8 @@ const Signup = () => {
       return "이용약관";
     } else if (type === "PRIVACY") {
       return "개인정보 수집 및 이용";
+    } else if (type === "NOTIFICATION") {
+      return "알림 수신";
     } else if (type === "MARKETING") {
       return "마케팅 정보 수신";
     } else {
@@ -314,6 +321,7 @@ const Signup = () => {
       terms: {
         TOS: data.agreeTos,
         PRIVACY: data.agreePrivacy,
+        NOTIFICATION: data.agreeNotification,
         MARKETING: data.agreeMarketing || false, // false는 체크 안한 상태, true는 체크한 상태.
       },
     };
@@ -587,6 +595,28 @@ const Signup = () => {
             {/* errors.agreePrivacy가 있으면 에러메세지 띄움 */}
             {errors.agreePrivacy && (
               <p className={styles.termError}>{errors.agreePrivacy.message}</p>
+            )}
+
+            <label className={styles.termLabel}>
+              <input type="checkbox" {...register("agreeNotification")} />
+              <span className={styles.termText}>
+                [필수] 알림 수신에 동의합니다.
+              </span>
+              <span
+                className={styles.termLink}
+                onClick={(e) => {
+                  e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
+                  setOpenTerms("NOTIFICATION"); // openTerms state에 "NOTIFICATION"를 넣어서 마케팅 정보 수신 모달이 열리게 함.
+                }}
+              >
+                보기
+              </span>
+            </label>
+            {/* errors.agreeNotification가 있으면 에러메세지 띄움 */}
+            {errors.agreeNotification && (
+              <p className={styles.termError}>
+                {errors.agreeNotification.message}
+              </p>
             )}
 
             <label className={styles.termLabel}>
