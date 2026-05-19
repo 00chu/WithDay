@@ -70,7 +70,6 @@ const SocialExtra = () => {
   const handleCloseToast = (event, reason) => {
     // reason 즉 닫히는 이유가 바깥 클릭이면 닫히는 걸 막음.
     if (reason === "clickaway") {
-      0;
       return;
     }
     setToast((prev) => ({ ...prev, open: false })); // 기존상태 유지하게하고, 토스트의 open을 false로 해야 알람이 닫힘.
@@ -81,7 +80,7 @@ const SocialExtra = () => {
     register, // 아래의 UI에서 생년월일, 닉네임, 주소등을 가져올 명찰 (소셜 가입이라 email, pw는 없음!)
     handleSubmit, // 에러(socialExtraSchema 규칙 틀림)가 있으면 통과 안시켜주고, 규칙을 다 지키면 진짜 제출 함수(onSubmit)를 실행시켜 줌.
     setValue, // 직접 타이핑하지 않고도 코드를 통해 강제로 값을 넣기위해 사용.
-    watch, // 특정 입력창(체크박스등도 포함)을 보고 값이 바뀔때마다 화면에 반영함(렌더링). 여기선 약관 3개를 다 체크하면 전체체크에도 자동으로 체크되게 만들때 사용.
+    watch, // 특정 입력창(체크박스등도 포함)을 보고 값이 바뀔때마다 화면에 반영함(렌더링). 여기선 약관 4개를 다 체크하면 전체체크에도 자동으로 체크되게 만들때 사용.
     formState: { errors }, // 에러(socialExtraSchema 규칙 틀림)발생시 에러문구를 socialExtraSchema에서 가져옴.
   } = useForm({
     resolver: yupResolver(socialExtraSchema), // authSchema(yup)의 socialExtraSchema 규칙대로 검사한다고 지정 (일반 가입과 다르게 email, pw 검사가 빠진 규칙)
