@@ -6,24 +6,8 @@
 
 /* ─── 배너 ─────────────────────────────────────────────────── */
 .banner {
-  margin: 20px 0 16px;
+  margin: 20px 0;
   padding: 10px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
-}
-.bannerCopy {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.bannerEyebrow {
-  margin: 0;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--color-primary-light);
 }
 .bannerTitle {
   font-size: 1.5rem;
@@ -31,12 +15,6 @@
   color: var(--color-text-primary);
   line-height: 1.4;
   margin: 0;
-}
-.bannerDescription {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: var(--color-text-secondary);
 }
 .highlight {
   color: var(--color-primary);
@@ -51,6 +29,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
   margin: 0 auto 16px;
 }
 .sectionTitle {
@@ -59,119 +38,45 @@
   color: var(--color-text-primary);
   margin: 0;
 }
-.sectionCaption {
-  margin: 4px 0 0;
-  font-size: 0.88rem;
-  color: var(--color-text-secondary);
-}
 
-.carousel {
-  position: relative;
-  overflow: hidden;
-  border-radius: 28px;
-  background: var(--color-surface);
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
-}
-
-.carouselTrack {
+.homePlaceholder {
   display: flex;
-  transition: transform 0.45s ease;
+  justify-content: center;
+  padding: 28px 0 8px;
 }
 
-.carouselSlide {
-  position: relative;
-  flex: 0 0 100%;
-  aspect-ratio: 16 / 5.6;
-  overflow: hidden;
-}
-
-.carouselImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.carouselOverlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 28px;
-  background: linear-gradient(
-    180deg,
-    rgba(15, 23, 42, 0.08) 0%,
-    rgba(15, 23, 42, 0.18) 45%,
-    rgba(15, 23, 42, 0.68) 100%
-  );
-  color: #fff;
-}
-
-.carouselEyebrow {
-  margin: 0;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.carouselTitle {
-  margin: 0;
-  max-width: 520px;
-  font-size: clamp(1.35rem, 2vw, 2.2rem);
-  line-height: 1.25;
-}
-
-.carouselDescription {
-  margin: 0;
-  max-width: 520px;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.82);
-}
-
-.carouselDots {
-  position: absolute;
-  left: 28px;
-  bottom: 22px;
-  display: flex;
-  gap: 8px;
-}
-
-.carouselDot {
-  width: 9px;
-  height: 9px;
-  border: none;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.45);
-  cursor: pointer;
-  transition: width 0.2s ease, background-color 0.2s ease;
-}
-
-.carouselDotActive {
-  width: 22px;
-  background: #fff;
-}
-
-.homeEmpty {
+.homePlaceholderCard {
+  width: min(100%, 520px);
   padding: 28px;
   border-radius: 24px;
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+  background: radial-gradient(
+      circle at top right,
+      rgba(59, 130, 246, 0.08),
+      transparent 30%
+    ),
+    var(--color-surface);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
 }
 
-.homeEmptyTitle {
-  margin: 0 0 8px;
-  font-size: 1.15rem;
+.homePlaceholderEyebrow {
+  margin: 0 0 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-primary-light);
+}
+
+.homePlaceholderTitle {
+  margin: 0 0 10px;
+  font-size: 1.4rem;
+  line-height: 1.35;
   color: var(--color-text-primary);
 }
 
-.homeEmptyText {
-  margin: 0;
-  font-size: 0.92rem;
+.homePlaceholderText {
+  margin: 0 0 20px;
+  font-size: 0.95rem;
   line-height: 1.6;
   color: var(--color-text-secondary);
 }
@@ -298,28 +203,4 @@
   width: 100%;
   color: var(--color-text-muted);
   font-size: 0.9rem;
-}
-
-@media (max-width: 639px) {
-  .banner {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .bannerDescription {
-    font-size: 0.9rem;
-  }
-
-  .carouselSlide {
-    aspect-ratio: 4 / 3;
-  }
-
-  .carouselOverlay {
-    padding: 20px;
-  }
-
-  .carouselDots {
-    left: 20px;
-    bottom: 16px;
-  }
 }

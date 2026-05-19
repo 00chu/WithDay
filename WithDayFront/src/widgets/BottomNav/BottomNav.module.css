@@ -22,7 +22,7 @@
 /* 🌟 실제 네비게이션 아이템들이 들어가는 영역 */
 .innerNav {
   width: 100%;
-  height: 64px !important;
+  height: var(--bottom-nav-height) !important;
 }
 
 /* 🌟 핵심: 터치 영역을 꽉 채우면서 아이콘 사이 간격 벌리기 (space-between 효과) */
@@ -60,6 +60,14 @@
 /* 1. 모바일 (기본값)
    - width: 100%로 화면 전체를 사용하며 아이콘이 균등하게 꽉 차게 퍼집니다.
 */
+.wrapper {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+}
 
 /* 2. 태블릿 (768px 이상) */
 @media screen and (min-width: 768px) {

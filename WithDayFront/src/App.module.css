@@ -42,6 +42,7 @@
   /* ===== Transition ===== */
   --transition-fast: 0.15s ease-in-out;
   --transition-default: 0.25s ease-in-out;
+  --bottom-nav-height: 64px;
 }
 
 body {
@@ -54,23 +55,26 @@ body {
 .container {
   display: flex;
   flex-direction: column;
-  /* 화면 전체 높이를 차지하도록 설정 (모바일 브라우저 고려 dVH 추천) */
-  height: 100dvh;
+  min-height: 100dvh;
   background-color: var(--color-bg);
   color: var(--color-text-primary);
 }
 
-/* 🌟 새로 추가하는 메인 영역 스타일 */
 .mainContent {
-  flex: 1; /* Header와 BottomNav가 차지한 높이를 제외한 나머지 공간을 꽉 채움 */
-  min-height: 0; /* 🔥 핵심! flex 아이템이 컨텐츠 크기에 따라 늘어나는 것을 방지 */
-  overflow-y: auto; /* 내용이 길어지면 이 영역 안에서만 스크롤 발생 */
-
-  /* (선택) 스크롤바 숨기기 - 디자인을 더 깔끔하게 유지하고 싶을 때 */
-  -ms-overflow-style: none; /* IE, Edge */
-  scrollbar-width: none; /* Firefox */
+  flex: 1;
+  min-height: auto;
+  overflow: visible;
+  padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
 }
 
-.mainContent::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+.contentShell {
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .contentShell {
+    width: 80%;
+    max-width: 1440px;
+  }
 }

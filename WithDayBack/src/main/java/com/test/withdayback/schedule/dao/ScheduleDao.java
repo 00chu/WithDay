@@ -16,6 +16,15 @@ public interface ScheduleDao {
 
     List<ScheduleImage> selectImageByScheduleId(Long id);
 
+    /**
+     * 조회수는 읽기-수정-쓰기 방식으로 처리하면 동시 요청에서 값이 유실될 수 있다.
+     * 그래서 DB가 직접 원자적으로 +1 하도록 update 쿼리 한 번으로 처리한다.
+     *
+     * @param scheduleId 조회수를 증가시킬 일정 ID
+     * @return 실제로 갱신된 행 수. 0이면 존재하지 않거나 삭제된 일정이다.
+     */
+    int increaseViewCount(@Param("scheduleId") Long scheduleId);
+
     int increaseCurrentParticipants(@Param("scheduleId") Long scheduleId);
 
     int decreaseCurrentParticipants(@Param("scheduleId") Long scheduleId);
@@ -23,7 +32,8 @@ public interface ScheduleDao {
     // Param을 사용해 파라미터 매핑
     List<Schedule> getAllSchedules(
             @Param("category") String category,
-            @Param("keyword") String keyword);
+            @Param("keyword") String keyword,
+            @Param("region") String region);
             
     Long findUserIdByEmail(String email);
 
