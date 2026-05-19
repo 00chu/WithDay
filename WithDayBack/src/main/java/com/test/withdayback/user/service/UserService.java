@@ -20,53 +20,55 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-// 💡 @Service: 스프링 부트에게 "이 클래스는 비즈니스 로직(실제 기능 구현)을 담당하는 요리사야!"라고 알려줌.
+// @Service: 데이터 가공, 검증 등을 처리하는 클래스라 명시, 스프링 컨테이너에 Bean으로 자동 등록되어 @Autowired로 주입받을 수 있게 함. (Controller에서 주입받음.)
 @Service
 public class UserService {
 
+    // @Autowired: new로 객체를 만들지 않아도, 스프링이 UserService 객체를 찾아 자동으로 연결해줌.
     @Autowired
-    private UserDao userDao; // DB 창고 관리자 (MyBatis)
+    private UserDao userDao;
 
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder; // 비밀번호 암호화 도구
+    private BCryptPasswordEncoder passwordEncoder; // 비밀번호 암호화용
 
     @Autowired
-    private JwtUtil jwtUtil; // 토큰 발급 도구
+    private JwtUtil jwtUtil; // 토큰 발급용
 
     @Autowired
     private Cloudinary cloudinary; // 이미지 호스팅 서버 (프로필 사진 저장용)
 
     @Autowired
-    private EmailSender emailSender; // 이메일 발송 도구
+    private EmailSender emailSender; // 이메일 발송용
 
     private static final int MIN_AGE = 18; // 최소 가입 연령 제한
 
-    // ==========================================
-    // 1. 일반 회원가입 로직
-    // ==========================================
-    // 💡 @Transactional (초핵심 원리): '트랜잭션(Transaction)'은 "모두 성공하거나, 아니면 모두 실패해라(All or Nothing)"라는 뜻입니다.
-    // 회원 정보는 DB에 넣었는데, 약관 동의 내역을 DB에 넣다가 에러가 났다?
-    // 이 어노테이션이 있으면 스프링이 알아서 회원 정보 넣었던 것도 롤백(취소)시켜서 DB가 꼬이는 걸 완벽하게 막아줍니다.
+    // 회원가입
+    // @Transactional: 로직이 에러없이 작동하면 자동으로 DB에 commit시키고 하나라도 에러가 있다면 rollback 시킴
     @Transactional
     public String signup(SignupRequestDTO signupRequest, MultipartFile profileFile) {
         try {
+            // 프론트에서 받은 가입 데이터중 유저 정보만 getter로 추출
             User user = signupRequest.getUser();
 
-            // [로직 1] 만 나이 서버 단에서 한 번 더 검증 (프론트에서 뚫려도 서버에서 막는 이중 방어 원칙)
+            // 최소 (만)나이 가입 제한 (프론트에서 막지만 이중 보안), 유저 생일이 null이 아니고 유저 생일이 비어있지 않으면
             if (user.getBirthday() != null && !user.getBirthday().isEmpty()) {
+                // 텍스트("yyyy-MM-dd")로 온 생일을 자바가 계산할 수 있는 날짜 객체(LocalDate)로 번역
                 LocalDate birthDate = LocalDate.parse(user.getBirthday(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                // 현재 날짜
                 LocalDate currentDate = LocalDate.now();
+                // Period.between(과거, 현재): 두 날짜 사이에 시간이 얼마나 흘렀는지 계산
                 int age = Period.between(birthDate, currentDate).getYears();
 
                 if (age < MIN_AGE) {
+                    // catch로 가서 에러메시지 400 Bad Request 반환
                     throw new RuntimeException("만 " + MIN_AGE + "세 이상만 가입할 수 있습니다.");
                 }
             }
 
-            user.setProvider("local"); // 로컬(일반) 가입자라고 명시
-            user.setProviderId("");
+            user.setProvider("local"); // 로컬 가입자라고 명시
+            user.setProviderId(""); // 소셜 로그인유저 고유 ID인데 로컬이니 비어있음.
 
-            // [로직 2] 프로필 사진이 있으면 Cloudinary 서버에 업로드 후, 받아온 이미지 링크(URL)를 DB에 저장
+            // 프로필 사진이 null 아니고 비어있지도 않으면 Cloudinary 서버에 업로드 후, 받아온 이미지 링크(URL)를 DB에 저장
             if (profileFile != null && !profileFile.isEmpty()) {
                 Map uploadParams = ObjectUtils.asMap(
                         "folder", "withday/profiles", "use_filename", true, "unique_filename", true);
@@ -254,9 +256,15 @@ public class UserService {
                     userTerms.setUserId(((Number) user.getId()).longValue());
                     Long termsId = 0L;
                     switch (entry.getKey()) {
-                        case "TOS": termsId = 1L; break;
-                        case "PRIVACY": termsId = 2L; break;
-                        case "MARKETING": termsId = 3L; break;
+                        case "TOS":
+                            termsId = 1L;
+                            break;
+                        case "PRIVACY":
+                            termsId = 2L;
+                            break;
+                        case "MARKETING":
+                            termsId = 3L;
+                            break;
                     }
                     userTerms.setTermsId(termsId);
                     userTerms.setAgreed(entry.getValue());
