@@ -50,14 +50,14 @@ const SocialExtra = () => {
     // location.state?.googleData: location.state에 googleData라는 구글 정보가 담김.
     // 이때 둘중 하나라도 없으면 접근 금지. 돌려보냄
     if (!location.state || !location.state.googleData) {
-      navigate("/login", { 
+      navigate("/login", {
         // replace: true -> 브라우저 방문 기록(History)에 이 페이지를 남기지 않고 로그인 페이지로 덮어씌움, 유저가 뒤로가기를 눌러서 다시 이 '잘못된 접근' 페이지로 무한 루프 도는 것을 방지함.
-        replace: true, 
+        replace: true,
         // state의 값 설정. 로그인 페이지의 useEffect에서 location.state?.toastMessage로 이 값을 받아서 알림창에 띄울거임.
-        state: { 
+        state: {
           toastMessage: "잘못된 접근입니다. 다시 로그인해주세요.",
-          toastSeverity: "error" 
-        } 
+          toastSeverity: "error",
+        },
       });
     }
   }, [location]); // 에러나면 여기에 navigate도 넣어보기(리엑트 ESLint때문에 navigate도 넣으라고 할 수 있음)
@@ -69,7 +69,8 @@ const SocialExtra = () => {
   // reason: 알림창(토스트)가 닫히는 이유, event: 여기선 안쓰긴 하는데 마우스의 x,y 좌표및 어떤 html태그를 클릭했는지등의 정보를 가짐
   const handleCloseToast = (event, reason) => {
     // reason 즉 닫히는 이유가 바깥 클릭이면 닫히는 걸 막음.
-    if (reason === "clickaway") {0
+    if (reason === "clickaway") {
+      0;
       return;
     }
     setToast((prev) => ({ ...prev, open: false })); // 기존상태 유지하게하고, 토스트의 open을 false로 해야 알람이 닫힘.
@@ -97,7 +98,7 @@ const SocialExtra = () => {
   const allAgreed =
     watch("agreeTos") && watch("agreePrivacy") && watch("agreeMarketing");
 
-    // 전체 동의 체크박스를 클릭했을 때
+  // 전체 동의 체크박스를 클릭했을 때
   const handleAgreeAll = (e) => {
     const isChecked = e.target.checked; // 전체동의 박스가 체크(true)인지 체크해제(false)인지 저장.
     // setValue(target이름, 넣을 값(value), 추가 옵션 객체(options))를 통해 강제로 나머지 3개 박스의 값을 똑같이 isChecked로 바꿈.
@@ -118,7 +119,7 @@ const SocialExtra = () => {
   const getTermTitle = (type) => {
     if (type === "TOS") {
       return "이용약관";
-    }else if (type === "PRIVACY") {
+    } else if (type === "PRIVACY") {
       return "개인정보 수집 및 이용";
     } else if (type === "MARKETING") {
       return "마케팅 정보 수신";
@@ -150,7 +151,7 @@ const SocialExtra = () => {
       if (data.bname !== "") {
         extraAddress += data.bname; // 위에서 extraAddress가 괄호에 들어간다 했음. 법정동 이름(예: 백현동)
       }
-      if (data.buildingName !== ""){
+      if (data.buildingName !== "") {
         extraAddress +=
           extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName; // buildingName: 건물 이름(예: 카카오 판교아지트) / extraAddress가 비어있지 않으면 (~~, 건물이름)으로 들어가고 비어있으면 (건물이름)만 들어감.
       }
@@ -168,6 +169,13 @@ const SocialExtra = () => {
     mutationFn: socialSignupUser, // api.js에 있는 socialSignupUser로 POST 요청 함수 실행해서 백엔드로 회원가입 정보를 보냄
     // 통신 성공시
     onSuccess: () => {
+      // 마케팅 약관 동의 시 알림 처리
+      /*
+      if (getValues("agreeNotification")) {
+        OneSignal.Notifications.requestPermission();
+      }
+      */
+
       navigate("/login", {
         state: {
           toastMessage: "회원가입이 완료되었습니다! 다시 로그인해주세요.", // login의 useEffect와 연계. login의 location.state?.toastMessage로 알람창(toast)을 보냄.
@@ -185,7 +193,7 @@ const SocialExtra = () => {
   // 회원가입 완료 버튼을 눌렀을 때
   const onSubmit = (data) => {
     // 백엔드의 SignupRequestDTO 모양에 맞춰서 객체를 만듬.
-    const signupData = { 
+    const signupData = {
       user: {
         // --- 구글에서 가져온 거 ---
         email: googleData.email,
@@ -226,8 +234,8 @@ const SocialExtra = () => {
           <FormField label="생년월일" error={errors.birthday}>
             {/* {...register('birthday')}: 이 input창을 폼(useForm)이 값을 추적해서, yup(보안규칙)의 'birthday'규칙과 연결시킴 */}
             {/* max 속성을 오늘 날짜로 설정해서 미래의 날짜 선택 안되게함*/}
-            <Input 
-              type="date" 
+            <Input
+              type="date"
               max={todayDate}
               // 이전 프로젝트에서는 {...register("")} 대신 아래 주석과 같이 사용했었음. 이번엔 react-hook-form 라이브러리를 활용해서 함.
               // name="email"
@@ -275,7 +283,7 @@ const SocialExtra = () => {
                 size="sm"
                 onClick={() => {
                   setIsPostcodeOpen(true); // 주소 검색 버튼을 누르면 주소 검색 모달이 열리게 함.
-                }} 
+                }}
               >
                 주소 검색
               </Button>
