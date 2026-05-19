@@ -23,6 +23,8 @@ import { Input } from "../../shared/ui/Form/Form"; //
 import Button from "../../shared/ui/Button/Button";
 import styles from "./Auth.module.css";
 
+import OneSignal from "react-onesignal";
+
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation(); // 현재 페이지 정보 저장. URL에 숨겨서 넘긴 state를 꺼내 쓸 수 있음. (빈 값 에러를 막기 위해 꺼낼 땐 location.state?. 로 접근)
@@ -81,6 +83,9 @@ const Login = () => {
       const { token, user } = data; // 백엔드가 준 데이터(data)에서 토큰과 유저 정보를 꺼냄
 
       setLogin(token, user); // authStore의 setLogin에 토큰, 유저정보를 저장 (사이트 전체 로그인됨)
+      
+      await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
+      
       navigate("/");
     },
     // 통신 실패시
@@ -113,6 +118,9 @@ const Login = () => {
         // 회원가입 유무가 true인 경우 (기존 유저인 경우)
         const { token, user } = data; // 백엔드가 준 데이터(data)에서 토큰과 유저 정보를 꺼냄
         setLogin(token, user); // authStore의 setLogin에 토큰, 유저정보를 저장 (사이트 전체 로그인됨)
+        
+        await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
+
         navigate("/");
       }
     },
