@@ -13,7 +13,18 @@ import PrivateRoute from "./features/ui/PrivateRoute";
 import UpdateSchedule from "./page/schedule/UpdateSchedule";
 import MyPageMain from "./page/my-page/MyPageMain";
 
+import OneSignal from "react-onesignal";
+
 function App() {
+  useEffect(() => {
+    OneSignal.init({
+      appId: "YOUR_APP_ID",
+      allowLocalhostAsSecureOrigin: true,
+    });
+
+    OneSignal.showSlidedownPrompt();
+  }, []);
+
   return (
     <div className={styles.container}>
       <Header />

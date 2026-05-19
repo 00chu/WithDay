@@ -5,6 +5,16 @@ import { queryClient } from "./app/queryClient.js";
 import { BrowserRouter } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import OneSignal from "react-onesignal";
+
+// OneSingal은 https 환경에서만 동작. 배포 운영 시 https 도메인 필요.
+await OneSignal.init({
+  appId: `${import.meta.env.VITE_ONESIGNAL_APP_ID}`,
+
+  // 개발환경 localhost 허용
+  allowLocalhostAsSecureOrigin: true,
+});
+
 // .env에 숨겨둔 클라이언트 ID 가져오기
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
