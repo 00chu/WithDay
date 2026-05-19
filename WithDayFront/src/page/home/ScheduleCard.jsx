@@ -2,10 +2,19 @@ import clsx from "clsx";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import GroupIcon from "@mui/icons-material/Group";
-import { formatDateRange } from "../../shared/lib/dateUtile";
+import { formatDateRange, getDDay } from "../../shared/lib/dateUtile";
 import styles from "./Home.module.css";
 import { useNavigate } from "react-router-dom";
 import defaultThumbnail from "../../assets/hero.png";
+
+const CATEGORY_LABELS = {
+  travel: "여행",
+  popup: "팝업",
+  food: "식사",
+  activity: "액티비티",
+  culture: "문화",
+  etc: "기타",
+};
 
 const resolveThumbnail = (schedule) =>
   schedule?.thumbnailImage?.trim() ||
@@ -22,10 +31,13 @@ export default function ScheduleCard({ schedule }) {
   const locationText = [schedule?.region, schedule?.detailRegion]
     .filter(Boolean)
     .join(" · ");
-  const regionLabel = schedule?.region?.trim() || "지역 미정";
+  const categoryLabel =
+    CATEGORY_LABELS[schedule?.category] ?? schedule?.category ?? "기타";
   const participantText = `${currentParticipants} / ${
     maxParticipants > 0 ? maxParticipants : "-"
   }명`;
+  const dDayText = getDDay(schedule?.startDate) ?? "종료됨";
+  const statusText = isFull ? "모집 마감" : dDayText;
 
   const handleCardClick = () => navigate(`/schedule/${schedule.id}`);
   const handleImageError = (event) => {
@@ -48,21 +60,24 @@ export default function ScheduleCard({ schedule }) {
       role="button"
       tabIndex={0}
     >
-      <div className={styles.cardContent}>
-        <div className={styles.cardTopRow}>
-          <span className={styles.regionChip}>{regionLabel}</span>
-          <div className={styles.cardStatusRow}>
-            <div className={styles.participantRow}>
-              <GroupIcon fontSize="small" className={styles.metaIcon} />
-              <span className={styles.participantText}>{participantText}</span>
-            </div>
-            {isFull && <span className={styles.fullBadge}>모집 마감</span>}
-          </div>
+      <div className={styles.cardTop}>
+        <div className={styles.ticketHeader}>
+          <span className={styles.ticketBadge}>{categoryLabel}</span>
+          <span
+            className={clsx(styles.ticketStatus, {
+              [styles.ticketStatusClosed]: isFull,
+            })}
+          >
+            {statusText}
+          </span>
         </div>
 
-        <h3 className={styles.cardTitle}>
-          {schedule?.title ?? "제목 없는 일정"}
-        </h3>
+        <h3 className={styles.cardTitle}>{schedule?.title ?? "제목 없는 일정"}</h3>
+
+        <div className={styles.participantRow}>
+          <GroupIcon fontSize="small" className={styles.metaIcon} />
+          <span className={styles.participantText}>{participantText}</span>
+        </div>
 
         <div className={styles.metaList}>
           <span className={styles.metaItem}>
@@ -78,15 +93,17 @@ export default function ScheduleCard({ schedule }) {
         </div>
       </div>
 
-      <div className={styles.cardDivider} />
+      <div className={styles.ticketDivider} aria-hidden="true" />
 
-      <div className={styles.thumbnailWrap}>
-        <img
-          src={thumbnailSrc}
-          alt={schedule?.title ?? "일정 썸네일"}
-          className={styles.thumbnail}
-          onError={handleImageError}
-        />
+      <div className={styles.cardBottom}>
+        <div className={styles.thumbnailWrap}>
+          <img
+            src={thumbnailSrc}
+            alt={schedule?.title ?? "일정 썸네일"}
+            className={styles.thumbnail}
+            onError={handleImageError}
+          />
+        </div>
       </div>
     </article>
   );
