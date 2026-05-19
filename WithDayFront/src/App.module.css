@@ -66,15 +66,3 @@ body {
   overflow: visible;
   padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
 }
-
-.contentShell {
-  width: 100%;
-  margin: 0 auto;
-}
-
-@media (min-width: 768px) {
-  .contentShell {
-    width: 80%;
-    max-width: 1440px;
-  }
-}

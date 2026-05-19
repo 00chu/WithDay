@@ -4,7 +4,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import GroupIcon from "@mui/icons-material/Group";
 import { useNavigate } from "react-router-dom";
 import { formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
-import defaultThumbnail from "../../../assets/hero.png";
+import defaultThumbnail from "../../../../public/hero.png";
 import styles from "./ScheduleCard.module.css";
 
 const CATEGORY_LABELS = {

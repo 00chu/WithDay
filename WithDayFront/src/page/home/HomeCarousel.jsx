@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import styles from "./Home.module.css";
-import heroImage from "../../assets/hero.png";
+import heroImage from "../../../public/hero.png";
 
 const AUTO_PLAY_DELAY = 4000;
 

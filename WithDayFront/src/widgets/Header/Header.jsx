@@ -5,6 +5,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useQuery } from "@tanstack/react-query";
 import { getRegion } from "../../features/region/api";
+import LayoutContainer from "../../shared/ui/LayoutContainer/LayoutContainer";
 
 const DEFAULT_REGION_OPTION = { label: "전체", value: "" };
 
@@ -42,7 +43,7 @@ export default function Header({ selectedRegion, onRegionChange }) {
 
   return (
     <header className={styles.header}>
-      <div className={styles.contentShell}>
+      <LayoutContainer className={styles.contentShell}>
         <div className={styles.left}>
           <Button
             onClick={handleOpen}
@@ -80,7 +81,7 @@ export default function Header({ selectedRegion, onRegionChange }) {
             <NotificationsIcon />
           </IconButton>
         </div>
-      </div>
+      </LayoutContainer>
     </header>
   );
 }
