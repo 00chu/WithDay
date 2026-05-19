@@ -79,8 +79,6 @@ public class ScheduleController {
         if (images == null) {
             images = new ArrayList<>();
         }
-
-        System.out.println(images.size());
         scheduleService.updateSchedule(scheduleId, dto, images);
 
         return ResponseEntity.ok("success");
