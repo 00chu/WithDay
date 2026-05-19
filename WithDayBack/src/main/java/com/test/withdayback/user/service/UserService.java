@@ -99,9 +99,18 @@ public class UserService {
 
                     Long termsId = 0L;
                     switch (entry.getKey()) {
-                        case "TOS": termsId = 1L; break;
-                        case "PRIVACY": termsId = 2L; break;
-                        case "MARKETING": termsId = 3L; break;
+                        case "TOS":
+                            termsId = 1L;
+                            break;
+                        case "PRIVACY":
+                            termsId = 2L;
+                            break;
+                        case "MARKETING":
+                            termsId = 3L;
+                            break;
+                        case "NOTIFICATION":
+                            termsId = 4L;
+                            break;
                     }
 
                     userTerms.setTermsId(termsId);
@@ -264,6 +273,9 @@ public class UserService {
                             break;
                         case "MARKETING":
                             termsId = 3L;
+                            break;
+                        case "NOTIFICATION":
+                            termsId = 4L;
                             break;
                     }
                     userTerms.setTermsId(termsId);
