@@ -295,12 +295,15 @@
 
 /* ─── 카드 리스트 ───────────────────────────────────────────── */
 .cardList {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
   gap: 18px;
   overflow: visible;
   overflow-y: visible;
-  width: 80%;
+  width: 100%;
+  max-width: 1240px;
   margin: 0 auto;
 }
 .noData {
@@ -318,7 +321,9 @@
   border-radius: 24px;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  width: 100%;
+  max-width: 340px;
+  flex: 0 1 340px;
   filter: drop-shadow(0 16px 28px rgba(15, 23, 42, 0.14));
 }
 .card:focus-visible {
@@ -485,19 +490,6 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.35s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .cardInteractive:hover .thumbnail {
-    transform: scale(1.04);
-  }
-}
-
-@media (min-width: 640px) {
-  .cardList {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 639px) {
@@ -545,14 +537,18 @@
   }
 }
 
-@media (min-width: 1024px) {
-  .cardList {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+@media (min-width: 640px) and (max-width: 1023px) {
+  .card {
+    width: 340px;
+    max-width: 340px;
+    flex-basis: 340px;
   }
 }
 
-@media (min-width: 1440px) {
-  .cardList {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+@media (min-width: 1024px) {
+  .card {
+    width: 380px;
+    max-width: 380px;
+    flex-basis: 380px;
   }
 }
