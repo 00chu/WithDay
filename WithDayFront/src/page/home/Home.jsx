@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./Home.module.css";
 import Button from "../../shared/ui/Button/Button";
 import ScheduleCard from "../../features/schedule/ui/ScheduleCard";
+import ScheduleCardGrid from "../../shared/ui/ScheduleCardGrid/ScheduleCardGrid";
 import HomeCarousel from "./HomeCarousel";
 import { fetchSchedules } from "../../features/schedule/api";
 
@@ -138,15 +139,14 @@ export default function Home({ selectedRegion = "" }) {
               </Button>
             </div>
 
-            <div className={styles.cardList}>
+            <ScheduleCardGrid>
               {section.items.map((schedule) => (
                 <ScheduleCard
                   key={getScheduleKey(schedule)}
                   schedule={schedule}
-                  className={styles.scheduleCard}
                 />
               ))}
-            </div>
+            </ScheduleCardGrid>
           </section>
        
         ))}

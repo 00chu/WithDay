@@ -197,48 +197,10 @@
   }
 }
 
-/* ─── 카드 리스트 ───────────────────────────────────────────── */
-.cardList {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 18px;
-  overflow: visible;
-  overflow-y: visible;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.scheduleCard {
-  width: 100%;
-}
 .noData {
   padding: 40px 0;
   text-align: center;
   width: 100%;
   color: var(--color-text-muted);
   font-size: 0.9rem;
-}
-
-@media (min-width: 640px) {
-  .cardList {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 639px) {
-  .cardList {
-    width: 100%;
-  }
-}
-
-@media (min-width: 1024px) {
-  .cardList {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1440px) {
-  .cardList {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
 }

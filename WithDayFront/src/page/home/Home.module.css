@@ -292,24 +292,6 @@
   }
 }
 
-/* ─── 카드 리스트 ───────────────────────────────────────────── */
-.cardList {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
-  gap: 18px;
-  overflow: visible;
-  overflow-y: visible;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.scheduleCard {
-  width: 100%;
-  max-width: 340px;
-  flex: 0 1 340px;
-}
 .noData {
   padding: 40px 0;
   text-align: center;
@@ -339,21 +321,5 @@
   .carouselDots {
     left: 20px;
     bottom: 16px;
-  }
-}
-
-@media (min-width: 640px) and (max-width: 1023px) {
-  .scheduleCard {
-    width: 340px;
-    max-width: 340px;
-    flex-basis: 340px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .scheduleCard {
-    width: 380px;
-    max-width: 380px;
-    flex-basis: 380px;
   }
 }
