@@ -313,14 +313,24 @@
 
 /* ─── 카드 ──────────────────────────────────────────────────── */
 .card {
+  --ticket-border-color: rgba(148, 163, 184, 0.75);
+  --ticket-hover-fill: rgba(255, 244, 214, 0.72);
+  --ticket-notch-size: 22px;
+  --card-side-padding: 16px;
+  --ticket-cutout-color: var(--ticket-parent-bg, var(--color-bg));
   background: var(--color-surface);
   border-radius: 8px;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-  border: 1px solid var(--color-border);
+  border: 1px dashed var(--ticket-border-color);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   height: 100%;
+  position: relative;
+  transition:
+    background-color 0.24s ease,
+    border-color 0.24s ease,
+    box-shadow 0.24s ease;
 }
 .card:focus-visible {
   outline: 2px solid var(--color-primary);
@@ -329,6 +339,7 @@
 .cardInteractive {
   outline: 1px solid transparent;
   outline-offset: -1px;
+  cursor: pointer;
 }
 .cardFull {
   opacity: 0.7;
@@ -336,11 +347,12 @@
 
 @media (hover: hover) and (pointer: fine) {
   .cardInteractive:hover {
-    border-color: rgba(59, 130, 246, 0.35);
-    outline-color: rgba(59, 130, 246, 0.14);
+    background-color: var(--ticket-hover-fill);
+    border-color: rgba(180, 142, 60, 0.68);
+    outline-color: rgba(180, 142, 60, 0.12);
     box-shadow:
-      0 0 0 1px rgba(59, 130, 246, 0.08),
-      0 14px 28px rgba(15, 23, 42, 0.1);
+      0 0 0 1px rgba(180, 142, 60, 0.08),
+      0 16px 30px rgba(15, 23, 42, 0.12);
   }
 }
 
@@ -349,7 +361,7 @@
   aspect-ratio: 16 / 10;
   background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
   overflow: hidden;
-  margin: 0 16px 16px;
+  margin: 0 var(--card-side-padding) 16px;
   border-radius: 4px;
 }
 .thumbnail {
@@ -366,7 +378,7 @@
   gap: 12px;
   flex: 1 1 auto;
   min-height: 172px;
-  padding: 18px 16px 14px;
+  padding: 18px var(--card-side-padding) 14px;
 }
 .cardTopRow {
   display: flex;
@@ -455,8 +467,34 @@
   border-radius: 999px;
 }
 .cardDivider {
-  margin: 0 16px 14px;
-  border-top: 1px dashed rgba(148, 163, 184, 0.7);
+  position: relative;
+  margin: 0 var(--card-side-padding) 14px;
+  border-top: 1px dashed var(--ticket-border-color);
+}
+.cardDivider::before,
+.cardDivider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: var(--ticket-notch-size);
+  height: var(--ticket-notch-size);
+  margin-top: calc(var(--ticket-notch-size) / -2);
+  border-radius: 50%;
+  background: var(--ticket-cutout-color);
+  border: none;
+  box-shadow: none;
+  pointer-events: none;
+  z-index: 2;
+}
+.cardDivider::before {
+  left: calc(
+    (var(--card-side-padding) + (var(--ticket-notch-size) / 2)) * -1
+  );
+}
+.cardDivider::after {
+  right: calc(
+    (var(--card-side-padding) + (var(--ticket-notch-size) / 2)) * -1
+  );
 }
 
 @media (min-width: 640px) {
@@ -488,10 +526,14 @@
     bottom: 16px;
   }
 
+  .card {
+    --card-side-padding: 14px;
+  }
+
   .cardContent {
     gap: 10px;
     min-height: 164px;
-    padding: 16px 14px 12px;
+    padding: 16px var(--card-side-padding) 12px;
   }
 
   .cardTitle {
@@ -500,7 +542,7 @@
   }
 
   .thumbnailWrap {
-    margin: 0 14px 14px;
+    margin: 0 var(--card-side-padding) 14px;
   }
 
   .metaItem {
@@ -508,7 +550,7 @@
   }
 
   .cardDivider {
-    margin: 0 14px 12px;
+    margin: 0 var(--card-side-padding) 12px;
   }
 
   .cardTopRow {
