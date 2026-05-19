@@ -47,7 +47,7 @@ const Signup = () => {
   });
 
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false); // 주소 검색창을 킬지 끌지 정하는 state
-  const [openTerms, setOpenTerms] = useState(null); // 약관 팝업용 state(어떤 약관을 열었는지 문자열로 저장, null / "TOS" / "PRIVACY" / "NOTIFICATION" / "MARKETING")
+  const [openTerms, setOpenTerms] = useState(null); // 약관 팝업용 state(어떤 약관을 열었는지 문자열로 저장, null / "TOS" / "PRIVACY" / "MARKETING" / "NOTIFICATION")
 
   const [showPw, setShowPw] = useState(false); // 비밀번호 보임/숨김 결정하는 state
   const [showPwConfirm, setShowPwConfirm] = useState(false); // 비밀번호 확인 보임/숨김 결정하는 state
@@ -76,7 +76,7 @@ const Signup = () => {
     handleSubmit, // 에러(signupSchema 규칙 틀림)가 있으면 통과 안시켜주고, 규칙을 다 지키면 진짜 제출 함수(onSubmit)를 실행시켜 줌.
     setValue, // 직접 타이핑하지 않고도 코드를 통해 강제로 값을 넣기위해 사용.
     getValues, // 인증번호 전송을 눌렀을때 렌더링없이(watch처럼 렌더링이 필요없기에) email input칸에 있는값을 백엔드로 보낼때 사용.
-    watch, // 특정 입력창(체크박스등도 포함)을 보고 값이 바뀔때마다 화면에 반영함(렌더링). 여기선 약관 3개를 다 체크하면 전체체크에도 자동으로 체크되게 만들때 사용.
+    watch, // 특정 입력창(체크박스등도 포함)을 보고 값이 바뀔때마다 화면에 반영함(렌더링). 여기선 약관 4개를 다 체크하면 전체체크에도 자동으로 체크되게 만들때 사용.
     formState: { errors }, // 에러(signupSchema 규칙 틀림)발생시 에러문구를 signupSchema에서 가져옴.
   } = useForm({
     resolver: yupResolver(signupSchema), // authSchema(yup)의 signupSchema 규칙대로 검사한다고 지정
@@ -85,27 +85,27 @@ const Signup = () => {
     defaultValues: {
       agreeTos: false,
       agreePrivacy: false,
-      agreeNotification: false,
       agreeMarketing: false,
+      agreeNotification: false,
     },
   }); // 여기서 세팅한 폼은 UI의 <form onSubmit={handleSubmit(onSubmit)}> 와 연결되어 검사 통과 시 onSubmit 함수로 데이터를 넘겨주고 mutation.mutate를 통해 백엔드로 값을 보냄.
 
-  // watch로 3개의 체크박스를 실시간으로 확인하여 3개 다 true면 allAgreed도 true가 됨.
+  // watch로 4개의 체크박스를 실시간으로 확인하여 4개 다 true면 allAgreed도 true가 됨.
   const allAgreed =
     watch("agreeTos") &&
     watch("agreePrivacy") &&
-    watch("agreeNotification") &&
-    watch("agreeMarketing");
+    watch("agreeMarketing") &&
+    watch("agreeNotification");
 
   // 전체 동의 체크박스를 클릭했을 때
   const handleAgreeAll = (e) => {
     const isChecked = e.target.checked; // 전체동의 박스가 체크(true)인지 체크해제(false)인지 저장.
-    // setValue(target이름, 넣을 값(value), 추가 옵션 객체(options))를 통해 강제로 나머지 3개 박스의 값을 똑같이 isChecked로 바꿈.
+    // setValue(target이름, 넣을 값(value), 추가 옵션 객체(options))를 통해 강제로 나머지 4개 박스의 값을 똑같이 isChecked로 바꿈.
     // shouldValidate를 써서 yup의 검사를 다시함. 이유: setValue는 watch처럼 값이 바뀐다고 렌더링되지 않음. setValue만으로는 yup 검사를 하지않음.
     setValue("agreeTos", isChecked, { shouldValidate: true });
     setValue("agreePrivacy", isChecked, { shouldValidate: true });
-    setValue("agreeNotification", isChecked, { shouldValidate: true });
     setValue("agreeMarketing", isChecked, { shouldValidate: true });
+    setValue("agreeNotification", isChecked, { shouldValidate: true });
   };
 
   // 백엔드에서 약관 데이터 가져오기(useQuery니까 페이지 들어가자마자 데이터 가져옴)
@@ -121,10 +121,10 @@ const Signup = () => {
       return "이용약관";
     } else if (type === "PRIVACY") {
       return "개인정보 수집 및 이용";
-    } else if (type === "NOTIFICATION") {
-      return "알림 수신";
     } else if (type === "MARKETING") {
       return "마케팅 정보 수신";
+    } else if (type === "NOTIFICATION") {
+      return "알림 수신";
     } else {
       return "약관"; // 앞의 TOS, PRIVACY등이 안들어왔을때 빈칸이나 에러 대신 약관을 씀.
     }
@@ -321,8 +321,8 @@ const Signup = () => {
       terms: {
         TOS: data.agreeTos,
         PRIVACY: data.agreePrivacy,
-        NOTIFICATION: data.agreeNotification,
         MARKETING: data.agreeMarketing || false, // false는 체크 안한 상태, true는 체크한 상태.
+        NOTIFICATION: data.agreeNotification || false, // false는 체크 안한 상태, true는 체크한 상태.
       },
     };
 
@@ -598,28 +598,6 @@ const Signup = () => {
             )}
 
             <label className={styles.termLabel}>
-              <input type="checkbox" {...register("agreeNotification")} />
-              <span className={styles.termText}>
-                [필수] 알림 수신에 동의합니다.
-              </span>
-              <span
-                className={styles.termLink}
-                onClick={(e) => {
-                  e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
-                  setOpenTerms("NOTIFICATION"); // openTerms state에 "NOTIFICATION"를 넣어서 마케팅 정보 수신 모달이 열리게 함.
-                }}
-              >
-                보기
-              </span>
-            </label>
-            {/* errors.agreeNotification가 있으면 에러메세지 띄움 */}
-            {errors.agreeNotification && (
-              <p className={styles.termError}>
-                {errors.agreeNotification.message}
-              </p>
-            )}
-
-            <label className={styles.termLabel}>
               <input type="checkbox" {...register("agreeMarketing")} />
               <span className={styles.termText}>
                 [선택] 마케팅 정보 수신에 동의합니다.
@@ -629,6 +607,22 @@ const Signup = () => {
                 onClick={(e) => {
                   e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
                   setOpenTerms("MARKETING"); // openTerms state에 "MARKETING"를 넣어서 마케팅 정보 수신 모달이 열리게 함.
+                }}
+              >
+                보기
+              </span>
+            </label>
+
+            <label className={styles.termLabel}>
+              <input type="checkbox" {...register("agreeNotification")} />
+              <span className={styles.termText}>
+                [선택] 알림 수신에 동의합니다.
+              </span>
+              <span
+                className={styles.termLink}
+                onClick={(e) => {
+                  e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
+                  setOpenTerms("NOTIFICATION"); // openTerms state에 "NOTIFICATION"를 넣어서 마케팅 정보 수신 모달이 열리게 함.
                 }}
               >
                 보기

@@ -42,7 +42,7 @@ const SocialExtra = () => {
   });
 
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false); // 주소 검색창을 킬지 끌지 정하는 state
-  const [openTerms, setOpenTerms] = useState(null); // 약관 팝업용 state(어떤 약관을 열었는지 문자열로 저장, null / "TOS" / "PRIVACY" / "MARKETING")
+  const [openTerms, setOpenTerms] = useState(null); // 약관 팝업용 state(어떤 약관을 열었는지 문자열로 저장, null / "TOS" / "PRIVACY" / "MARKETING" / "NOTIFICATION")
 
   // 페이지가 처음 딱 켜졌을 때 1번만 실행됨(useEffect니까). 이때 location 즉 다른페이지에서 넘긴 값(여기선 구글 정보)이 없다면 아래에 if문이 실행됨.
   useEffect(() => {
@@ -50,14 +50,14 @@ const SocialExtra = () => {
     // location.state?.googleData: location.state에 googleData라는 구글 정보가 담김.
     // 이때 둘중 하나라도 없으면 접근 금지. 돌려보냄
     if (!location.state || !location.state.googleData) {
-      navigate("/login", { 
+      navigate("/login", {
         // replace: true -> 브라우저 방문 기록(History)에 이 페이지를 남기지 않고 로그인 페이지로 덮어씌움, 유저가 뒤로가기를 눌러서 다시 이 '잘못된 접근' 페이지로 무한 루프 도는 것을 방지함.
-        replace: true, 
+        replace: true,
         // state의 값 설정. 로그인 페이지의 useEffect에서 location.state?.toastMessage로 이 값을 받아서 알림창에 띄울거임.
-        state: { 
+        state: {
           toastMessage: "잘못된 접근입니다. 다시 로그인해주세요.",
-          toastSeverity: "error" 
-        } 
+          toastSeverity: "error",
+        },
       });
     }
   }, [location]); // 에러나면 여기에 navigate도 넣어보기(리엑트 ESLint때문에 navigate도 넣으라고 할 수 있음)
@@ -69,7 +69,8 @@ const SocialExtra = () => {
   // reason: 알림창(토스트)가 닫히는 이유, event: 여기선 안쓰긴 하는데 마우스의 x,y 좌표및 어떤 html태그를 클릭했는지등의 정보를 가짐
   const handleCloseToast = (event, reason) => {
     // reason 즉 닫히는 이유가 바깥 클릭이면 닫히는 걸 막음.
-    if (reason === "clickaway") {0
+    if (reason === "clickaway") {
+      0;
       return;
     }
     setToast((prev) => ({ ...prev, open: false })); // 기존상태 유지하게하고, 토스트의 open을 false로 해야 알람이 닫힘.
@@ -90,21 +91,26 @@ const SocialExtra = () => {
       agreeTos: false,
       agreePrivacy: false,
       agreeMarketing: false,
+      agreeNotification: false,
     },
   }); // 여기서 세팅한 폼은 UI의 <form onSubmit={handleSubmit(onSubmit)}> 와 연결되어 검사 통과 시 onSubmit 함수로 데이터를 넘겨주고 mutation.mutate를 통해 백엔드로 값을 보냄.
 
-  // watch로 3개의 체크박스를 실시간으로 확인하여 3개 다 true면 allAgreed도 true가 됨.
+  // watch로 4개의 체크박스를 실시간으로 확인하여 4개 다 true면 allAgreed도 true가 됨.
   const allAgreed =
-    watch("agreeTos") && watch("agreePrivacy") && watch("agreeMarketing");
+    watch("agreeTos") &&
+    watch("agreePrivacy") &&
+    watch("agreeMarketing") &&
+    watch("agreeNotification");
 
-    // 전체 동의 체크박스를 클릭했을 때
+  // 전체 동의 체크박스를 클릭했을 때
   const handleAgreeAll = (e) => {
     const isChecked = e.target.checked; // 전체동의 박스가 체크(true)인지 체크해제(false)인지 저장.
-    // setValue(target이름, 넣을 값(value), 추가 옵션 객체(options))를 통해 강제로 나머지 3개 박스의 값을 똑같이 isChecked로 바꿈.
+    // setValue(target이름, 넣을 값(value), 추가 옵션 객체(options))를 통해 강제로 나머지 4개 박스의 값을 똑같이 isChecked로 바꿈.
     // shouldValidate를 써서 yup의 검사를 다시함. 이유: setValue는 watch처럼 값이 바뀐다고 렌더링되지 않음. setValue만으로는 yup 검사를 하지않음.
     setValue("agreeTos", isChecked, { shouldValidate: true });
     setValue("agreePrivacy", isChecked, { shouldValidate: true });
     setValue("agreeMarketing", isChecked, { shouldValidate: true });
+    setValue("agreeNotification", isChecked, { shouldValidate: true });
   };
 
   // 백엔드에서 약관 데이터 가져오기(useQuery니까 페이지 들어가자마자 데이터 가져옴)
@@ -118,12 +124,15 @@ const SocialExtra = () => {
   const getTermTitle = (type) => {
     if (type === "TOS") {
       return "이용약관";
-    }else if (type === "PRIVACY") {
+    } else if (type === "PRIVACY") {
       return "개인정보 수집 및 이용";
     } else if (type === "MARKETING") {
       return "마케팅 정보 수신";
+    } else if (type === "NOTIFICATION") {
+      return "알림 수신";
+    } else {
+      return "약관"; // 앞의 TOS, PRIVACY등이 안들어왔을때 빈칸이나 에러 대신 약관을 씀.
     }
-    return "약관"; // 앞의 TOS, PRIVACY등이 안들어왔을때 빈칸이나 에러 대신 약관을 씀.
   };
 
   // 모달창 띄울 때 넘겨받은 데이터(openTerms state)와 같은 내용(백엔드에서 받아온 termsData)을 찾는 함수 (약관 내용용)
@@ -150,7 +159,7 @@ const SocialExtra = () => {
       if (data.bname !== "") {
         extraAddress += data.bname; // 위에서 extraAddress가 괄호에 들어간다 했음. 법정동 이름(예: 백현동)
       }
-      if (data.buildingName !== ""){
+      if (data.buildingName !== "") {
         extraAddress +=
           extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName; // buildingName: 건물 이름(예: 카카오 판교아지트) / extraAddress가 비어있지 않으면 (~~, 건물이름)으로 들어가고 비어있으면 (건물이름)만 들어감.
       }
@@ -185,7 +194,7 @@ const SocialExtra = () => {
   // 회원가입 완료 버튼을 눌렀을 때
   const onSubmit = (data) => {
     // 백엔드의 SignupRequestDTO 모양에 맞춰서 객체를 만듬.
-    const signupData = { 
+    const signupData = {
       user: {
         // --- 구글에서 가져온 거 ---
         email: googleData.email,
@@ -204,6 +213,7 @@ const SocialExtra = () => {
         TOS: data.agreeTos,
         PRIVACY: data.agreePrivacy,
         MARKETING: data.agreeMarketing || false, // false는 체크 안한 상태, true는 체크한 상태.
+        NOTIFICATION: data.agreeNotification || false, // false는 체크 안한 상태, true는 체크한 상태.
       },
     };
 
@@ -226,8 +236,8 @@ const SocialExtra = () => {
           <FormField label="생년월일" error={errors.birthday}>
             {/* {...register('birthday')}: 이 input창을 폼(useForm)이 값을 추적해서, yup(보안규칙)의 'birthday'규칙과 연결시킴 */}
             {/* max 속성을 오늘 날짜로 설정해서 미래의 날짜 선택 안되게함*/}
-            <Input 
-              type="date" 
+            <Input
+              type="date"
               max={todayDate}
               // 이전 프로젝트에서는 {...register("")} 대신 아래 주석과 같이 사용했었음. 이번엔 react-hook-form 라이브러리를 활용해서 함.
               // name="email"
@@ -275,7 +285,7 @@ const SocialExtra = () => {
                 size="sm"
                 onClick={() => {
                   setIsPostcodeOpen(true); // 주소 검색 버튼을 누르면 주소 검색 모달이 열리게 함.
-                }} 
+                }}
               >
                 주소 검색
               </Button>
@@ -356,6 +366,22 @@ const SocialExtra = () => {
                 onClick={(e) => {
                   e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
                   setOpenTerms("MARKETING"); // openTerms state에 "MARKETING"를 넣어서 마케팅 정보 수신 모달이 열리게 함.
+                }}
+              >
+                보기
+              </span>
+            </label>
+
+            <label className={styles.termLabel}>
+              <input type="checkbox" {...register("agreeNotification")} />
+              <span className={styles.termText}>
+                [선택] 알림 수신에 동의합니다.
+              </span>
+              <span
+                className={styles.termLink}
+                onClick={(e) => {
+                  e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
+                  setOpenTerms("NOTIFICATION"); // openTerms state에 "NOTIFICATION"를 넣어서 알림 수신 모달이 열리게 함.
                 }}
               >
                 보기
