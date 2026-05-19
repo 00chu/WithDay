@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import styles from "./ExplorePage.module.css";
 import Button from "../../shared/ui/Button/Button";
-import ScheduleCard from "./ScheduleCard";
+import ScheduleCard from "../../features/schedule/ui/ScheduleCard";
 import SearchForm from "../../features/schedule/ui/SearchForm";
 import CategoryFilter from "../../features/schedule/ui/CategoryFilter";
 import { fetchSchedules } from "../../features/schedule/api";
@@ -109,7 +109,11 @@ export default function ExplorePage({ selectedRegion = "" }) {
           <div className={styles.cardList}>
             {Array.isArray(schedules) && schedules.length > 0 ? (
               schedules.map((schedule) => (
-                <ScheduleCard key={getScheduleKey(schedule)} schedule={schedule} />
+                <ScheduleCard
+                  key={getScheduleKey(schedule)}
+                  schedule={schedule}
+                  className={styles.scheduleCard}
+                />
               ))
             ) : (
               <div className={styles.noData}>해당 조건의 일정이 없습니다.</div>

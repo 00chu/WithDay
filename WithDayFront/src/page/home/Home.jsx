@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
 import styles from "./Home.module.css";
 import Button from "../../shared/ui/Button/Button";
-import ScheduleCard from "./ScheduleCard";
+import ScheduleCard from "../../features/schedule/ui/ScheduleCard";
 import HomeCarousel from "./HomeCarousel";
 import { fetchSchedules } from "../../features/schedule/api";
 
@@ -140,7 +140,11 @@ export default function Home({ selectedRegion = "" }) {
 
             <div className={styles.cardList}>
               {section.items.map((schedule) => (
-                <ScheduleCard key={getScheduleKey(schedule)} schedule={schedule} />
+                <ScheduleCard
+                  key={getScheduleKey(schedule)}
+                  schedule={schedule}
+                  className={styles.scheduleCard}
+                />
               ))}
             </div>
           </section>

@@ -2,10 +2,10 @@ import clsx from "clsx";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import GroupIcon from "@mui/icons-material/Group";
-import { formatDateRange, getDDay } from "../../shared/lib/dateUtile";
-import styles from "./Home.module.css";
 import { useNavigate } from "react-router-dom";
-import defaultThumbnail from "../../assets/hero.png";
+import { formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
+import defaultThumbnail from "../../../assets/hero.png";
+import styles from "./ScheduleCard.module.css";
 
 const CATEGORY_LABELS = {
   travel: "여행",
@@ -22,7 +22,7 @@ const resolveThumbnail = (schedule) =>
   schedule?.imageUrl?.trim() ||
   defaultThumbnail;
 
-export default function ScheduleCard({ schedule }) {
+export default function ScheduleCard({ schedule, className }) {
   const navigate = useNavigate();
   const currentParticipants = Number(schedule?.currentParticipants ?? 0);
   const maxParticipants = Number(schedule?.maxParticipants ?? 0);
@@ -47,9 +47,14 @@ export default function ScheduleCard({ schedule }) {
 
   return (
     <article
-      className={clsx(styles.card, styles.cardInteractive, {
-        [styles.cardFull]: isFull,
-      })}
+      className={clsx(
+        styles.card,
+        styles.cardInteractive,
+        className,
+        {
+          [styles.cardFull]: isFull,
+        },
+      )}
       onClick={handleCardClick}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {

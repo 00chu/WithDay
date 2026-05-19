@@ -24,29 +24,31 @@ function App() {
       />
       {/* 🌟 메인 컨텐츠 영역을 감싸줍니다 */}
       <main className={styles.mainContent}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/explore"
-            element={<ExplorePage selectedRegion={selectedRegion} />}
-          />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup/extra" element={<SocialExtra />} />
-          <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
+        <div className={styles.contentShell}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route
+              path="/explore"
+              element={<ExplorePage selectedRegion={selectedRegion} />}
+            />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup/extra" element={<SocialExtra />} />
+            <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
 
-          {/* 내 일정 보기 */}
-          <Route path="/my-schedule" element={<MySchedulePage />} />
+            {/* 내 일정 보기 */}
+            <Route path="/my-schedule" element={<MySchedulePage />} />
 
-          <Route
-            path="/write"
-            element={
-              <PrivateRoute>
-                <WriteSchedule />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
+            <Route
+              path="/write"
+              element={
+                <PrivateRoute>
+                  <WriteSchedule />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </div>
       </main>
       <BottomNav />
     </div>
