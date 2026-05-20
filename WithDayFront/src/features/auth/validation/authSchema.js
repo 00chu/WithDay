@@ -111,6 +111,9 @@ export const signupSchema = yup.object().shape({
 
   // 선택 항목(마케팅 동의)은 필수(required)가 아니므로, 체크를 안 했을 때의 기본값(default)만 false로 설정(체크 안 하면 false, 체크하면 true)
   agreeMarketing: yup.boolean().default(false),
+
+  // 선택 항목(알림 동의)은 필수(required)가 아니므로, 체크를 안 했을 때의 기본값(default)만 false로 설정(체크 안 하면 false, 체크하면 true)
+  agreeNotification: yup.boolean().default(false),
 });
 
 // 로그인용 검사 규칙 (Schema), yup.object().shape({ ... }) 형태로 객체 안에 각 필드별 검사 규칙을 작성
@@ -207,12 +210,9 @@ export const socialExtraSchema = yup.object().shape({
     .oneOf([true], "[필수] 개인정보 수집 및 이용 동의는 필수입니다.")
     .required(),
 
-  // 알림 수신 동의도 필수이므로, 값이 무조건 true이어야 규칙 통과.
-  agreeNotipication: yup
-    .boolean()
-    .oneOf([true], "[필수] 알림 수신 동의는 필수입니다.")
-    .required(),
-
   // 선택 항목(마케팅 동의)은 필수(required)가 아니므로, 체크를 안 했을 때의 기본값(default)만 false로 설정(체크 안 하면 false, 체크하면 true)
   agreeMarketing: yup.boolean().default(false),
+
+  // 선택 항목(알림 동의)은 필수(required)가 아니므로, 체크를 안 했을 때의 기본값(default)만 false로 설정(체크 안 하면 false, 체크하면 true)
+  agreeNotification: yup.boolean().default(false),
 });

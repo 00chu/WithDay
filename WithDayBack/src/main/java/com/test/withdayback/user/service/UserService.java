@@ -70,72 +70,103 @@ public class UserService {
 
             // 프로필 사진이 null 아니고 비어있지도 않으면 Cloudinary 서버에 업로드 후, 받아온 이미지 링크(URL)를 DB에 저장
             if (profileFile != null && !profileFile.isEmpty()) {
+                // .asMap(키1, 값1, 키2, 값2, 키3, 값3): 홀수 번째는 Key(이름표)로, 짝수 번째는 Value(내용물)로 묶어서 하나의 Map 만듦
+                // "folder", "withday/profiles": withday/profiles 라는 폴더를 만들어서 올림. 기존에 있었으면 올림.
+                // "use_filename", true: 원본 파일 이름을 최대한 유지
+                // "unique_filename", true: 이름 뒤에 무작위 난수를 붙여서 안 겹치게(unique) 만들기
                 Map uploadParams = ObjectUtils.asMap(
-                        "folder", "withday/profiles", "use_filename", true, "unique_filename", true);
+                        "folder", "withday/profiles",
+                        "use_filename", true,
+                        "unique_filename", true
+                );
+
+                // profileFile.getBytes(): 파일 객체를 타 서버에 잘 보내기 위해 바이트 단위로 변환
+                // upload(...): 바이트 단위의 데이터와 uploadParams를 Cloudinary 서버에 보냄, Cloudinary에 사진 저장 성공하면 성공했다고 값을 보내주는데 그걸 Map으로 받음.
                 Map uploadResult = cloudinary.uploader().upload(profileFile.getBytes(), uploadParams);
+
+                // Cloudinary가 성공하고 보내준 값중 이미지 링크를 가져옴
                 user.setProfileImage((String) uploadResult.get("secure_url"));
             }
 
-            // [로직 3] 이메일 중복 검사
+            // 이메일 중복 검사
             User existingUser = userDao.findByEmail(user.getEmail());
+            // existingUser가 null이 아니라면 (이미 이메일이 있다면)
             if (existingUser != null) {
+                // catch로 가서 에러메시지 400 Bad Request 반환
                 throw new RuntimeException("이미 해당 이메일로 가입된 계정이 존재합니다.");
             }
 
-            // [로직 4] 비밀번호 암호화 (단방향 해시 암호화 원리)
-            // 관리자도 유저의 실제 비밀번호를 알 수 없도록 무작위 문자열로 치환하여 DB에 저장합니다.
+            // 비밀번호 암호화
+            // 관리자도 유저의 실제 비밀번호를 알 수 없도록 무작위 문자열로 치환하여 DB에 저장
             user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-            // 유저 정보를 DB에 삽입! (이때 MyBatis가 insert를 실행하고 새로 생성된 유저의 PK(id) 값을 user 객체에 채워줌)
+            // 유저 정보를 DB에 삽입 (MyBatis가 insert를 실행, 이때 다음 약관 저장 로직에서 쓰기 위해 유저의 고유 번호(id)를 채워옴.)
             userDao.insertUser(user);
 
-            // [로직 5] 약관 동의 내역 분리 저장 (정규화 원리)
-            // 유저 테이블 하나에 다 때려 넣지 않고, N:M 관계를 풀기 위해 UserTerms 테이블에 약관 종류별로 각각 insert 함
+            // 약관 동의 내역 분리 저장 (정규화 원리)
+            // 프론트엔드는 { "TOS": true, "PRIVACY": true...} 같은 JSON 형태로 값을 보냄. 이걸 String(약관 이름)과 Boolean(동의 여부)을 담는 Map으로 저장
             Map<String, Boolean> terms = signupRequest.getTerms();
+
+            // terms가 null이 아니고 유저가 고유번호(PK)를 가졌다면
             if (terms != null && user.getId() != null) {
+                // .entrySet()라는 함수를 써서, Map 안에 있는 Key-Value 쌍들을 하나하나의 Entry(항목) 객체로 리스트처럼 나열
                 for (Map.Entry<String, Boolean> entry : terms.entrySet()) {
+
                     UserTerms userTerms = new UserTerms();
                     userTerms.setUserId(((Number) user.getId()).longValue());
 
+                    // 이용약관 4개중 뭔지 찾기
                     Long termsId = 0L;
                     switch (entry.getKey()) {
-                        case "TOS": termsId = 1L; break;
-                        case "PRIVACY": termsId = 2L; break;
-                        case "MARKETING": termsId = 3L; break;
+                        case "TOS":
+                            termsId = 1L;
+                            break;
+                        case "PRIVACY":
+                            termsId = 2L;
+                            break;
+                        case "MARKETING":
+                            termsId = 3L;
+                            break;
+                        case "NOTIFICATION":
+                            termsId = 4L;
+                            break;
                     }
 
                     userTerms.setTermsId(termsId);
-                    userTerms.setAgreed(entry.getValue());
+                    userTerms.setAgreed(entry.getValue()); // 동의 여부(true/false) 세팅
+                    // 반복문이 돌면서 약관 개수만큼 DB에 INSERT 실행 (이때 @Transactional이 하나라도 에러 시 전체 Rollback을 보장)
                     userDao.insertUserTerms(userTerms); // 약관별로 DB insert
                 }
             }
             return "success";
 
         } catch (Exception e) {
+            // 서버 콘솔에서 정확한 에러 위치를 추적용 로그 출력
             e.printStackTrace();
+            // Controller의 catch 블록으로 에러 메시지를 주고 프론트에 400 에러로 응답하게 만듦.
             throw new RuntimeException(e.getMessage());
         }
     }
 
-    // ==========================================
-    // 2. 일반 로그인 로직
-    // ==========================================
-    public Map<String, Object> login(String email, String rawPassword) {
-        // DB에서 이메일로 유저 정보를 통째로 가져옴
+    // 일반 로그인
+    public Map<String, Object> login(String email, String password) {
+        // DB에서 이메일로 유저 정보를 가져옴
         User dbUser = userDao.findByEmail(email);
 
-        // 💡 암호화 비교 원리: rawPassword(유저가 입력한 1234)를 암호화해서 DB의 암호화된 값과 같은지 비교함.
-        if (dbUser == null || !passwordEncoder.matches(rawPassword, dbUser.getPassword())) {
-            return null; // 실패 시 null 반환 (Controller에서 401 에러로 처리됨)
+        // 암호화 비교 원리: password(유저가 입력한 비번)를 암호화해서 DB의 암호화된 값과 같은지 비교함.
+        // dbUser가 없거나(email이 틀려서 db에서 가져온게 없음) 비번이 틀렸거나
+        if (dbUser == null || !passwordEncoder.matches(password, dbUser.getPassword())) {
+            return null; // null 반환. Controller에서 401 에러로 처리
         }
 
-        // 로그인 성공! 서버가 "이 사람은 인증된 유저다"라는 보증수표(JWT 토큰)를 발급함.
+        // 위 if에 안걸렸으니 로그인 성공. 토큰 발급.
         String token = jwtUtil.createToken(dbUser.getEmail(), dbUser.getNickname());
 
-        // 프론트엔드 전역 금고(Zustand)에 들어갈 데이터 규격(Map)을 맞춰서 조립함.
+        // 프론트엔드 전역 Store(Zustand)에 들어갈 데이터 Map에 저장
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("token", token);
 
+        // 전역 Store에 들어갈 유저정보 Map
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("email", dbUser.getEmail());
         userInfo.put("nickname", dbUser.getNickname());
@@ -147,28 +178,30 @@ public class UserService {
         return responseData;
     }
 
-    // ==========================================
-    // 3. 구글 로그인 로직 (신호등 역할)
-    // ==========================================
+    // 구글 로그인
     @Transactional
     public Map<String, Object> googleLogin(Map<String, String> googleData) {
+        // 구글이 인증한 이메일로 기존 가입 여부 확인
         String email = googleData.get("email");
         User dbUser = userDao.findByEmail(email);
 
+        // 프론트엔드로 보낼 최종 응답 데이터 Map 생성
         Map<String, Object> responseData = new HashMap<>();
 
+        // DB에 유저가 없다면(null)
         if (dbUser == null) {
-            // [분기점 1] DB에 유저가 없음 -> 아직 회원가입 안 한 사람!
-            // DB에 가짜 계정을 함부로 만들지 않고, 프론트(Login.jsx)에게 "이 사람 정보 더 받아와!" 하고 신호(isRegistered: false)만 줌.
+            // 프론트(Login.jsx)에 정보 받아오라고 신호(isRegistered: false)줌.
             responseData.put("isRegistered", false);
             return responseData;
         }
 
-        // [분기점 2] DB에 유저가 있음 -> 이미 가입된 구글 유저! (로그인 성공 처리)
+        // 위 if에 안걸렸으니 DB에 유저가 있음 (이미 가입된 구글 유저) (로그인 성공 처리)
+        // 비밀번호 검증 없이 바로 JWT 토큰 발급
         String token = jwtUtil.createToken(dbUser.getEmail(), dbUser.getNickname());
         responseData.put("isRegistered", true);
         responseData.put("token", token);
 
+        // 전역 Store에 들어갈 유저정보 Map
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("email", dbUser.getEmail());
         userInfo.put("nickname", dbUser.getNickname());
@@ -181,79 +214,96 @@ public class UserService {
         return responseData;
     }
 
-    // ==========================================
-    // 4. DB에서 약관 리스트 불러오기
-    // ==========================================
-    public List<Terms> getAllTerms() {
-        return userDao.getAllTerms();
-    }
-
-    // ==========================================
-    // 5. 이메일 인증번호 발송 로직
-    // ==========================================
+    // 이메일 인증번호 발송
     public String sendVerificationEmail(String receiverEmail) {
         Random r = new Random();
-        StringBuilder sb = new StringBuilder();
-        // 영문자 + 숫자 혼합된 6자리 랜덤 난수(인증번호) 생성 로직
+        StringBuilder sb = new StringBuilder(); // 문자열을 효율적으로 이어 붙이기 위한 객체
+
+        // 영문자 + 숫자 혼합된 6자리 랜덤 난수(인증번호) 생성 알고리즘
         for (int i = 0; i < 6; i++) {
-            int flag = r.nextInt(3);
-            if (flag == 0) sb.append(r.nextInt(10));
-            else if (flag == 1) sb.append((char) (r.nextInt(26) + 65));
-            else sb.append((char) (r.nextInt(26) + 97));
+            int flag = r.nextInt(3); // 0(숫자), 1(대문자), 2(소문자) 결정
+
+            if (flag == 0) {
+                sb.append(r.nextInt(10)); // 0~9 랜덤 숫자 추가
+            } else if (flag == 1) {
+                sb.append((char) (r.nextInt(26) + 65)); // 아스키코드 65('A')를 기준으로 랜덤 대문자 변환 후 추가
+            } else {
+                sb.append((char) (r.nextInt(26) + 97)); // 아스키코드 97('a')를 기준으로 랜덤 소문자 변환 후 추가
+            }
         }
+        // 조립된 6자리 인증번호 추출 (예: 3Bf8a1)
         String authCode = sb.toString();
 
+        // 메일 수신 시 적용될 HTML 양식 작성
         String emailTitle = "[WithDay] 회원가입 이메일 인증번호입니다.";
         String emailContent = "<h1>안녕하세요. WithDay 입니다.</h1>"
                 + "<h3>인증번호는 [ <b style='color:#007BFF;'>" + authCode + "</b> ] 입니다.</h3>"
                 + "<h3>화면으로 돌아가 인증번호를 입력해 주세요.</h3>";
 
-        // 생성된 내용으로 실제 메일 발송
+        // 실제 메일 발송(EmailSender: 외부 메일 전송 함수)
         emailSender.sendMail(emailTitle, receiverEmail, emailContent);
 
-        // 프론트엔드가 유저 입력값과 비교할 수 있게 생성된 코드를 반환
+        // 프론트에서의 입력값과 비교할 수 있게 인증번호 반환
         return authCode;
     }
 
-    // ==========================================
-    // 6. 소셜 로그인 전용 "진짜 회원가입" 로직
-    // ==========================================
-    @Transactional // 여기도 All or Nothing 보장!
+    // 약관 정보 불러오기
+    public List<Terms> getAllTerms() {
+        // DB에서 모든 약관 데이터를 가져와 List에 저장
+        List<Terms> result = userDao.getAllTerms();
+
+        return result;
+    }
+
+    // 소셜 로그인 회원가입
+    @Transactional
     public String socialSignup(SignupRequestDTO signupRequest) {
         try {
+            // 프론트에서 받은 소셜 가입 데이터 중 유저 정보 추출
             User user = signupRequest.getUser();
 
-            // 1. 나이 검증 (서버 이중 검증)
+            // 최소 (만)나이 가입 제한 (프론트에서 막지만 이중 보안), 유저 생일이 null이 아니고 유저 생일이 비어있지 않으면
             if (user.getBirthday() != null && !user.getBirthday().isEmpty()) {
+                // 텍스트("yyyy-MM-dd")로 온 생일을 자바가 계산할 수 있는 날짜 객체(LocalDate)로 번역
                 LocalDate birthDate = LocalDate.parse(user.getBirthday(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                // 현재 날짜
                 LocalDate currentDate = LocalDate.now();
+                // Period.between(과거, 현재): 두 날짜 사이에 시간이 얼마나 흘렀는지 계산
                 int age = Period.between(birthDate, currentDate).getYears();
+
                 if (age < MIN_AGE) {
+                    // catch로 가서 에러메시지 400 Bad Request 반환
                     throw new RuntimeException("만 " + MIN_AGE + "세 이상만 가입할 수 있습니다.");
                 }
             }
 
-            // 2. 이중 가입 방어
+            // 구글이 인증한 이메일로 기존 가입 여부 확인 (구글 소셜 로그인에서 한번 확인했지만 한번 더 확인)
             User existingUser = userDao.findByEmail(user.getEmail());
             if (existingUser != null) {
                 throw new RuntimeException("이미 해당 이메일로 가입된 계정이 존재합니다.");
             }
 
-            // 3. 소셜 유저 기본 세팅 후 DB에 완전한 형태로 INSERT
-            user.setProvider("google");
+            user.setProvider("google"); // 구글 가입자라고 명시
 
-            // 💡 [핵심 원리] 소셜 로그인은 비밀번호가 필요 없지만, DB 테이블 설계상 password 컬럼이 'NOT NULL(필수)'일 가능성이 높음.
-            // 그래서 절대 추측 불가능한 램덤 무작위 난수(UUID)를 만들어서 암호화한 뒤 억지로 채워 넣는 방식을 사용함.
+            // DB의 password 컬럼이 NOT NULL(필수)이므로, 규칙을 맞추기 위해 추측 불가능한 무작위 고유 문자열(UUID)을 생성하여 암호화 후 넣음
             user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
 
+            // 유저 정보를 DB에 삽입 (MyBatis가 insert를 실행, 이때 다음 약관 저장 로직에서 쓰기 위해 유저의 고유 번호(id)를 채워옴.)
             userDao.insertUser(user);
 
-            // 4. 약관 동의 내역 저장 (일반 가입과 원리 동일)
+            // 약관 동의 내역 분리 저장 (정규화 원리)
+            // 프론트엔드는 { "TOS": true, "PRIVACY": true...} 같은 JSON 형태로 값을 보냄. 이걸 String(약관 이름)과 Boolean(동의 여부)을 담는 Map으로 저장
             Map<String, Boolean> terms = signupRequest.getTerms();
+
+            // terms가 null이 아니고 유저가 고유번호(PK)를 가졌다면
             if (terms != null && user.getId() != null) {
+                // .entrySet()라는 함수를 써서, Map 안에 있는 Key-Value 쌍들을 하나하나의 Entry(항목) 객체로 리스트처럼 나열
                 for (Map.Entry<String, Boolean> entry : terms.entrySet()) {
+
                     UserTerms userTerms = new UserTerms();
                     userTerms.setUserId(((Number) user.getId()).longValue());
+
+                    // 이용약관 4개중 뭔지 찾기
                     Long termsId = 0L;
                     switch (entry.getKey()) {
                         case "TOS":
@@ -265,15 +315,21 @@ public class UserService {
                         case "MARKETING":
                             termsId = 3L;
                             break;
+                        case "NOTIFICATION":
+                            termsId = 4L;
+                            break;
                     }
                     userTerms.setTermsId(termsId);
-                    userTerms.setAgreed(entry.getValue());
-                    userDao.insertUserTerms(userTerms);
+                    userTerms.setAgreed(entry.getValue()); // 동의 여부(true/false) 세팅
+                    // 반복문이 돌면서 약관 개수만큼 DB에 INSERT 실행 (이때 @Transactional이 하나라도 에러 시 전체 Rollback을 보장)
+                    userDao.insertUserTerms(userTerms); // 약관별로 DB insert
                 }
             }
             return "success";
         } catch (Exception e) {
+            // 서버 콘솔에서 정확한 에러 위치를 추적용 로그 출력
             e.printStackTrace();
+            // Controller의 catch 블록으로 에러 메시지를 주고 프론트에 400 에러로 응답하게 만듦.
             throw new RuntimeException(e.getMessage());
         }
     }
