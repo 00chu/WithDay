@@ -1,93 +1,80 @@
-/* 🌟 하단 고정 영역 (전체 배경) */
-.wrapper {
-  flex-shrink: 0; /* 화면이 작아져도 하단바가 찌그러지지 않고 100% 형태 유지 */
-  width: 100%;
-  background: var(--color-surface, #ffffff);
-  border-top: 1px solid var(--color-border, #eaeaea);
-
-  /* 태블릿/데스크탑에서 innerNav의 너비가 제한될 때 중앙에 오도록 설정 */
-  display: flex;
-  justify-content: center;
-
-  /* 아이폰 하단 홈 바(노치) 침범 방지 */
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* MUI BottomNavigation 기본 스타일 오버라이드 */
-.wrapper :global(.MuiBottomNavigation-root) {
-  background: transparent; /* 배경색은 wrapper에서 관리하므로 투명하게 둡니다 */
-  height: 64px;
-}
-
-/* 🌟 실제 네비게이션 아이템들이 들어가는 영역 */
-.innerNav {
-  width: 100%;
-  height: var(--bottom-nav-height) !important;
-}
-
-/* 🌟 핵심: 터치 영역을 꽉 채우면서 아이콘 사이 간격 벌리기 (space-between 효과) */
-.innerNav :global(.MuiBottomNavigationAction-root) {
-  color: var(--color-text-muted, #94a3b8);
-  transition: var(--transition-fast, 0.2s ease-in-out);
-
-  /* MUI의 기본 최대 너비(168px) 제한을 해제하여, 
-     5개의 버튼이 전체 너비를 균등하게 1/5씩 나눠 가지도록 넓힙니다. */
-  max-width: 100%;
-  min-width: auto;
-}
-
-/* 선택된 탭 */
-.innerNav :global(.Mui-selected) {
-  color: var(--color-accent, #3b82f6);
-}
-
-/* 중앙 추가 버튼 (살짝 위로 띄워서 포인트 주기) */
-.addBtn {
-  font-size: 42px !important;
-  color: var(--color-accent, #3b82f6);
-  transform: translateY(-6px);
-}
-
-/* 모바일 터치 눌림 효과 */
-.innerNav :global(.MuiBottomNavigationAction-root:active) {
-  transform: scale(0.92);
-}
-
-/* =========================================
-   반응형 미디어 쿼리 (모바일, 태블릿, 데스크탑)
-   ========================================= */
-
-/* 1. 모바일 (기본값)
-   - width: 100%로 화면 전체를 사용하며 아이콘이 균등하게 꽉 차게 퍼집니다.
-*/
 .wrapper {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 200;
-  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  background: #0d1831;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -10px 28px rgba(15, 23, 42, 0.16);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* 2. 태블릿 (768px 이상) */
+.wrapper :global(.MuiBottomNavigation-root) {
+  background: transparent;
+  height: 72px;
+}
+
+.innerNav {
+  width: 100%;
+  height: calc(var(--bottom-nav-height) + 8px) !important;
+}
+
+.innerNav :global(.MuiBottomNavigationAction-root) {
+  max-width: 100%;
+  min-width: auto;
+  color: rgba(255, 255, 255, 0.74);
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.innerNav :global(.MuiBottomNavigationAction-label) {
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.innerNav :global(.Mui-selected) {
+  color: #ffffff;
+}
+
+.addButtonShell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #2cc7c1 0%, #179aa0 100%);
+  box-shadow: 0 14px 24px rgba(23, 154, 160, 0.38);
+  transform: translateY(-10px);
+}
+
+.addBtn {
+  font-size: 34px !important;
+  color: #ffffff;
+}
+
+.innerNav :global(.MuiBottomNavigationAction-root:active) {
+  transform: scale(0.95);
+}
+
 @media screen and (min-width: 768px) {
   .innerNav {
-    /* 화면이 커질 때 아이콘들이 좌우 끝으로 너무 멀어지지 않도록 너비 제한 */
-    max-width: 600px;
+    max-width: 720px;
   }
 }
 
-/* 3. 데스크탑 (1024px 이상) */
 @media screen and (min-width: 1024px) {
   .innerNav {
-    /* 데스크탑 화면에 맞게 최대 너비 조금 더 여유 있게 설정 */
-    max-width: 768px;
+    max-width: 860px;
   }
 
-  /* 데스크탑 전용 마우스 호버(Hover) 효과 (모바일 터치 환경과 분리) */
   .innerNav :global(.MuiBottomNavigationAction-root:hover) {
-    color: var(--color-accent, #3b82f6);
-    background: rgba(59, 130, 246, 0.05); /* 마우스 올렸을 때 연한 배경색 */
-    border-radius: 12px;
+    color: #ffffff;
   }
 }

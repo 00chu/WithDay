@@ -1,33 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import styles from "./Home.module.css";
-import heroImage from "../../../public/hero.png";
 
-const AUTO_PLAY_DELAY = 4000;
+const AUTO_PLAY_DELAY = 4500;
 
 const CAROUSEL_ITEMS = [
   {
-    id: "local-hero",
-    image: heroImage,
-    eyebrow: "이번 주 추천",
-    title: "함께 가면 더 좋은 일정들을 둘러보세요",
-    description: "마감이 가까운 일정을 홈에서 먼저 확인할 수 있어요.",
+    id: "withday-coast",
+    image: "/hero.png",
+    title: "지도에는 없는 길, 우리라는 이름으로 걷다",
+    description: "지금 시작하면 함께할 사람이 더 빨리 보입니다.",
   },
   {
-    id: "jeju-trip",
+    id: "withday-night",
     image:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80",
-    eyebrow: "여행 추천",
-    title: "바다와 풍경이 좋은 일정부터 먼저 만나보세요",
-    description: "지역 필터와 탐색 탭을 함께 쓰면 더 빠르게 찾을 수 있어요.",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1400&q=80",
+    title: "오늘의 일정은 누군가의 위트가 됩니다",
+    description: "가볍게 식사부터, 주말 여행까지 한 번에 둘러보세요.",
   },
   {
-    id: "city-meetup",
+    id: "withday-museum",
     image:
-      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=80",
-    eyebrow: "주말 모임",
-    title: "식사, 팝업, 액티비티까지 카테고리별로 한눈에",
-    description: "홈은 추천 중심, 탐색은 전체 보기 중심으로 구성되어 있어요.",
+      "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=1400&q=80",
+    title: "취향이 닿는 순간, 일정은 더 쉬워집니다",
+    description: "탐색 탭으로 이어지는 일정들을 홈에서 먼저 추천합니다.",
   },
 ];
 
@@ -37,47 +33,52 @@ export default function HomeCarousel() {
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % slideCount);
+      setCurrentIndex((previousIndex) => (previousIndex + 1) % slideCount);
     }, AUTO_PLAY_DELAY);
 
     return () => window.clearInterval(timer);
   }, [slideCount]);
 
+  const currentItem = CAROUSEL_ITEMS[currentIndex];
+
   return (
-    <div className={styles.carousel}>
-      <div
-        className={styles.carouselTrack}
-        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-      >
-        {CAROUSEL_ITEMS.map((item) => (
-          <article className={styles.carouselSlide} key={item.id}>
-            <img
-              src={item.image}
-              alt={item.title}
-              className={styles.carouselImage}
-            />
-            <div className={styles.carouselOverlay}>
-              <p className={styles.carouselEyebrow}>{item.eyebrow}</p>
-              <h3 className={styles.carouselTitle}>{item.title}</h3>
-              <p className={styles.carouselDescription}>{item.description}</p>
-            </div>
-          </article>
-        ))}
+    <section className={styles.heroSection}>
+      <div className={styles.carousel}>
+        <div
+          className={styles.carouselTrack}
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {CAROUSEL_ITEMS.map((item) => (
+            <article className={styles.carouselSlide} key={item.id}>
+              <img
+                src={item.image}
+                alt={item.title}
+                className={styles.carouselImage}
+              />
+            </article>
+          ))}
+        </div>
       </div>
 
-      <div className={styles.carouselDots}>
-        {CAROUSEL_ITEMS.map((item, index) => (
-          <button
-            key={item.id}
-            type="button"
-            className={clsx(styles.carouselDot, {
-              [styles.carouselDotActive]: index === currentIndex,
-            })}
-            onClick={() => setCurrentIndex(index)}
-            aria-label={`${index + 1}번 배너로 이동`}
-          />
-        ))}
+      <div className={styles.carouselFooter}>
+        <div className={styles.carouselTextWrap}>
+          <p className={styles.carouselCaption}>{currentItem.title}</p>
+          <p className={styles.carouselSubcaption}>{currentItem.description}</p>
+        </div>
+        <div className={styles.carouselDots}>
+          {CAROUSEL_ITEMS.map((item, index) => (
+            <button
+              key={item.id}
+              type="button"
+              className={clsx(styles.carouselDot, {
+                [styles.carouselDotActive]: index === currentIndex,
+              })}
+              onClick={() => setCurrentIndex(index)}
+              aria-label={`${index + 1}번 배너로 이동`}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -23,7 +23,11 @@
 }
 
 .cardFull {
-  opacity: 0.8;
+  opacity: 0.86;
+}
+
+.cardCompact {
+  filter: drop-shadow(0 10px 20px rgba(15, 23, 42, 0.16));
 }
 
 .cardTop,
@@ -38,6 +42,11 @@
   gap: 12px;
   padding: 24px 22px 16px;
   border-radius: 24px 24px 0 0;
+}
+
+.cardTopCompact {
+  gap: 10px;
+  padding: 12px 14px 10px;
 }
 
 .ticketHeader {
@@ -84,6 +93,11 @@
   min-height: calc(1.22rem * 1.4 * 2);
 }
 
+.compactTitle {
+  font-size: 0.95rem;
+  min-height: calc(0.95rem * 1.42 * 2);
+}
+
 .participantRow {
   display: inline-flex;
   align-items: center;
@@ -128,6 +142,90 @@
   white-space: nowrap;
 }
 
+.compactMetaRow,
+.compactSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.compactLocation {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: #3f7289;
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.compactMetaIcon {
+  font-size: 0.78rem !important;
+}
+
+.compactLocationText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compactParticipantCount {
+  flex-shrink: 0;
+  color: #334155;
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.compactStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #d6fbf2;
+  color: #14967a;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.compactStatusBadgeClosed {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.compactSummaryInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.compactDate,
+.compactPrice {
+  font-size: 0.68rem;
+  line-height: 1.2;
+  color: #334155;
+  font-weight: 700;
+}
+
+.compactPrice {
+  color: #775023;
+}
+
+.compactDescription {
+  margin: 0;
+  color: #475569;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(0.72rem * 1.45 * 2);
+}
+
 .ticketDivider {
   position: relative;
   height: 34px;
@@ -162,12 +260,21 @@
   border-radius: 0 0 24px 24px;
 }
 
+.cardBottomCompact {
+  padding: 0 14px 14px;
+}
+
 .thumbnailWrap {
   position: relative;
   aspect-ratio: 4 / 3;
   background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
   border-radius: 16px;
   overflow: hidden;
+}
+
+.thumbnailWrapCompact {
+  aspect-ratio: 16 / 8.8;
+  border-radius: 12px;
 }
 
 .thumbnail {
@@ -195,13 +302,26 @@
     padding: 20px 18px 14px;
   }
 
+  .cardTopCompact {
+    padding: 12px 14px 10px;
+  }
+
   .cardBottom {
     padding: 0 18px 18px;
+  }
+
+  .cardBottomCompact {
+    padding: 0 14px 14px;
   }
 
   .cardTitle {
     font-size: 1.08rem;
     min-height: calc(1.08rem * 1.4 * 2);
+  }
+
+  .compactTitle {
+    font-size: 0.92rem;
+    min-height: calc(0.92rem * 1.42 * 2);
   }
 
   .ticketStatus {
