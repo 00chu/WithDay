@@ -70,10 +70,6 @@ const SocialExtra = () => {
   const handleCloseToast = (event, reason) => {
     // reason 즉 닫히는 이유가 바깥 클릭이면 닫히는 걸 막음.
     if (reason === "clickaway") {
-<<<<<<< HEAD
-      0;
-=======
->>>>>>> feat/login_new
       return;
     }
     setToast((prev) => ({ ...prev, open: false })); // 기존상태 유지하게하고, 토스트의 open을 false로 해야 알람이 닫힘.
