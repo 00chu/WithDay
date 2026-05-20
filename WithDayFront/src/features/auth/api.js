@@ -36,7 +36,6 @@ api.interceptors.request.use(
   },
 );
 
-
 // 백엔드 통신 함수들 (React Query의 mutationFn/queryFn이 아래의 함수들을 가져다 씀)
 // [공통 원리]
 // 1. async/await: 백엔드와 통신하는 동안 자바스크립트가 기다리게 함. (통신이 느릴 때, 통신이 끝날 때까지 다음 줄로 넘어가지 않고 기다림) -> 백엔드에서 응답이 오면(response) 그때부터 다음 줄 실행
