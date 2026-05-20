@@ -109,13 +109,11 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: calc(1.22rem * 1.4 * 2);
   color: var(--color-text-primary);
 }
 
 .compactTitle {
   font-size: 0.95rem;
-  min-height: calc(0.95rem * 1.42 * 2);
 }
 
 .participantRow {
@@ -234,7 +232,6 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: calc(0.72rem * 1.45 * 2);
 }
 
 .ticketDivider {
@@ -347,12 +344,10 @@
 
   .cardTitle {
     font-size: 1.08rem;
-    min-height: calc(1.08rem * 1.4 * 2);
   }
 
   .compactTitle {
     font-size: 0.92rem;
-    min-height: calc(0.92rem * 1.42 * 2);
   }
 
   .ticketStatus {
