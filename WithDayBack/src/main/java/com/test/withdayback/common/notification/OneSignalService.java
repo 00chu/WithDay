@@ -1,0 +1,68 @@
+package com.test.withdayback.common.notification;
+
+import com.test.withdayback.common.config.OneSignalProperties;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class OneSignalService {
+
+    private final OneSignalProperties properties;
+
+    public void sendToUser(Long userId, String title, String message) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        headers.set(
+                "Authorization",
+                "Key " + properties.getApiKey()
+        );
+
+        Map<String, Object> body = new HashMap<>();
+
+        body.put("app_id", properties.getAppId());
+
+        body.put(
+                "include_aliases",
+                Map.of(
+                        "external_id",
+                        List.of(userId.toString())
+                )
+        );
+
+        body.put(
+                "target_channel",
+                "push"
+        );
+
+        body.put(
+                "headings",
+                Map.of("en", title)
+        );
+
+        body.put(
+                "contents",
+                Map.of("en", message)
+        );
+
+        HttpEntity<Map<String, Object>> request =
+                new HttpEntity<>(body, headers);
+
+        restTemplate.postForEntity(
+                "https://api.onesignal.com/notifications",
+                request,
+                String.class
+        );
+    }
+}

@@ -81,6 +81,7 @@ const SocialExtra = () => {
     handleSubmit, // 에러(socialExtraSchema 규칙 틀림)가 있으면 통과 안시켜주고, 규칙을 다 지키면 진짜 제출 함수(onSubmit)를 실행시켜 줌.
     setValue, // 직접 타이핑하지 않고도 코드를 통해 강제로 값을 넣기위해 사용.
     watch, // 특정 입력창(체크박스등도 포함)을 보고 값이 바뀔때마다 화면에 반영함(렌더링). 여기선 약관 4개를 다 체크하면 전체체크에도 자동으로 체크되게 만들때 사용.
+    getValues,
     formState: { errors }, // 에러(socialExtraSchema 규칙 틀림)발생시 에러문구를 socialExtraSchema에서 가져옴.
   } = useForm({
     resolver: yupResolver(socialExtraSchema), // authSchema(yup)의 socialExtraSchema 규칙대로 검사한다고 지정 (일반 가입과 다르게 email, pw 검사가 빠진 규칙)
@@ -177,11 +178,10 @@ const SocialExtra = () => {
     // 통신 성공시
     onSuccess: () => {
       // 마케팅 약관 동의 시 알림 처리
-      /*
+
       if (getValues("agreeNotification")) {
         OneSignal.Notifications.requestPermission();
       }
-      */
 
       navigate("/login", {
         state: {
