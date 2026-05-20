@@ -11,7 +11,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 26px;
-  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.12);
+  box-shadow: var(--shadow-hero);
 }
 
 .carouselTrack {
@@ -47,7 +47,7 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-text-primary);
   line-height: 1.5;
 }
 
@@ -55,7 +55,7 @@
   margin: 4px 0 0;
   font-size: 0.84rem;
   line-height: 1.45;
-  color: #64748b;
+  color: var(--color-text-secondary);
 }
 
 .carouselDots {
@@ -70,7 +70,7 @@
   height: 7px;
   border: none;
   border-radius: 999px;
-  background: #d1d5db;
+  background: var(--color-border);
   cursor: pointer;
   transition:
     width 0.2s ease,
@@ -79,7 +79,7 @@
 
 .carouselDotActive {
   width: 18px;
-  background: #1aa0a5;
+  background: var(--color-accent);
 }
 
 .section {
@@ -105,7 +105,7 @@
   width: 4px;
   min-height: 34px;
   border-radius: 999px;
-  background: #1aa0a5;
+  background: var(--color-accent);
   flex-shrink: 0;
 }
 
@@ -115,14 +115,14 @@
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.02em;
-  color: #10203d;
+  color: var(--color-text-primary);
 }
 
 .sectionCaption {
   margin: 8px 0 0;
   font-size: 0.9rem;
   line-height: 1.5;
-  color: #64748b;
+  color: var(--color-text-secondary);
 }
 
 .moreButton {
@@ -130,10 +130,15 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: #10203d;
+  color: var(--color-text-primary);
   font-size: 0.92rem;
   font-weight: 700;
   cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.moreButton:hover {
+  color: var(--color-accent-dark);
 }
 
 .cardRail {
@@ -152,7 +157,7 @@
 }
 
 .cardRail::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
+  background: var(--color-scrollbar-thumb);
   border-radius: 999px;
 }
 
@@ -166,7 +171,7 @@
   border-radius: 24px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+  box-shadow: var(--shadow-panel);
 }
 
 .homeEmptyTitle {
@@ -207,7 +212,7 @@
 }
 
 .inputError {
-  border-color: #e53e3e !important;
+  border-color: var(--color-error) !important;
 }
 
 .searchIcon {
@@ -232,7 +237,7 @@
 .errorMessage {
   margin: 6px 0 0;
   font-size: 0.8rem;
-  color: #e53e3e;
+  color: var(--color-error);
 }
 
 .searchResultInfo {
@@ -274,11 +279,11 @@
 .categoryChipActive {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .categoryChipActive:hover {
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .stateBox {
@@ -293,14 +298,14 @@
 }
 
 .errorBox {
-  color: #e53e3e;
+  color: var(--color-error);
 }
 
 .loadingSpinner {
   width: 28px;
   height: 28px;
   border: 3px solid var(--color-border);
-  border-top-color: #1aa0a5;
+  border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }

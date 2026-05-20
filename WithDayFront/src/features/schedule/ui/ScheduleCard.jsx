@@ -3,7 +3,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import GroupIcon from "@mui/icons-material/Group";
 import { useNavigate } from "react-router-dom";
-import { formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
+import { dayjs, formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
 import styles from "./ScheduleCard.module.css";
 
 const CATEGORY_LABELS = {
@@ -16,6 +16,8 @@ const CATEGORY_LABELS = {
 };
 
 const defaultThumbnail = "/hero.png";
+const RECRUITING_STATUS = "recruiting";
+const URGENT_DAY_THRESHOLD = 3;
 
 const resolveThumbnail = (schedule) =>
   schedule?.thumbnailImage?.trim() ||
@@ -52,6 +54,36 @@ const formatPriceLabel = (schedule) => {
   return `${price.toLocaleString("ko-KR")}원`;
 };
 
+const resolveScheduleBadge = (schedule, isFull) => {
+  const normalizedStatus = String(schedule?.status ?? "").trim().toLowerCase();
+  const dDayText = getDDay(schedule?.startDate);
+  const hasValidStartDate = dayjs(schedule?.startDate).isValid();
+  const daysUntilStart = hasValidStartDate
+    ? dayjs(schedule.startDate).startOf("day").diff(dayjs().startOf("day"), "day")
+    : null;
+  const isClosedByStatus =
+    normalizedStatus && normalizedStatus !== RECRUITING_STATUS;
+
+  if (isFull || isClosedByStatus || (daysUntilStart !== null && daysUntilStart < 0)) {
+    return {
+      state: "CLOSED",
+      label: "모집 마감",
+    };
+  }
+
+  if (daysUntilStart !== null && daysUntilStart <= URGENT_DAY_THRESHOLD) {
+    return {
+      state: "URGENT",
+      label: dDayText ?? "마감 임박",
+    };
+  }
+
+  return {
+    state: "AVAILABLE",
+    label: dDayText ?? "모집중",
+  };
+};
+
 export default function ScheduleCard({
   schedule,
   className,
@@ -61,6 +93,10 @@ export default function ScheduleCard({
   const currentParticipants = Number(schedule?.currentParticipants ?? 0);
   const maxParticipants = Number(schedule?.maxParticipants ?? 0);
   const isFull = maxParticipants > 0 && currentParticipants >= maxParticipants;
+  const { state: badgeState, label: badgeLabel } = resolveScheduleBadge(
+    schedule,
+    isFull,
+  );
   const thumbnailSrc = resolveThumbnail(schedule);
   const locationText = [schedule?.region, schedule?.detailRegion]
     .filter(Boolean)
@@ -70,8 +106,6 @@ export default function ScheduleCard({
   const participantText = `${currentParticipants} / ${
     maxParticipants > 0 ? maxParticipants : "-"
   }명`;
-  const dDayText = getDDay(schedule?.startDate) ?? "종료됨";
-  const statusText = isFull ? "모집 마감" : dDayText;
   const isCompact = variant === "compact";
   const compactDescription =
     schedule?.description?.trim() ||
@@ -92,7 +126,7 @@ export default function ScheduleCard({
         styles.cardInteractive,
         className,
         {
-          [styles.cardFull]: isFull,
+          [styles.cardFull]: badgeState === "CLOSED",
           [styles.cardCompact]: isCompact,
         },
       )}
@@ -121,11 +155,15 @@ export default function ScheduleCard({
 
             <div className={styles.compactSummaryRow}>
               <span
-                className={clsx(styles.compactStatusBadge, {
-                  [styles.compactStatusBadgeClosed]: isFull,
-                })}
+                className={clsx(
+                  styles.badge,
+                  styles.compactStatusBadge,
+                  badgeState === "CLOSED" && styles.badgeClosed,
+                  badgeState === "URGENT" && styles.badgeUrgent,
+                  badgeState === "AVAILABLE" && styles.badgeAvailable,
+                )}
               >
-                {statusText}
+                {badgeLabel}
               </span>
               <div className={styles.compactSummaryInfo}>
                 <span className={styles.compactDate}>{compactDate}</span>
@@ -158,11 +196,15 @@ export default function ScheduleCard({
             <div className={styles.ticketHeader}>
               <span className={styles.ticketBadge}>{categoryLabel}</span>
               <span
-                className={clsx(styles.ticketStatus, {
-                  [styles.ticketStatusClosed]: isFull,
-                })}
+                className={clsx(
+                  styles.badge,
+                  styles.ticketStatus,
+                  badgeState === "CLOSED" && styles.badgeClosed,
+                  badgeState === "URGENT" && styles.badgeUrgent,
+                  badgeState === "AVAILABLE" && styles.badgeAvailable,
+                )}
               >
-                {statusText}
+                {badgeLabel}
               </span>
             </div>
 
