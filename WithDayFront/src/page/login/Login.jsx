@@ -23,7 +23,7 @@ import { Input } from "../../shared/ui/Form/Form"; //
 import Button from "../../shared/ui/Button/Button";
 import styles from "./Auth.module.css";
 
-import OneSignal from "react-onesignal";
+import OneSignal from "../../shared/lib/oneSignal";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -79,13 +79,13 @@ const Login = () => {
   const mutation = useMutation({
     mutationFn: loginUser, // api.js에 있는 loginUser로 POST 요청 함수 실행해서 백엔드로 로그인 정보를 보냄
     // 통신 성공시
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       const { token, user } = data; // 백엔드가 준 데이터(data)에서 토큰과 유저 정보를 꺼냄
 
       setLogin(token, user); // authStore의 setLogin에 토큰, 유저정보를 저장 (사이트 전체 로그인됨)
-      
+
       await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
-      
+
       navigate("/");
     },
     // 통신 실패시
@@ -109,7 +109,7 @@ const Login = () => {
 
     // data: 백엔드가 준 데이터(토큰, 유저정보등 / 이때 로컬 로그인때 받는 data랑 비슷하지만 다름.)
     // variables: 백엔드 서버로 보냈던 구글 데이터 원본
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       // data에 유저정보에 회원가입 유무가 false인 경우 (신규 유저인 경우)
       if (data.isRegistered === false) {
         // 회원가입 마무리 페이지(/signup/extra)로 보냄, 이때 구글 데이터(variables)를 state에 넣고 보냄.
@@ -118,7 +118,7 @@ const Login = () => {
         // 회원가입 유무가 true인 경우 (기존 유저인 경우)
         const { token, user } = data; // 백엔드가 준 데이터(data)에서 토큰과 유저 정보를 꺼냄
         setLogin(token, user); // authStore의 setLogin에 토큰, 유저정보를 저장 (사이트 전체 로그인됨)
-        
+
         await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
 
         navigate("/");

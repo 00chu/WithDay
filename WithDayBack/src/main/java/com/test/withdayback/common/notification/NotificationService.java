@@ -9,32 +9,53 @@ public class NotificationService {
 
     private final OneSignalService oneSignalService;
 
-    public void notifyApply(Long hostId, Long userId) {
-        String message = String.format("%d님이 참가 신청했습니다.", userId);
+    // 신청자 -> 호스트 (참가 신청)
+    public void notifyApply(Long senderId, Long receiverId, String senderNickname) {
+
+        String message = String.format("%s님이 참가 신청을 했습니다.", senderNickname);
 
         oneSignalService.sendToUser(
-                hostId,
+                receiverId,
                 NotificationType.APPLY.getTitle(),
                 message
         );
     }
 
-    public void notifyApproved(Long hostId, Long userId) {
-        String message = String.format("%d님이 참가 신청을 승인했습니다.", hostId);
+
+    // 호스트 -> 신청자 (승인)
+    public void notifyApproved(Long senderId, Long receiverId, String senderNickname) {
+
+        String message = String.format("%s님이 참가 신청을 승인했습니다.", senderNickname);
 
         oneSignalService.sendToUser(
-                userId,
+                receiverId,
                 NotificationType.APPROVE.getTitle(),
                 message
         );
     }
 
-    public void notifyRejected(Long hostId, Long userId) {
-        String message = String.format("%d님이 참가 신청을 거절했습니다.", hostId);
+
+    // 호스트 -> 신청자 (거절)
+    public void notifyRejected(Long senderId, Long receiverId, String senderNickname) {
+
+        String message = String.format("%s님이 참가 신청을 거절했습니다.", senderNickname);
 
         oneSignalService.sendToUser(
-                userId,
+                receiverId,
                 NotificationType.REJECT.getTitle(),
+                message
+        );
+    }
+
+
+    // 호스트 -> 신청자 (강퇴)
+    public void notifyKick(Long senderId, Long receiverId, String senderNickname) {
+
+        String message = String.format("%s님이 플랜에서 추방했습니다.", senderNickname);
+
+        oneSignalService.sendToUser(
+                receiverId,
+                NotificationType.KICK.getTitle(),
                 message
         );
     }

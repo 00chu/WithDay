@@ -180,7 +180,10 @@ const SocialExtra = () => {
       // 마케팅 약관 동의 시 알림 처리
 
       if (getValues("agreeNotification")) {
-        OneSignal.Notifications.requestPermission();
+        if (window.OneSignal) {
+          //window 전역 객체 사용
+          window.OneSignal.Notifications.requestPermission();
+        }
       }
 
       navigate("/login", {

@@ -13,16 +13,20 @@ import PrivateRoute from "./features/ui/PrivateRoute";
 import UpdateSchedule from "./page/schedule/UpdateSchedule";
 import MyPageMain from "./page/my-page/MyPageMain";
 
-import OneSignal from "react-onesignal";
+import OneSignal from "./shared/lib/oneSignal";
+import { useEffect } from "react";
 
 function App() {
   useEffect(() => {
-    OneSignal.init({
-      appId: "YOUR_APP_ID",
-      allowLocalhostAsSecureOrigin: true,
-    });
+    const init = async () => {
+      // OneSingal은 https 환경에서만 동작. 배포 운영 시 https 도메인 필요.
+      await OneSignal.init({
+        appId: import.meta.env.VITE_ONESIGNAL_APP_ID,
+        allowLocalhostAsSecureOrigin: true,
+      });
+    };
 
-    OneSignal.showSlidedownPrompt();
+    init();
   }, []);
 
   return (

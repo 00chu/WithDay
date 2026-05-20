@@ -70,11 +70,13 @@ export const insertSchema = yup.object({
     minParticipants: yup
       .number()
       .min(2, "최소 인원은 2명 이상이어야 합니다.")
+      .max(100, "최소 인원은 100명 이하여야 합니다.")
       .required(),
 
     maxParticipants: yup
       .number()
-      .min(2, "최소 인원은 2명 이상이어야 합니다.")
+      .min(2, "최대 인원은 2명 이상이어야 합니다.")
+      .max(100, "최대 인원은 100명 이하여야 합니다.")
       .test(
         "max-greater-than-min",
         "최대 인원은 최소 인원보다 커야 합니다.",
@@ -86,11 +88,13 @@ export const insertSchema = yup.object({
 
     ageMin: yup
       .number()
-      .min(15, "최소 나이는 18세 이상이어야 합니다.")
+      .min(18, "최소 나이는 18세 이상이어야 합니다.")
+      .max(100, "최소 나이는 100세 이하여야 합니다.")
       .required(),
 
     ageMax: yup
       .number()
+      .min(18, "최대 나이는 18세 이상이어야 합니다.")
       .max(100, "최대 나이는 100세 이하여야 합니다.")
       .test(
         "age-max-check",

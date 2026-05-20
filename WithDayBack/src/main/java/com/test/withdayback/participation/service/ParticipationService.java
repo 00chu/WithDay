@@ -1,5 +1,6 @@
 package com.test.withdayback.participation.service;
 
+import com.test.withdayback.common.notification.NotificationService;
 import com.test.withdayback.participation.dao.ParticipationDao;
 import com.test.withdayback.participation.dto.ParticipationApplicantDTO;
 import com.test.withdayback.participation.dto.ParticipationApplyResponseDTO;
@@ -36,6 +37,9 @@ public class ParticipationService {
 
     @Autowired
     private ScheduleDao scheduleDao;
+
+    @Autowired
+    private NotificationService notificationService;
 
     public List<MyScheduleResponseDTO> getMyParticipations(String email, List<String> statuses) {
         String normalizedEmail = normalizeEmail(email);
@@ -122,6 +126,12 @@ public class ParticipationService {
         if (inserted <= 0 || participation.getId() == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "참여 신청에 실패했습니다.");
         }
+
+        notificationService.notifyApply(
+                user.getId(),          // senderId
+                schedule.getUserId(),  // receiverId
+                user.getNickname()
+        );
 
         return new ParticipationApplyResponseDTO(
                 participation.getId(),
@@ -249,6 +259,24 @@ public class ParticipationService {
         Schedule updatedSchedule = scheduleDao.selectScheduleById(schedule.getId());
         if (updatedSchedule == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "일정 정보를 다시 불러오지 못했습니다.");
+        }
+
+        String senderNickName = userDao.findByEmail(dto.getEmail()).getNickname();
+
+        if (targetStatus == ParticipationStatus.APPROVED) {
+            notificationService.notifyApproved(
+                    schedule.getUserId(),       // senderId
+                    participation.getUserId(),  // receiverId
+                    senderNickName
+            );
+        }
+
+        if (targetStatus == ParticipationStatus.REJECTED) {
+            notificationService.notifyRejected(
+                    schedule.getUserId(),       // senderId
+                    participation.getUserId(),  // receiverId
+                    senderNickName
+            );
         }
 
         return new ParticipationStatusUpdateResponseDTO(
