@@ -39,7 +39,9 @@ public interface ParticipationDao {
 
     int cancelParticipation(
             @Param("participationId") Long participationId,
-            @Param("email") String email
+            @Param("email") String email,
+            @Param("currentStatus") String currentStatus,
+            @Param("targetStatus") String targetStatus
     );
 
     int deleteParticipation(

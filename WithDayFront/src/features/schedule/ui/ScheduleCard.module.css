@@ -6,6 +6,7 @@
   flex-direction: column;
   width: 100%;
   filter: drop-shadow(0 16px 28px rgba(15, 23, 42, 0.14));
+  cursor: pointer;
 }
 
 .card:focus-visible {

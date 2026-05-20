@@ -62,7 +62,12 @@ public class ParticipationService {
             return false;
         }
 
-        return participationDao.cancelParticipation(participationId, email) > 0;
+        return participationDao.cancelParticipation(
+                participationId,
+                email,
+                ParticipationStatus.PENDING.name(),
+                ParticipationStatus.CANCELLED.getDatabaseValue()
+        ) > 0;
     }
 
     public boolean deleteParticipation(Long participationId, String email) {
@@ -233,7 +238,7 @@ public class ParticipationService {
         int updated = participationDao.updateStatus(
                 participationId,
                 currentStatus.name(),
-                targetStatus.name()
+                targetStatus.getDatabaseValue()
         );
         if (updated <= 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "상태 변경에 실패했습니다.");
