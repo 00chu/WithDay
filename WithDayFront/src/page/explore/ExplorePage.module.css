@@ -1,0 +1,206 @@
+/* ─── 레이아웃 ─────────────────────────────────────────────── */
+.main {
+  padding: 0;
+  background-color: var(--color-bg);
+}
+
+/* ─── 배너 ─────────────────────────────────────────────────── */
+.banner {
+  margin: 20px 0;
+  padding: 10px 0;
+}
+.bannerTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  margin: 0;
+}
+.highlight {
+  color: var(--color-primary);
+}
+
+/* ─── 섹션 공통 ─────────────────────────────────────────────── */
+.section {
+  margin-bottom: 28px;
+  overflow: visible;
+}
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0 auto 16px;
+}
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.homePlaceholder {
+  display: flex;
+  justify-content: center;
+  padding: 28px 0 8px;
+}
+
+.homePlaceholderCard {
+  width: min(100%, 520px);
+  padding: 28px;
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  background: radial-gradient(
+      circle at top right,
+      var(--color-surface-highlight),
+      transparent 30%
+    ),
+    var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.homePlaceholderEyebrow {
+  margin: 0 0 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-primary-light);
+}
+
+.homePlaceholderTitle {
+  margin: 0 0 10px;
+  font-size: 1.4rem;
+  line-height: 1.35;
+  color: var(--color-text-primary);
+}
+
+.homePlaceholderText {
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+/* ─── 검색 폼 (react-hook-form + yup) ──────────────────────── */
+.searchForm {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+.searchInputWrapper {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 12px;
+  background: var(--color-surface);
+  transition: border-color 0.2s;
+}
+.searchInputWrapper:focus-within {
+  border-color: var(--color-primary);
+}
+.inputError {
+  border-color: var(--color-error) !important;
+}
+.searchIcon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.searchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  padding: 10px 0;
+}
+.searchInput::placeholder {
+  color: var(--color-text-muted);
+}
+.errorMessage {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: var(--color-error);
+}
+.searchResultInfo {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+/* ─── 카테고리 칩 (clsx로 active 토글) ─────────────────────── */
+.categoryList {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.categoryList::-webkit-scrollbar {
+  display: none;
+}
+.categoryChip {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.categoryChip:hover {
+  border-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+.categoryChipActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+.categoryChipActive:hover {
+  color: var(--color-text-inverse);
+}
+
+/* ─── 상태 박스 (로딩 / 에러) ──────────────────────────────── */
+.stateBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+.errorBox {
+  color: var(--color-error);
+}
+.loadingSpinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.noData {
+  padding: 40px 0;
+  text-align: center;
+  width: 100%;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}

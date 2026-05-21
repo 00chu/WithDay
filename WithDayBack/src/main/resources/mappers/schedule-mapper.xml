@@ -55,6 +55,13 @@
         ORDER BY is_thumbnail DESC
     </select>
 
+    <update id="increaseViewCount">
+        UPDATE schedule
+        SET view_count = view_count + 1
+        WHERE id = #{scheduleId}
+          AND deleted_at IS NULL
+    </update>
+
     <update id="increaseCurrentParticipants">
         UPDATE schedule
         SET current_participants = current_participants + 1
@@ -80,12 +87,16 @@
             user_id AS userId,
             category,
             title,
+            description,
             region,
             detail_region AS detailRegion,
             start_date AS startDate,
             end_date AS endDate,
             current_participants AS currentParticipants,
             max_participants AS maxParticipants,
+            total_price AS totalPrice,
+            cost_type AS costType,
+            thumbnail_image AS thumbnailImage,
             created_at AS createdAt
         FROM schedule
         <where>
@@ -96,7 +107,14 @@
             </if>
 
             <if test="keyword != null and keyword != ''">
-                AND (title LIKE CONCAT('%', #{keyword}, '%') OR region LIKE CONCAT('%', #{keyword}, '%'))
+                AND (
+                    title LIKE CONCAT('%', #{keyword}, '%')
+                    OR description LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <if test="region != null and region != ''">
+                AND UPPER(TRIM(region)) = UPPER(TRIM(#{region}))
             </if>
         </where>
         ORDER BY id DESC

@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class ScheduleService {
@@ -48,8 +49,23 @@ public class ScheduleService {
         return new ScheduleResponseDTO(email, schedule, details, images);
     }
 
-    public List<Schedule> getAllSchedules(String category, String keyword) {
-        return scheduleDao.getAllSchedules(category, keyword);
+    /**
+     * 상세 페이지 진입 시 조회수를 1 증가시킨다.
+     *
+     * 별도 API로 분리해두면 GET 상세 조회가 캐시/프리패치/자동 재시도에 휘말려
+     * 의도치 않게 조회수가 더 오르는 문제를 줄일 수 있다.
+     *
+     * @param id 일정 ID
+     * @return true면 증가 성공, false면 대상 일정이 없어서 증가하지 못한 경우
+     */
+    @Transactional
+    public boolean increaseViewCount(Long id) {
+        return scheduleDao.increaseViewCount(id) > 0;
+    }
+
+    // 🌟 파라미터를 받아서 Dao로 넘겨주도록 수정
+    public List<Schedule> getAllSchedules(String category, String keyword, String region) {
+        return scheduleDao.getAllSchedules(category, keyword, region);
     }
 
     @Transactional

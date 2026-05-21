@@ -47,7 +47,7 @@ export default function SearchForm({
           <SearchIcon fontSize="small" className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="지역, 제목으로 검색"
+            placeholder="일정 제목 또는 설명으로 검색"
             className={styles.searchInput}
             {...register("keyword")}
           />

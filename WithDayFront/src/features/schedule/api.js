@@ -26,7 +26,15 @@ export const fetchScheduleDetail = async (scheduleId) => {
   return data;
 };
 
-export const fetchSchedules = async ({ category, keyword }) => {
+// 조회수 증가는 상세 조회와 분리해서 호출한다.
+// 이렇게 해두면 상세 GET 요청이 캐시되거나 재시도될 때 조회수가 함께 흔들리지 않는다.
+export const incrementScheduleViewCount = async (scheduleId) => {
+  await api.post(`/schedules/${scheduleId}/view`);
+};
+
+const normalizeRegionValue = (value) => value?.trim() ?? "";
+
+export const fetchSchedules = async ({ category, keyword, region }) => {
   const params = {};
 
   // "all"이 아닐 때만 백엔드로 카테고리 파라미터를 보냄
@@ -36,6 +44,11 @@ export const fetchSchedules = async ({ category, keyword }) => {
 
   if (keyword) {
     params.keyword = keyword;
+  }
+
+  const normalizedRegion = normalizeRegionValue(region);
+  if (normalizedRegion) {
+    params.region = normalizedRegion;
   }
 
   const { data } = await api.get("/schedules", { params });

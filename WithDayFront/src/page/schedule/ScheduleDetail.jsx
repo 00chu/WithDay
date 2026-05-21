@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PeopleIcon from "@mui/icons-material/People";
@@ -11,7 +11,10 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
-import { fetchScheduleDetail } from "../../features/schedule/api";
+import {
+  fetchScheduleDetail,
+  incrementScheduleViewCount,
+} from "../../features/schedule/api";
 import { getAuthUser } from "../../features/auth/lib/getAuthUser";
 import { useScheduleApplicantsQuery } from "../../features/participation/model/queries";
 import { useUpdateParticipationStatusMutation } from "../../features/participation/model/mutations";
@@ -49,6 +52,7 @@ const COST_TYPE_LABELS = {
 };
 
 const DEFAULT_IMAGE = "https://placehold.co/800x400?text=No+Image";
+const VIEWED_SCHEDULE_STORAGE_KEY_PREFIX = "viewed_schedule_";
 
 const formatLocation = (schedule) => {
   const region = schedule?.region?.trim() ?? "";
@@ -64,13 +68,75 @@ const formatLocation = (schedule) => {
 export default function ScheduleDetail() {
   const { scheduleId } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [feedback, setFeedback] = useState(null);
   const [currentImg, setCurrentImg] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [viewCountReadyScheduleId, setViewCountReadyScheduleId] = useState(null);
 
   const authUser = useMemo(() => getAuthUser(), []);
   const authEmail = authUser?.email?.trim() ?? "";
   const parsedScheduleId = Number(scheduleId);
+
+  useEffect(() => {
+    // 잘못된 ID에서는 증가 호출을 시도하지 않는다.
+    if (!Number.isFinite(parsedScheduleId) || parsedScheduleId <= 0) {
+      return;
+    }
+
+    let isMounted = true;
+
+    // 일정 상세에 다시 진입했을 때는 이전 캐시를 그대로 재사용하지 않고,
+    // 조회수 증가 이후의 최신 값을 다시 읽도록 현재 상세 캐시를 비운다.
+    queryClient.removeQueries({
+      queryKey: ["schedule-detail", parsedScheduleId],
+      exact: true,
+    });
+
+    const viewedScheduleStorageKey = `${VIEWED_SCHEDULE_STORAGE_KEY_PREFIX}${parsedScheduleId}`;
+    const hasViewedSchedule =
+      typeof window !== "undefined" &&
+      window.sessionStorage.getItem(viewedScheduleStorageKey) === "true";
+
+    if (hasViewedSchedule) {
+      queueMicrotask(() => {
+        if (isMounted) {
+          setViewCountReadyScheduleId(parsedScheduleId);
+        }
+      });
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    // 진입 1회당 조회수 1증가가 요구사항이므로, 페이지 마운트 시점에만 증가 API를 호출한다.
+    const increaseViewCount = async () => {
+      try {
+        await incrementScheduleViewCount(parsedScheduleId);
+
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(viewedScheduleStorageKey, "true");
+        }
+      } catch (requestError) {
+        // 조회수 집계 실패가 상세 페이지 진입 자체를 막으면 UX가 나빠진다.
+        // 그래서 실패하더라도 상세 조회는 계속 진행한다.
+        if (import.meta.env.DEV) {
+          console.debug("[schedule-detail] view count increment failed", requestError);
+        }
+      } finally {
+        if (isMounted) {
+          // 증가 성공 여부와 관계없이 상세 조회를 시작할 수 있게 열어준다.
+          setViewCountReadyScheduleId(parsedScheduleId);
+        }
+      }
+    };
+
+    increaseViewCount();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [parsedScheduleId, queryClient]);
 
   const {
     data,
@@ -80,8 +146,14 @@ export default function ScheduleDetail() {
   } = useQuery({
     queryKey: ["schedule-detail", parsedScheduleId],
     queryFn: () => fetchScheduleDetail(parsedScheduleId),
-    enabled: Number.isFinite(parsedScheduleId) && parsedScheduleId > 0,
-    staleTime: 1000 * 30,
+    // 상세 페이지는 "진입할 때마다" 최신 조회수를 보여주는 것이 중요하다.
+    // 그래서 조회수 증가 호출이 끝난 뒤에만 상세 조회를 시작한다.
+    enabled:
+      Number.isFinite(parsedScheduleId) &&
+      parsedScheduleId > 0 &&
+      viewCountReadyScheduleId === parsedScheduleId,
+    // 상세 재진입 시 캐시된 값을 오래 붙잡지 않도록 fresh 시간을 0으로 둔다.
+    staleTime: 0,
   });
 
   const postHostEmail = data?.email;

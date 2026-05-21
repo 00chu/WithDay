@@ -40,6 +40,26 @@ public class ScheduleController {
     }
 
     /**
+     * 상세 페이지 진입 시 조회수를 1 증가시킨다.
+     *
+     * 조회수 증가는 쓰기 작업이기 때문에 GET 상세 조회에 합치지 않고 별도 엔드포인트로 분리한다.
+     * 이렇게 두면 프론트가 "언제 1회 증가시킬지"를 더 명확하게 제어할 수 있다.
+     *
+     * @param id 조회수를 증가시킬 일정 ID
+     * @return 증가 성공 시 204, 대상 일정이 없으면 404
+     */
+    @PostMapping("/{id}/view")
+    public ResponseEntity<Void> increaseViewCount(@PathVariable Long id) {
+        boolean updated = scheduleService.increaseViewCount(id);
+
+        if (!updated) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+
+    /**
      * 일정 조회
      *
      * @param category
@@ -48,10 +68,11 @@ public class ScheduleController {
      */
     @GetMapping
     public ResponseEntity<List<Schedule>> getAllSchedules(
-            @RequestParam(name = "category", required = false) String category,
-            @RequestParam(name = "keyword", required = false) String keyword
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String region
     ) {
-        List<Schedule> list = scheduleService.getAllSchedules(category, keyword);
+        List<Schedule> list = scheduleService.getAllSchedules(category, keyword, region);
         if (list == null) {
             return ResponseEntity.notFound().build();
         }
