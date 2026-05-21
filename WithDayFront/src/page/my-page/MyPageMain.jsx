@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { getAuthUser } from "../../features/auth/lib/getAuthUser";
 import Login from "../login/Login";
+import styles from "./MyPageMain.module.css";
 
 const MyPageMain = () => {
   const { userId } = useParams();
@@ -83,6 +84,7 @@ const MyPageMain = () => {
         <p style={{ fontSize: "1.1rem", margin: "12px 0", color: "#334155" }}>
           이메일: <span style={rainbowTextStyle}>{loginUser.email}</span>
         </p>
+        <span className={styles.logout}>로그아웃</span>
       </div>
     </div>
   );
