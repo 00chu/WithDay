@@ -5,8 +5,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  /* 💡 회원님이 해결하신 80vh 적용 (box-sizing 없어도 스크롤 안 생김!) */
-  min-height: 80vh;
   background-color: #f5f7fa;
   padding: 20px;
 }
