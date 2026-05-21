@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { getRegion } from "../../features/region/api";
-import { getAuthUser } from "../../features/auth/lib/getAuthUser";
+import { useAuthStore } from "../../features/auth/store/authStore";
 import LayoutContainer from "../../shared/ui/LayoutContainer/LayoutContainer";
 import RegionSelect from "../../shared/ui/RegionSelect/RegionSelect";
 import NotificationPopover from "../../features/notification/ui/NotificationPopover";
@@ -18,7 +18,9 @@ const normalizeRegionValue = (value) => value?.trim() ?? "";
 
 export default function Header({ selectedRegion, onRegionChange }) {
   const navigate = useNavigate();
-  const loginUser = getAuthUser();
+
+  const { user: loginUser, isLoggedIn } = useAuthStore();
+
   const { data: regions = [] } = useQuery({
     queryKey: ["header-region-options"],
     queryFn: getRegion,
@@ -36,6 +38,7 @@ export default function Header({ selectedRegion, onRegionChange }) {
   }, [regions]);
 
   const selectedRegionValue = normalizeRegionValue(selectedRegion);
+
   const avatarFallback = (
     loginUser?.nickname?.trim()?.charAt(0) ||
     loginUser?.email?.trim()?.charAt(0) ||
@@ -43,7 +46,7 @@ export default function Header({ selectedRegion, onRegionChange }) {
   ).toUpperCase();
 
   const handleProfileClick = () => {
-    if (loginUser?.email) {
+    if (isLoggedIn && loginUser?.email) {
       navigate(`/mypage/${loginUser.email}`);
       return;
     }
@@ -106,6 +109,7 @@ export default function Header({ selectedRegion, onRegionChange }) {
             anchorEl={anchorEl}
             handleClose={handleClose}
           />
+
           <IconButton
             className={styles.actionButton}
             aria-label="마이페이지"

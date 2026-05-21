@@ -149,7 +149,7 @@ public class UserService {
     }
 
     // 일반 로그인
-    public Map<String, Object> login(String email, String password) {
+    public Map<String, Object> login(String email, String password, boolean autoLogin) {
         // DB에서 이메일로 유저 정보를 가져옴
         User dbUser = userDao.findByEmail(email);
 
@@ -160,7 +160,7 @@ public class UserService {
         }
 
         // 위 if에 안걸렸으니 로그인 성공. 토큰 발급.
-        String token = jwtUtil.createToken(dbUser.getEmail(), dbUser.getNickname());
+        String token = jwtUtil.createToken(dbUser.getEmail(), dbUser.getNickname(), autoLogin);
 
         // 프론트엔드 전역 Store(Zustand)에 들어갈 데이터 Map에 저장
         Map<String, Object> responseData = new HashMap<>();
@@ -183,6 +183,7 @@ public class UserService {
     public Map<String, Object> googleLogin(Map<String, String> googleData) {
         // 구글이 인증한 이메일로 기존 가입 여부 확인
         String email = googleData.get("email");
+
         User dbUser = userDao.findByEmail(email);
 
         // 프론트엔드로 보낼 최종 응답 데이터 Map 생성
@@ -196,8 +197,8 @@ public class UserService {
         }
 
         // 위 if에 안걸렸으니 DB에 유저가 있음 (이미 가입된 구글 유저) (로그인 성공 처리)
-        // 비밀번호 검증 없이 바로 JWT 토큰 발급
-        String token = jwtUtil.createToken(dbUser.getEmail(), dbUser.getNickname());
+        // 비밀번호 검증 없이 바로 JWT 토큰 발급, 구글 로그인은 autoLogin을 true로 고정하여 발급(자동 로그인)
+        String token = jwtUtil.createToken(dbUser.getEmail(), dbUser.getNickname(), true);
         responseData.put("isRegistered", true);
         responseData.put("token", token);
 

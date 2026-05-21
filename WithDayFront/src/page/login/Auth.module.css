@@ -15,7 +15,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px; 
+  max-width: 400px;
 }
 
 .header {
@@ -51,7 +51,7 @@
 .linkClickable {
   cursor: pointer;
   text-decoration: underline;
-  color: #007BFF;
+  color: #007bff;
   font-weight: bold;
 }
 
@@ -116,6 +116,19 @@
 /* =========================================
    [로그인 전용] 스타일
    ========================================= */
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none; /* 자동 로그인 글자를 클릭할 때 텍스트가 드래그 블록 잡히는 현상 방지 */
+}
+
+.checkboxText {
+  font-size: 14px;
+  color: #333;
+}
+
 .googleLoginWrap {
   margin-top: 24px;
   display: flex;

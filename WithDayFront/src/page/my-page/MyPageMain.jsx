@@ -1,32 +1,11 @@
-import { useParams } from "react-router-dom";
-import { getAuthUser } from "../../features/auth/lib/getAuthUser";
-import Login from "../login/Login";
 import styles from "./MyPageMain.module.css";
+import { useAuthStore } from "../../features/auth/store/authStore";
+import Button from "../../shared/ui/Button/Button";
 
 const MyPageMain = () => {
-  const { userId } = useParams();
-  const loginUser = getAuthUser();
+  const user = useAuthStore((state) => state.user);
 
-  // 로그인 정보가 없으면 로그인 창 띄우기
-  if (!loginUser || !loginUser.email) {
-    return <Login />;
-  }
-
-  // 주소창의 이메일(userId)과 내 로그인 이메일이 일치하는지 검사
-  if (loginUser.email && loginUser.email !== userId) {
-    return (
-      <div
-        style={{
-          padding: "50px",
-          textAlign: "center",
-          fontSize: "18px",
-          color: "#ff4d4f",
-        }}
-      >
-        🔒 잘못된 접근입니다. 본인의 마이페이지만 볼 수 있습니다.
-      </div>
-    );
-  }
+  console.log(user);
 
   // 🌟 레인보우 텍스트가 흐르는 핵심 애니메이션 CSS 스타일 정의 (임시 치트키)
   const rainbowTextStyle = {
@@ -79,54 +58,21 @@ const MyPageMain = () => {
       >
         <p style={{ fontSize: "1.1rem", margin: "12px 0", color: "#334155" }}>
           어서오세요 닉네임:{" "}
-          <span style={rainbowTextStyle}>{loginUser.nickname}</span>님
+          <span style={rainbowTextStyle}>{user.nickname}</span>님
         </p>
         <p style={{ fontSize: "1.1rem", margin: "12px 0", color: "#334155" }}>
-          이메일: <span style={rainbowTextStyle}>{loginUser.email}</span>
+          이메일: <span style={rainbowTextStyle}>{user.email}</span>
         </p>
-        <span className={styles.logout}>로그아웃</span>
+        <Button
+          size="sm"
+          variant="primary"
+          onClick={() => useAuthStore.getState().setLogout()}
+        >
+          로그아웃
+        </Button>
       </div>
     </div>
   );
 };
 
 export default MyPageMain;
-
-/*
-import { useParams } from "react-router-dom";
-import { getAuthUser } from "../../features/auth/lib/getAuthUser";
-import Login from "../login/Login";
-
-const MyPageMain = () => {
-  const { userId } = useParams();
-  const loginUser = getAuthUser();
-
-  // 로그인 정보가 없으면 로그인 창 띄우기
-  if (!loginUser || !loginUser.email) {
-    return <Login />;
-  }
-
-  // 주소창의 이메일(userId)과 내 로그인 이메일이 일치하는지 검사
-  if (loginUser.email && loginUser.email !== userId) {
-    return <div>잘못된 접근입니다. 본인의 마이페이지만 볼 수 있습니다.</div>;
-  }
-
-  return (
-    <div>
-      <h2>φ(゜▽゜*)♪ 마이페이지</h2>
-      <p>빠른 시일 내에 완공 될 예정입니다.</p>
-      <p>양해해주셔서 감사합니다. - WithDay 일동</p>
-      <div>
-        <p>
-          어서오세요 닉네임: <span>{loginUser.nickname}</span>님
-        </p>
-        <p>
-          이메일: <span>{loginUser.email}</span>
-        </p>
-      </div>
-    </div>
-  );
-};
-
-export default MyPageMain;
-*/

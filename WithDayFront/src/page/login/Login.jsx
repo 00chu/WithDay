@@ -79,10 +79,10 @@ const Login = () => {
   const mutation = useMutation({
     mutationFn: loginUser, // api.js에 있는 loginUser로 POST 요청 함수 실행해서 백엔드로 로그인 정보를 보냄
     // 통신 성공시
-    onSuccess: async (data) => {
+    onSuccess: async (data, variables) => {
       const { token, user } = data; // 백엔드가 준 데이터(data)에서 토큰과 유저 정보를 꺼냄
 
-      setLogin(token, user); // authStore의 setLogin에 토큰, 유저정보를 저장 (사이트 전체 로그인됨)
+      setLogin(token, user, variables.autoLogin); // authStore의 setLogin에 토큰, 유저정보, 자동 로그인 여부를 저장 (사이트 전체 로그인됨)
 
       await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
 
@@ -117,7 +117,8 @@ const Login = () => {
       } else {
         // 회원가입 유무가 true인 경우 (기존 유저인 경우)
         const { token, user } = data; // 백엔드가 준 데이터(data)에서 토큰과 유저 정보를 꺼냄
-        setLogin(token, user); // authStore의 setLogin에 토큰, 유저정보를 저장 (사이트 전체 로그인됨)
+
+        setLogin(token, user, true); // authStore의 setLogin에 토큰, 유저정보를 저장 (사이트 전체 로그인됨), 자동 로그인 여부는 true(소셜 로그인은 자동 로그인으로 처리)
 
         await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
 
@@ -205,6 +206,14 @@ const Login = () => {
               </div>
             </div>
           </FormField>
+
+          {/* 자동 로그인 체크박스 */}
+          <div className={styles.marginBottom8}>
+            <label className={styles.checkboxLabel}>
+              <input type="checkbox" {...register("autoLogin")} />
+              <span className={styles.checkboxText}>자동 로그인</span>
+            </label>
+          </div>
 
           {/* 버튼: 서버와 통신 중(isPending)일 때는 버튼을 비활성화(disabled) 시켜서 유저가 여러 번 누르는 걸 막음 */}
           <Button

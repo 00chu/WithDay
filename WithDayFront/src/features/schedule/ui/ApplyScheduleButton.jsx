@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import Button from "../../../shared/ui/Button/Button";
-import { getAuthUser } from "../../auth/lib/getAuthUser";
+import { useAuthStore } from "../../auth/store/authStore";
 import { useApplyScheduleMutation } from "../../participation/model/mutations";
 
 const DEFAULT_FEEDBACK = {
@@ -14,7 +14,10 @@ const DEFAULT_FEEDBACK = {
 
 export default function ApplyScheduleButton({ scheduleId, status }) {
   const navigate = useNavigate();
-  const [authUser] = useState(() => getAuthUser());
+
+  // ✅ zustand에서 직접 가져오기 (핵심)
+  const { user, isLoggedIn } = useAuthStore();
+
   const [isApplied, setIsApplied] = useState(false);
   const [feedback, setFeedback] = useState(DEFAULT_FEEDBACK);
 
@@ -23,27 +26,16 @@ export default function ApplyScheduleButton({ scheduleId, status }) {
   const isRecruiting = status === "recruiting";
 
   const buttonLabel = useMemo(() => {
-    if (!isRecruiting) {
-      return "모집 종료";
-    }
-
-    if (isApplied) {
-      return "신청 완료";
-    }
-
-    if (isPending) {
-      return "신청 중...";
-    }
-
+    if (!isRecruiting) return "모집 종료";
+    if (isApplied) return "신청 완료";
+    if (isPending) return "신청 중...";
     return "참여 신청하기";
   }, [isApplied, isPending, isRecruiting]);
 
   const isButtonDisabled = !isRecruiting || isApplied || isPending;
 
   useEffect(() => {
-    if (!feedback.open) {
-      return;
-    }
+    if (!feedback.open) return;
 
     const timer = window.setTimeout(() => {
       setFeedback(DEFAULT_FEEDBACK);
@@ -53,35 +45,29 @@ export default function ApplyScheduleButton({ scheduleId, status }) {
   }, [feedback.open]);
 
   const handleCloseFeedback = (_event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
+    if (reason === "clickaway") return;
     setFeedback(DEFAULT_FEEDBACK);
   };
 
   const handleApply = async () => {
-    const email = authUser?.email?.trim();
-
-    if (!email) {
+    // ✅ 로그인 여부 먼저 체크
+    if (!isLoggedIn) {
       navigate("/login", { replace: true });
       return;
     }
 
-    if (!isRecruiting || isApplied || isPending) {
-      return;
-    }
+    const email = user?.email?.trim();
 
-    const confirmJoin = window.confirm("이 일정에 참여 신청을 하시겠습니까?");
-    if (!confirmJoin) {
-      return;
-    }
+    if (!email) return;
+    if (!isRecruiting || isApplied || isPending) return;
+
+    const confirmJoin = window.confirm(
+      "이 일정에 참여 신청을 하시겠습니까?"
+    );
+    if (!confirmJoin) return;
 
     try {
-      await applySchedule({
-        email,
-        scheduleId,
-      });
+      await applySchedule({ email, scheduleId });
 
       setIsApplied(true);
       setFeedback({
@@ -99,7 +85,10 @@ export default function ApplyScheduleButton({ scheduleId, status }) {
       setFeedback({
         open: true,
         severity: "error",
-        message: typeof message === "string" ? message : "참여 신청에 실패했습니다.",
+        message:
+          typeof message === "string"
+            ? message
+            : "참여 신청에 실패했습니다.",
       });
     }
   };

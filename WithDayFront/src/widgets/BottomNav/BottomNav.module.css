@@ -7,9 +7,9 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  background: #0d1831;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 -10px 28px rgba(15, 23, 42, 0.16);
+  background: var(--color-primary);
+  border-top: 1px solid var(--color-primary-soft);
+  box-shadow: var(--shadow-panel);
   padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -19,27 +19,56 @@
 }
 
 .innerNav {
+  display: flex;
+  align-items: stretch;
   width: 100%;
   height: calc(var(--bottom-nav-height) + 8px) !important;
+  padding: 4px 8px 0;
+  box-sizing: border-box;
 }
 
 .innerNav :global(.MuiBottomNavigationAction-root) {
   max-width: 100%;
-  min-width: auto;
-  color: rgba(255, 255, 255, 0.74);
+  min-width: 0;
+  padding: 8px 4px 10px;
+  color: var(--color-text-disabled);
   transition:
-    color 0.18s ease,
-    transform 0.18s ease;
+    color var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .innerNav :global(.MuiBottomNavigationAction-label) {
-  font-size: 0.7rem;
-  font-weight: 600;
   margin-top: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
 }
 
-.innerNav :global(.Mui-selected) {
-  color: #ffffff;
+.innerNav :global(.MuiBottomNavigationAction-label.Mui-selected) {
+  font-size: 0.68rem;
+}
+
+.navAction {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+}
+
+.navActionActive {
+  color: var(--color-accent-light) !important;
+}
+
+.navActionAdd {
+  color: var(--color-text-inverse);
+}
+
+.navIcon {
+  font-size: 1.45rem !important;
 }
 
 .addButtonShell {
@@ -49,14 +78,31 @@
   width: 56px;
   height: 56px;
   border-radius: 999px;
-  background: linear-gradient(180deg, #2cc7c1 0%, #179aa0 100%);
-  box-shadow: 0 14px 24px rgba(23, 154, 160, 0.38);
-  transform: translateY(-10px);
+  background: linear-gradient(
+    180deg,
+    var(--color-accent) 0%,
+    var(--color-accent-dark) 100%
+  );
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.addButtonShellActive {
+  background: linear-gradient(
+    180deg,
+    var(--color-accent-light) 0%,
+    var(--color-accent) 100%
+  );
 }
 
 .addBtn {
   font-size: 34px !important;
-  color: #ffffff;
+  color: var(--color-text-inverse);
+}
+
+.navActionActive .addBtn {
+  color: var(--color-primary);
 }
 
 .innerNav :global(.MuiBottomNavigationAction-root:active) {
@@ -74,7 +120,35 @@
     max-width: 860px;
   }
 
-  .innerNav :global(.MuiBottomNavigationAction-root:hover) {
-    color: #ffffff;
+  .navAction:hover {
+    color: var(--color-text-inverse) !important;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .innerNav {
+    padding: 4px 4px 0;
+  }
+
+  .innerNav :global(.MuiBottomNavigationAction-root) {
+    padding: 8px 2px 10px;
+  }
+
+  .innerNav :global(.MuiBottomNavigationAction-label),
+  .innerNav :global(.MuiBottomNavigationAction-label.Mui-selected) {
+    font-size: 0.63rem;
+  }
+
+  .navIcon {
+    font-size: 1.35rem !important;
+  }
+
+  .addButtonShell {
+    width: 52px;
+    height: 52px;
+  }
+
+  .addBtn {
+    font-size: 31px !important;
   }
 }
