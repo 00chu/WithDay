@@ -38,8 +38,6 @@ public class Schedule {
     private Integer viewCount;
     private ScheduleStatus status;
     private Integer isPublic;
-    private String meetingLocation;
-    private String meetingTime;
     private String cancelDeadline;
     private String createdAt;
     private String updatedAt;
