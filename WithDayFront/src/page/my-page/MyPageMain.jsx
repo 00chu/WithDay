@@ -1,15 +1,11 @@
 import styles from "./MyPageMain.module.css";
-import { useAuthStore } from "../../features/auth/store/authStore"; 
+import { useAuthStore } from "../../features/auth/store/authStore";
+import Button from "../../shared/ui/Button/Button";
 
 const MyPageMain = () => {
-
-  const user = useAuthStore((state)=> state.user);
+  const user = useAuthStore((state) => state.user);
 
   console.log(user);
-
-
-
-
 
   // 🌟 레인보우 텍스트가 흐르는 핵심 애니메이션 CSS 스타일 정의 (임시 치트키)
   const rainbowTextStyle = {
@@ -67,7 +63,13 @@ const MyPageMain = () => {
         <p style={{ fontSize: "1.1rem", margin: "12px 0", color: "#334155" }}>
           이메일: <span style={rainbowTextStyle}>{user.email}</span>
         </p>
-        <span className={styles.logout}>로그아웃</span>
+        <Button
+          size="sm"
+          variant="primary"
+          onClick={() => useAuthStore.getState().setLogout()}
+        >
+          로그아웃
+        </Button>
       </div>
     </div>
   );
