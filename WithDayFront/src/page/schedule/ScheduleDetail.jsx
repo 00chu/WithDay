@@ -72,7 +72,8 @@ export default function ScheduleDetail() {
   const [feedback, setFeedback] = useState(null);
   const [currentImg, setCurrentImg] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [viewCountReadyScheduleId, setViewCountReadyScheduleId] = useState(null);
+  const [viewCountReadyScheduleId, setViewCountReadyScheduleId] =
+    useState(null);
 
   const authUser = useMemo(() => getAuthUser(), []);
   const authEmail = authUser?.email?.trim() ?? "";
@@ -121,7 +122,10 @@ export default function ScheduleDetail() {
         // 조회수 집계 실패가 상세 페이지 진입 자체를 막으면 UX가 나빠진다.
         // 그래서 실패하더라도 상세 조회는 계속 진행한다.
         if (import.meta.env.DEV) {
-          console.debug("[schedule-detail] view count increment failed", requestError);
+          console.debug(
+            "[schedule-detail] view count increment failed",
+            requestError,
+          );
         }
       } finally {
         if (isMounted) {
@@ -201,6 +205,33 @@ export default function ScheduleDetail() {
 
     setFeedback(null);
   }, []);
+
+  const addToGoogleCalendar = () => {
+    const start = new Date(schedule.startDate)
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(".000", "");
+
+    const end = new Date(schedule.endDate)
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(".000", "");
+
+    const url =
+      "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+      "&text=" +
+      encodeURIComponent(schedule.title || "") +
+      "&dates=" +
+      encodeURIComponent(`${start}/${end}`) +
+      "&details=" +
+      encodeURIComponent(schedule.description || "") +
+      "&location=" +
+      encodeURIComponent(
+        `${schedule.region || ""} ${schedule.detailRegion || ""}`,
+      );
+
+    window.open(url, "_blank");
+  };
 
   const handleApplicantAction = useCallback(
     async ({ participationId, status, reason }) => {
@@ -322,6 +353,13 @@ export default function ScheduleDetail() {
     return end >= today; // 오늘 포함
   })();
 
+  console.log("schedule detail render", {
+    schedule,
+    details,
+    imageUrls,
+    schedule,
+  });
+
   return (
     <div className={styles.container}>
       <section className={styles.imageSection}>
@@ -439,6 +477,14 @@ export default function ScheduleDetail() {
               <p className={styles.label}>일정 기간</p>
               <p className={styles.value}>
                 {schedule.startDate || "미정"} ~ {schedule.endDate || "미정"}
+                {" | "}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={addToGoogleCalendar}
+                >
+                  구글 캘린더에 추가
+                </Button>
               </p>
             </div>
           </div>

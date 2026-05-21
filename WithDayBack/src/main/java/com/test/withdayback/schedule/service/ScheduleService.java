@@ -8,6 +8,7 @@ import com.test.withdayback.schedule.dto.ScheduleResponseDTO;
 import com.test.withdayback.schedule.vo.Schedule;
 import com.test.withdayback.schedule.vo.ScheduleDetail;
 import com.test.withdayback.schedule.vo.ScheduleImage;
+import com.test.withdayback.user.dao.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Objects;
 
 @Service
 public class ScheduleService {
@@ -26,6 +27,8 @@ public class ScheduleService {
 
     @Autowired
     private Cloudinary cloudinary;
+    @Autowired
+    private UserDao userDao;
 
     public ScheduleService(ScheduleDao scheduleDao) {
         this.scheduleDao = scheduleDao;
@@ -51,7 +54,7 @@ public class ScheduleService {
 
     /**
      * 상세 페이지 진입 시 조회수를 1 증가시킨다.
-     *
+     * <p>
      * 별도 API로 분리해두면 GET 상세 조회가 캐시/프리패치/자동 재시도에 휘말려
      * 의도치 않게 조회수가 더 오르는 문제를 줄일 수 있다.
      *
@@ -99,6 +102,9 @@ public class ScheduleService {
                     try {
                         Map uploadResult = cloudinary.uploader().upload(image.getBytes(), uploadParams);
                         imageUrls.add((String) uploadResult.get("secure_url"));
+                        if (imageUrls.size() == 1) {
+                            scheduleDao.updateThumbnail(scheduleId, imageUrls.get(0));
+                        }
                     } catch (Exception e) {
                         throw new RuntimeException("이미지 업로드 실패", e);
                     }
@@ -132,32 +138,62 @@ public class ScheduleService {
             }
         }
 
+        int imageCount = scheduleDao.getScheduleImageCount(scheduleId);
+
         // 삭제할 이미지 삭제
         if (dto.getDeletedImageIds() != null && !dto.getDeletedImageIds().isEmpty()) {
             scheduleDao.deleteScheduleImages(dto.getDeletedImageIds());
         }
 
-        // 새 이미지 업로드 + insert
-        List<String> imageUrls = new ArrayList<>();
-        if (images != null && !images.isEmpty()) {
-            for (MultipartFile image : images) {
-                if (image != null && !image.isEmpty()) {
-                    Map uploadParams = ObjectUtils.asMap("folder", "withday/schedule/images", "use_filename", true, "unique_filename", true);
+        // 기존 이미지 전체 삭제
+        if (imageCount == Objects.requireNonNull(dto.getDeletedImageIds()).size()) {
+            // 이미지 insert
+            List<String> imageUrls = new ArrayList<>();
 
-                    try {
-                        Map uploadResult = cloudinary.uploader().upload(image.getBytes(), uploadParams);
-                        imageUrls.add((String) uploadResult.get("secure_url"));
-                    } catch (Exception e) {
-                        throw new RuntimeException("이미지 업로드 실패", e);
+            if (images != null && !images.isEmpty()) {
+                for (MultipartFile image : images) {
+                    if (image != null && !image.isEmpty()) {
+                        Map uploadParams = ObjectUtils.asMap("folder", "withday/schedule/images", "use_filename", true, "unique_filename", true);
+                        try {
+                            Map uploadResult = cloudinary.uploader().upload(image.getBytes(), uploadParams);
+                            imageUrls.add((String) uploadResult.get("secure_url"));
+                        } catch (Exception e) {
+                            throw new RuntimeException("이미지 업로드 실패", e);
+                        }
                     }
                 }
-            }
-
-            if (!imageUrls.isEmpty()) {
                 scheduleDao.insertScheduleImage(scheduleId, imageUrls);
             }
         }
+        // 기존 이미지 일부 삭제
+        else {
+            // 새 이미지 업로드 + thumbnail 지정
+            List<String> imageUrls = new ArrayList<>();
+            if (images != null && !images.isEmpty()) {
+                for (MultipartFile image : images) {
+                    if (image != null && !image.isEmpty()) {
+                        Map uploadParams = ObjectUtils.asMap("folder",
+                                "withday/schedule/images", "use_filename", true, "unique_filename", true);
+                        try {
+                            Map uploadResult = cloudinary.uploader().upload(image.getBytes(), uploadParams);
+                            imageUrls.add((String) uploadResult.get("secure_url"));
+                        } catch (Exception e) {
+                            throw new RuntimeException("이미지 업로드 실패", e);
+                        }
+                    }
+                }
+
+                if (!imageUrls.isEmpty()) {
+                    scheduleDao.updateScheduleImage(scheduleId, imageUrls);
+                }
+            }
+        }
+        // 썸네일 이미지 등록
+        String thumbnailUrl = scheduleDao.getThumbnailImageUrl(scheduleId);
+        scheduleDao.updateThumbnail(scheduleId, thumbnailUrl);
     }
+
+
 
     public int deleteSchedule(Long scheduleId) {
         return scheduleDao.deleteSchedule(scheduleId);
