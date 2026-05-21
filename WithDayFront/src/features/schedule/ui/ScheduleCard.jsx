@@ -2,8 +2,11 @@ import clsx from "clsx";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import GroupIcon from "@mui/icons-material/Group";
+import WcIcon from "@mui/icons-material/Wc";
+import PaidIcon from "@mui/icons-material/Paid";
+import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { useNavigate } from "react-router-dom";
-import { dayjs, formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
+import { formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
 import styles from "./ScheduleCard.module.css";
 
 const CATEGORY_LABELS = {
@@ -15,9 +18,20 @@ const CATEGORY_LABELS = {
   etc: "기타",
 };
 
+const GENDER_LIMIT_LABELS = {
+  all: "성별 무관",
+  male: "남성",
+  female: "여성",
+};
+
+const COST_TYPE_LABELS = {
+  per_person: "총액 1 / N",
+  host_covered: "호스트 지불",
+  free: "무료",
+  custom: "인당 고정",
+};
+
 const defaultThumbnail = "/hero.png";
-const RECRUITING_STATUS = "recruiting";
-const URGENT_DAY_THRESHOLD = 3;
 
 const resolveThumbnail = (schedule) =>
   schedule?.thumbnailImage?.trim() ||
@@ -25,62 +39,36 @@ const resolveThumbnail = (schedule) =>
   schedule?.imageUrl?.trim() ||
   defaultThumbnail;
 
-const formatCompactDate = (dateString) => {
-  if (!dateString) {
-    return "일정 미정";
-  }
+const resolveLocationText = (schedule) =>
+  [schedule?.region, schedule?.detailRegion].filter(Boolean).join(" · ");
 
-  const date = new Date(dateString);
+const resolveCategoryLabel = (category) =>
+  CATEGORY_LABELS[category] ?? category ?? "기타";
 
-  if (Number.isNaN(date.getTime())) {
-    return "일정 미정";
-  }
+const resolveParticipantText = (schedule) => {
+  const currentParticipants = Number(schedule?.currentParticipants ?? 0);
+  const maxParticipants = Number(schedule?.maxParticipants ?? 0);
 
-  return new Intl.DateTimeFormat("ko-KR", {
-    month: "2-digit",
-    day: "2-digit",
-    weekday: "short",
-  }).format(date);
+  return `${currentParticipants} / ${maxParticipants > 0 ? maxParticipants : "-"}명`;
 };
 
-const formatPriceLabel = (schedule) => {
-  const price = Number(schedule?.totalPrice ?? 0);
-  const costType = schedule?.costType;
+const resolveGenderLimitLabel = (genderLimit) =>
+  GENDER_LIMIT_LABELS[String(genderLimit ?? "").trim().toLowerCase()] ?? "성별 무관";
 
-  if (costType === "free" || price <= 0) {
-    return "무료";
-  }
+const resolveCostTypeLabel = (costType) =>
+  COST_TYPE_LABELS[String(costType ?? "").trim().toLowerCase()] ?? "비용 미정";
 
-  return `${price.toLocaleString("ko-KR")}원`;
-};
+const resolveRecruitmentDeadline = (schedule) => {
+  const dDay = getDDay(schedule?.recruitEndDate);
 
-const resolveScheduleBadge = (schedule, isFull) => {
-  const normalizedStatus = String(schedule?.status ?? "").trim().toLowerCase();
-  const dDayText = getDDay(schedule?.startDate);
-  const hasValidStartDate = dayjs(schedule?.startDate).isValid();
-  const daysUntilStart = hasValidStartDate
-    ? dayjs(schedule.startDate).startOf("day").diff(dayjs().startOf("day"), "day")
-    : null;
-  const isClosedByStatus =
-    normalizedStatus && normalizedStatus !== RECRUITING_STATUS;
-
-  if (isFull || isClosedByStatus || (daysUntilStart !== null && daysUntilStart < 0)) {
-    return {
-      state: "CLOSED",
-      label: "모집 마감",
-    };
-  }
-
-  if (daysUntilStart !== null && daysUntilStart <= URGENT_DAY_THRESHOLD) {
-    return {
-      state: "URGENT",
-      label: dDayText ?? "마감 임박",
-    };
+  if (!dDay) {
+    return null;
   }
 
   return {
-    state: "AVAILABLE",
-    label: dDayText ?? "모집중",
+    label: dDay === "마감" ? "모집 마감" : `모집 ${dDay}`,
+    isToday: dDay === "D-Day",
+    isClosed: dDay === "마감",
   };
 };
 
@@ -90,30 +78,21 @@ export default function ScheduleCard({
   variant = "default",
 }) {
   const navigate = useNavigate();
-  const currentParticipants = Number(schedule?.currentParticipants ?? 0);
-  const maxParticipants = Number(schedule?.maxParticipants ?? 0);
-  const isFull = maxParticipants > 0 && currentParticipants >= maxParticipants;
-  const { state: badgeState, label: badgeLabel } = resolveScheduleBadge(
-    schedule,
-    isFull,
-  );
   const thumbnailSrc = resolveThumbnail(schedule);
-  const locationText = [schedule?.region, schedule?.detailRegion]
-    .filter(Boolean)
-    .join(" · ");
-  const categoryLabel =
-    CATEGORY_LABELS[schedule?.category] ?? schedule?.category ?? "기타";
-  const participantText = `${currentParticipants} / ${
-    maxParticipants > 0 ? maxParticipants : "-"
-  }명`;
+  const locationText = resolveLocationText(schedule);
+  const categoryLabel = resolveCategoryLabel(schedule?.category);
+  const participantText = resolveParticipantText(schedule);
+  const schedulePeriodText = formatDateRange(schedule?.startDate, schedule?.endDate);
+  const genderLimitText = resolveGenderLimitLabel(schedule?.genderLimit);
+  const costTypeText = resolveCostTypeLabel(schedule?.costType);
+  const recruitmentDeadline = resolveRecruitmentDeadline(schedule);
   const isCompact = variant === "compact";
   const compactDescription =
     schedule?.description?.trim() ||
     [locationText, `${categoryLabel} 일정`].filter(Boolean).join(" · ");
-  const compactDate = formatCompactDate(schedule?.startDate);
-  const compactPrice = formatPriceLabel(schedule);
 
   const handleCardClick = () => navigate(`/schedule/${schedule.id}`);
+
   const handleImageError = (event) => {
     event.currentTarget.onerror = null;
     event.currentTarget.src = defaultThumbnail;
@@ -121,15 +100,9 @@ export default function ScheduleCard({
 
   return (
     <article
-      className={clsx(
-        styles.card,
-        styles.cardInteractive,
-        className,
-        {
-          [styles.cardFull]: badgeState === "CLOSED",
-          [styles.cardCompact]: isCompact,
-        },
-      )}
+      className={clsx(styles.card, styles.cardInteractive, className, {
+        [styles.cardCompact]: isCompact,
+      })}
       onClick={handleCardClick}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -154,27 +127,33 @@ export default function ScheduleCard({
             </div>
 
             <div className={styles.compactSummaryRow}>
-              <span
-                className={clsx(
-                  styles.badge,
-                  styles.compactStatusBadge,
-                  badgeState === "CLOSED" && styles.badgeClosed,
-                  badgeState === "URGENT" && styles.badgeUrgent,
-                  badgeState === "AVAILABLE" && styles.badgeAvailable,
-                )}
-              >
-                {badgeLabel}
-              </span>
-              <div className={styles.compactSummaryInfo}>
-                <span className={styles.compactDate}>{compactDate}</span>
-                <span className={styles.compactPrice}>{compactPrice}</span>
-              </div>
+              <span className={styles.ticketBadge}>{categoryLabel}</span>
+              {recruitmentDeadline && (
+                <span
+                  className={clsx(
+                    styles.recruitmentDeadlineBadge,
+                    styles.compactDeadlineBadge,
+                    recruitmentDeadline.isToday && styles.recruitmentDeadlineToday,
+                    recruitmentDeadline.isClosed && styles.recruitmentDeadlineClosed,
+                  )}
+                >
+                  {recruitmentDeadline.label}
+                </span>
+              )}
             </div>
 
             <h3 className={clsx(styles.cardTitle, styles.compactTitle)}>
               {schedule?.title ?? "제목 없는 일정"}
             </h3>
             <p className={styles.compactDescription}>{compactDescription}</p>
+
+            <div className={styles.compactInfoList}>
+              {schedulePeriodText && (
+                <span className={styles.compactInfoItem}>{schedulePeriodText}</span>
+              )}
+              <span className={styles.compactInfoItem}>{genderLimitText}</span>
+              <span className={styles.compactInfoItem}>{costTypeText}</span>
+            </div>
           </div>
 
           <div className={styles.ticketDivider} aria-hidden="true" />
@@ -195,17 +174,17 @@ export default function ScheduleCard({
           <div className={styles.cardTop}>
             <div className={styles.ticketHeader}>
               <span className={styles.ticketBadge}>{categoryLabel}</span>
-              <span
-                className={clsx(
-                  styles.badge,
-                  styles.ticketStatus,
-                  badgeState === "CLOSED" && styles.badgeClosed,
-                  badgeState === "URGENT" && styles.badgeUrgent,
-                  badgeState === "AVAILABLE" && styles.badgeAvailable,
-                )}
-              >
-                {badgeLabel}
-              </span>
+              {recruitmentDeadline && (
+                <span
+                  className={clsx(
+                    styles.recruitmentDeadlineBadge,
+                    recruitmentDeadline.isToday && styles.recruitmentDeadlineToday,
+                    recruitmentDeadline.isClosed && styles.recruitmentDeadlineClosed,
+                  )}
+                >
+                  {recruitmentDeadline.label}
+                </span>
+              )}
             </div>
 
             <h3 className={styles.cardTitle}>
@@ -218,11 +197,25 @@ export default function ScheduleCard({
             </div>
 
             <div className={styles.metaList}>
-              <span className={styles.metaItem}>
-                <CalendarTodayIcon fontSize="small" className={styles.metaIcon} />
-                <span className={styles.metaText}>
-                  {formatDateRange(schedule?.startDate, schedule?.endDate)}
+              {schedulePeriodText && (
+                <span className={styles.metaItem}>
+                  <CalendarTodayIcon fontSize="small" className={styles.metaIcon} />
+                  <span className={styles.metaText}>{schedulePeriodText}</span>
                 </span>
+              )}
+              <span className={styles.metaItem}>
+                <EventBusyIcon fontSize="small" className={styles.metaIcon} />
+                <span className={styles.metaText}>
+                  {recruitmentDeadline?.label ?? "모집 종료일 미정"}
+                </span>
+              </span>
+              <span className={styles.metaItem}>
+                <WcIcon fontSize="small" className={styles.metaIcon} />
+                <span className={styles.metaText}>{genderLimitText}</span>
+              </span>
+              <span className={styles.metaItem}>
+                <PaidIcon fontSize="small" className={styles.metaIcon} />
+                <span className={styles.metaText}>{costTypeText}</span>
               </span>
               <span className={styles.metaItem}>
                 <PlaceIcon fontSize="small" className={styles.metaIcon} />
