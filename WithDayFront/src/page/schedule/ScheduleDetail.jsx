@@ -639,6 +639,7 @@ export default function ScheduleDetail() {
         <ApplyScheduleButton
           scheduleId={schedule.id}
           status={schedule.status}
+          recruitEndDate={schedule.recruitEndDate}
         />
       </footer>
 

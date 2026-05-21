@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import Button from "../../../shared/ui/Button/Button";
+import { dayjs } from "../../../shared/lib/dateUtile";
 import { useAuthStore } from "../../auth/store/authStore";
 import { useApplyScheduleMutation } from "../../participation/model/mutations";
 
@@ -12,7 +13,25 @@ const DEFAULT_FEEDBACK = {
   severity: "success",
 };
 
-export default function ApplyScheduleButton({ scheduleId, status }) {
+const isScheduleClosedByDate = (recruitEndDate) => {
+  if (!recruitEndDate) {
+    return null;
+  }
+
+  const deadline = dayjs(recruitEndDate).endOf("day");
+
+  if (!deadline.isValid()) {
+    return null;
+  }
+
+  return dayjs().isAfter(deadline);
+};
+
+export default function ApplyScheduleButton({
+  scheduleId,
+  status,
+  recruitEndDate,
+}) {
   const navigate = useNavigate();
 
   // ✅ zustand에서 직접 가져오기 (핵심)
@@ -23,16 +42,25 @@ export default function ApplyScheduleButton({ scheduleId, status }) {
 
   const { applySchedule, isPending } = useApplyScheduleMutation();
 
-  const isRecruiting = status === "recruiting";
+  const closedByDate = useMemo(
+    () => isScheduleClosedByDate(recruitEndDate),
+    [recruitEndDate],
+  );
+
+  const isExplicitlyClosed =
+    status === "cancelled" || status === "completed";
+  const isRecruiting =
+    closedByDate === null ? status === "recruiting" : !closedByDate;
 
   const buttonLabel = useMemo(() => {
-    if (!isRecruiting) return "모집 종료";
+    if (isExplicitlyClosed || !isRecruiting) return "모집 종료";
     if (isApplied) return "신청 완료";
     if (isPending) return "신청 중...";
     return "참여 신청하기";
-  }, [isApplied, isPending, isRecruiting]);
+  }, [isApplied, isExplicitlyClosed, isPending, isRecruiting]);
 
-  const isButtonDisabled = !isRecruiting || isApplied || isPending;
+  const isButtonDisabled =
+    isExplicitlyClosed || !isRecruiting || isApplied || isPending;
 
   useEffect(() => {
     if (!feedback.open) return;
@@ -59,7 +87,7 @@ export default function ApplyScheduleButton({ scheduleId, status }) {
     const email = user?.email?.trim();
 
     if (!email) return;
-    if (!isRecruiting || isApplied || isPending) return;
+    if (isExplicitlyClosed || !isRecruiting || isApplied || isPending) return;
 
     const confirmJoin = window.confirm(
       "이 일정에 참여 신청을 하시겠습니까?"
@@ -96,7 +124,7 @@ export default function ApplyScheduleButton({ scheduleId, status }) {
   return (
     <>
       <Button
-        variant={isRecruiting ? "accent" : "outline"}
+        variant={!isExplicitlyClosed && isRecruiting ? "accent" : "outline"}
         size="md"
         disabled={isButtonDisabled}
         onClick={handleApply}
