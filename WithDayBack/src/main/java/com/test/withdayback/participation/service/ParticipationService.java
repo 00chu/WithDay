@@ -127,10 +127,11 @@ public class ParticipationService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "참여 신청에 실패했습니다.");
         }
 
+        String senderNickName = userDao.findByEmail(dto.getEmail()).getNickname();
+
         notificationService.notifyApply(
                 user.getId(),          // senderId
-                schedule.getUserId(),  // receiverId
-                user.getNickname()
+                senderNickName
         );
 
         return new ParticipationApplyResponseDTO(
@@ -265,7 +266,6 @@ public class ParticipationService {
 
         if (targetStatus == ParticipationStatus.APPROVED) {
             notificationService.notifyApproved(
-                    schedule.getUserId(),       // senderId
                     participation.getUserId(),  // receiverId
                     senderNickName
             );
@@ -273,7 +273,6 @@ public class ParticipationService {
 
         if (targetStatus == ParticipationStatus.REJECTED) {
             notificationService.notifyRejected(
-                    schedule.getUserId(),       // senderId
                     participation.getUserId(),  // receiverId
                     senderNickName
             );
