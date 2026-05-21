@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { BottomNavigation, BottomNavigationAction } from "@mui/material";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
@@ -22,6 +23,35 @@ const getTabValue = (pathname) => {
   }
   return 0;
 };
+
+const NAV_ITEMS = [
+  {
+    label: "홈",
+    icon: HomeRoundedIcon,
+    route: "/",
+  },
+  {
+    label: "탐색",
+    icon: SearchRoundedIcon,
+    route: "/explore",
+  },
+  {
+    label: "",
+    icon: AddRoundedIcon,
+    route: "/write",
+    isAdd: true,
+  },
+  {
+    label: "내 일정",
+    icon: CalendarMonthRoundedIcon,
+    route: "/my-schedule",
+  },
+  {
+    label: "위시리스트",
+    icon: FavoriteBorderRoundedIcon,
+    route: "/wishlist",
+  },
+];
 
 export default function BottomNav() {
   const navigate = useNavigate();
@@ -58,24 +88,36 @@ export default function BottomNav() {
         onChange={handleChange}
         showLabels
       >
-        <BottomNavigationAction label="홈" icon={<HomeRoundedIcon />} />
-        <BottomNavigationAction label="탐색" icon={<SearchRoundedIcon />} />
-        <BottomNavigationAction
-          label=""
-          icon={
-            <span className={styles.addButtonShell}>
-              <AddRoundedIcon className={styles.addBtn} />
-            </span>
-          }
-        />
-        <BottomNavigationAction
-          label="내 일정"
-          icon={<CalendarMonthRoundedIcon />}
-        />
-        <BottomNavigationAction
-          label="위시리스트"
-          icon={<FavoriteBorderRoundedIcon />}
-        />
+        {NAV_ITEMS.map((item, index) => {
+          const Icon = item.icon;
+          const isActive = value === index;
+
+          return (
+            <BottomNavigationAction
+              key={item.route}
+              label={item.label}
+              className={clsx(
+                styles.navAction,
+                isActive && styles.navActionActive,
+                item.isAdd && styles.navActionAdd,
+              )}
+              icon={
+                item.isAdd ? (
+                  <span
+                    className={clsx(
+                      styles.addButtonShell,
+                      isActive && styles.addButtonShellActive,
+                    )}
+                  >
+                    <Icon className={styles.addBtn} />
+                  </span>
+                ) : (
+                  <Icon className={styles.navIcon} />
+                )
+              }
+            />
+          );
+        })}
       </BottomNavigation>
     </div>
   );
