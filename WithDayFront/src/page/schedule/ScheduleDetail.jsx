@@ -72,7 +72,8 @@ export default function ScheduleDetail() {
   const [feedback, setFeedback] = useState(null);
   const [currentImg, setCurrentImg] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [viewCountReadyScheduleId, setViewCountReadyScheduleId] = useState(null);
+  const [viewCountReadyScheduleId, setViewCountReadyScheduleId] =
+    useState(null);
 
   const authUser = useMemo(() => getAuthUser(), []);
   const authEmail = authUser?.email?.trim() ?? "";
@@ -206,16 +207,28 @@ export default function ScheduleDetail() {
   }, []);
 
   const addToGoogleCalendar = () => {
+    const start = new Date(schedule.startDate)
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(".000", "");
+
+    const end = new Date(schedule.endDate)
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(".000", "");
+
     const url =
       "https://calendar.google.com/calendar/render?action=TEMPLATE" +
       "&text=" +
-      encodeURIComponent("스터디 모임") +
+      encodeURIComponent(schedule.title || "") +
       "&dates=" +
-      "20260521T100000Z/20260521T110000Z" +
+      encodeURIComponent(`${start}/${end}`) +
       "&details=" +
-      encodeURIComponent("알고리즘 스터디") +
+      encodeURIComponent(schedule.description || "") +
       "&location=" +
-      encodeURIComponent("강남");
+      encodeURIComponent(
+        `${schedule.region || ""} ${schedule.detailRegion || ""}`,
+      );
 
     window.open(url, "_blank");
   };
@@ -344,6 +357,7 @@ export default function ScheduleDetail() {
     schedule,
     details,
     imageUrls,
+    schedule,
   });
 
   return (
@@ -462,10 +476,15 @@ export default function ScheduleDetail() {
             <div>
               <p className={styles.label}>일정 기간</p>
               <p className={styles.value}>
-                {schedule.startDate || "미정"} ~ {schedule.endDate || "미정"}{" "}
-                <button onClick={addToGoogleCalendar}>
+                {schedule.startDate || "미정"} ~ {schedule.endDate || "미정"}
+                {" | "}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={addToGoogleCalendar}
+                >
                   구글 캘린더에 추가
-                </button>
+                </Button>
               </p>
             </div>
           </div>
