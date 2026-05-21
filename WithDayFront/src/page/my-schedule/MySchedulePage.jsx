@@ -1,7 +1,9 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./MySchedulePage.module.css";
-import { useRequireAuth } from "../../features/auth/hooks/useRequireAuth";
+
+import { useAuthStore } from "../../features/auth/store/authStore";
+
 import { PARTICIPATION_TABS } from "../../features/participation/model/constants";
 import {
   useMySchedulesQuery,
@@ -22,8 +24,7 @@ const MySchedulePage = () => {
   const [feedback, setFeedback] = useState(null);
 
   const navigate = useNavigate();
-  const { authEmail, isAuthenticated } = useRequireAuth();
-  const email = authEmail;
+  const email = useAuthStore((state)=> state.user.email);
 
   const {
     data: schedules = DEFAULT_SCHEDULES,
@@ -130,10 +131,6 @@ const MySchedulePage = () => {
       runScheduleMutation,
     ]
   );
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   const isPendingState = isPending;
 

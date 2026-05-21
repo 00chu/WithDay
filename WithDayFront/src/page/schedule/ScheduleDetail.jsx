@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import PlaceIcon from "@mui/icons-material/Place";
@@ -8,23 +8,26 @@ import PaymentsIcon from "@mui/icons-material/Payments";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
+
 import {
   fetchScheduleDetail,
   incrementScheduleViewCount,
+  deleteSchedule,
 } from "../../features/schedule/api";
-import { getAuthUser } from "../../features/auth/lib/getAuthUser";
+import { useAuthStore } from "../../features/auth/store/authStore";
 import { useScheduleApplicantsQuery } from "../../features/participation/model/queries";
 import { useUpdateParticipationStatusMutation } from "../../features/participation/model/mutations";
 import ParticipationFeedback from "../../features/participation/ui/ParticipationFeedback/ParticipationFeedback";
 import HostParticipationList from "../../features/participation/ui/HostParticipationList/HostParticipationList";
 import ApplyScheduleButton from "../../features/schedule/ui/ApplyScheduleButton";
-import styles from "./ScheduleDetail.module.css";
 import Button from "../../shared/ui/Button/Button";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import styles from "./ScheduleDetail.module.css";
+
 import {
   Dialog,
   DialogTitle,
@@ -32,7 +35,6 @@ import {
   DialogContentText,
   DialogActions,
 } from "@mui/material";
-import { deleteSchedule } from "../../features/schedule/api";
 
 const CATEGORY_LABELS = {
   all: "전체",
@@ -69,26 +71,26 @@ export default function ScheduleDetail() {
   const { scheduleId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const { user: authUser, isLoggedIn } = useAuthStore();
+
   const [feedback, setFeedback] = useState(null);
   const [currentImg, setCurrentImg] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [viewCountReadyScheduleId, setViewCountReadyScheduleId] =
     useState(null);
+  const [open, setOpen] = useState(false);
 
-  const authUser = useMemo(() => getAuthUser(), []);
   const authEmail = authUser?.email?.trim() ?? "";
   const parsedScheduleId = Number(scheduleId);
 
   useEffect(() => {
-    // 잘못된 ID에서는 증가 호출을 시도하지 않는다.
     if (!Number.isFinite(parsedScheduleId) || parsedScheduleId <= 0) {
       return;
     }
 
     let isMounted = true;
 
-    // 일정 상세에 다시 진입했을 때는 이전 캐시를 그대로 재사용하지 않고,
-    // 조회수 증가 이후의 최신 값을 다시 읽도록 현재 상세 캐시를 비운다.
     queryClient.removeQueries({
       queryKey: ["schedule-detail", parsedScheduleId],
       exact: true,
@@ -105,12 +107,12 @@ export default function ScheduleDetail() {
           setViewCountReadyScheduleId(parsedScheduleId);
         }
       });
+
       return () => {
         isMounted = false;
       };
     }
 
-    // 진입 1회당 조회수 1증가가 요구사항이므로, 페이지 마운트 시점에만 증가 API를 호출한다.
     const increaseViewCount = async () => {
       try {
         await incrementScheduleViewCount(parsedScheduleId);
@@ -119,8 +121,6 @@ export default function ScheduleDetail() {
           window.sessionStorage.setItem(viewedScheduleStorageKey, "true");
         }
       } catch (requestError) {
-        // 조회수 집계 실패가 상세 페이지 진입 자체를 막으면 UX가 나빠진다.
-        // 그래서 실패하더라도 상세 조회는 계속 진행한다.
         if (import.meta.env.DEV) {
           console.debug(
             "[schedule-detail] view count increment failed",
@@ -129,7 +129,6 @@ export default function ScheduleDetail() {
         }
       } finally {
         if (isMounted) {
-          // 증가 성공 여부와 관계없이 상세 조회를 시작할 수 있게 열어준다.
           setViewCountReadyScheduleId(parsedScheduleId);
         }
       }
@@ -150,13 +149,10 @@ export default function ScheduleDetail() {
   } = useQuery({
     queryKey: ["schedule-detail", parsedScheduleId],
     queryFn: () => fetchScheduleDetail(parsedScheduleId),
-    // 상세 페이지는 "진입할 때마다" 최신 조회수를 보여주는 것이 중요하다.
-    // 그래서 조회수 증가 호출이 끝난 뒤에만 상세 조회를 시작한다.
     enabled:
       Number.isFinite(parsedScheduleId) &&
       parsedScheduleId > 0 &&
       viewCountReadyScheduleId === parsedScheduleId,
-    // 상세 재진입 시 캐시된 값을 오래 붙잡지 않도록 fresh 시간을 0으로 둔다.
     staleTime: 0,
   });
 
@@ -172,20 +168,21 @@ export default function ScheduleDetail() {
     status: "PENDING",
   });
 
+  const { updateParticipationStatus, isPending: isStatusUpdating } =
+    useUpdateParticipationStatusMutation();
+
   const handleDelete = async () => {
     try {
       await deleteSchedule(scheduleId);
 
       console.log("삭제 성공");
 
-      handleClose(); // Dialog 닫기
-      navigate("/"); // 목록으로 이동
+      handleClose();
+      navigate("/");
     } catch (err) {
       console.error("삭제 실패", err);
     }
   };
-
-  const [open, setOpen] = useState(false);
 
   const handleOpen = () => {
     setOpen(true);
@@ -194,9 +191,6 @@ export default function ScheduleDetail() {
   const handleClose = () => {
     setOpen(false);
   };
-
-  const { updateParticipationStatus, isPending: isStatusUpdating } =
-    useUpdateParticipationStatusMutation();
 
   const handleCloseFeedback = useCallback((event, reason) => {
     if (reason === "clickaway") {
@@ -207,6 +201,12 @@ export default function ScheduleDetail() {
   }, []);
 
   const addToGoogleCalendar = () => {
+    const schedule = data?.schedule;
+
+    if (!schedule) {
+      return;
+    }
+
     const start = new Date(schedule.startDate)
       .toISOString()
       .replace(/[-:]/g, "")
@@ -235,7 +235,7 @@ export default function ScheduleDetail() {
 
   const handleApplicantAction = useCallback(
     async ({ participationId, status, reason }) => {
-      if (!authEmail) {
+      if (!isLoggedIn || !authEmail) {
         navigate("/login", { replace: true });
         return;
       }
@@ -282,10 +282,11 @@ export default function ScheduleDetail() {
         });
       }
     },
-    [authEmail, navigate, updateParticipationStatus],
+    [authEmail, isLoggedIn, navigate, updateParticipationStatus],
   );
 
   const isApplicantsForbidden = applicantsError?.response?.status === 403;
+
   const applicantsErrorMessage =
     applicantsError && !isApplicantsForbidden
       ? (applicantsError?.response?.data?.message ??
@@ -320,6 +321,7 @@ export default function ScheduleDetail() {
   const details = Array.isArray(data.details) ? data.details : [];
   const rawImages = Array.isArray(data.images) ? data.images : [];
   const locationText = formatLocation(schedule);
+
   const categoryLabel =
     CATEGORY_LABELS[schedule.category] ?? schedule.category ?? "기타";
 
@@ -338,10 +340,13 @@ export default function ScheduleDetail() {
 
   const lightboxSlides = imageUrls.map((url) => ({ src: url }));
 
-  const nextSlide = () =>
+  const nextSlide = () => {
     setCurrentImg((prev) => (prev === imageUrls.length - 1 ? 0 : prev + 1));
-  const prevSlide = () =>
+  };
+
+  const prevSlide = () => {
     setCurrentImg((prev) => (prev === 0 ? imageUrls.length - 1 : prev - 1));
+  };
 
   const isEditable = (() => {
     const today = new Date();
@@ -350,14 +355,13 @@ export default function ScheduleDetail() {
     const end = new Date(schedule.recruitEndDate);
     end.setHours(0, 0, 0, 0);
 
-    return end >= today; // 오늘 포함
+    return end >= today;
   })();
 
   console.log("schedule detail render", {
     schedule,
     details,
     imageUrls,
-    schedule,
   });
 
   return (
@@ -381,6 +385,7 @@ export default function ScheduleDetail() {
               >
                 <ChevronLeftIcon />
               </button>
+
               <button
                 type="button"
                 className={styles.nextBtn}
@@ -388,6 +393,7 @@ export default function ScheduleDetail() {
               >
                 <ChevronRightIcon />
               </button>
+
               <div className={styles.indicator}>
                 {safeCurrentImg + 1} / {imageUrls.length}
               </div>
@@ -400,6 +406,7 @@ export default function ScheduleDetail() {
         <section className={styles.headerSection}>
           <div className={styles.badgeWrapper}>
             <span className={styles.categoryBadge}>{categoryLabel}</span>
+
             <span
               className={
                 schedule.status === "recruiting"
@@ -410,8 +417,10 @@ export default function ScheduleDetail() {
               {schedule.status === "recruiting" ? "모집중" : "모집종료"}
             </span>
           </div>
+
           <div className={styles.titleWrap}>
             <h1 className={styles.title}>{schedule.title ?? "제목 없음"}</h1>
+
             {postHostEmail === authEmail ? (
               <div className={styles.buttonWrap}>
                 {isEditable ? (
@@ -425,22 +434,27 @@ export default function ScheduleDetail() {
                     <EditIcon fontSize="small" />
                   </Button>
                 ) : null}
+
                 <Button variant="outline" onClick={handleOpen}>
                   삭제
-                  <DeleteIcon fontSize="small"></DeleteIcon>
+                  <DeleteIcon fontSize="small" />
                 </Button>
+
                 <Dialog
                   open={open}
                   onClose={handleClose}
                   slotProps={{
-                    sx: {
-                      borderRadius: 3,
-                      p: 2,
-                      minWidth: 320,
+                    paper: {
+                      sx: {
+                        borderRadius: 3,
+                        p: 2,
+                        minWidth: 320,
+                      },
                     },
                   }}
                 >
                   <DialogTitle sx={{ pb: 3 }}>일정 삭제</DialogTitle>
+
                   <DialogContent sx={{ px: 10, py: 2 }}>
                     <DialogContentText sx={{ fontSize: "15px", color: "#555" }}>
                       삭제 후에는 복구할 수 없습니다.
@@ -449,6 +463,7 @@ export default function ScheduleDetail() {
 
                   <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
                     <Button onClick={handleDelete}>삭제하기</Button>
+
                     <Button onClick={handleClose} variant="outline">
                       취소
                     </Button>
@@ -462,6 +477,7 @@ export default function ScheduleDetail() {
             <span>
               <VisibilityIcon fontSize="small" /> {schedule.viewCount ?? 0}
             </span>
+
             <span>
               <PlaceIcon fontSize="small" /> {locationText}
             </span>
@@ -473,8 +489,10 @@ export default function ScheduleDetail() {
         <section className={styles.infoGrid}>
           <div className={styles.infoItem}>
             <CalendarTodayIcon className={styles.icon} />
+
             <div>
               <p className={styles.label}>일정 기간</p>
+
               <p className={styles.value}>
                 {schedule.startDate || "미정"} ~ {schedule.endDate || "미정"}
                 {" | "}
@@ -491,13 +509,16 @@ export default function ScheduleDetail() {
 
           <div className={styles.infoItem}>
             <PeopleIcon className={styles.icon} />
+
             <div>
               <p className={styles.label}>모집 인원 / 조건</p>
+
               <p className={styles.value}>
                 {schedule.currentParticipants ?? 0} /{" "}
-                {schedule.maxParticipants ?? 0}명 (최소{" "}
-                {schedule.minParticipants ?? 0}명)
+                {schedule.maxParticipants ?? 0}명 &#40;최소{" "}
+                {schedule.minParticipants ?? 0}명&#41;
               </p>
+
               <p className={styles.subValue}>
                 {schedule.genderLimit === "all"
                   ? "성별 무관"
@@ -509,11 +530,14 @@ export default function ScheduleDetail() {
 
           <div className={styles.infoItem}>
             <PaymentsIcon className={styles.icon} />
+
             <div>
               <p className={styles.label}>예상 비용</p>
+
               <p className={styles.value}>
                 총 {(schedule.totalPrice ?? 0).toLocaleString()}원
               </p>
+
               <p className={styles.subValue}>
                 정산 방식:{" "}
                 {COST_TYPE_LABELS[schedule.costType] ||
@@ -528,6 +552,7 @@ export default function ScheduleDetail() {
 
         <section className={styles.descriptionSection}>
           <h2 className={styles.subTitle}>상세 설명</h2>
+
           <p
             className={styles.descriptionText}
             style={{ whiteSpace: "pre-wrap" }}
@@ -541,7 +566,8 @@ export default function ScheduleDetail() {
             <hr className={styles.divider} />
 
             <section className={styles.descriptionSection}>
-              <h2 className={styles.subTitle}>세부 일정 (Day-by-Day)</h2>
+              <h2 className={styles.subTitle}>세부 일정 &#40;Day-by-Day&#41;</h2>
+
               <div
                 style={{
                   display: "flex",
@@ -568,9 +594,11 @@ export default function ScheduleDetail() {
                     >
                       Day {detail.dayNumber}
                     </h3>
+
                     <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
                       {detail.title || "제목 없음"}
                     </h4>
+
                     <p
                       style={{
                         margin: 0,
@@ -589,7 +617,7 @@ export default function ScheduleDetail() {
         )}
       </div>
 
-      {authEmail && !isApplicantsForbidden && (
+      {isLoggedIn && authEmail && !isApplicantsForbidden && (
         <HostParticipationList
           items={applicants}
           loading={isApplicantsLoading}
