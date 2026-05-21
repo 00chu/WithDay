@@ -232,8 +232,14 @@ const UpdateSchedule = () => {
     },
 
     onSuccess: () => {
+      // 수정 시 상세페이지 갱신
       queryClient.invalidateQueries({
         queryKey: ["schedule-detail", Number(scheduleId)],
+      });
+
+      // 수정 시 목록 캐시 갱신
+      queryClient.invalidateQueries({
+        queryKey: ["schedules"],
       });
 
       navigate(`/schedule/${scheduleId}`);

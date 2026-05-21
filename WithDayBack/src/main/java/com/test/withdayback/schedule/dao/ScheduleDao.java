@@ -55,4 +55,12 @@ public interface ScheduleDao {
     void deleteScheduleImages(@Param("deletedImageIds") List<Long> deletedImageIds);
 
     int deleteSchedule(Long scheduleId);
+
+    void updateThumbnail(Long scheduleId, String url);
+
+    int getScheduleImageCount(Long scheduleId);
+
+    String getThumbnailImageUrl(Long scheduleId);
+
+    void updateScheduleImage(Long scheduleId, List<String> imageUrls);
 }

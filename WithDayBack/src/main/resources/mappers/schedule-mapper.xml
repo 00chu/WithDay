@@ -3,39 +3,40 @@
 
 <mapper namespace="com.test.withdayback.schedule.dao.ScheduleDao">
     <select id="getEmailByScheduleId" resultType="String">
-        select email from user where id = (select user_id from schedule where id = #{id})
+        select email
+        from user
+        where id = (select user_id from schedule where id = #{id})
     </select>
 
     <select id="selectScheduleById" resultType="Schedule">
-        SELECT
-            id,
-            user_id AS userId,
-            title,
-            description,
-            category,
-            region,
-            detail_region AS detailRegion,
-            chat_link AS chatLink,
-            start_date AS startDate,
-            end_date AS endDate,
-            recruit_start_date AS recruitStartDate,
-            recruit_end_date AS recruitEndDate,
-            min_participants AS minParticipants,
-            max_participants AS maxParticipants,
-            current_participants AS currentParticipants,
-            age_min AS ageMin,
-            age_max AS ageMax,
-            gender_limit AS genderLimit,
-            total_price AS totalPrice,
-            cost_type AS costType,
-            thumbnail_image AS thumbnailImage,
-            view_count AS viewCount,
-            status,
-            is_public AS isPublic,
-            cancel_deadline AS cancelDeadline,
-            created_at AS createdAt,
-            updated_at AS updatedAt,
-            deleted_at AS deletedAt
+        SELECT id,
+               user_id              AS userId,
+               title,
+               description,
+               category,
+               region,
+               detail_region        AS detailRegion,
+               chat_link            AS chatLink,
+               start_date           AS startDate,
+               end_date             AS endDate,
+               recruit_start_date   AS recruitStartDate,
+               recruit_end_date     AS recruitEndDate,
+               min_participants     AS minParticipants,
+               max_participants     AS maxParticipants,
+               current_participants AS currentParticipants,
+               age_min              AS ageMin,
+               age_max              AS ageMax,
+               gender_limit         AS genderLimit,
+               total_price          AS totalPrice,
+               cost_type            AS costType,
+               thumbnail_image      AS thumbnailImage,
+               view_count           AS viewCount,
+               status,
+               is_public            AS isPublic,
+               cancel_deadline      AS cancelDeadline,
+               created_at           AS createdAt,
+               updated_at           AS updatedAt,
+               deleted_at           AS deletedAt
         FROM schedule
         WHERE id = #{id}
           AND deleted_at IS NULL
@@ -52,7 +53,7 @@
         SELECT *
         FROM schedule_image
         WHERE schedule_id = #{scheduleId}
-        ORDER BY is_thumbnail DESC
+        ORDER BY id asc
     </select>
 
     <update id="increaseViewCount">
@@ -73,9 +74,9 @@
     <update id="decreaseCurrentParticipants">
         UPDATE schedule
         SET current_participants = CASE
-            WHEN current_participants > 0 THEN current_participants - 1
-            ELSE 0
-        END
+                                       WHEN current_participants > 0 THEN current_participants - 1
+                                       ELSE 0
+            END
         WHERE id = #{scheduleId}
           AND deleted_at IS NULL
           AND current_participants > 0
@@ -83,21 +84,21 @@
 
     <select id="getAllSchedules" resultType="Schedule">
         SELECT
-            id,
-            user_id AS userId,
-            category,
-            title,
-            description,
-            region,
-            detail_region AS detailRegion,
-            start_date AS startDate,
-            end_date AS endDate,
-            current_participants AS currentParticipants,
-            max_participants AS maxParticipants,
-            total_price AS totalPrice,
-            cost_type AS costType,
-            thumbnail_image AS thumbnailImage,
-            created_at AS createdAt
+        id,
+        user_id AS userId,
+        category,
+        title,
+        description,
+        region,
+        detail_region AS detailRegion,
+        start_date AS startDate,
+        end_date AS endDate,
+        current_participants AS currentParticipants,
+        max_participants AS maxParticipants,
+        total_price AS totalPrice,
+        cost_type AS costType,
+        thumbnail_image AS thumbnailImage,
+        created_at AS createdAt
         FROM schedule
         <where>
             deleted_at IS NULL
@@ -108,8 +109,8 @@
 
             <if test="keyword != null and keyword != ''">
                 AND (
-                    title LIKE CONCAT('%', #{keyword}, '%')
-                    OR description LIKE CONCAT('%', #{keyword}, '%')
+                title LIKE CONCAT('%', #{keyword}, '%')
+                OR description LIKE CONCAT('%', #{keyword}, '%')
                 )
             </if>
 
@@ -121,9 +122,9 @@
     </select>
 
     <select id="findUserIdByEmail" resultType="long">
-        SELECT id
-        FROM user
-        WHERE email = #{email}
+        select id
+        from user
+        where email = #{email}
     </select>
 
     <insert id="insertSchedule"
@@ -132,111 +133,115 @@
             keyProperty="id"
             keyColumn="id">
 
-        INSERT INTO schedule (
-        user_id,
-        title,
-        description,
-        category,
-        region,
-        detail_region,
-        chat_link,
-        start_date,
-        end_date,
-        recruit_start_date,
-        recruit_end_date,
-        min_participants,
-        max_participants,
-        current_participants,
-        age_min,
-        age_max,
-        gender_limit,
-        total_price,
-        cost_type,
-        thumbnail_image,
-        view_count,
-        status,
-        is_public,
-        created_at
-        )
-        VALUES (
-        #{userId},
-        #{title},
-        #{description},
-        #{category},
-        #{region},
-        #{detailRegion},
-        #{chatLink},
-        #{startDate},
-        #{endDate},
-        #{recruitStartDate},
-        #{recruitEndDate},
-        #{minParticipants},
-        #{maxParticipants},
-        1,
-        #{ageMin},
-        #{ageMax},
-        #{genderLimit},
-        #{totalPrice},
-        #{costType},
-        #{thumbnailImage},
-        0,
-        'recruiting',
-        1,
-        NOW()
-        )
+        insert into schedule (user_id,
+                              title,
+                              description,
+                              category,
+                              region,
+                              detail_region,
+                              chat_link,
+                              start_date,
+                              end_date,
+                              recruit_start_date,
+                              recruit_end_date,
+                              min_participants,
+                              max_participants,
+                              current_participants,
+                              age_min,
+                              age_max,
+                              gender_limit,
+                              total_price,
+                              cost_type,
+                              thumbnail_image,
+                              view_count,
+                              status,
+                              is_public,
+                              created_at)
+        values (#{userId},
+                #{title},
+                #{description},
+                #{category},
+                #{region},
+                #{detailRegion},
+                #{chatLink},
+                #{startDate},
+                #{endDate},
+                #{recruitStartDate},
+                #{recruitEndDate},
+                #{minParticipants},
+                #{maxParticipants},
+                1,
+                #{ageMin},
+                #{ageMax},
+                #{genderLimit},
+                #{totalPrice},
+                #{costType},
+                #{thumbnailImage},
+                0,
+                'recruiting',
+                1,
+                NOW())
     </insert>
 
     <insert id="insertScheduleDetail" parameterType="ScheduleDetail">
-        INSERT INTO schedule_detail (
-        schedule_id,
-        day_number,
-        title,
-        description
-        ) VALUES (
-        #{scheduleId},
-        #{dayNumber},
-        #{title},
-        #{description}
-        )
+        insert into schedule_detail (schedule_id,
+                                     day_number,
+                                     title,
+                                     description)
+        values (#{scheduleId},
+                #{dayNumber},
+                #{title},
+                #{description})
     </insert>
 
     <insert id="insertScheduleImage">
-        INSERT INTO schedule_image (schedule_id, image_url, is_thumbnail)
-        VALUES
+        insert into schedule_image (schedule_id, image_url, is_thumbnail)
+        values
         <foreach collection="imageUrls" item="url" index="idx" separator=",">
             (
             #{scheduleId},
             #{url},
-            CASE WHEN #{idx} = 0 THEN 1 ELSE 0 END
+            case when #{idx} = 0 then 1 else 0 end
             )
         </foreach>
     </insert>
 
+    <update id="updateThumbnail">
+        update schedule
+        set thumbnail_image = #{url}
+        where id = #{scheduleId}
+    </update>
+
     <update id="updateSchedule"
             parameterType="Schedule">
         update schedule
-        set
-            title = #{title},
-            description = #{description},
-            category = #{category},
-            region = #{region},
-            detail_region = #{detailRegion},
-            chat_link = #{chatLink},
-            start_date = #{startDate},
-            end_date = #{endDate},
+        set title              = #{title},
+            description        = #{description},
+            category           = #{category},
+            region             = #{region},
+            detail_region      = #{detailRegion},
+            chat_link          = #{chatLink},
+            start_date         = #{startDate},
+            end_date           = #{endDate},
             recruit_start_date = #{recruitStartDate},
-            recruit_end_date = #{recruitEndDate},
-            min_participants = #{minParticipants},
-            max_participants = #{maxParticipants},
-            age_min = #{ageMin},
-            age_max = #{ageMax},
-            gender_limit = #{genderLimit},
-            total_price = #{totalPrice},
-            cost_type = #{costType},
-            thumbnail_image = #{thumbnailImage},
-            updated_at = NOW()
+            recruit_end_date   = #{recruitEndDate},
+            min_participants   = #{minParticipants},
+            max_participants   = #{maxParticipants},
+            age_min            = #{ageMin},
+            age_max            = #{ageMax},
+            gender_limit       = #{genderLimit},
+            total_price        = #{totalPrice},
+            cost_type          = #{costType},
+            thumbnail_image    = #{thumbnailImage},
+            updated_at         = NOW()
         where id = #{id}
     </update>
+
+    <select id="getScheduleImageCount" resultType="int">
+        select count(*)
+        from schedule_image
+        where id = #{scheduleId}
+    </select>
 
     <delete id="deleteScheduleDetail"
             parameterType="long">
@@ -257,8 +262,24 @@
         </foreach>
     </delete>
 
+    <insert id="updateScheduleImage">
+        insert into schedule_image (schedule_id, image_url, is_thumbnail)
+        values
+        <foreach collection="imageUrls" item="url" index="idx" separator=",">
+            (#{scheduleId}, #{url}, 0)
+        </foreach>
+    </insert>
+
+    <select id="getThumbnailImageUrl" resultType="String">
+        select image_url
+        from schedule_image
+        where schedule_id = #{scheduleId}
+        order by id asc limit 1
+    </select>
+
     <delete id="deleteSchedule">
-        delete from schedule
+        delete
+        from schedule
         where id = #{scheduleId}
     </delete>
 </mapper>
