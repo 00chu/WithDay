@@ -1,0 +1,32 @@
+.container {
+  padding: 28px 0 0;
+}
+
+.card {
+  padding: 28px;
+  border-radius: 26px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #1aa0a5;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.title {
+  margin: 0 0 10px;
+  color: #10203d;
+  font-size: 1.7rem;
+  font-weight: 800;
+}
+
+.description {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.7;
+}

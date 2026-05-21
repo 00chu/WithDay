@@ -87,12 +87,15 @@
             user_id AS userId,
             category,
             title,
+            description,
             region,
             detail_region AS detailRegion,
             start_date AS startDate,
             end_date AS endDate,
             current_participants AS currentParticipants,
             max_participants AS maxParticipants,
+            total_price AS totalPrice,
+            cost_type AS costType,
             thumbnail_image AS thumbnailImage,
             created_at AS createdAt
         FROM schedule

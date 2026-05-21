@@ -1,84 +1,95 @@
-import { useState } from "react";
-import styles from "./Header.module.css";
-import { IconButton, Menu, MenuItem, Button } from "@mui/material";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { useMemo } from "react";
+import Avatar from "@mui/material/Avatar";
+import IconButton from "@mui/material/IconButton";
+import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
+import PersonOutlineRoundedIcon from "@mui/icons-material/PersonOutlineRounded";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import styles from "./Header.module.css";
 import { getRegion } from "../../features/region/api";
+import { getAuthUser } from "../../features/auth/lib/getAuthUser";
 import LayoutContainer from "../../shared/ui/LayoutContainer/LayoutContainer";
+import RegionSelect from "../../shared/ui/RegionSelect/RegionSelect";
 
 const DEFAULT_REGION_OPTION = { label: "전체", value: "" };
 
 const normalizeRegionValue = (value) => value?.trim() ?? "";
 
 export default function Header({ selectedRegion, onRegionChange }) {
-  const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
+  const loginUser = getAuthUser();
   const { data: regions = [] } = useQuery({
     queryKey: ["header-region-options"],
     queryFn: getRegion,
     staleTime: 1000 * 60 * 10,
   });
 
-  const regionOptions = [
-    DEFAULT_REGION_OPTION,
-    ...regions.map((region) => ({
-      label: region.regionName,
-      value: normalizeRegionValue(region.regionName),
-    })),
-  ];
+  const regionOptions = useMemo(() => {
+    return [
+      DEFAULT_REGION_OPTION,
+      ...regions.map((region) => ({
+        label: region.regionName,
+        value: normalizeRegionValue(region.regionName),
+      })),
+    ];
+  }, [regions]);
 
   const selectedRegionValue = normalizeRegionValue(selectedRegion);
-  const selectedRegionOption =
-    regionOptions.find((region) => region.value === selectedRegionValue) ??
-    DEFAULT_REGION_OPTION;
+  const avatarFallback = (
+    loginUser?.nickname?.trim()?.charAt(0) ||
+    loginUser?.email?.trim()?.charAt(0) ||
+    ""
+  ).toUpperCase();
 
-  const handleOpen = (e) => setAnchorEl(e.currentTarget);
-
-  const handleClose = (region) => {
-    if (region) {
-      onRegionChange(normalizeRegionValue(region.value));
+  const handleProfileClick = () => {
+    if (loginUser?.email) {
+      navigate(`/mypage/${loginUser.email}`);
+      return;
     }
-    setAnchorEl(null);
+
+    navigate("/login");
   };
 
   return (
     <header className={styles.header}>
       <LayoutContainer className={styles.contentShell}>
-        <div className={styles.left}>
-          <Button
-            onClick={handleOpen}
-            endIcon={<KeyboardArrowDownIcon />}
-            className={styles.regionBtn}
+        <div className={styles.leftGroup}>
+          <button
+            type="button"
+            className={styles.logoButton}
+            onClick={() => navigate("/")}
+            aria-label="WithDay 홈으로 이동"
           >
-            {selectedRegionOption.label}
-          </Button>
-
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={() => handleClose(null)}
-            PaperProps={{
-              style: {
-                maxHeight: 300,
-                width: "15ch",
-              },
-            }}
-          >
-            {regionOptions.map((region) => (
-              <MenuItem
-                key={region.value}
-                onClick={() => handleClose(region)}
-                selected={region.value === selectedRegionOption.value}
-              >
-                {region.label}
-              </MenuItem>
-            ))}
-          </Menu>
+            <img
+              src="/withday_logo.png"
+              alt="WithDay"
+              className={styles.logoImage}
+            />
+          </button>
         </div>
 
-        <div className={styles.right}>
-          <IconButton>
-            <NotificationsIcon />
+        <div className={styles.centerGroup}>
+          <RegionSelect
+            value={selectedRegionValue}
+            options={regionOptions}
+            onSelect={(option) => onRegionChange?.(normalizeRegionValue(option.value))}
+            theme="navy"
+            className={styles.regionSelect}
+          />
+        </div>
+
+        <div className={styles.rightGroup}>
+          <IconButton className={styles.actionButton} aria-label="알림">
+            <NotificationsNoneRoundedIcon />
+          </IconButton>
+          <IconButton
+            className={styles.actionButton}
+            aria-label="마이페이지"
+            onClick={handleProfileClick}
+          >
+            <Avatar className={styles.profileAvatar}>
+              {avatarFallback || <PersonOutlineRoundedIcon fontSize="small" />}
+            </Avatar>
           </IconButton>
         </div>
       </LayoutContainer>

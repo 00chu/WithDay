@@ -52,6 +52,7 @@ const COST_TYPE_LABELS = {
 };
 
 const DEFAULT_IMAGE = "https://placehold.co/800x400?text=No+Image";
+const VIEWED_SCHEDULE_STORAGE_KEY_PREFIX = "viewed_schedule_";
 
 const formatLocation = (schedule) => {
   const region = schedule?.region?.trim() ?? "";
@@ -71,7 +72,7 @@ export default function ScheduleDetail() {
   const [feedback, setFeedback] = useState(null);
   const [currentImg, setCurrentImg] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [isViewCountReady, setIsViewCountReady] = useState(false);
+  const [viewCountReadyScheduleId, setViewCountReadyScheduleId] = useState(null);
 
   const authUser = useMemo(() => getAuthUser(), []);
   const authEmail = authUser?.email?.trim() ?? "";
@@ -80,7 +81,6 @@ export default function ScheduleDetail() {
   useEffect(() => {
     // 잘못된 ID에서는 증가 호출을 시도하지 않는다.
     if (!Number.isFinite(parsedScheduleId) || parsedScheduleId <= 0) {
-      setIsViewCountReady(false);
       return;
     }
 
@@ -93,10 +93,30 @@ export default function ScheduleDetail() {
       exact: true,
     });
 
+    const viewedScheduleStorageKey = `${VIEWED_SCHEDULE_STORAGE_KEY_PREFIX}${parsedScheduleId}`;
+    const hasViewedSchedule =
+      typeof window !== "undefined" &&
+      window.sessionStorage.getItem(viewedScheduleStorageKey) === "true";
+
+    if (hasViewedSchedule) {
+      queueMicrotask(() => {
+        if (isMounted) {
+          setViewCountReadyScheduleId(parsedScheduleId);
+        }
+      });
+      return () => {
+        isMounted = false;
+      };
+    }
+
     // 진입 1회당 조회수 1증가가 요구사항이므로, 페이지 마운트 시점에만 증가 API를 호출한다.
     const increaseViewCount = async () => {
       try {
         await incrementScheduleViewCount(parsedScheduleId);
+
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(viewedScheduleStorageKey, "true");
+        }
       } catch (requestError) {
         // 조회수 집계 실패가 상세 페이지 진입 자체를 막으면 UX가 나빠진다.
         // 그래서 실패하더라도 상세 조회는 계속 진행한다.
@@ -109,12 +129,11 @@ export default function ScheduleDetail() {
       } finally {
         if (isMounted) {
           // 증가 성공 여부와 관계없이 상세 조회를 시작할 수 있게 열어준다.
-          setIsViewCountReady(true);
+          setViewCountReadyScheduleId(parsedScheduleId);
         }
       }
     };
 
-    setIsViewCountReady(false);
     increaseViewCount();
 
     return () => {
@@ -135,7 +154,7 @@ export default function ScheduleDetail() {
     enabled:
       Number.isFinite(parsedScheduleId) &&
       parsedScheduleId > 0 &&
-      isViewCountReady,
+      viewCountReadyScheduleId === parsedScheduleId,
     // 상세 재진입 시 캐시된 값을 오래 붙잡지 않도록 fresh 시간을 0으로 둔다.
     staleTime: 0,
   });

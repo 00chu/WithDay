@@ -52,11 +52,11 @@
   border: 1px solid var(--color-border);
   background: radial-gradient(
       circle at top right,
-      rgba(59, 130, 246, 0.08),
+      var(--color-surface-highlight),
       transparent 30%
     ),
     var(--color-surface);
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-panel);
 }
 
 .homePlaceholderEyebrow {
@@ -104,7 +104,7 @@
   border-color: var(--color-primary);
 }
 .inputError {
-  border-color: #e53e3e !important;
+  border-color: var(--color-error) !important;
 }
 .searchIcon {
   color: var(--color-text-muted);
@@ -125,7 +125,7 @@
 .errorMessage {
   margin: 6px 0 0;
   font-size: 0.8rem;
-  color: #e53e3e;
+  color: var(--color-error);
 }
 .searchResultInfo {
   margin: 8px 0 0;
@@ -163,10 +163,10 @@
 .categoryChipActive {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 .categoryChipActive:hover {
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 /* ─── 상태 박스 (로딩 / 에러) ──────────────────────────────── */
@@ -181,7 +181,7 @@
   font-size: 0.9rem;
 }
 .errorBox {
-  color: #e53e3e;
+  color: var(--color-error);
 }
 .loadingSpinner {
   width: 28px;

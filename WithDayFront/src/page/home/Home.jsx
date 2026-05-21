@@ -3,22 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
 import styles from "./Home.module.css";
-import Button from "../../shared/ui/Button/Button";
 import ScheduleCard from "../../features/schedule/ui/ScheduleCard";
-import ScheduleCardGrid from "../../shared/ui/ScheduleCardGrid/ScheduleCardGrid";
 import HomeCarousel from "./HomeCarousel";
 import { fetchSchedules } from "../../features/schedule/api";
 
-const CATEGORY_SECTIONS = [
-  { key: "travel", title: "여행" },
-  { key: "popup", title: "팝업" },
-  { key: "food", title: "식사" },
-  { key: "activity", title: "액티비티" },
-  { key: "culture", title: "문화" },
-  { key: "etc", title: "기타" },
-];
-
-const MAX_ITEMS_PER_CATEGORY = 4;
+const MAX_HOME_ITEMS = 8;
 
 const getScheduleKey = (schedule) =>
   String(
@@ -29,7 +18,7 @@ const getScheduleKey = (schedule) =>
 
 const normalizeRegionValue = (value) => value?.trim() ?? "";
 
-const sortByEndDate = (left, right) => {
+const sortByPriorityDate = (left, right) => {
   const leftTime = new Date(left?.endDate ?? left?.startDate ?? 0).getTime();
   const rightTime = new Date(right?.endDate ?? right?.startDate ?? 0).getTime();
   return leftTime - rightTime;
@@ -54,102 +43,72 @@ export default function Home({ selectedRegion = "" }) {
     staleTime: 1000 * 60,
   });
 
-  const groupedSections = useMemo(() => {
-    const safeSchedules = Array.isArray(schedules) ? schedules : [];
-
-    return CATEGORY_SECTIONS.map((section) => {
-      const items = safeSchedules
-        .filter((schedule) => schedule?.category === section.key)
-        .sort(sortByEndDate)
-        .slice(0, MAX_ITEMS_PER_CATEGORY);
-
-      return {
-        ...section,
-        items,
-      };
-    }).filter((section) => section.items.length > 0);
+  const featuredSchedules = useMemo(() => {
+    const safeSchedules = Array.isArray(schedules) ? [...schedules] : [];
+    return safeSchedules.sort(sortByPriorityDate).slice(0, MAX_HOME_ITEMS);
   }, [schedules]);
 
   return (
-    <main className={styles.main}>
-      <section className={styles.banner}>
-        <div className={styles.bannerCopy}>
-          <p className={styles.bannerEyebrow}>WITHDAY HOME</p>
-          <h2 className={styles.bannerTitle}>
-            지금 주목할 일정만
-            <br />
-            <span className={styles.highlight}>빠르게 둘러보세요</span>
-          </h2>
-          <p className={styles.bannerDescription}>
-            홈에서는 마감이 가까운 일정만 카테고리별로 요약해서 보여드려요.
-          </p>
-        </div>
-        <Button variant="outline" size="md" onClick={() => navigate("/explore")}>
-          탐색 전체보기
-        </Button>
-      </section>
+    <div className={styles.main}>
+      <HomeCarousel />
 
       <section className={styles.section}>
-        <HomeCarousel />
-      </section>
+        <div className={styles.sectionHeader}>
+          <div className={styles.sectionTitleWrap}>
+            <span className={styles.sectionAccent} aria-hidden="true" />
+            <div>
+              <h2 className={styles.sectionTitle}>마중 나온 위트들</h2>
+              <p className={styles.sectionCaption}>
+                {normalizedRegion
+                  ? `${normalizedRegion}에서 찾은 일정들을 먼저 보여드려요`
+                  : "함께 가기 좋은 일정들을 홈에서 먼저 만나보세요"}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className={styles.moreButton}
+            onClick={() => navigate("/explore")}
+          >
+            전체보기
+          </button>
+        </div>
 
-      {isLoading && (
-        <section className={styles.section}>
+        {isLoading && (
           <div className={styles.stateBox}>
             <div className={styles.loadingSpinner} />
             <p>홈 추천 일정을 불러오는 중...</p>
           </div>
-        </section>
-      )}
+        )}
 
-      {isError && (
-        <section className={styles.section}>
+        {isError && (
           <div className={clsx(styles.stateBox, styles.errorBox)}>
             <p>홈 추천 일정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
           </div>
-        </section>
-      )}
+        )}
 
-      {!isLoading && !isError && groupedSections.length === 0 && (
-        <section className={styles.section}>
+        {!isLoading && !isError && featuredSchedules.length === 0 && (
           <div className={styles.homeEmpty}>
             <h3 className={styles.homeEmptyTitle}>추천할 일정이 아직 없어요.</h3>
             <p className={styles.homeEmptyText}>
               지역 필터를 바꾸거나 탐색 탭에서 전체 일정을 확인해보세요.
             </p>
           </div>
-        </section>
-      )}
+        )}
 
-      {!isLoading &&
-        !isError &&
-        groupedSections.map((section) => (
-            <section className={styles.section} key={section.key}>
-              <div className={styles.sectionHeader}>
-                <div>
-                  <h2 className={styles.sectionTitle}>{section.title}</h2>
-                <p className={styles.sectionCaption}>마감 임박 순 TOP {MAX_ITEMS_PER_CATEGORY}</p>
-              </div>
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => navigate("/explore")}
-              >
-                더보기
-              </Button>
-            </div>
-
-            <ScheduleCardGrid>
-              {section.items.map((schedule) => (
-                <ScheduleCard
-                  key={getScheduleKey(schedule)}
-                  schedule={schedule}
-                />
-              ))}
-            </ScheduleCardGrid>
-          </section>
-       
-        ))}
-    </main>
+        {!isLoading && !isError && featuredSchedules.length > 0 && (
+          <div className={styles.cardRail}>
+            {featuredSchedules.map((schedule) => (
+              <ScheduleCard
+                key={getScheduleKey(schedule)}
+                schedule={schedule}
+                variant="compact"
+                className={styles.homeCard}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
   );
 }
