@@ -1,8 +1,37 @@
-import { create } from 'zustand'; // zustand에서 create 함수를 가져옴. (토큰 저장소 만들 때 사용)
-import { persist } from 'zustand/middleware'; // 새로고침 방지용
+import { create } from "zustand"; // zustand에서 create 함수를 가져옴. (토큰 저장소 만들 때 사용)
+import { createJSONStorage, persist } from "zustand/middleware"; // 새로고침 방지용
 
 // 브라우저의 로컬 스토리지에 저장될 이름 (개발자 도구 -> Application 탭에서 확인 가능, "auth-storage"라는 이름으로 저장됨)
-export const AUTH_STORAGE_KEY = 'auth-storage';
+export const AUTH_STORAGE_KEY = "auth-storage";
+
+// 커스텀 스토리지 만드는 함수 (상황에 따라 로컬/세션을 골라서 저장)
+const dynamicStorage = {
+  getItem: (name) => {
+    // 가져올 때 로컬, 세션 둘 다 뒤져서 값이 있는 곳에서 꺼내옴. (둘 다 있으면 로컬이 우선)
+    return (
+      window.localStorage.getItem(name) || window.sessionStorage.getItem(name)
+    );
+  },
+
+  setItem: (name, value) => {
+    // value 안에는 Zustand가 저장하려는 전체 데이터가 JSON 문자열로 들어있음. (예: '{"state":{"token":"abc123", "isAutoLogin":true}}')
+    const parsed = JSON.parse(value);
+
+    // 상태 안의 isAutoLogin 값이 true면 로컬(영구)에, false면 세션(임시)에 저장
+    if (parsed.state.isAutoLogin) {
+      window.localStorage.setItem(name, value);
+      window.sessionStorage.removeItem(name); // 꼬이지 않게 반대쪽 Storage는 청소
+    } else {
+      window.sessionStorage.setItem(name, value);
+      window.localStorage.removeItem(name); // 꼬이지 않게 반대쪽 Storage는 청소
+    }
+  },
+  removeItem: (name) => {
+    // 로그아웃 시 두 Storage를 모두 깨끗하게 비움.
+    window.localStorage.removeItem(name);
+    window.sessionStorage.removeItem(name);
+  },
+};
 
 // 전역 Store 생성
 export const useAuthStore = create(
@@ -13,26 +42,34 @@ export const useAuthStore = create(
       token: null,
       user: null,
       isLoggedIn: false, // 로그인 여부
+      isAutoLogin: false, //자동 로그인 여부
 
       // 로그인 성공 시 Store 데이터를 채우는 함수 (Login.jsx에서 사용함)
-      setLogin: (token, userData) =>
+      setLogin: (token, userData, isAutoLogin = false) =>
         set({
           token, // 백엔드에서 받아온 토큰 저장
           user: userData ?? null, // userData가 비어있으면 null 저장. 비어있을수가 없긴한데 혹여나 오류로 userData가 안 들어오는 경우(이때 undefined를 넣음)를 대비해서 null로 저장하게 함.
           // 토큰도 있고 유저 이메일도 있으면 true, 아니면 false로 저장하여 로그인 상태 저장
           isLoggedIn: Boolean(token && userData?.email),
+          isAutoLogin, // 자동 로그인 여부도 저장
         }),
 
-      // 로그아웃 시 Store를 비우는 함수 (로그아웃 버튼 누를 때 사용)
+      // 로그아웃 시 Store를 비우는 함수
+      // 로그아웃 버튼 누를 때 사용
+      // 토큰이 만료되어 자동 로그아웃 될 때도 이 함수를 사용
+      // 세션 스토리지에 저장된 경우는 창을 닫으면 자동으로 로그아웃되니까 그 때도 이 함수 사용
       setLogout: () =>
         set({
           token: null,
           user: null,
           isLoggedIn: false,
+          isAutoLogin: false,
         }),
     }),
     {
       name: AUTH_STORAGE_KEY, // 로컬 스토리지에 저장될 키값 지정
-    }
-  )
+
+      storage: createJSONStorage(() => dynamicStorage), // 커스텀 스토리지 사용하도록 지정 (로컬/세션 선택 가능)
+    },
+  ),
 );
