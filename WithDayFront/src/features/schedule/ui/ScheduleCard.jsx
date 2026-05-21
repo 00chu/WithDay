@@ -1,22 +1,11 @@
 import clsx from "clsx";
-import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import GroupIcon from "@mui/icons-material/Group";
-import WcIcon from "@mui/icons-material/Wc";
 import PaidIcon from "@mui/icons-material/Paid";
-import EventBusyIcon from "@mui/icons-material/EventBusy";
+import WcIcon from "@mui/icons-material/Wc";
 import { useNavigate } from "react-router-dom";
 import { formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
 import styles from "./ScheduleCard.module.css";
-
-const CATEGORY_LABELS = {
-  travel: "여행",
-  popup: "팝업",
-  food: "식사",
-  activity: "액티비티",
-  culture: "문화",
-  etc: "기타",
-};
 
 const GENDER_LIMIT_LABELS = {
   all: "성별 무관",
@@ -39,12 +28,6 @@ const resolveThumbnail = (schedule) =>
   schedule?.imageUrl?.trim() ||
   defaultThumbnail;
 
-const resolveLocationText = (schedule) =>
-  [schedule?.region, schedule?.detailRegion].filter(Boolean).join(" · ");
-
-const resolveCategoryLabel = (category) =>
-  CATEGORY_LABELS[category] ?? category ?? "기타";
-
 const resolveParticipantText = (schedule) => {
   const currentParticipants = Number(schedule?.currentParticipants ?? 0);
   const maxParticipants = Number(schedule?.maxParticipants ?? 0);
@@ -55,22 +38,86 @@ const resolveParticipantText = (schedule) => {
 const resolveGenderLimitLabel = (genderLimit) =>
   GENDER_LIMIT_LABELS[String(genderLimit ?? "").trim().toLowerCase()] ?? "성별 무관";
 
-const resolveCostTypeLabel = (costType) =>
-  COST_TYPE_LABELS[String(costType ?? "").trim().toLowerCase()] ?? "비용 미정";
+const resolvePriceText = (totalPrice, costType) => {
+  const price = Number(totalPrice ?? 0);
 
-const resolveRecruitmentDeadline = (schedule) => {
-  const dDay = getDDay(schedule?.recruitEndDate);
+  if (String(costType ?? "").trim().toLowerCase() === "free" || price <= 0) {
+    return "무료";
+  }
+
+  return `${price.toLocaleString("ko-KR")}원`;
+};
+
+const resolveCostSummary = (schedule) => {
+  const costTypeLabel =
+    COST_TYPE_LABELS[String(schedule?.costType ?? "").trim().toLowerCase()] ??
+    "비용 미정";
+  const priceLabel = resolvePriceText(schedule?.totalPrice, schedule?.costType);
+
+  if (priceLabel === "무료") {
+    return "무료";
+  }
+
+  return `${costTypeLabel} ${priceLabel}`;
+};
+
+const resolveDeadline = (recruitEndDate) => {
+  const dDay = getDDay(recruitEndDate);
 
   if (!dDay) {
-    return null;
+    return {
+      label: "일정 미정",
+      isToday: false,
+      isClosed: false,
+    };
+  }
+
+  if (dDay === "D-Day") {
+    return {
+      label: "D-day",
+      isToday: true,
+      isClosed: false,
+    };
+  }
+
+  if (dDay === "마감") {
+    return {
+      label: "마감",
+      isToday: false,
+      isClosed: true,
+    };
   }
 
   return {
-    label: dDay === "마감" ? "모집 마감" : `모집 ${dDay}`,
-    isToday: dDay === "D-Day",
-    isClosed: dDay === "마감",
+    label: dDay,
+    isToday: false,
+    isClosed: false,
   };
 };
+
+const INFO_ITEMS = [
+  {
+    key: "gender",
+    icon: WcIcon,
+    resolveText: (schedule) => resolveGenderLimitLabel(schedule?.genderLimit),
+  },
+  {
+    key: "participants",
+    icon: GroupIcon,
+    resolveText: (schedule) => resolveParticipantText(schedule),
+  },
+  {
+    key: "period",
+    icon: CalendarTodayIcon,
+    resolveText: (schedule) =>
+      formatDateRange(schedule?.startDate, schedule?.endDate) ?? "일정 미정",
+  },
+  {
+    key: "cost",
+    icon: PaidIcon,
+    resolveText: (schedule) => resolveCostSummary(schedule),
+  },
+];
 
 export default function ScheduleCard({
   schedule,
@@ -79,17 +126,9 @@ export default function ScheduleCard({
 }) {
   const navigate = useNavigate();
   const thumbnailSrc = resolveThumbnail(schedule);
-  const locationText = resolveLocationText(schedule);
-  const categoryLabel = resolveCategoryLabel(schedule?.category);
-  const participantText = resolveParticipantText(schedule);
-  const schedulePeriodText = formatDateRange(schedule?.startDate, schedule?.endDate);
-  const genderLimitText = resolveGenderLimitLabel(schedule?.genderLimit);
-  const costTypeText = resolveCostTypeLabel(schedule?.costType);
-  const recruitmentDeadline = resolveRecruitmentDeadline(schedule);
+  const deadline = resolveDeadline(schedule?.recruitEndDate);
   const isCompact = variant === "compact";
-  const compactDescription =
-    schedule?.description?.trim() ||
-    [locationText, `${categoryLabel} 일정`].filter(Boolean).join(" · ");
+  const descriptionText = schedule?.description?.trim() || "일정 소개가 아직 등록되지 않았어요.";
 
   const handleCardClick = () => navigate(`/schedule/${schedule.id}`);
 
@@ -113,131 +152,62 @@ export default function ScheduleCard({
       role="button"
       tabIndex={0}
     >
-      {isCompact ? (
-        <>
-          <div className={clsx(styles.cardTop, styles.cardTopCompact)}>
-            <div className={styles.compactMetaRow}>
-              <span className={styles.compactLocation}>
-                <PlaceIcon fontSize="inherit" className={styles.compactMetaIcon} />
-                <span className={styles.compactLocationText}>
-                  {locationText || "지역 미정"}
-                </span>
+      <div className={clsx(styles.cardTop, isCompact && styles.cardTopCompact)}>
+        <div className={styles.headerRow}>
+          <span
+            className={clsx(
+              styles.deadlineBadge,
+              deadline.isToday && styles.deadlineBadgeToday,
+              deadline.isClosed && styles.deadlineBadgeClosed,
+              isCompact && styles.deadlineBadgeCompact,
+            )}
+          >
+            {deadline.label}
+          </span>
+
+          <div className={styles.infoStack}>
+            {INFO_ITEMS.map(({ key, icon: Icon, resolveText }) => (
+              <span
+                key={key}
+                className={clsx(styles.infoLine, isCompact && styles.infoLineCompact)}
+              >
+                <Icon
+                  fontSize="inherit"
+                  className={clsx(styles.infoIcon, isCompact && styles.infoIconCompact)}
+                />
+                <span className={styles.infoText}>{resolveText(schedule)}</span>
               </span>
-              <span className={styles.compactParticipantCount}>{participantText}</span>
-            </div>
-
-            <div className={styles.compactSummaryRow}>
-              <span className={styles.ticketBadge}>{categoryLabel}</span>
-              {recruitmentDeadline && (
-                <span
-                  className={clsx(
-                    styles.recruitmentDeadlineBadge,
-                    styles.compactDeadlineBadge,
-                    recruitmentDeadline.isToday && styles.recruitmentDeadlineToday,
-                    recruitmentDeadline.isClosed && styles.recruitmentDeadlineClosed,
-                  )}
-                >
-                  {recruitmentDeadline.label}
-                </span>
-              )}
-            </div>
-
-            <h3 className={clsx(styles.cardTitle, styles.compactTitle)}>
-              {schedule?.title ?? "제목 없는 일정"}
-            </h3>
-            <p className={styles.compactDescription}>{compactDescription}</p>
-
-            <div className={styles.compactInfoList}>
-              {schedulePeriodText && (
-                <span className={styles.compactInfoItem}>{schedulePeriodText}</span>
-              )}
-              <span className={styles.compactInfoItem}>{genderLimitText}</span>
-              <span className={styles.compactInfoItem}>{costTypeText}</span>
-            </div>
+            ))}
           </div>
+        </div>
 
-          <div className={styles.ticketDivider} aria-hidden="true" />
+        <div className={styles.bodySection}>
+          <h3 className={clsx(styles.cardTitle, isCompact && styles.cardTitleCompact)}>
+            {schedule?.title ?? "제목 없는 일정"}
+          </h3>
+          <p
+            className={clsx(
+              styles.cardDescription,
+              isCompact && styles.cardDescriptionCompact,
+            )}
+          >
+            {descriptionText}
+          </p>
+        </div>
+      </div>
 
-          <div className={clsx(styles.cardBottom, styles.cardBottomCompact)}>
-            <div className={clsx(styles.thumbnailWrap, styles.thumbnailWrapCompact)}>
-              <img
-                src={thumbnailSrc}
-                alt={schedule?.title ?? "일정 썸네일"}
-                className={styles.thumbnail}
-                onError={handleImageError}
-              />
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className={styles.cardTop}>
-            <div className={styles.ticketHeader}>
-              <span className={styles.ticketBadge}>{categoryLabel}</span>
-              {recruitmentDeadline && (
-                <span
-                  className={clsx(
-                    styles.recruitmentDeadlineBadge,
-                    recruitmentDeadline.isToday && styles.recruitmentDeadlineToday,
-                    recruitmentDeadline.isClosed && styles.recruitmentDeadlineClosed,
-                  )}
-                >
-                  {recruitmentDeadline.label}
-                </span>
-              )}
-            </div>
+      <div className={styles.ticketDivider} aria-hidden="true" />
 
-            <h3 className={styles.cardTitle}>
-              {schedule?.title ?? "제목 없는 일정"}
-            </h3>
-
-            <div className={styles.participantRow}>
-              <GroupIcon fontSize="small" className={styles.metaIcon} />
-              <span className={styles.participantText}>{participantText}</span>
-            </div>
-
-            <div className={styles.metaList}>
-              {schedulePeriodText && (
-                <span className={styles.metaItem}>
-                  <CalendarTodayIcon fontSize="small" className={styles.metaIcon} />
-                  <span className={styles.metaText}>{schedulePeriodText}</span>
-                </span>
-              )}
-              <span className={styles.metaItem}>
-                <EventBusyIcon fontSize="small" className={styles.metaIcon} />
-                <span className={styles.metaText}>
-                  {recruitmentDeadline?.label ?? "모집 종료일 미정"}
-                </span>
-              </span>
-              <span className={styles.metaItem}>
-                <WcIcon fontSize="small" className={styles.metaIcon} />
-                <span className={styles.metaText}>{genderLimitText}</span>
-              </span>
-              <span className={styles.metaItem}>
-                <PaidIcon fontSize="small" className={styles.metaIcon} />
-                <span className={styles.metaText}>{costTypeText}</span>
-              </span>
-              <span className={styles.metaItem}>
-                <PlaceIcon fontSize="small" className={styles.metaIcon} />
-                <span className={styles.metaText}>{locationText || "지역 미정"}</span>
-              </span>
-            </div>
-          </div>
-
-          <div className={styles.ticketDivider} aria-hidden="true" />
-
-          <div className={styles.cardBottom}>
-            <div className={styles.thumbnailWrap}>
-              <img
-                src={thumbnailSrc}
-                alt={schedule?.title ?? "일정 썸네일"}
-                className={styles.thumbnail}
-                onError={handleImageError}
-              />
-            </div>
-          </div>
-        </>
-      )}
+      <div className={clsx(styles.cardBottom, isCompact && styles.cardBottomCompact)}>
+        <div className={clsx(styles.thumbnailWrap, isCompact && styles.thumbnailWrapCompact)}>
+          <img
+            src={thumbnailSrc}
+            alt={schedule?.title ?? "일정 썸네일"}
+            className={styles.thumbnail}
+            onError={handleImageError}
+          />
+        </div>
+      </div>
     </article>
   );
 }
