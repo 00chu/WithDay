@@ -6,5 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
 @Mapper
-public class NotificationDao {
+public interface NotificationDao {
+    List<Notification> getNotificationsById(Long id);
 }
