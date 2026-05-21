@@ -14,7 +14,7 @@
   --color-bg: #F8FAFB;             /* 기본 배경 */
   --color-surface: #ffffff;        /* 카드/섹션 배경 */
   --color-surface-soft: #DAF1F1;   /* 연한 민트 배경 */
-  --color-surface-hover: #FFF8EF;
+  --color-surface-hover: #EDFEFE;
   --color-surface-highlight: rgba(29, 154, 153, 0.08);
   --color-mask-solid: #000000;
 

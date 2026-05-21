@@ -1,23 +1,26 @@
 import clsx from "clsx";
-import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import GroupIcon from "@mui/icons-material/Group";
+import PaidIcon from "@mui/icons-material/Paid";
+import WcIcon from "@mui/icons-material/Wc";
 import { useNavigate } from "react-router-dom";
-import { dayjs, formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
+import { formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
 import styles from "./ScheduleCard.module.css";
 
-const CATEGORY_LABELS = {
-  travel: "여행",
-  popup: "팝업",
-  food: "식사",
-  activity: "액티비티",
-  culture: "문화",
-  etc: "기타",
+const GENDER_LIMIT_LABELS = {
+  all: "성별 무관",
+  male: "남성",
+  female: "여성",
+};
+
+const COST_TYPE_LABELS = {
+  per_person: "총액 1 / N",
+  host_covered: "호스트 지불",
+  free: "무료",
+  custom: "인당 고정",
 };
 
 const defaultThumbnail = "/hero.png";
-const RECRUITING_STATUS = "recruiting";
-const URGENT_DAY_THRESHOLD = 3;
 
 const resolveThumbnail = (schedule) =>
   schedule?.thumbnailImage?.trim() ||
@@ -25,64 +28,96 @@ const resolveThumbnail = (schedule) =>
   schedule?.imageUrl?.trim() ||
   defaultThumbnail;
 
-const formatCompactDate = (dateString) => {
-  if (!dateString) {
-    return "일정 미정";
-  }
+const resolveParticipantText = (schedule) => {
+  const currentParticipants = Number(schedule?.currentParticipants ?? 0);
+  const maxParticipants = Number(schedule?.maxParticipants ?? 0);
 
-  const date = new Date(dateString);
-
-  if (Number.isNaN(date.getTime())) {
-    return "일정 미정";
-  }
-
-  return new Intl.DateTimeFormat("ko-KR", {
-    month: "2-digit",
-    day: "2-digit",
-    weekday: "short",
-  }).format(date);
+  return `${currentParticipants} / ${maxParticipants > 0 ? maxParticipants : "-"}명`;
 };
 
-const formatPriceLabel = (schedule) => {
-  const price = Number(schedule?.totalPrice ?? 0);
-  const costType = schedule?.costType;
+const resolveGenderLimitLabel = (genderLimit) =>
+  GENDER_LIMIT_LABELS[String(genderLimit ?? "").trim().toLowerCase()] ?? "성별 무관";
 
-  if (costType === "free" || price <= 0) {
+const resolvePriceText = (totalPrice, costType) => {
+  const price = Number(totalPrice ?? 0);
+
+  if (String(costType ?? "").trim().toLowerCase() === "free" || price <= 0) {
     return "무료";
   }
 
   return `${price.toLocaleString("ko-KR")}원`;
 };
 
-const resolveScheduleBadge = (schedule, isFull) => {
-  const normalizedStatus = String(schedule?.status ?? "").trim().toLowerCase();
-  const dDayText = getDDay(schedule?.startDate);
-  const hasValidStartDate = dayjs(schedule?.startDate).isValid();
-  const daysUntilStart = hasValidStartDate
-    ? dayjs(schedule.startDate).startOf("day").diff(dayjs().startOf("day"), "day")
-    : null;
-  const isClosedByStatus =
-    normalizedStatus && normalizedStatus !== RECRUITING_STATUS;
+const resolveCostSummary = (schedule) => {
+  const costTypeLabel =
+    COST_TYPE_LABELS[String(schedule?.costType ?? "").trim().toLowerCase()] ??
+    "비용 미정";
+  const priceLabel = resolvePriceText(schedule?.totalPrice, schedule?.costType);
 
-  if (isFull || isClosedByStatus || (daysUntilStart !== null && daysUntilStart < 0)) {
+  if (priceLabel === "무료") {
+    return "무료";
+  }
+
+  return `${costTypeLabel} ${priceLabel}`;
+};
+
+const resolveDeadline = (recruitEndDate) => {
+  const dDay = getDDay(recruitEndDate);
+
+  if (!dDay) {
     return {
-      state: "CLOSED",
-      label: "모집 마감",
+      label: "일정 미정",
+      isToday: false,
+      isClosed: false,
     };
   }
 
-  if (daysUntilStart !== null && daysUntilStart <= URGENT_DAY_THRESHOLD) {
+  if (dDay === "D-Day") {
     return {
-      state: "URGENT",
-      label: dDayText ?? "마감 임박",
+      label: "D-day",
+      isToday: true,
+      isClosed: false,
+    };
+  }
+
+  if (dDay === "마감") {
+    return {
+      label: "마감",
+      isToday: false,
+      isClosed: true,
     };
   }
 
   return {
-    state: "AVAILABLE",
-    label: dDayText ?? "모집중",
+    label: dDay,
+    isToday: false,
+    isClosed: false,
   };
 };
+
+const INFO_ITEMS = [
+  {
+    key: "gender",
+    icon: WcIcon,
+    resolveText: (schedule) => resolveGenderLimitLabel(schedule?.genderLimit),
+  },
+  {
+    key: "participants",
+    icon: GroupIcon,
+    resolveText: (schedule) => resolveParticipantText(schedule),
+  },
+  {
+    key: "period",
+    icon: CalendarTodayIcon,
+    resolveText: (schedule) =>
+      formatDateRange(schedule?.startDate, schedule?.endDate) ?? "일정 미정",
+  },
+  {
+    key: "cost",
+    icon: PaidIcon,
+    resolveText: (schedule) => resolveCostSummary(schedule),
+  },
+];
 
 export default function ScheduleCard({
   schedule,
@@ -90,30 +125,13 @@ export default function ScheduleCard({
   variant = "default",
 }) {
   const navigate = useNavigate();
-  const currentParticipants = Number(schedule?.currentParticipants ?? 0);
-  const maxParticipants = Number(schedule?.maxParticipants ?? 0);
-  const isFull = maxParticipants > 0 && currentParticipants >= maxParticipants;
-  const { state: badgeState, label: badgeLabel } = resolveScheduleBadge(
-    schedule,
-    isFull,
-  );
   const thumbnailSrc = resolveThumbnail(schedule);
-  const locationText = [schedule?.region, schedule?.detailRegion]
-    .filter(Boolean)
-    .join(" · ");
-  const categoryLabel =
-    CATEGORY_LABELS[schedule?.category] ?? schedule?.category ?? "기타";
-  const participantText = `${currentParticipants} / ${
-    maxParticipants > 0 ? maxParticipants : "-"
-  }명`;
+  const deadline = resolveDeadline(schedule?.recruitEndDate);
   const isCompact = variant === "compact";
-  const compactDescription =
-    schedule?.description?.trim() ||
-    [locationText, `${categoryLabel} 일정`].filter(Boolean).join(" · ");
-  const compactDate = formatCompactDate(schedule?.startDate);
-  const compactPrice = formatPriceLabel(schedule);
+  const descriptionText = schedule?.description?.trim() || "일정 소개가 아직 등록되지 않았어요.";
 
   const handleCardClick = () => navigate(`/schedule/${schedule.id}`);
+
   const handleImageError = (event) => {
     event.currentTarget.onerror = null;
     event.currentTarget.src = defaultThumbnail;
@@ -121,15 +139,9 @@ export default function ScheduleCard({
 
   return (
     <article
-      className={clsx(
-        styles.card,
-        styles.cardInteractive,
-        className,
-        {
-          [styles.cardFull]: badgeState === "CLOSED",
-          [styles.cardCompact]: isCompact,
-        },
-      )}
+      className={clsx(styles.card, styles.cardInteractive, className, {
+        [styles.cardCompact]: isCompact,
+      })}
       onClick={handleCardClick}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -140,111 +152,62 @@ export default function ScheduleCard({
       role="button"
       tabIndex={0}
     >
-      {isCompact ? (
-        <>
-          <div className={clsx(styles.cardTop, styles.cardTopCompact)}>
-            <div className={styles.compactMetaRow}>
-              <span className={styles.compactLocation}>
-                <PlaceIcon fontSize="inherit" className={styles.compactMetaIcon} />
-                <span className={styles.compactLocationText}>
-                  {locationText || "지역 미정"}
-                </span>
-              </span>
-              <span className={styles.compactParticipantCount}>{participantText}</span>
-            </div>
+      <div className={clsx(styles.cardTop, isCompact && styles.cardTopCompact)}>
+        <div className={styles.headerRow}>
+          <span
+            className={clsx(
+              styles.deadlineBadge,
+              deadline.isToday && styles.deadlineBadgeToday,
+              deadline.isClosed && styles.deadlineBadgeClosed,
+              isCompact && styles.deadlineBadgeCompact,
+            )}
+          >
+            {deadline.label}
+          </span>
 
-            <div className={styles.compactSummaryRow}>
+          <div className={styles.infoStack}>
+            {INFO_ITEMS.map(({ key, icon: Icon, resolveText }) => (
               <span
-                className={clsx(
-                  styles.badge,
-                  styles.compactStatusBadge,
-                  badgeState === "CLOSED" && styles.badgeClosed,
-                  badgeState === "URGENT" && styles.badgeUrgent,
-                  badgeState === "AVAILABLE" && styles.badgeAvailable,
-                )}
+                key={key}
+                className={clsx(styles.infoLine, isCompact && styles.infoLineCompact)}
               >
-                {badgeLabel}
+                <Icon
+                  fontSize="inherit"
+                  className={clsx(styles.infoIcon, isCompact && styles.infoIconCompact)}
+                />
+                <span className={styles.infoText}>{resolveText(schedule)}</span>
               </span>
-              <div className={styles.compactSummaryInfo}>
-                <span className={styles.compactDate}>{compactDate}</span>
-                <span className={styles.compactPrice}>{compactPrice}</span>
-              </div>
-            </div>
-
-            <h3 className={clsx(styles.cardTitle, styles.compactTitle)}>
-              {schedule?.title ?? "제목 없는 일정"}
-            </h3>
-            <p className={styles.compactDescription}>{compactDescription}</p>
+            ))}
           </div>
+        </div>
 
-          <div className={styles.ticketDivider} aria-hidden="true" />
+        <div className={styles.bodySection}>
+          <h3 className={clsx(styles.cardTitle, isCompact && styles.cardTitleCompact)}>
+            {schedule?.title ?? "제목 없는 일정"}
+          </h3>
+          <p
+            className={clsx(
+              styles.cardDescription,
+              isCompact && styles.cardDescriptionCompact,
+            )}
+          >
+            {descriptionText}
+          </p>
+        </div>
+      </div>
 
-          <div className={clsx(styles.cardBottom, styles.cardBottomCompact)}>
-            <div className={clsx(styles.thumbnailWrap, styles.thumbnailWrapCompact)}>
-              <img
-                src={thumbnailSrc}
-                alt={schedule?.title ?? "일정 썸네일"}
-                className={styles.thumbnail}
-                onError={handleImageError}
-              />
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className={styles.cardTop}>
-            <div className={styles.ticketHeader}>
-              <span className={styles.ticketBadge}>{categoryLabel}</span>
-              <span
-                className={clsx(
-                  styles.badge,
-                  styles.ticketStatus,
-                  badgeState === "CLOSED" && styles.badgeClosed,
-                  badgeState === "URGENT" && styles.badgeUrgent,
-                  badgeState === "AVAILABLE" && styles.badgeAvailable,
-                )}
-              >
-                {badgeLabel}
-              </span>
-            </div>
+      <div className={styles.ticketDivider} aria-hidden="true" />
 
-            <h3 className={styles.cardTitle}>
-              {schedule?.title ?? "제목 없는 일정"}
-            </h3>
-
-            <div className={styles.participantRow}>
-              <GroupIcon fontSize="small" className={styles.metaIcon} />
-              <span className={styles.participantText}>{participantText}</span>
-            </div>
-
-            <div className={styles.metaList}>
-              <span className={styles.metaItem}>
-                <CalendarTodayIcon fontSize="small" className={styles.metaIcon} />
-                <span className={styles.metaText}>
-                  {formatDateRange(schedule?.startDate, schedule?.endDate)}
-                </span>
-              </span>
-              <span className={styles.metaItem}>
-                <PlaceIcon fontSize="small" className={styles.metaIcon} />
-                <span className={styles.metaText}>{locationText || "지역 미정"}</span>
-              </span>
-            </div>
-          </div>
-
-          <div className={styles.ticketDivider} aria-hidden="true" />
-
-          <div className={styles.cardBottom}>
-            <div className={styles.thumbnailWrap}>
-              <img
-                src={thumbnailSrc}
-                alt={schedule?.title ?? "일정 썸네일"}
-                className={styles.thumbnail}
-                onError={handleImageError}
-              />
-            </div>
-          </div>
-        </>
-      )}
+      <div className={clsx(styles.cardBottom, isCompact && styles.cardBottomCompact)}>
+        <div className={clsx(styles.thumbnailWrap, isCompact && styles.thumbnailWrapCompact)}>
+          <img
+            src={thumbnailSrc}
+            alt={schedule?.title ?? "일정 썸네일"}
+            className={styles.thumbnail}
+            onError={handleImageError}
+          />
+        </div>
+      </div>
     </article>
   );
 }

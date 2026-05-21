@@ -21,7 +21,7 @@
 
 .carouselSlide {
   flex: 0 0 100%;
-  aspect-ratio: 3 / 1;
+  aspect-ratio: 4 / 1;
 }
 
 .carouselImage {
