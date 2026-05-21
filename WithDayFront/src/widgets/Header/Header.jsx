@@ -109,7 +109,6 @@ export default function Header({ selectedRegion, onRegionChange }) {
             anchorEl={anchorEl}
             handleClose={handleClose}
           />
-
           <IconButton
             className={styles.actionButton}
             aria-label="마이페이지"
