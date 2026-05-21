@@ -1,5 +1,6 @@
 package com.test.withdayback.common.util;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -29,5 +30,24 @@ public class JwtUtil {
                 .setExpiration(expiryDate) // 만료 시간
                 .signWith(key) // 우리만의 열쇠로 서명
                 .compact();
+    }
+
+    // 토큰 파싱
+    public Claims parseClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    // 이메일 추출
+    public String getEmail(String token) {
+        return parseClaims(token).getSubject();
+    }
+
+    // 닉네임 추출
+    public String getNickname(String token) {
+        return parseClaims(token).get("nickname", String.class);
     }
 }

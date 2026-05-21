@@ -1,6 +1,6 @@
 package com.test.withdayback.participation.service;
 
-import com.test.withdayback.common.notification.NotificationService;
+import com.test.withdayback.notification.service.NotificationService;
 import com.test.withdayback.participation.dao.ParticipationDao;
 import com.test.withdayback.participation.dto.ParticipationApplicantDTO;
 import com.test.withdayback.participation.dto.ParticipationApplyResponseDTO;

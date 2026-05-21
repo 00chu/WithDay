@@ -333,4 +333,8 @@ public class UserService {
             throw new RuntimeException(e.getMessage());
         }
     }
+
+    public User findByEmail(String email) {
+        return userDao.findByEmail(email);
+    }
 }

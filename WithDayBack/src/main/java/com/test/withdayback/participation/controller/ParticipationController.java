@@ -1,6 +1,5 @@
 package com.test.withdayback.participation.controller;
 
-import com.test.withdayback.common.notification.NotificationService;
 import com.test.withdayback.participation.dto.MyScheduleResponseDTO;
 import com.test.withdayback.participation.dto.ParticipationApplicantDTO;
 import com.test.withdayback.participation.dto.ParticipationApplyResponseDTO;

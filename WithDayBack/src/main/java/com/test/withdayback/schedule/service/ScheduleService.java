@@ -8,7 +8,6 @@ import com.test.withdayback.schedule.dto.ScheduleResponseDTO;
 import com.test.withdayback.schedule.vo.Schedule;
 import com.test.withdayback.schedule.vo.ScheduleDetail;
 import com.test.withdayback.schedule.vo.ScheduleImage;
-import com.test.withdayback.user.dao.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +26,6 @@ public class ScheduleService {
 
     @Autowired
     private Cloudinary cloudinary;
-    @Autowired
-    private UserDao userDao;
 
     public ScheduleService(ScheduleDao scheduleDao) {
         this.scheduleDao = scheduleDao;

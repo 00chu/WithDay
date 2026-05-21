@@ -1,4 +1,4 @@
-package com.test.withdayback.common.notification;
+package com.test.withdayback.notification.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

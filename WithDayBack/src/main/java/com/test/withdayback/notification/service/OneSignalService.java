@@ -1,4 +1,4 @@
-package com.test.withdayback.common.notification;
+package com.test.withdayback.notification.service;
 
 import com.test.withdayback.common.config.OneSignalProperties;
 import lombok.RequiredArgsConstructor;
