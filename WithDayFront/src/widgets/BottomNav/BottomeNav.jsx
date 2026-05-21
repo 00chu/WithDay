@@ -1,9 +1,14 @@
 import clsx from "clsx";
 import { BottomNavigation, BottomNavigationAction } from "@mui/material";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./BottomNav.module.css";
@@ -27,28 +32,33 @@ const getTabValue = (pathname) => {
 const NAV_ITEMS = [
   {
     label: "홈",
-    icon: HomeRoundedIcon,
+    activeIcon: HomeRoundedIcon,
+    inactiveIcon: HomeOutlinedIcon,
     route: "/",
   },
   {
     label: "탐색",
-    icon: SearchRoundedIcon,
+    activeIcon: ManageSearchIcon,
+    inactiveIcon:  SearchRoundedIcon,
     route: "/explore",
   },
   {
     label: "",
-    icon: AddRoundedIcon,
+    activeIcon: AddRoundedIcon,
+    inactiveIcon: AddRoundedIcon,
     route: "/write",
     isAdd: true,
   },
   {
     label: "내 일정",
-    icon: CalendarMonthRoundedIcon,
+    activeIcon: CalendarMonthRoundedIcon,
+    inactiveIcon: CalendarMonthOutlinedIcon,
     route: "/my-schedule",
   },
   {
     label: "위시리스트",
-    icon: FavoriteBorderRoundedIcon,
+    activeIcon: FavoriteRoundedIcon,
+    inactiveIcon: FavoriteBorderRoundedIcon,
     route: "/wishlist",
   },
 ];
@@ -89,8 +99,8 @@ export default function BottomNav() {
         showLabels
       >
         {NAV_ITEMS.map((item, index) => {
-          const Icon = item.icon;
           const isActive = value === index;
+          const Icon = isActive ? item.activeIcon : item.inactiveIcon;
 
           return (
             <BottomNavigationAction

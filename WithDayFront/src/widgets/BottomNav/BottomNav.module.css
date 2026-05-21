@@ -61,7 +61,6 @@
 
 .navActionActive {
   color: var(--color-accent-light) !important;
-  background: var(--color-primary-soft);
 }
 
 .navActionAdd {
