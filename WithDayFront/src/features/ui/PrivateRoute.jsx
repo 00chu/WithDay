@@ -13,7 +13,7 @@ const PrivateRoute = ({ children }) => {
     if (!isLoggedIn) {
       const timer = setTimeout(() => {
         navigate("/login", { replace: true });
-      }, 1500);
+      }, 500);
 
       return () => clearTimeout(timer);
     }
