@@ -1,121 +1,124 @@
-package com.test.withdayback.user.controller;
+    package com.test.withdayback.user.controller;
 
-import com.test.withdayback.user.dto.SignupRequestDTO;
-import com.test.withdayback.user.service.UserService;
-import com.test.withdayback.user.vo.Terms;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+    import com.test.withdayback.user.dto.SignupRequestDTO;
+    import com.test.withdayback.user.service.UserService;
+    import com.test.withdayback.user.vo.Terms;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.http.HttpStatus;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.web.bind.annotation.*;
+    import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
+    import java.util.List;
+    import java.util.Map;
 
-// @RestController: 프론트엔드(React)와 통신할 때 사용하는 어노테이션, Json 형태로 객체 데이터를 반환함. (REST API 응답을 위한 Controller)
-// Controller는 HTML 화면을 반환하지만, RestController는 프론트엔드에 JSON 데이터를 반환
-// @RequestMapping: 기본 주소를 설정. 아래의 모든 함수는 "/users" 로 주소 시작
-@RestController
-@RequestMapping("/users")
-public class UserController {
+    // @RestController: 프론트엔드(React)와 통신할 때 사용하는 어노테이션, Json 형태로 객체 데이터를 반환함. (REST API 응답을 위한 Controller)
+    // Controller는 HTML 화면을 반환하지만, RestController는 프론트엔드에 JSON 데이터를 반환
+    // @RequestMapping: 기본 주소를 설정. 아래의 모든 함수는 "/users" 로 주소 시작
+    @RestController
+    @RequestMapping("/users")
+    public class UserController {
 
-    // @Autowired: new로 객체를 만들지 않아도, 스프링이 UserService 객체를 찾아 자동으로 연결해줌.
-    @Autowired
-    private UserService userService;
+        // @Autowired: new로 객체를 만들지 않아도, 스프링이 UserService 객체를 찾아 자동으로 연결해줌.
+        @Autowired
+        private UserService userService;
 
-    // @GetMapping: Select용
-    // @PostMapping: Insert용
-    // @PutMapping: 전체 수정(Update)용
-    // @PatchMapping: 부분 수정(Update)용
-    // @DeleteMapping: Delete용
+        // @GetMapping: Select용
+        // @PostMapping: Insert용
+        // @PutMapping: 전체 수정(Update)용
+        // @PatchMapping: 부분 수정(Update)용
+        // @DeleteMapping: Delete용
 
-    // 회원가입 (/users/signup)
-    // ResponseEntity<?>: 다른 타입(String, int등)대신 프론트엔드에게 HTTP 상태(200 OK, 400 Bad Request 등)를 같이 주는 타입
-    // @RequestPart: 프론트엔드에서 파일과 글자를 함께 보내기 위해 multipart/form-data를 썼으므로, 통째로 받는 @RequestBody 대신 특정 칸(Part)만 꺼내는 @RequestPart를 사용함.
-    // MultipartFile: 스프링에서 파일을 받을 때 사용하는 전용 타입. (required = false: 사진을 안 올려도 에러가 나지 않게 방어)
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(
-            @RequestPart("signupData") SignupRequestDTO signupRequest,
-            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
-        try {
-            String result = userService.signup(signupRequest, profileImage);
+        // 회원가입 (/users/signup)
+        // ResponseEntity<?>: 다른 타입(String, int등)대신 프론트엔드에게 HTTP 상태(200 OK, 400 Bad Request 등)를 같이 주는 타입
+        // @RequestPart: 프론트엔드에서 파일과 글자를 함께 보내기 위해 multipart/form-data를 썼으므로, 통째로 받는 @RequestBody 대신 특정 칸(Part)만 꺼내는 @RequestPart를 사용함.
+        // MultipartFile: 스프링에서 파일을 받을 때 사용하는 전용 타입. (required = false: 사진을 안 올려도 에러가 나지 않게 방어)
+        @PostMapping("/signup")
+        public ResponseEntity<?> signup(
+                @RequestPart("signupData") SignupRequestDTO signupRequest,
+                @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
+            try {
+                String result = userService.signup(signupRequest, profileImage);
 
-            // 200 OK 상태와 "success" 문자열 반환
+                // 200 OK 상태와 "success" 문자열 반환
+                return ResponseEntity.ok(result);
+            } catch (RuntimeException e) {
+                // Service에서 에러가 나면 프론트엔드에 400 Bad Request 상태코드와 에러 메시지를 보냄.
+                // 400 Bad Request: 데이터 양식이 틀림 (예: 이메일 칸에 @가 없음)
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+
+        // 일반 로그인 (/users/login)
+        // @RequestBody: 프론트엔드가 보낸 JSON 텍스트를 자바에서 쓸수있는 객체로 변환해 주는 어노테이션.
+        // Map<String, String>: DTO 클래스대신 JSON의 Key-Value 구조로 받음.
+        @PostMapping("/login")
+        public ResponseEntity<?> login(@RequestBody Map<String, String> loginData) {
+            String email = loginData.get("email");
+            String password = loginData.get("password");
+
+            // 프론트에서 보낸 autoLogin 값을 꺼내서 boolean으로 변환 (안 보냈으면 기본값 false)
+            boolean autoLogin = Boolean.parseBoolean(loginData.getOrDefault("autoLogin", "false"));
+
+            Map<String, Object> result = userService.login(email, password, autoLogin);
+
+            // 결과가 null이면 (비번이 틀리거나 없는 이메일이면)
+            if (result == null) {
+                // 401 Unauthorized: 인증 실패. (예: 비밀번호 틀림.)
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이메일 또는 비밀번호가 일치하지 않습니다.");
+            }
+            // 로그인 성공 시 토큰과 유저 정보 Map(result)을 200 OK와 함께 반환
             return ResponseEntity.ok(result);
-        } catch (RuntimeException e) {
-            // Service에서 에러가 나면 프론트엔드에 400 Bad Request 상태코드와 에러 메시지를 보냄.
-            // 400 Bad Request: 데이터 양식이 틀림 (예: 이메일 칸에 @가 없음)
-            return ResponseEntity.badRequest().body(e.getMessage());
         }
-    }
 
-    // 일반 로그인 (/users/login)
-    // @RequestBody: 프론트엔드가 보낸 JSON 텍스트를 자바에서 쓸수있는 객체로 변환해 주는 어노테이션.
-    // Map<String, String>: DTO 클래스대신 JSON의 Key-Value 구조로 받음.
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> loginData) {
-        String email = loginData.get("email");
-        String password = loginData.get("password");
+        // 구글 로그인 (/users/google-login, 신호만 보냄.)
+        @PostMapping("/google-login")
+        public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> googleData) {
+            try {
+                Map<String, Object> result = userService.googleLogin(googleData);
 
-        Map<String, Object> result = userService.login(email, password);
-
-        // 결과가 null이면 (비번이 틀리거나 없는 이메일이면)
-        if (result == null) {
-            // 401 Unauthorized: 인증 실패. (예: 비밀번호 틀림.)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이메일 또는 비밀번호가 일치하지 않습니다.");
+                // 로그인 성공 또는 가입 안됨(isRegistered: false) 정보 반환
+                return ResponseEntity.ok(result);
+            } catch (Exception e) {
+                // 500 Internal Server Error: 서버 내부 에러. (예: DB연결 끊김)
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("구글 로그인 처리 중 오류가 발생했습니다.");
+            }
         }
-        // 로그인 성공 시 토큰과 유저 정보 Map(result)을 200 OK와 함께 반환
-        return ResponseEntity.ok(result);
-    }
 
-    // 구글 로그인 (/users/google-login, 신호만 보냄.)
-    @PostMapping("/google-login")
-    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> googleData) {
-        try {
-            Map<String, Object> result = userService.googleLogin(googleData);
+        // 이메일 인증 발송 (/users/email-verification)
+        @PostMapping("/email-verification")
+        public ResponseEntity<?> sendEmailVerification(@RequestBody Map<String, String> request) {
+            try {
+                String email = request.get("email");
+                // service에서 인증번호 생성 및 메일 발송
+                String authCode = userService.sendVerificationEmail(email);
 
-            // 로그인 성공 또는 가입 안됨(isRegistered: false) 정보 반환
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            // 500 Internal Server Error: 서버 내부 에러. (예: DB연결 끊김)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("구글 로그인 처리 중 오류가 발생했습니다.");
+                return ResponseEntity.ok(authCode);
+            } catch (Exception e) {
+                // 500 Internal Server Error: 서버 내부 에러. (예: DB연결 끊김)
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이메일 발송에 실패했습니다.");
+            }
         }
-    }
 
-    // 이메일 인증 발송 (/users/email-verification)
-    @PostMapping("/email-verification")
-    public ResponseEntity<?> sendEmailVerification(@RequestBody Map<String, String> request) {
-        try {
-            String email = request.get("email");
-            // service에서 인증번호 생성 및 메일 발송
-            String authCode = userService.sendVerificationEmail(email);
-
-            return ResponseEntity.ok(authCode);
-        } catch (Exception e) {
-            // 500 Internal Server Error: 서버 내부 에러. (예: DB연결 끊김)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이메일 발송에 실패했습니다.");
-        }
-    }
-
-    // 약관 정보 불러오기 (/users/terms)
-    @GetMapping("/terms")
-    public ResponseEntity<List<Terms>> getTerms() {
-        List<Terms> result = userService.getAllTerms();
-
-        return ResponseEntity.ok(result);
-    }
-
-    // 소셜 로그인 회원가입(/users/social-signup)
-    @PostMapping("/social-signup")
-    public ResponseEntity<?> socialSignup(@RequestBody SignupRequestDTO signupRequest) {
-        try {
-            String result = userService.socialSignup(signupRequest);
+        // 약관 정보 불러오기 (/users/terms)
+        @GetMapping("/terms")
+        public ResponseEntity<List<Terms>> getTerms() {
+            List<Terms> result = userService.getAllTerms();
 
             return ResponseEntity.ok(result);
-        } catch (RuntimeException e) {
-            // Service에서 에러가 나면 프론트엔드에 400 Bad Request 상태코드와 에러 메시지를 보냄.
-            // 400 Bad Request: 데이터 양식이 틀림 (예: 필수 약관 동의 누락)
-            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+        // 소셜 로그인 회원가입(/users/social-signup)
+        @PostMapping("/social-signup")
+        public ResponseEntity<?> socialSignup(@RequestBody SignupRequestDTO signupRequest) {
+            try {
+                String result = userService.socialSignup(signupRequest);
+
+                return ResponseEntity.ok(result);
+            } catch (RuntimeException e) {
+                // Service에서 에러가 나면 프론트엔드에 400 Bad Request 상태코드와 에러 메시지를 보냄.
+                // 400 Bad Request: 데이터 양식이 틀림 (예: 필수 약관 동의 누락)
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
         }
     }
-}
