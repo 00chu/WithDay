@@ -3,11 +3,17 @@ package com.test.withdayback.participation.enums;
 import java.util.Locale;
 
 public enum ParticipationStatus {
-    PENDING,
-    APPROVED,
-    REJECTED,
-    CANCELLED,
-    KICKED;
+    PENDING("pending"),
+    APPROVED("approved"),
+    REJECTED("rejected"),
+    CANCELLED("canceled"),
+    KICKED("kicked");
+
+    private final String databaseValue;
+
+    ParticipationStatus(String databaseValue) {
+        this.databaseValue = databaseValue;
+    }
 
     public static ParticipationStatus fromValue(String value) {
         if (value == null || value.isBlank()) {
@@ -31,6 +37,10 @@ public enum ParticipationStatus {
         ParticipationStatus status = fromValue(value);
 
         return status.name();
+    }
+
+    public String getDatabaseValue() {
+        return databaseValue;
     }
 
     public boolean canTransitionTo(ParticipationStatus targetStatus) {

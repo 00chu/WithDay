@@ -45,7 +45,7 @@
         ) VALUES (
             #{userId},
             #{scheduleId},
-            #{status},
+            #{status.databaseValue},
             NOW()
         )
     </insert>
@@ -135,10 +135,10 @@
     <update id="cancelParticipation">
         UPDATE participation p
         INNER JOIN user u ON u.id = p.user_id
-        SET p.status = 'CANCELLED'
+        SET p.status = #{targetStatus}
         WHERE p.id = #{participationId}
           AND u.email = #{email}
-          AND UPPER(p.status) = 'PENDING'
+          AND <include refid="normalizedStatus" /> = #{currentStatus}
     </update>
 
     <delete id="deleteParticipation">

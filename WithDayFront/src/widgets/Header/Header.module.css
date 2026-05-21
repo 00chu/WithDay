@@ -1,38 +1,106 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 120;
+  background: rgba(248, 250, 252, 0.94);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.92);
+  backdrop-filter: blur(14px);
+}
 
-  height: 56px;
-  display: flex;
-  justify-content: space-between;
+.contentShell {
+  min-height: 76px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-
-  padding: 0 16px;
-
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  gap: 12px;
 }
 
-/* 왼쪽 텍스트 */
-.left {
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--color-text-primary);
+.leftGroup,
+.centerGroup,
+.rightGroup {
+  min-width: 0;
 }
 
-/* 오른쪽 영역 */
-.right {
-  display: flex;
+.logoButton {
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
 
-/* MUI 아이콘 버튼 override */
-.right :global(.MuiIconButton-root) {
-  color: var(--color-text-secondary);
+.logoImage {
+  display: block;
+  width: 122px;
+  max-width: 100%;
+  object-fit: contain;
 }
 
-/* hover */
-.right :global(.MuiIconButton-root:hover) {
-  background: var(--color-border-light);
+.centerGroup {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.regionSelect {
+  max-width: min(100%, 220px);
+}
+
+.rightGroup {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionButton {
+  width: 42px;
+  height: 42px;
+  color: #172036 !important;
+  border-radius: 14px !important;
+  transition:
+    transform 0.18s ease,
+    background-color 0.18s ease !important;
+}
+
+.actionButton:hover {
+  background: rgba(30, 58, 138, 0.08) !important;
+}
+
+.actionButton:active {
+  transform: scale(0.97);
+}
+
+.profileAvatar {
+  width: 34px !important;
+  height: 34px !important;
+  background: linear-gradient(135deg, #f4c15d 0%, #d9a729 100%) !important;
+  color: #ffffff !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 767px) {
+  .contentShell {
+    min-height: 70px;
+    gap: 10px;
+  }
+
+  .logoImage {
+    width: 108px;
+  }
+
+  .regionSelect {
+    max-width: 176px;
+  }
+
+  .rightGroup {
+    gap: 2px;
+  }
+
+  .actionButton {
+    width: 38px;
+    height: 38px;
+  }
 }
