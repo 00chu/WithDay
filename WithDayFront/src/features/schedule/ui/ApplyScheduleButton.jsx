@@ -44,11 +44,10 @@ export default function ApplyScheduleButton({
 
   const closedByDate = useMemo(
     () => isScheduleClosedByDate(recruitEndDate),
-    [recruitEndDate],
+    [recruitEndDate]
   );
 
-  const isExplicitlyClosed =
-    status === "cancelled" || status === "completed";
+  const isExplicitlyClosed = status === "cancelled" || status === "completed";
   const isRecruiting =
     closedByDate === null ? status === "recruiting" : !closedByDate;
 
@@ -89,9 +88,7 @@ export default function ApplyScheduleButton({
     if (!email) return;
     if (isExplicitlyClosed || !isRecruiting || isApplied || isPending) return;
 
-    const confirmJoin = window.confirm(
-      "이 일정에 참여 신청을 하시겠습니까?"
-    );
+    const confirmJoin = window.confirm("이 일정에 참여 신청을 하시겠습니까?");
     if (!confirmJoin) return;
 
     try {
@@ -114,9 +111,7 @@ export default function ApplyScheduleButton({
         open: true,
         severity: "error",
         message:
-          typeof message === "string"
-            ? message
-            : "참여 신청에 실패했습니다.",
+          typeof message === "string" ? message : "참여 신청에 실패했습니다.",
       });
     }
   };

@@ -63,4 +63,6 @@ public interface ScheduleDao {
     String getThumbnailImageUrl(Long scheduleId);
 
     void updateScheduleImage(Long scheduleId, List<String> imageUrls);
+
+    int closeExpiredSchedules();
 }

@@ -2,9 +2,8 @@ import clsx from "clsx";
 import { BottomNavigation, BottomNavigationAction } from "@mui/material";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import ManageSearchIcon from '@mui/icons-material/ManageSearch';
+import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
@@ -39,7 +38,7 @@ const NAV_ITEMS = [
   {
     label: "탐색",
     activeIcon: ManageSearchIcon,
-    inactiveIcon:  SearchRoundedIcon,
+    inactiveIcon: SearchRoundedIcon,
     route: "/explore",
   },
   {
@@ -109,14 +108,14 @@ export default function BottomNav() {
               className={clsx(
                 styles.navAction,
                 isActive && styles.navActionActive,
-                item.isAdd && styles.navActionAdd,
+                item.isAdd && styles.navActionAdd
               )}
               icon={
                 item.isAdd ? (
                   <span
                     className={clsx(
                       styles.addButtonShell,
-                      isActive && styles.addButtonShellActive,
+                      isActive && styles.addButtonShellActive
                     )}
                   >
                     <Icon className={styles.addBtn} />
