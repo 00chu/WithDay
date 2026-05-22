@@ -138,12 +138,29 @@
   color: var(--color-accent-dark);
 }
 
-.cardGrid {
-  padding-top: 4px;
+.cardRail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(252px, 78vw);
+  gap: 16px;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+}
+
+.cardRail::-webkit-scrollbar {
+  height: 8px;
+}
+
+.cardRail::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb);
+  border-radius: 999px;
 }
 
 .homeCard {
   min-width: 0;
+  scroll-snap-align: start;
 }
 
 .homeEmpty {
@@ -331,8 +348,14 @@
 
 }
 
+@media (max-width: 767px) {
+  .cardRail {
+    grid-auto-columns: minmax(252px, 84vw);
+  }
+}
+
 @media (min-width: 768px) {
-  .cardGrid {
-    padding-top: 6px;
+  .cardRail {
+    grid-auto-columns: minmax(238px, 25%);
   }
 }
