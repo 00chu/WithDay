@@ -19,9 +19,11 @@ export default function NotificationPopover({ open, anchorEl, handleClose }) {
         // 위치
         paper: {
           sx: {
-            mt: 3, // 아래로
-            width: 360,
-            maxWidth: "90vw",
+            mt: 3,
+            width: 460,
+            maxWidth: "95vw",
+            maxHeight: 600,
+            overflowY: "auto",
             borderRadius: 2,
           },
         },

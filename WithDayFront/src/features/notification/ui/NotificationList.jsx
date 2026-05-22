@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { fetchNotifications, readNotification } from "../api";
 import styles from "./Notification.module.css";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
 export default function NotificationList({ onClose }) {
   const navigate = useNavigate();
@@ -62,6 +63,18 @@ export default function NotificationList({ onClose }) {
     navigate(notification.targetUrl);
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+
+    const year = date.getFullYear();
+
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
   return (
     <div>
       {notifications.map((notification) => (
@@ -72,8 +85,28 @@ export default function NotificationList({ onClose }) {
             notification.isRead ? styles.readNotification : styles.notification
           }
         >
-          <h4>{notification.title}</h4>
-          <p>{notification.message}</p>
+          <span className={styles.iconBox}>
+            <CalendarTodayIcon></CalendarTodayIcon>
+          </span>
+          <div className={styles.content}>
+            <p className={styles.message}>{notification.message}</p>
+            <p className={styles.title}>"{notification.title}"</p>
+          </div>
+
+          <div className={styles.right}>
+            <span className={styles.date}>
+              {formatDate(notification.createdAt)}
+            </span>
+
+            <button
+              className={styles.closeBtn}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              ✕
+            </button>
+          </div>
         </div>
       ))}
     </div>
