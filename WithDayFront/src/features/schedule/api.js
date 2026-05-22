@@ -63,9 +63,14 @@ export const insertSchedule = async (post, images, detailSchedule) => {
     if (!date) return null;
 
     const d = new Date(date);
+
     if (isNaN(d.getTime())) return null;
 
-    return d.toISOString().split("T")[0];
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
   };
 
   // 날짜 변환

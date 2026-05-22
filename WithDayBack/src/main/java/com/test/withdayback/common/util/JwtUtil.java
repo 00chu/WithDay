@@ -7,13 +7,16 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
     // 256비트 이상의 비밀키 자동 생성 (실무에선 보안을 위해 별도 설정값 사용)
-    private final SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final SecretKey key =
+            Keys.hmacShaKeyFor("we8f41xz6v8e416554ef9s85d4w63e54f8e4178d"
+            .getBytes(StandardCharsets.UTF_8)); // 임의의 지정된 값을 SecretKey로 사용할 수 있도록 변경함
 
     // 토큰 유효 시간 (1시간) - 일반 로그인용
     private final long SHORT_EXPIRATION_TIME = 60 * 60 * 1000L;

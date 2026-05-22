@@ -1,0 +1,21 @@
+.empty {
+  padding: 32px 20px;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+}
+
+.notification {
+  background-color: white;
+  cursor: pointer;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.readNotification {
+  background-color: #f1f1f1;
+  color: #888;
+  cursor: pointer;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}

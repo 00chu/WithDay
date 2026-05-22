@@ -40,7 +40,8 @@ public class SecurityConfig {
                                 "/users/email-verification",
                                 "/schedules/**",
                                 "/participations/**",
-                                "/region/**"
+                                "/region/**",
+                                "/notifications/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

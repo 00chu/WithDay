@@ -135,8 +135,10 @@ public class ParticipationService {
         String senderNickName = userDao.findByEmail(dto.getEmail()).getNickname();
 
         notificationService.notifyApply(
-                user.getId(),          // senderId
-                senderNickName
+                schedule.getUserId(),          // receiverId
+                senderNickName,
+                schedule.getTitle(),
+                scheduleId
         );
 
         return new ParticipationApplyResponseDTO(
@@ -272,14 +274,16 @@ public class ParticipationService {
         if (targetStatus == ParticipationStatus.APPROVED) {
             notificationService.notifyApproved(
                     participation.getUserId(),  // receiverId
-                    senderNickName
+                    senderNickName,
+                    schedule.getTitle()
             );
         }
 
         if (targetStatus == ParticipationStatus.REJECTED) {
             notificationService.notifyRejected(
                     participation.getUserId(),  // receiverId
-                    senderNickName
+                    senderNickName,
+                    schedule.getTitle()
             );
         }
 

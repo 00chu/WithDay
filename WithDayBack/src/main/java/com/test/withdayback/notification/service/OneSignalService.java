@@ -26,7 +26,7 @@ public class OneSignalService {
 
         headers.set(
                 "Authorization",
-                "Key " + properties.getApiKey()
+                "Basic " + properties.getApiKey()
         );
 
         Map<String, Object> body = new HashMap<>();

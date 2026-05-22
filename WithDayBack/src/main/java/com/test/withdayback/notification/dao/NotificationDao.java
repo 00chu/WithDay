@@ -8,4 +8,8 @@ import java.util.List;
 @Mapper
 public interface NotificationDao {
     List<Notification> getNotificationsById(Long id);
+
+    void insertNotification(Notification notification);
+
+    void readNotification(Long notificationId);
 }

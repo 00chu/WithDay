@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./MySchedulePage.module.css";
 
 import { useAuthStore } from "../../features/auth/store/authStore";
@@ -20,11 +20,15 @@ const DEFAULT_SCHEDULES = {
 };
 
 const MySchedulePage = () => {
-  const [activeTab, setActiveTab] = useState("participating");
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [activeTab, setActiveTab] = useState(
+    location.state?.activeTab || "participating",
+  );
   const [feedback, setFeedback] = useState(null);
 
-  const navigate = useNavigate();
-  const email = useAuthStore((state)=> state.user.email);
+  const email = useAuthStore((state) => state.user.email);
 
   const {
     data: schedules = DEFAULT_SCHEDULES,
@@ -39,13 +43,13 @@ const MySchedulePage = () => {
 
   const currentItems = useMemo(
     () => schedules[activeTab] ?? [],
-    [activeTab, schedules]
+    [activeTab, schedules],
   );
 
   const errorMessage = useMemo(
     () =>
       error?.response?.data?.message ?? "내 일정 정보를 불러오지 못했습니다.",
-    [error]
+    [error],
   );
 
   const emptyMessage = email
@@ -76,11 +80,11 @@ const MySchedulePage = () => {
       } catch (mutationError) {
         showFeedback(
           "error",
-          mutationError?.response?.data?.message ?? failureMessage
+          mutationError?.response?.data?.message ?? failureMessage,
         );
       }
     },
-    [showFeedback]
+    [showFeedback],
   );
 
   const handleScheduleAction = useCallback(
@@ -129,7 +133,7 @@ const MySchedulePage = () => {
       email,
       navigate,
       runScheduleMutation,
-    ]
+    ],
   );
 
   const isPendingState = isPending;

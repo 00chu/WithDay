@@ -26,16 +26,36 @@ public class NotificationController {
     public ResponseEntity<?> getNotifications(
             @RequestHeader("Authorization") String authHeader
     ) {
-        String token = authHeader.replace("Bearer ", "");
+        try {
+            System.out.println("알림 API 들어옴");
 
-        String email = jwtUtil.getEmail(token);
+            String token = authHeader.replace("Bearer ", "");
 
-        User user = userService.findByEmail(email);
+            String email = jwtUtil.getEmail(token);
 
-        List<Notification> notifications =
-                notificationService.getNotifications(user.getId());
+            User user = userService.findByEmail(email);
 
-        return ResponseEntity.ok(notifications);
+            List<Notification> notifications =
+                    notificationService.getNotifications(user.getId());
+
+            return ResponseEntity.ok(notifications);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return ResponseEntity.badRequest()
+                    .body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{notificationId}/read")
+    public ResponseEntity<?> readNotification(
+            @PathVariable Long notificationId
+    ) {
+
+        notificationService.readNotification(notificationId);
+
+        return ResponseEntity.ok().build();
     }
 }
 

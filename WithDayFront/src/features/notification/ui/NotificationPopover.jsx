@@ -15,8 +15,19 @@ export default function NotificationPopover({ open, anchorEl, handleClose }) {
         vertical: "top",
         horizontal: "right",
       }}
+      slotProps={{
+        // 위치
+        paper: {
+          sx: {
+            mt: 3, // 아래로
+            width: 360,
+            maxWidth: "90vw",
+            borderRadius: 2,
+          },
+        },
+      }}
     >
-      <NotificationList />
+      <NotificationList onClose={handleClose} />
     </Popover>
   );
 }
