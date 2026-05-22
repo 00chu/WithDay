@@ -131,7 +131,7 @@
 .cardTitle {
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 1.9rem;
+  font-size: 1.1rem;
   font-weight: 800;
   line-height: 1.25;
   letter-spacing: -0.03em;
@@ -214,7 +214,7 @@
 .thumbnailWrap {
   position: relative;
   width: 100%;
-  height: 188px;
+  height: 138px;
   overflow: hidden;
   background: linear-gradient(
     180deg,
