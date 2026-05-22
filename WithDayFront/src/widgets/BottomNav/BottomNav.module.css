@@ -75,6 +75,9 @@
   justify-content: center;
   width: 56px;
   height: 56px;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  line-height: 0;
   border-radius: 999px;
   background: linear-gradient(
     180deg,
@@ -86,11 +89,7 @@
 }
 
 .addButtonShellActive {
-  background: linear-gradient(
-    180deg,
-    var(--color-accent-light) 0%,
-    var(--color-accent) 100%
-  );
+  background: var(--color-accent-light);
 }
 
 .addBtn {

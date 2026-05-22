@@ -10,7 +10,6 @@
 .carousel {
   position: relative;
   overflow: hidden;
-  border-radius: 26px;
   box-shadow: var(--shadow-hero);
 }
 
@@ -72,9 +71,7 @@
   border-radius: 999px;
   background: var(--color-border);
   cursor: pointer;
-  transition:
-    width 0.2s ease,
-    background-color 0.2s ease;
+  transition: width 0.2s ease, background-color 0.2s ease;
 }
 
 .carouselDotActive {
@@ -327,10 +324,6 @@
 @media (max-width: 767px) {
   .main {
     padding-top: 8px;
-  }
-
-  .carousel {
-    border-radius: 22px;
   }
 
   .carouselSlide {

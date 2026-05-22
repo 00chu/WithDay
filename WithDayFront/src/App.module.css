@@ -52,9 +52,9 @@
   --shadow-lg: 0 10px 20px rgba(10, 22, 45, 0.12);
   --shadow-panel: 0 12px 32px rgba(10, 22, 45, 0.06);
   --shadow-hero: 0 18px 38px rgba(10, 22, 45, 0.12);
-  --shadow-card-ticket: drop-shadow(0 16px 28px rgba(10, 22, 45, 0.14));
-  --shadow-card-ticket-compact: drop-shadow(0 10px 20px rgba(10, 22, 45, 0.16));
-  --shadow-card-ticket-hover: drop-shadow(0 20px 34px rgba(10, 22, 45, 0.18));
+  --shadow-card-ticket: drop-shadow(0 1px 3px rgba(10, 22, 45, 0.06));
+  --shadow-card-ticket-compact: drop-shadow(0 1px 2px rgba(10, 22, 45, 0.06));
+  --shadow-card-ticket-hover: drop-shadow(0 4px 8px rgba(10, 22, 45, 0.08));
 
   /* ===== Radius ===== */
   --radius-sm: 6px;
