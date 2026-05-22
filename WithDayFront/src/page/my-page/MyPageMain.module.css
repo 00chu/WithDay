@@ -1,7 +1,166 @@
+/*로그아웃 버튼*/
 .logout {
   cursor: pointer;
-  background-color: #daf1f1;
+  background-color: var(--color-surface-soft);
   padding: 5px 10px;
   border-radius: 5px;
   color: #061024;
+}
+/*상단 컨테이너(화이트)*/
+.profile_Box {
+  background-color: var(--color-surface);
+  margin-top: 51px;
+}
+.image_wrapper {
+  position: relative;
+  display: inline-block;
+  width: 129px;
+  height: 129px;
+  flex-shrink: 0;
+}
+/*사진 + 아이콘*/
+.profile {
+  padding: 23px 40px;
+  display: inline-block;
+}
+/*단이 사진 동글뱅이*/
+.danE {
+  width: 129px;
+  height: 129px;
+  border-radius: 50%;
+  /*사진 찌그러짐 방지*/
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+.profile_wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-text-muted);
+  border-radius: 18px;
+  font-weight: 500;
+}
+.profile_summary {
+  display: flex;
+  font-size: 20px;
+  flex: 1;
+  justify-content: space-around;
+}
+/*프로필 수정 버튼*/
+.retouch_btn {
+  position: absolute;
+  right: 2px;
+  bottom: 6px;
+
+  background-color: var(--color-primary);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+/*아이콘 사이즈 조절*/
+.retouch_btn svg {
+  font-size: 19px;
+  display: block;
+}
+.summary {
+  display: flex;
+  flex-direction: column;
+  padding: 0px 22px;
+  border-left: 1px solid var(--color-primary);
+  gap: 18px;
+}
+.profile_summary {
+  display: flex;
+  font-size: 20px;
+  flex: 1;
+  justify-content: space-around;
+}
+.profile_text {
+  display: flex;
+  flex-direction: column;
+}
+.dan {
+  font-size: 24px;
+}
+.email {
+  color: var(--color-text-muted);
+}
+.Interest {
+  font-size: 20px;
+  font-weight: 500;
+  margin-top: 35px;
+  margin-left: 10px;
+}
+.int_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  border: 1px solid var(--color-border);
+  border-radius: 30px;
+  background-color: var(--color-surface);
+  box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.1);
+  color: var(--color-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  gap: 8px;
+}
+.Inter_container {
+  display: flex;
+  flex-direction: column;
+}
+.int_boxs {
+  display: flex;
+  margin: 26px 0px;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.intro_box {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-text-muted);
+  border-radius: 18px;
+  padding: 27px 32px;
+  font-weight: 500;
+}
+.intro {
+  font-size: 20px;
+}
+.intro_text {
+  color: var(--color-primary-soft);
+}
+.log_container {
+  margin-top: 59px;
+}
+.log_title {
+  font: 20px;
+  font-weight: 500;
+}
+.scroll_wrapper {
+  overflow-x: auto;
+  white-space: nowrap;
+  margin-top: 20px;
+  padding-bottom: 10px;
+}
+.log_box {
+  display: flex;
+  gap: 20px;
+}
+.dog {
+  width: 300px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  flex-shrink: 0;
 }
