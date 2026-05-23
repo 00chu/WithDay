@@ -127,6 +127,11 @@
 .statusOpen {
   color: var(--color-primary, #1976d2);
 }
+
+.statusInProgress {
+  color: #0f766e;
+}
+
 .statusClosed {
   color: var(--color-text-muted, #94a3b8);
 }
@@ -218,6 +223,31 @@
   color: var(--color-text-secondary, #475569);
   white-space: pre-wrap;
   font-size: 0.95rem;
+}
+
+.chatLinkSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chatLink {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.chatLinkNotice {
+  margin: 0;
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 /* ---------------------------------------------------------

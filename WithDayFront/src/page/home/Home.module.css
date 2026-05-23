@@ -10,7 +10,6 @@
 .carousel {
   position: relative;
   overflow: hidden;
-  border-radius: 26px;
   box-shadow: var(--shadow-hero);
 }
 
@@ -72,9 +71,7 @@
   border-radius: 999px;
   background: var(--color-border);
   cursor: pointer;
-  transition:
-    width 0.2s ease,
-    background-color 0.2s ease;
+  transition: width 0.2s ease, background-color 0.2s ease;
 }
 
 .carouselDotActive {
@@ -329,10 +326,6 @@
     padding-top: 8px;
   }
 
-  .carousel {
-    border-radius: 22px;
-  }
-
   .carouselSlide {
     aspect-ratio: 16 / 10.5;
   }
@@ -353,6 +346,9 @@
     font-size: 1.45rem;
   }
 
+}
+
+@media (max-width: 767px) {
   .cardRail {
     grid-auto-columns: minmax(252px, 84vw);
   }

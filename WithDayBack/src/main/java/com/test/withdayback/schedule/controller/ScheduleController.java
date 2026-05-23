@@ -29,9 +29,10 @@ public class ScheduleController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ScheduleResponseDTO> getSchedule(
-            @PathVariable("id") Long id
+            @PathVariable("id") Long id,
+            @RequestParam(required = false) String email
     ) {
-        ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(id);
+        ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(id, email);
 
         if (result == null) {
             return ResponseEntity.notFound().build();

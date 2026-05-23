@@ -84,9 +84,11 @@
         si.image_url AS thumbnail,
         s.start_date AS start_date,
         s.end_date AS end_date,
+        s.recruit_end_date AS recruit_end_date,
         s.current_participants AS current_people,
         s.max_participants AS max_people,
         <include refid="normalizedStatus" /> AS db_status,
+        s.status AS schedule_status,
         CASE WHEN s.user_id = u.id THEN TRUE ELSE FALSE END AS host
     </sql>
 
@@ -101,6 +103,7 @@
               AND si.is_thumbnail = 1
         WHERE u.email = #{email}
           AND s.deleted_at IS NULL
+          AND (s.end_date IS NULL OR s.end_date >= CURDATE())
           AND <include refid="normalizedStatus" /> IN
           <foreach collection="statuses" item="status" open="(" separator="," close=")">
               #{status}
@@ -118,9 +121,11 @@
             si.image_url AS thumbnail,
             s.start_date AS start_date,
             s.end_date AS end_date,
+            s.recruit_end_date AS recruit_end_date,
             s.current_participants AS current_people,
             s.max_participants AS max_people,
             s.status AS db_status,
+            s.status AS schedule_status,
             TRUE AS host
         FROM schedule s
         INNER JOIN user u ON u.id = s.user_id
@@ -129,6 +134,7 @@
               AND si.is_thumbnail = 1
         WHERE u.email = #{email}
           AND s.deleted_at IS NULL
+          AND (s.end_date IS NULL OR s.end_date >= CURDATE())
         ORDER BY s.start_date ASC, s.id DESC
     </select>
 
@@ -149,4 +155,15 @@
           AND u.email = #{email}
           AND UPPER(p.status) IN ('REJECTED', 'KICKED')
     </delete>
+
+    <select id="findScheduleParticipationStatus" resultType="String">
+        SELECT
+            <include refid="normalizedStatus" /> AS status
+        FROM participation p
+        INNER JOIN user u ON u.id = p.user_id
+        WHERE p.schedule_id = #{scheduleId}
+          AND u.email = #{email}
+        ORDER BY p.id DESC
+        LIMIT 1
+    </select>
 </mapper>

@@ -82,25 +82,40 @@
           AND current_participants > 0
     </update>
 
+    <update id="closeScheduleWhenFull">
+        UPDATE schedule
+        SET status = 'closed',
+            updated_at = NOW()
+        WHERE id = #{scheduleId}
+          AND deleted_at IS NULL
+          AND status = 'recruiting'
+          AND current_participants >= max_participants
+    </update>
+
+    <update id="reopenScheduleWhenSlotAvailable">
+        UPDATE schedule
+        SET status = 'recruiting',
+            updated_at = NOW()
+        WHERE id = #{scheduleId}
+          AND deleted_at IS NULL
+          AND status = 'closed'
+          AND current_participants &lt; max_participants
+          AND (recruit_end_date IS NULL OR recruit_end_date >= CURDATE())
+          AND (end_date IS NULL OR end_date >= CURDATE())
+    </update>
+
+    <update id="closeExpiredSchedules">
+        UPDATE schedule
+        SET status = 'closed',
+        updated_at = NOW()
+        WHERE status = 'recruiting'
+        AND recruit_end_date &lt;= NOW()
+        AND deleted_at IS NULL
+    </update>
+
     <select id="getAllSchedules" resultType="Schedule">
         SELECT
-            id,
-            user_id AS userId,
-            category,
-            title,
-            description,
-            region,
-            detail_region AS detailRegion,
-            start_date AS startDate,
-            end_date AS endDate,
-            recruit_end_date AS recruitEndDate,
-            current_participants AS currentParticipants,
-            max_participants AS maxParticipants,
-            gender_limit AS genderLimit,
-            total_price AS totalPrice,
-            cost_type AS costType,
-            thumbnail_image AS thumbnailImage,
-            created_at AS createdAt
+        *
         FROM schedule
         <where>
             deleted_at IS NULL

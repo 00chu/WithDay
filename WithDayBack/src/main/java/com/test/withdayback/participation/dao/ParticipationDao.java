@@ -48,4 +48,9 @@ public interface ParticipationDao {
             @Param("participationId") Long participationId,
             @Param("email") String email
     );
+
+    String findScheduleParticipationStatus(
+            @Param("scheduleId") Long scheduleId,
+            @Param("email") String email
+    );
 }

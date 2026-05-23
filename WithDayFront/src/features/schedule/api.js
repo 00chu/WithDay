@@ -16,8 +16,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export const fetchScheduleDetail = async (scheduleId) => {
-  const { data } = await api.get(`/schedules/${scheduleId}`);
+export const fetchScheduleDetail = async (scheduleId, email = "") => {
+  const normalizedEmail = email?.trim() ?? "";
+  const { data } = await api.get(`/schedules/${scheduleId}`, {
+    params: normalizedEmail ? { email: normalizedEmail } : {},
+  });
 
   if (import.meta.env.DEV) {
     console.debug("[schedule-detail] response", data);

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import Button from "../../../shared/ui/Button/Button";
+import { dayjs } from "../../../shared/lib/dateUtile";
 import { useAuthStore } from "../../auth/store/authStore";
 import { useApplyScheduleMutation } from "../../participation/model/mutations";
 
@@ -12,7 +13,27 @@ const DEFAULT_FEEDBACK = {
   severity: "success",
 };
 
-export default function ApplyScheduleButton({ scheduleId, status }) {
+const isScheduleClosedByDate = (recruitEndDate) => {
+  if (!recruitEndDate) {
+    return null;
+  }
+
+  const deadline = dayjs(recruitEndDate).endOf("day");
+
+  if (!deadline.isValid()) {
+    return null;
+  }
+
+  return dayjs().isAfter(deadline);
+};
+
+export default function ApplyScheduleButton({
+  scheduleId,
+  status,
+  recruitEndDate,
+  viewerParticipationStatus = "",
+  isHost = false,
+}) {
   const navigate = useNavigate();
 
   // ✅ zustand에서 직접 가져오기 (핵심)
@@ -23,16 +44,44 @@ export default function ApplyScheduleButton({ scheduleId, status }) {
 
   const { applySchedule, isPending } = useApplyScheduleMutation();
 
-  const isRecruiting = status === "recruiting";
+  const closedByDate = useMemo(
+    () => isScheduleClosedByDate(recruitEndDate),
+    [recruitEndDate]
+  );
+
+  const isExplicitlyClosed = status === "cancelled" || status === "completed";
+  const isRecruiting =
+    closedByDate === null ? status === "recruiting" : !closedByDate;
+  const normalizedParticipationStatus =
+    viewerParticipationStatus?.trim()?.toUpperCase() ?? "";
 
   const buttonLabel = useMemo(() => {
-    if (!isRecruiting) return "모집 종료";
+    if (isHost) return "내가 만든 일정";
+    if (normalizedParticipationStatus === "APPROVED") return "참여 확정";
+    if (normalizedParticipationStatus === "PENDING") return "신청 완료";
+    if (normalizedParticipationStatus === "REJECTED") return "거절됨";
+    if (normalizedParticipationStatus === "CANCELLED") return "신청 취소됨";
+    if (normalizedParticipationStatus === "KICKED") return "참여 불가";
+    if (isExplicitlyClosed || !isRecruiting) return "모집 종료";
     if (isApplied) return "신청 완료";
     if (isPending) return "신청 중...";
     return "참여 신청하기";
-  }, [isApplied, isPending, isRecruiting]);
+  }, [
+    isApplied,
+    isExplicitlyClosed,
+    isHost,
+    isPending,
+    isRecruiting,
+    normalizedParticipationStatus,
+  ]);
 
-  const isButtonDisabled = !isRecruiting || isApplied || isPending;
+  const isButtonDisabled =
+    isHost ||
+    Boolean(normalizedParticipationStatus) ||
+    isExplicitlyClosed ||
+    !isRecruiting ||
+    isApplied ||
+    isPending;
 
   useEffect(() => {
     if (!feedback.open) return;
@@ -59,11 +108,9 @@ export default function ApplyScheduleButton({ scheduleId, status }) {
     const email = user?.email?.trim();
 
     if (!email) return;
-    if (!isRecruiting || isApplied || isPending) return;
+    if (isButtonDisabled) return;
 
-    const confirmJoin = window.confirm(
-      "이 일정에 참여 신청을 하시겠습니까?"
-    );
+    const confirmJoin = window.confirm("이 일정에 참여 신청을 하시겠습니까?");
     if (!confirmJoin) return;
 
     try {
@@ -86,9 +133,7 @@ export default function ApplyScheduleButton({ scheduleId, status }) {
         open: true,
         severity: "error",
         message:
-          typeof message === "string"
-            ? message
-            : "참여 신청에 실패했습니다.",
+          typeof message === "string" ? message : "참여 신청에 실패했습니다.",
       });
     }
   };
@@ -96,7 +141,7 @@ export default function ApplyScheduleButton({ scheduleId, status }) {
   return (
     <>
       <Button
-        variant={isRecruiting ? "accent" : "outline"}
+        variant={!isExplicitlyClosed && isRecruiting ? "accent" : "outline"}
         size="md"
         disabled={isButtonDisabled}
         onClick={handleApply}
