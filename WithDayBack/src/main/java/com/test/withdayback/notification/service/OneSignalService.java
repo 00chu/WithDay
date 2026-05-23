@@ -1,6 +1,7 @@
 package com.test.withdayback.notification.service;
 
 import com.test.withdayback.common.config.OneSignalProperties;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
@@ -18,7 +19,17 @@ public class OneSignalService {
 
     private final OneSignalProperties properties;
 
+    @PostConstruct
+    public void init() {
+
+        System.out.println("apiKey = " + properties.getApiKey());
+        System.out.println("appId = " + properties.getAppId());
+    }
+
     public void sendToUser(Long userId, String title, String message) {
+        System.out.println("apiKey = " + properties.getApiKey());
+        System.out.println("appId = " + properties.getAppId());
+
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
