@@ -109,7 +109,7 @@
         SET status = 'closed',
         updated_at = NOW()
         WHERE status = 'recruiting'
-        AND recruit_end_date &lt;= NOW()
+        AND recruit_end_date &lt; CURDATE()
         AND deleted_at IS NULL
     </update>
 

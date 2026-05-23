@@ -220,6 +220,7 @@ export default function ScheduleDetail() {
   });
 
   const postHostEmail = data?.email;
+  const viewerIsHost = Boolean(data?.viewerIsHost);
 
   const {
     data: applicants = [],
@@ -229,6 +230,7 @@ export default function ScheduleDetail() {
     scheduleId: parsedScheduleId,
     email: authEmail,
     status: applicantStatus,
+    enabled: viewerIsHost,
   });
 
   const { updateParticipationStatus, isPending: isStatusUpdating } =
@@ -383,7 +385,6 @@ export default function ScheduleDetail() {
   const schedule = data.schedule;
   const viewerParticipationStatus = data.viewerParticipationStatus ?? "";
   const viewerCanAccessChatLink = Boolean(data.viewerCanAccessChatLink);
-  const viewerIsHost = Boolean(data.viewerIsHost);
   const details = Array.isArray(data.details) ? data.details : [];
   const rawImages = Array.isArray(data.images) ? data.images : [];
   const locationText = formatLocation(schedule);
@@ -702,7 +703,7 @@ export default function ScheduleDetail() {
         )}
       </div>
 
-      {isLoggedIn && authEmail && !isApplicantsForbidden && (
+      {isLoggedIn && authEmail && viewerIsHost && !isApplicantsForbidden && (
         <HostParticipationList
           items={applicants}
           loading={isApplicantsLoading}

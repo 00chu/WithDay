@@ -27,6 +27,11 @@ const isScheduleClosedByDate = (recruitEndDate) => {
   return dayjs().isAfter(deadline);
 };
 
+const normalizeScheduleStatus = (status) =>
+  String(status ?? "")
+    .trim()
+    .toLowerCase();
+
 export default function ApplyScheduleButton({
   scheduleId,
   status,
@@ -49,9 +54,10 @@ export default function ApplyScheduleButton({
     [recruitEndDate]
   );
 
-  const isExplicitlyClosed = status === "cancelled" || status === "completed";
-  const isRecruiting =
-    closedByDate === null ? status === "recruiting" : !closedByDate;
+  const normalizedScheduleStatus = normalizeScheduleStatus(status);
+  const isClosedByStatus = normalizedScheduleStatus !== "recruiting";
+  const isClosedByDate = closedByDate === true;
+  const isClosed = isClosedByStatus || isClosedByDate;
   const normalizedParticipationStatus =
     viewerParticipationStatus?.trim()?.toUpperCase() ?? "";
 
@@ -62,24 +68,22 @@ export default function ApplyScheduleButton({
     if (normalizedParticipationStatus === "REJECTED") return "거절됨";
     if (normalizedParticipationStatus === "CANCELLED") return "신청 취소됨";
     if (normalizedParticipationStatus === "KICKED") return "참여 불가";
-    if (isExplicitlyClosed || !isRecruiting) return "모집 종료";
+    if (isClosed) return "모집 종료";
     if (isApplied) return "신청 완료";
     if (isPending) return "신청 중...";
     return "참여 신청하기";
   }, [
+    isClosed,
     isApplied,
-    isExplicitlyClosed,
     isHost,
     isPending,
-    isRecruiting,
     normalizedParticipationStatus,
   ]);
 
   const isButtonDisabled =
     isHost ||
     Boolean(normalizedParticipationStatus) ||
-    isExplicitlyClosed ||
-    !isRecruiting ||
+    isClosed ||
     isApplied ||
     isPending;
 
@@ -141,7 +145,7 @@ export default function ApplyScheduleButton({
   return (
     <>
       <Button
-        variant={!isExplicitlyClosed && isRecruiting ? "accent" : "outline"}
+        variant={!isClosed ? "accent" : "outline"}
         size="md"
         disabled={isButtonDisabled}
         onClick={handleApply}

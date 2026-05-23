@@ -36,7 +36,7 @@ class ScheduleDaoCloseExpiredSchedulesTest {
                 )
                 """);
 
-        insertSchedule(1L, "recruiting", Timestamp.from(Instant.now().minus(1, ChronoUnit.SECONDS)), null);
+        insertSchedule(1L, "recruiting", Timestamp.from(Instant.now().minus(1, ChronoUnit.DAYS)), null);
         insertSchedule(2L, "recruiting", Timestamp.from(Instant.now().plus(1, ChronoUnit.DAYS)), null);
         insertSchedule(3L, "closed", Timestamp.from(Instant.now().minus(1, ChronoUnit.DAYS)), null);
         insertSchedule(4L, "recruiting", Timestamp.from(Instant.now().minus(1, ChronoUnit.DAYS)), Timestamp.from(Instant.now()));
