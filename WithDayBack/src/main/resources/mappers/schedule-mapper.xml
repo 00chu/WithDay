@@ -82,6 +82,28 @@
           AND current_participants > 0
     </update>
 
+    <update id="closeScheduleWhenFull">
+        UPDATE schedule
+        SET status = 'closed',
+            updated_at = NOW()
+        WHERE id = #{scheduleId}
+          AND deleted_at IS NULL
+          AND status = 'recruiting'
+          AND current_participants >= max_participants
+    </update>
+
+    <update id="reopenScheduleWhenSlotAvailable">
+        UPDATE schedule
+        SET status = 'recruiting',
+            updated_at = NOW()
+        WHERE id = #{scheduleId}
+          AND deleted_at IS NULL
+          AND status = 'closed'
+          AND current_participants &lt; max_participants
+          AND (recruit_end_date IS NULL OR recruit_end_date >= CURDATE())
+          AND (end_date IS NULL OR end_date >= CURDATE())
+    </update>
+
     <update id="closeExpiredSchedules">
         UPDATE schedule
         SET status = 'closed',

@@ -1,5 +1,6 @@
 package com.test.withdayback.schedule.service;
 
+import com.test.withdayback.participation.dao.ParticipationDao;
 import com.test.withdayback.schedule.dao.ScheduleDao;
 import com.test.withdayback.schedule.dto.ScheduleResponseDTO;
 import com.test.withdayback.schedule.enums.CostType;
@@ -26,6 +27,9 @@ class ScheduleServiceTest {
 
     @Mock
     private ScheduleDao scheduleDao;
+
+    @Mock
+    private ParticipationDao participationDao;
 
     @InjectMocks
     private ScheduleService scheduleService;
@@ -71,7 +75,7 @@ class ScheduleServiceTest {
         when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
         when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
 
-        ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(scheduleId);
+        ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(scheduleId, "");
 
         assertNotNull(result);
         assertEquals("2026-05-20", result.getStartDate());
@@ -88,8 +92,52 @@ class ScheduleServiceTest {
         when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn(null);
         when(scheduleDao.selectScheduleById(scheduleId)).thenReturn(null);
 
-        ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(scheduleId);
+        ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(scheduleId, "");
 
         assertNull(result);
+    }
+
+    @Test
+    void getScheduleFullDetailsHidesChatLinkForPendingViewer() {
+        Long scheduleId = 21L;
+        Schedule schedule = new Schedule();
+        schedule.setChatLink("https://open.kakao.com/test-room");
+
+        when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
+        when(scheduleDao.selectScheduleById(scheduleId)).thenReturn(schedule);
+        when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
+        when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
+        when(participationDao.findScheduleParticipationStatus(scheduleId, "guest@withday.test"))
+                .thenReturn("PENDING");
+
+        ScheduleResponseDTO result =
+                scheduleService.getScheduleFullDetails(scheduleId, "guest@withday.test");
+
+        assertNotNull(result);
+        assertFalse(result.getViewerIsHost());
+        assertFalse(result.getViewerCanAccessChatLink());
+        assertEquals("PENDING", result.getViewerParticipationStatus());
+        assertNull(result.getSchedule().getChatLink());
+    }
+
+    @Test
+    void getScheduleFullDetailsShowsChatLinkForApprovedViewer() {
+        Long scheduleId = 22L;
+        Schedule schedule = new Schedule();
+        schedule.setChatLink("https://open.kakao.com/test-room");
+
+        when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
+        when(scheduleDao.selectScheduleById(scheduleId)).thenReturn(schedule);
+        when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
+        when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
+        when(participationDao.findScheduleParticipationStatus(scheduleId, "approved@withday.test"))
+                .thenReturn("APPROVED");
+
+        ScheduleResponseDTO result =
+                scheduleService.getScheduleFullDetails(scheduleId, "approved@withday.test");
+
+        assertNotNull(result);
+        assertTrue(result.getViewerCanAccessChatLink());
+        assertEquals("https://open.kakao.com/test-room", result.getSchedule().getChatLink());
     }
 }

@@ -13,7 +13,7 @@ export const useApplyScheduleMutation = () => {
     onSuccess: async (_data, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: ["schedule", String(variables.scheduleId)],
+          queryKey: ["schedule-detail", Number(variables.scheduleId)],
         }),
         queryClient.invalidateQueries({
           queryKey: participationQueryKeys.all,
@@ -48,7 +48,7 @@ export const useUpdateParticipationStatusMutation = () => {
           queryKey: participationQueryKeys.mySchedules(variables.email),
         }),
         queryClient.invalidateQueries({
-          queryKey: ["schedule", String(variables.scheduleId)],
+          queryKey: ["schedule-detail", Number(variables.scheduleId)],
         }),
       ]);
     },

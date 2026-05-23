@@ -25,6 +25,7 @@ public class MyScheduleResponseDTO {
     // 3. 날짜 정보
     private LocalDate startDate;
     private LocalDate endDate;
+    private LocalDate recruitEndDate;
     // D-Day는 서버에서 계산해서 주거나, 프론트에서 날짜로 계산 (startDate 활용)
 
     // 4. 인원 정보 (카드 하단)
@@ -33,6 +34,7 @@ public class MyScheduleResponseDTO {
 
     // 5. ★ 상태 정보 (핵심!)
     private String dbStatus;       // PENDING, APPROVED, REJECTED, CANCELED, KICKED
+    private String scheduleStatus; // recruiting, closed, cancelled, completed
 
     // 6. 호스트 여부 (이 일정이 내가 만든 건지 참여 신청한 건지 구분)
     // "hosting" 탭 조회를 위해 필요할 수 있음

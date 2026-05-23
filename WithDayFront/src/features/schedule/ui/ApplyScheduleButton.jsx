@@ -31,6 +31,8 @@ export default function ApplyScheduleButton({
   scheduleId,
   status,
   recruitEndDate,
+  viewerParticipationStatus = "",
+  isHost = false,
 }) {
   const navigate = useNavigate();
 
@@ -50,16 +52,36 @@ export default function ApplyScheduleButton({
   const isExplicitlyClosed = status === "cancelled" || status === "completed";
   const isRecruiting =
     closedByDate === null ? status === "recruiting" : !closedByDate;
+  const normalizedParticipationStatus =
+    viewerParticipationStatus?.trim()?.toUpperCase() ?? "";
 
   const buttonLabel = useMemo(() => {
+    if (isHost) return "내가 만든 일정";
+    if (normalizedParticipationStatus === "APPROVED") return "참여 확정";
+    if (normalizedParticipationStatus === "PENDING") return "신청 완료";
+    if (normalizedParticipationStatus === "REJECTED") return "거절됨";
+    if (normalizedParticipationStatus === "CANCELLED") return "신청 취소됨";
+    if (normalizedParticipationStatus === "KICKED") return "참여 불가";
     if (isExplicitlyClosed || !isRecruiting) return "모집 종료";
     if (isApplied) return "신청 완료";
     if (isPending) return "신청 중...";
     return "참여 신청하기";
-  }, [isApplied, isExplicitlyClosed, isPending, isRecruiting]);
+  }, [
+    isApplied,
+    isExplicitlyClosed,
+    isHost,
+    isPending,
+    isRecruiting,
+    normalizedParticipationStatus,
+  ]);
 
   const isButtonDisabled =
-    isExplicitlyClosed || !isRecruiting || isApplied || isPending;
+    isHost ||
+    Boolean(normalizedParticipationStatus) ||
+    isExplicitlyClosed ||
+    !isRecruiting ||
+    isApplied ||
+    isPending;
 
   useEffect(() => {
     if (!feedback.open) return;
@@ -86,7 +108,7 @@ export default function ApplyScheduleButton({
     const email = user?.email?.trim();
 
     if (!email) return;
-    if (isExplicitlyClosed || !isRecruiting || isApplied || isPending) return;
+    if (isButtonDisabled) return;
 
     const confirmJoin = window.confirm("이 일정에 참여 신청을 하시겠습니까?");
     if (!confirmJoin) return;

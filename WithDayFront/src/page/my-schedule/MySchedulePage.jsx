@@ -90,7 +90,11 @@ const MySchedulePage = () => {
         return;
       }
 
-      if (item.myRole === "host" || item.dbStatus === "APPROVED") {
+      if (
+        item.myRole === "host" ||
+        item.dbStatus === "APPROVED" ||
+        item.dbStatus === "CANCELLED"
+      ) {
         navigate(`/schedule/${item.scheduleId}`);
         return;
       }

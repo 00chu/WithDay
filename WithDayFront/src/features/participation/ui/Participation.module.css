@@ -78,6 +78,7 @@
 .tags {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .categoryBadge {
@@ -92,6 +93,15 @@
 .dDayBadge {
   background-color: #f0f4f8;
   color: #5c7cf5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.phaseBadge {
+  background-color: #e7f5ff;
+  color: #1c7ed6;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;

@@ -15,6 +15,13 @@ export const PARTICIPATION_STATUS = {
   KICKED: "KICKED",
 };
 
+export const HOST_APPLICANT_STATUS_FILTERS = [
+  { value: "PENDING", label: "대기" },
+  { value: "APPROVED", label: "승인" },
+  { value: "REJECTED", label: "거절" },
+  { value: "CANCELLED", label: "취소" },
+];
+
 export const PARTICIPATION_TABS = [
   { value: "participating", label: "참여중" },
   { value: "pending", label: "신청중" },
@@ -66,11 +73,11 @@ export const PARTICIPATION_STATUS_META = {
   CANCELLED: {
     badgeText: "취소됨",
     badgeClass: "badgeGray",
-    buttonText: "취소됨",
+    buttonText: "상세보기",
     buttonVariant: "outline",
-    actionType: "disabled",
+    actionType: "view",
     cardDisabled: true,
-    isDisabled: true,
+    isDisabled: false,
   },
   KICKED: {
     badgeText: "내보내짐",

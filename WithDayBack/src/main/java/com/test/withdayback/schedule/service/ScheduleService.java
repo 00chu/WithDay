@@ -2,6 +2,8 @@ package com.test.withdayback.schedule.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.test.withdayback.participation.dao.ParticipationDao;
+import com.test.withdayback.participation.enums.ParticipationStatus;
 import com.test.withdayback.schedule.dao.ScheduleDao;
 import com.test.withdayback.schedule.dto.ScheduleRequestDTO;
 import com.test.withdayback.schedule.dto.ScheduleResponseDTO;
@@ -22,19 +24,20 @@ import java.util.Objects;
 @Service
 public class ScheduleService {
 
-    @Autowired
     private final ScheduleDao scheduleDao;
+    private final ParticipationDao participationDao;
 
     @Autowired
     private Cloudinary cloudinary;
     @Autowired
     private UserDao userDao;
 
-    public ScheduleService(ScheduleDao scheduleDao) {
+    public ScheduleService(ScheduleDao scheduleDao, ParticipationDao participationDao) {
         this.scheduleDao = scheduleDao;
+        this.participationDao = participationDao;
     }
 
-    public ScheduleResponseDTO getScheduleFullDetails(Long id) {
+    public ScheduleResponseDTO getScheduleFullDetails(Long id, String viewerEmail) {
         String email = scheduleDao.getEmailByScheduleId(id);
 
         // 1. 일정 기본 정보 조회
@@ -48,8 +51,28 @@ public class ScheduleService {
         // 3. 이미지 리스트 조회
         List<ScheduleImage> images = scheduleDao.selectImageByScheduleId(id);
 
-        // 3. 조립
-        return new ScheduleResponseDTO(email, schedule, details, images);
+        ScheduleResponseDTO response = new ScheduleResponseDTO(email, schedule, details, images);
+
+        String normalizedViewerEmail = viewerEmail == null ? "" : viewerEmail.trim();
+        boolean viewerIsHost = !normalizedViewerEmail.isBlank() && normalizedViewerEmail.equalsIgnoreCase(email);
+        String viewerParticipationStatus = null;
+
+        if (!normalizedViewerEmail.isBlank()) {
+            viewerParticipationStatus = participationDao.findScheduleParticipationStatus(id, normalizedViewerEmail);
+        }
+
+        boolean viewerCanAccessChatLink = viewerIsHost
+                || ParticipationStatus.APPROVED.name().equals(viewerParticipationStatus);
+
+        if (!viewerCanAccessChatLink) {
+            schedule.setChatLink(null);
+        }
+
+        response.setViewerIsHost(viewerIsHost);
+        response.setViewerParticipationStatus(viewerParticipationStatus);
+        response.setViewerCanAccessChatLink(viewerCanAccessChatLink);
+
+        return response;
     }
 
     /**
