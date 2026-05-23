@@ -25,6 +25,7 @@ public class NotificationService {
     // 신청자 -> 호스트 (참가 신청)
     public void notifyApply(
             Long receiverId,
+            String receiverEmail,
             String senderNickname,
             String title,
             long scheduleId
@@ -45,7 +46,7 @@ public class NotificationService {
         notificationDao.insertNotification(notification);
 
         oneSignalService.sendToUser(
-                receiverId,
+                receiverEmail,
                 NotificationType.APPLY.getTitle(),
                 message
         );
@@ -54,6 +55,7 @@ public class NotificationService {
     // 호스트 -> 신청자 (승인)
     public void notifyApproved(
             Long receiverId,
+            String receiverEmail,
             String senderNickname,
             String title
     ) {
@@ -73,7 +75,7 @@ public class NotificationService {
         notificationDao.insertNotification(notification);
 
         oneSignalService.sendToUser(
-                receiverId,
+                receiverEmail,
                 NotificationType.APPROVE.getTitle(),
                 message
         );
@@ -82,6 +84,7 @@ public class NotificationService {
     // 호스트 -> 신청자 (거절)
     public void notifyRejected(
             Long receiverId,
+            String receiverEmail,
             String senderNickname,
             String title
     ) {
@@ -101,7 +104,7 @@ public class NotificationService {
         notificationDao.insertNotification(notification);
 
         oneSignalService.sendToUser(
-                receiverId,
+                receiverEmail,
                 NotificationType.REJECT.getTitle(),
                 message
         );
@@ -110,6 +113,7 @@ public class NotificationService {
     // 호스트 -> 신청자 (강퇴)
     public void notifyKick(
             Long receiverId,
+            String receiverEmail,
             String senderNickname,
             String title
     ) {
@@ -129,7 +133,7 @@ public class NotificationService {
         notificationDao.insertNotification(notification);
 
         oneSignalService.sendToUser(
-                receiverId,
+                receiverEmail,
                 NotificationType.KICK.getTitle(),
                 message
         );

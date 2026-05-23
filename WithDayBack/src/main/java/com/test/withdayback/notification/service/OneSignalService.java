@@ -19,6 +19,7 @@ public class OneSignalService {
 
     private final OneSignalProperties properties;
 
+    // 서버 실행 시 확인
     @PostConstruct
     public void init() {
 
@@ -26,7 +27,8 @@ public class OneSignalService {
         System.out.println("appId = " + properties.getAppId());
     }
 
-    public void sendToUser(Long userId, String title, String message) {
+    // 알림 실행 시 확인
+    public void sendToUser(String email, String title, String message) {
         System.out.println("apiKey = " + properties.getApiKey());
         System.out.println("appId = " + properties.getAppId());
 
@@ -48,7 +50,7 @@ public class OneSignalService {
                 "include_aliases",
                 Map.of(
                         "external_id",
-                        List.of(userId.toString())
+                        List.of(email)
                 )
         );
 

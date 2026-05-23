@@ -136,6 +136,7 @@ public class ParticipationService {
 
         notificationService.notifyApply(
                 schedule.getUserId(),          // receiverId
+                //id로 이메일 가져오기 필요
                 senderNickName,
                 schedule.getTitle(),
                 scheduleId
