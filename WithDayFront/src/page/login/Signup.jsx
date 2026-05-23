@@ -387,21 +387,26 @@ const Signup = () => {
 
   return (
     <div className={styles.signupPage}>
-      <div className={styles.signupContainer}>
+      {/* =========================================
+          💡 PC에서 좌/우로 나눌 대껍데기 래퍼 추가
+          ========================================= */}
+      <div className={styles.signupContainerWrap}>
+        
         {/* =========================================
-            [상단] 피그마 스타일 동적 스텝바
+            [좌측 구역] 회원가입 폼 & 스텝바 (핵심)
             ========================================= */}
-        {step < 5 && (
-          <nav className={styles.signupStepper} aria-label="회원가입 단계">
-            {["약관 동의", "계정 정보", "프로필 정보", "관심사 선택"].map(
-              (label, index) => {
+        <div className={styles.signupFormSection}>
+          
+          {/* 상단 스텝바 */}
+          {step < 5 && (
+            <nav className={styles.signupStepper} aria-label="회원가입 단계">
+              {["약관 동의", "계정 정보", "기본 정보", "관심사 선택"].map((label, index) => {
                 const stepNumber = index + 1;
                 return (
                   <div
                     key={label}
-                    className={`${styles.signupStep} ${
-                      step === stepNumber ? styles.signupStepActive : ""
-                    } ${step > stepNumber ? styles.signupStepDone : ""}`}
+                    className={`${styles.signupStep} ${step === stepNumber ? styles.signupStepActive : ""
+                      } ${step > stepNumber ? styles.signupStepDone : ""}`}
                   >
                     <div className={styles.signupStepNumber}>
                       <span>{stepNumber}</span>
@@ -409,592 +414,284 @@ const Signup = () => {
                     <div className={styles.signupStepLabel}>{label}</div>
                   </div>
                 );
-              },
+              })}
+              <div className={`${styles.signupStep} ${step === 5 ? styles.signupStepActive : ""}`}>
+                <div className={styles.signupStepNumber}><span>5</span></div>
+                <div className={styles.signupStepLabel}>가입 완료</div>
+              </div>
+            </nav>
+          )}
+
+          <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+            
+            {/* [STEP 1] 약관 동의 */}
+            {step === 1 && (
+              <div className={styles.flowSection}>
+                <div className={styles.flowHero}>
+                  <p className={styles.flowEyebrow}>WITHDAY SIGN UP</p>
+                  <h2 className={styles.flowTitle}>약관 동의 후<br/>가입을 시작합니다</h2>
+                  <p className={styles.flowSubtitle}>
+                    설레는 여행의 시작! WithDay 서비스 이용을 위해 아래 약관에 동의해주세요.
+                  </p>
+                </div>
+
+                <label className={`${styles.panel} ${styles.panelStrong} ${styles.checkCard} ${styles.checkCardStrong}`}>
+                  <span className={styles.checkInput}>
+                    <input type="checkbox" checked={allAgreed} onChange={handleAgreeAll} />
+                  </span>
+                  <span className={styles.checkBody}>
+                    <span className={styles.checkTitle}>약관 전체 동의</span>
+                    <span className={styles.checkDescription}>선택 항목을 포함한 모든 약관에 동의합니다.</span>
+                  </span>
+                </label>
+
+                <div className={styles.stackMd} style={{ marginTop: '14px' }}>
+                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
+                    <span className={styles.checkInput}><input type="checkbox" {...register("agreeTos")} /></span>
+                    <span className={styles.checkBody}>
+                      <span className={styles.checkHeader}>
+                        <span className={styles.checkTitle}>서비스 이용약관</span>
+                        <span className={styles.badge}>필수</span>
+                      </span>
+                      <span className={styles.checkDescription}>모임 참여 및 안전한 커뮤니티 활동 규칙에 동의합니다.</span>
+                      {errors.agreeTos && <span className={styles.errorText}>{errors.agreeTos.message}</span>}
+                    </span>
+                    <span className={styles.flowLinkText} onClick={(e) => { e.preventDefault(); setOpenTerms("TOS"); }}>상세보기</span>
+                  </label>
+
+                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
+                    <span className={styles.checkInput}><input type="checkbox" {...register("agreePrivacy")} /></span>
+                    <span className={styles.checkBody}>
+                      <span className={styles.checkHeader}>
+                        <span className={styles.checkTitle}>개인정보 수집 및 이용</span>
+                        <span className={styles.badge}>필수</span>
+                      </span>
+                      <span className={styles.checkDescription}>동행 추천 및 본인 식별을 위한 필수 정보 수집에 동의합니다.</span>
+                      {errors.agreePrivacy && <span className={styles.errorText}>{errors.agreePrivacy.message}</span>}
+                    </span>
+                    <span className={styles.flowLinkText} onClick={(e) => { e.preventDefault(); setOpenTerms("PRIVACY"); }}>상세보기</span>
+                  </label>
+
+                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
+                    <span className={styles.checkInput}><input type="checkbox" {...register("agreeMarketing")} /></span>
+                    <span className={styles.checkBody}>
+                      <span className={styles.checkHeader}>
+                        <span className={styles.checkTitle}>마케팅 정보 수신</span>
+                        <span className={styles.badge} style={{ background: '#e9ecef', color: '#666' }}>선택</span>
+                      </span>
+                      <span className={styles.checkDescription}> WithDay가 전하는 맞춤 여행지와 이벤트 소식을 받아봅니다.</span>
+                    </span>
+                    <span className={styles.flowLinkText} onClick={(e) => { e.preventDefault(); setOpenTerms("MARKETING"); }}>상세보기</span>
+                  </label>
+
+                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
+                    <span className={styles.checkInput}><input type="checkbox" {...register("agreeNotification")} /></span>
+                    <span className={styles.checkBody}>
+                      <span className={styles.checkHeader}>
+                        <span className={styles.checkTitle}>앱 알림 수신 동의</span>
+                        <span className={styles.badge} style={{ background: '#e9ecef', color: '#666' }}>선택</span>
+                      </span>
+                      <span className={styles.checkDescription}>채팅, 동행 신청 등 중요 알림을 푸시로 빠르게 받습니다.</span>
+                    </span>
+                    <span className={styles.flowLinkText} onClick={(e) => { e.preventDefault(); setOpenTerms("NOTIFICATION"); }}>상세보기</span>
+                  </label>
+                </div>
+              </div>
             )}
-            <div
-              className={`${styles.signupStep} ${step === 5 ? styles.signupStepActive : ""}`}
-            >
-              <div className={styles.signupStepNumber}>
-                <span>5</span>
-              </div>
-              <div className={styles.signupStepLabel}>가입 완료</div>
-            </div>
-          </nav>
-        )}
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {/* =========================================
-              [STEP 1] 약관 동의
-              ========================================= */}
-          {step === 1 && (
-            <div className={styles.flowSection}>
-              <div className={styles.flowHero}>
-                <p className={styles.flowEyebrow}>WITHDAY SIGN UP</p>
-                <h2 className={styles.flowTitle}>
-                  약관 동의 후 가입을 시작합니다
-                </h2>
-                <p className={styles.flowSubtitle}>
-                  서비스 이용에 필요한 필수 약관과 선택 약관을 확인해주세요.
-                </p>
-              </div>
-
-              {/* 전체 동의 박스 */}
-              <label
-                className={`${styles.panel} ${styles.panelStrong} ${styles.checkCard} ${styles.checkCardStrong}`}
-              >
-                <span className={styles.checkInput}>
-                  <input
-                    type="checkbox"
-                    checked={allAgreed}
-                    onChange={handleAgreeAll}
-                  />
-                </span>
-                <span className={styles.checkBody}>
-                  <span className={styles.checkTitle}>약관 전체 동의</span>
-                  <span className={styles.checkDescription}>
-                    선택 항목을 포함한 전체 약관에 한 번에 동의합니다.
-                  </span>
-                </span>
-              </label>
-
-              <div className={styles.stackMd} style={{ marginTop: "16px" }}>
-                {/* 필수 이용약관 */}
-                <label
-                  className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}
-                >
-                  <span className={styles.checkInput}>
-                    <input type="checkbox" {...register("agreeTos")} />
-                  </span>
-                  <span className={styles.checkBody}>
-                    <span className={styles.checkHeader}>
-                      <span className={styles.checkTitle}>서비스 이용약관</span>
-                      <span className={styles.badge}>필수</span>
-                    </span>
-                    <span className={styles.checkDescription}>
-                      WithDay 서비스 기본 약관에 동의합니다.
-                    </span>
-                    {errors.agreeTos && (
-                      <span className={styles.errorText}>
-                        {errors.agreeTos.message}
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    className={styles.flowLinkText}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setOpenTerms("TOS");
-                    }}
-                  >
-                    자세히 보기
-                  </span>
-                </label>
-
-                {/* 필수 개인정보 */}
-                <label
-                  className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}
-                >
-                  <span className={styles.checkInput}>
-                    <input type="checkbox" {...register("agreePrivacy")} />
-                  </span>
-                  <span className={styles.checkBody}>
-                    <span className={styles.checkHeader}>
-                      <span className={styles.checkTitle}>
-                        개인정보 수집 및 이용
-                      </span>
-                      <span className={styles.badge}>필수</span>
-                    </span>
-                    <span className={styles.checkDescription}>
-                      회원 식별 및 서비스 제공을 위한 수집에 동의합니다.
-                    </span>
-                    {errors.agreePrivacy && (
-                      <span className={styles.errorText}>
-                        {errors.agreePrivacy.message}
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    className={styles.flowLinkText}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setOpenTerms("PRIVACY");
-                    }}
-                  >
-                    자세히 보기
-                  </span>
-                </label>
-
-                {/* 선택 마케팅 */}
-                <label
-                  className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}
-                >
-                  <span className={styles.checkInput}>
-                    <input type="checkbox" {...register("agreeMarketing")} />
-                  </span>
-                  <span className={styles.checkBody}>
-                    <span className={styles.checkHeader}>
-                      <span className={styles.checkTitle}>
-                        마케팅 정보 수신
-                      </span>
-                      <span
-                        className={styles.badge}
-                        style={{ background: "#e9ecef", color: "#666" }}
-                      >
-                        선택
-                      </span>
-                    </span>
-                    <span className={styles.checkDescription}>
-                      이벤트 및 혜택 소식을 받을 수 있습니다.
-                    </span>
-                  </span>
-                  <span
-                    className={styles.flowLinkText}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setOpenTerms("MARKETING");
-                    }}
-                  >
-                    자세히 보기
-                  </span>
-                </label>
-
-                {/* 선택 알림 */}
-                <label
-                  className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}
-                >
-                  <span className={styles.checkInput}>
-                    <input type="checkbox" {...register("agreeNotification")} />
-                  </span>
-                  <span className={styles.checkBody}>
-                    <span className={styles.checkHeader}>
-                      <span className={styles.checkTitle}>
-                        앱 푸시 알림 수신
-                      </span>
-                      <span
-                        className={styles.badge}
-                        style={{ background: "#e9ecef", color: "#666" }}
-                      >
-                        선택
-                      </span>
-                    </span>
-                    <span className={styles.checkDescription}>
-                      내 일정 관련 중요 알림을 받을 수 있습니다.
-                    </span>
-                  </span>
-                  <span
-                    className={styles.flowLinkText}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setOpenTerms("NOTIFICATION");
-                    }}
-                  >
-                    자세히 보기
-                  </span>
-                </label>
-              </div>
-            </div>
-          )}
-
-          {/* =========================================
-              [STEP 2] 계정 정보
-              ========================================= */}
-          {step === 2 && (
-            <div className={styles.flowSection}>
-              <div className={styles.flowHero}>
-                <p className={styles.flowEyebrow}>WITHDAY SIGN UP</p>
-                <h2 className={styles.flowTitle}>계정 정보를 입력해주세요</h2>
-                <p className={styles.flowSubtitle}>
-                  로그인에 사용할 계정 정보를 안전하게 설정해주세요.
-                </p>
-              </div>
-
-              <div className={styles.stackLg}>
-                <FormField label="이메일" error={errors.email}>
-                  <div className={styles.inputRow}>
-                    <div className={styles.flex1}>
-                      <Input
-                        type="email"
-                        placeholder="example@withday.com"
-                        {...register("email")}
-                        readOnly={mailAuth > 0}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="primary"
-                      className={styles.actionButton}
-                      onClick={handleSendMail}
-                      disabled={mailAuth === 1 || mailAuth === 3}
-                    >
-                      {mailAuth >= 2 ? "재전송" : "인증 번호 전송"}
-                    </Button>
-                  </div>
-                </FormField>
-
-                {mailAuth > 1 && (
-                  <FormField label="인증번호 확인">
-                    <div className={styles.inputRowCenter}>
-                      <div className={styles.authInputWrap}>
-                        <Input
-                          type="text"
-                          placeholder="인증코드 6자리"
-                          value={mailAuthInput}
-                          onChange={(e) => setMailAuthInput(e.target.value)}
-                          disabled={mailAuth === 3}
-                        />
-                        {mailAuth !== 3 && (
-                          <span className={styles.timerText}>{showTime()}</span>
-                        )}
-                      </div>
-                      <Button
-                        type="button"
-                        variant="primary"
-                        className={styles.actionButton}
-                        onClick={handleVerifyCode}
-                        disabled={mailAuth === 3 || !mailAuthInput}
-                      >
-                        인증하기
-                      </Button>
-                    </div>
-                    {mailAuth === 3 && (
-                      <p className={styles.successText}>
-                        ✔ 이메일 인증이 완료되었습니다.
-                      </p>
-                    )}
-                  </FormField>
-                )}
-
-                <FormField label="비밀번호" error={errors.password}>
-                  <div className={styles.pwInputWrap}>
-                    <Input
-                      type={showPw ? "text" : "password"}
-                      placeholder="8자리 이상 입력해주세요"
-                      {...register("password")}
-                    />
-                    <div
-                      className={styles.pwIcon}
-                      onClick={() => setShowPw(!showPw)}
-                    >
-                      {showPw ? (
-                        <VisibilityOffIcon fontSize="small" />
-                      ) : (
-                        <VisibilityIcon fontSize="small" />
-                      )}
-                    </div>
-                  </div>
-                </FormField>
-
-                <FormField label="비밀번호 확인" error={errors.passwordConfirm}>
-                  <div className={styles.pwInputWrap}>
-                    <Input
-                      type={showPwConfirm ? "text" : "password"}
-                      placeholder="비밀번호를 다시 입력해주세요"
-                      {...register("passwordConfirm")}
-                    />
-                    <div
-                      className={styles.pwIcon}
-                      onClick={() => setShowPwConfirm(!showPwConfirm)}
-                    >
-                      {showPwConfirm ? (
-                        <VisibilityOffIcon fontSize="small" />
-                      ) : (
-                        <VisibilityIcon fontSize="small" />
-                      )}
-                    </div>
-                  </div>
-                </FormField>
-              </div>
-            </div>
-          )}
-
-          {/* =========================================
-              [STEP 3] 기본 정보
-              ========================================= */}
-          {step === 3 && (
-            <div className={styles.flowSection}>
-              <div className={styles.flowHero}>
-                <p className={styles.flowEyebrow}>WITHDAY SIGN UP</p>
-                <h2 className={styles.flowTitle}>기본 정보를 입력해주세요</h2>
-                <p className={styles.flowSubtitle}>
-                  프로필 생성과 매칭에 필요한 기본 정보를 입력해주세요.
-                </p>
-              </div>
-
-              <div className={styles.formGrid}>
-                <FormField label="닉네임" error={errors.nickname}>
-                  <Input
-                    type="text"
-                    placeholder="멋진 닉네임"
-                    {...register("nickname")}
-                  />
-                </FormField>
-
-                <FormField label="프로필 이미지" error={errors.profileImage}>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    {...register("profileImage")}
-                    style={{ padding: "14px 18px" }}
-                  />
-                </FormField>
-
-                <FormField label="생년월일" error={errors.birthday}>
-                  <Input
-                    type="date"
-                    max={todayDate}
-                    {...register("birthday")}
-                  />
-                </FormField>
-
-                <FormField label="성별" error={errors.gender}>
-                  <div className={styles.radioGroup}>
-                    <label className={styles.radioLabel}>
-                      <input type="radio" value="1" {...register("gender")} />{" "}
-                      남
-                    </label>
-                    <label className={styles.radioLabel}>
-                      <input type="radio" value="2" {...register("gender")} />{" "}
-                      여
-                    </label>
-                  </div>
-                </FormField>
-
-                <FormField label="전화번호" error={errors.phone}>
-                  <Input
-                    type="tel"
-                    placeholder="010-1234-5678"
-                    {...register("phone")}
-                  />
-                </FormField>
-
-                {/* 주소는 가로 전체를 차지하도록 fieldFull 적용 */}
-                <div className={styles.fieldFull}>
-                  <FormField
-                    label="거주 지역 (주소)"
-                    error={errors.postcode || errors.address}
-                  >
-                    <div
-                      className={`${styles.inputRow} ${styles.marginBottom8}`}
-                    >
+            {/* [STEP 2] 계정 정보 */}
+            {step === 2 && (
+              <div className={styles.flowSection}>
+                <div className={styles.flowHero}>
+                  <p className={styles.flowEyebrow}>WITHDAY SIGN UP</p>
+                  <h2 className={styles.flowTitle}>계정 정보를<br/>입력해주세요</h2>
+                  <p className={styles.flowSubtitle}>WithDay에서 사용할 아이디와 비밀번호를 안전하게 설정해주세요.</p>
+                </div>
+                
+                <div className={styles.inputSpace}>
+                  <FormField label="이메일" error={errors.email}>
+                    <div className={styles.inputRow}>
                       <div className={styles.flex1}>
-                        <Input
-                          type="text"
-                          placeholder="우편번호"
-                          readOnly
-                          {...register("postcode")}
-                        />
+                        <Input type="email" placeholder="example@withday.com" {...register("email")} readOnly={mailAuth > 0} className={styles.inputControl} />
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className={styles.outlineButton}
-                        onClick={() => setIsPostcodeOpen(true)}
-                      >
-                        주소 검색
+                      <Button type="button" variant="primary" className={styles.actionButton} style={{ width: 'auto', fontSize: '13px' }} onClick={handleSendMail} disabled={mailAuth === 1 || mailAuth === 3}>
+                        {mailAuth >= 2 ? "재전송" : "인증코드"}
                       </Button>
                     </div>
-                    <div className={styles.marginBottom8}>
-                      <Input
-                        type="text"
-                        placeholder="기본 주소"
-                        readOnly
-                        {...register("address")}
-                      />
+                  </FormField>
+
+                  {mailAuth > 1 && (
+                    <FormField label="인증번호 확인">
+                      <div className={styles.inputRowCenter}>
+                        <div className={styles.authInputWrap}>
+                          <Input type="text" placeholder="인증코드 6자리" value={mailAuthInput} onChange={(e) => setMailAuthInput(e.target.value)} disabled={mailAuth === 3} className={styles.inputControlInset} />
+                          {mailAuth !== 3 && <span className={styles.timerText}>{showTime()}</span>}
+                        </div>
+                        <Button type="button" variant="primary" className={styles.actionButton} style={{ width: 'auto', fontSize: '13px' }} onClick={handleVerifyCode} disabled={mailAuth === 3 || !mailAuthInput}>
+                          인증하기
+                        </Button>
+                      </div>
+                      {mailAuth === 3 && <p className={styles.successText}>✔ 이메일 인증이 완료되었습니다.</p>}
+                    </FormField>
+                  )}
+
+                  <FormField label="비밀번호" error={errors.password}>
+                    <div className={styles.pwInputWrap}>
+                      <Input type={showPw ? "text" : "password"} placeholder="8자리 이상 입력해주세요" {...register("password")} className={styles.inputControlInset} />
+                      <div className={styles.pwIcon} onClick={() => setShowPw(!showPw)}>
+                        {showPw ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                      </div>
                     </div>
-                    <Input
-                      type="text"
-                      placeholder="상세 주소를 입력해주세요"
-                      {...register("detailAddress")}
-                      error={errors.detailAddress}
-                    />
+                  </FormField>
+
+                  <FormField label="비밀번호 확인" error={errors.passwordConfirm}>
+                    <div className={styles.pwInputWrap}>
+                      <Input type={showPwConfirm ? "text" : "password"} placeholder="비밀번호를 다시 입력해주세요" {...register("passwordConfirm")} className={styles.inputControlInset} />
+                      <div className={styles.pwIcon} onClick={() => setShowPwConfirm(!showPwConfirm)}>
+                        {showPwConfirm ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                      </div>
+                    </div>
                   </FormField>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* =========================================
-              [STEP 4] 관심사 선택 (임시)
-              ========================================= */}
-          {step === 4 && (
-            <div className={styles.flowSectionWide}>
-              <div className={styles.flowHero}>
-                <p className={styles.flowEyebrow}>WITHDAY SIGN UP</p>
-                <h2 className={styles.flowTitle}>관심사를 선택해주세요</h2>
-                <p className={styles.flowSubtitle}>
-                  여기에 DB에서 불러온 관심사 칩들이 들어갈 예정입니다!
-                </p>
-              </div>
-            </div>
-          )}
+            {/* [STEP 3] 기본 정보 */}
+            {step === 3 && (
+              <div className={styles.flowSection}>
+                <div className={styles.flowHero}>
+                  <p className={styles.flowEyebrow}>WITHDAY SIGN UP</p>
+                  <h2 className={styles.flowTitle}>기본 정보를<br/>입력해주세요</h2>
+                  <p className={styles.flowSubtitle}>함께 여행할 동행들이 당신을 알아볼 수 있게 알려주세요.</p>
+                </div>
 
-          {/* =========================================
-              [STEP 5] 가입 완료 (폭죽 애니메이션)
-              ========================================= */}
-          {step === 5 && (
-            <div className={styles.completeArea}>
-              <div className={styles.flowHero}>
-                <p className={styles.flowEyebrow}>WITHDAY SIGN UP</p>
-                <h2 className={styles.completeTitle}>
-                  회원가입이 완료되었습니다
-                </h2>
-                <p className={styles.flowSubtitle}>
-                  WithDay와 함께 새로운 모임을 시작할 준비가 끝났습니다.
-                  <br />
-                  잠시 후 로그인 화면으로 자동 이동합니다...
-                </p>
-              </div>
-              <div className={styles.celebration}>
-                <div className={`${styles.confetti} ${styles.c1}`} />
-                <div className={`${styles.confetti} ${styles.c2}`} />
-                <div className={`${styles.confetti} ${styles.c3}`} />
-                <div
-                  className={`${styles.confetti} ${styles.c4} ${styles.confettiWarning}`}
-                />
-                <div className={styles.checkCircle}>
-                  <svg
-                    width="60"
-                    height="60"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
+                {/* 💡 디자인 Fix: 한줄에 하나씩 (1열 배치) 원복 */}
+                <div className={styles.stackLg}>
+                  <FormField label="닉네임" error={errors.nickname}>
+                    <Input type="text" placeholder="멋진 닉네임" {...register("nickname")} className={styles.inputControl} />
+                  </FormField>
+
+                  <FormField label="프로필 이미지" error={errors.profileImage}>
+                    <Input type="file" accept="image/*" {...register("profileImage")} className={styles.inputControl} style={{ padding: '12px 18px' }} />
+                  </FormField>
+
+                  <FormField label="생년월일" error={errors.birthday}>
+                    <Input type="date" max={todayDate} {...register("birthday")} className={styles.inputControl} />
+                  </FormField>
+
+                  <FormField label="성별" error={errors.gender}>
+                    <div className={styles.radioGroup}>
+                      <label className={styles.radioLabel}><input type="radio" value="1" {...register("gender")} /> 남</label>
+                      <label className={styles.radioLabel}><input type="radio" value="2" {...register("gender")} /> 여</label>
+                    </div>
+                  </FormField>
+
+                  <FormField label="전화번호" error={errors.phone}>
+                    <Input type="tel" placeholder="010-1234-5678" {...register("phone")} className={styles.inputControl} />
+                  </FormField>
+
+                  {/* 주소 전체 (1열 배치) */}
+                  <FormField label="거주 지역 (주소)" error={errors.postcode || errors.address}>
+                    <div className={`${styles.inputRow} ${styles.marginBottom8}`}>
+                      <div className={styles.flex1}><Input type="text" placeholder="우편번호" readOnly {...register("postcode")} className={styles.inputControl} /></div>
+                      <Button type="button" variant="outline" className={styles.outlineButton} style={{ width: 'auto', fontSize: '13px' }} onClick={() => setIsPostcodeOpen(true)}>우편번호 검색</Button>
+                    </div>
+                    <div className={styles.marginBottom8}><Input type="text" placeholder="기본 주소" readOnly {...register("address")} className={styles.inputControl} /></div>
+                    <Input type="text" placeholder="상세 주소를 입력해주세요" {...register("detailAddress")} error={errors.detailAddress} className={styles.inputControl} />
+                  </FormField>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* =========================================
-              [하단] 이전 / 다음 컨트롤 버튼
-              ========================================= */}
+            {/* [STEP 4] 관심사 선택 (임시) */}
+            {step === 4 && (
+              <div className={styles.flowSectionWide}>
+                <div className={styles.flowHero}>
+                  <p className={styles.flowEyebrow}>WITHDAY SIGN UP</p>
+                  <h2 className={styles.flowTitle}>관심사를<br/>선택해주세요</h2>
+                  <p className={styles.flowSubtitle}>여기에 DB에서 불러온 관심사 칩들이 들어갈 예정입니다!</p>
+                </div>
+              </div>
+            )}
+
+            {/* [STEP 5] 가입 완료 */}
+            {step === 5 && (
+              <div className={styles.completeArea}>
+                <div className={styles.flowHero}>
+                  <p className={styles.flowEyebrow}>WITHDAY SIGN UP</p>
+                  <h2 className={styles.completeTitle}>가입이<br/>완료되었습니다! 🎉</h2>
+                  <p className={styles.flowSubtitle}>
+                    WithDay 가족이 되신 것을 환영합니다!<br />
+                    잠시 후 로그인 화면으로 자동 이동합니다.
+                  </p>
+                </div>
+                <div className={styles.celebration}>
+                  <div className={`${styles.confetti} ${styles.c1}`} /><div className={`${styles.confetti} ${styles.c2}`} /><div className={`${styles.confetti} ${styles.c3}`} /><div className={`${styles.confetti} ${styles.c4} ${styles.confettiWarning}`} />
+                  <div className={styles.checkCircle}>
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 하단 버튼 컨트롤 */}
+            {step < 5 && (
+              <div className={styles.signupActions}>
+                {step > 1 ? (
+                  <Button type="button" variant="outline" className={styles.outlineButton} size="lg" onClick={() => setStep((prev) => prev - 1)}>이전으로</Button>
+                ) : ( <div/> /* 1단계 간격맞추기 */ )}
+
+                {step < 4 ? (
+                  <Button type="button" variant="primary" className={styles.actionButton} size="lg" onClick={handleNextStep}>다음 단계로</Button>
+                ) : (
+                  <Button type="submit" variant="primary" className={styles.actionButton} size="lg" disabled={mutation.isPending}>
+                    {mutation.isPending ? "가입 요청 중..." : "회원가입 완료"}
+                  </Button>
+                )}
+              </div>
+            )}
+          </form>
+
+          {/* 로그인 링크 */}
           {step < 5 && (
-            <div className={styles.signupActions}>
-              <Button
-                type="button"
-                variant="outline"
-                className={styles.outlineButton}
-                onClick={() => setStep((prev) => prev - 1)}
-                disabled={step === 1}
-                style={{ visibility: step === 1 ? "hidden" : "visible" }}
-              >
-                이전
-              </Button>
-
-              {step < 4 ? (
-                <Button
-                  type="button"
-                  variant="primary"
-                  className={styles.actionButton}
-                  onClick={handleNextStep}
-                >
-                  다음
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className={styles.actionButton}
-                  disabled={mutation.isPending}
-                >
-                  {mutation.isPending ? "가입하는 중..." : "가입 완료"}
-                </Button>
-              )}
-            </div>
+            <p className={styles.linkText} style={{ marginTop: '24px' }}>
+              이미 계정이 있으신가요?{" "}
+              <span className={styles.linkClickable} onClick={() => navigate("/login")}>로그인하기</span>
+            </p>
           )}
-        </form>
+        </div>
 
-        {/* 로그인 링크 */}
-        {step < 5 && (
-          <p className={styles.linkText} style={{ marginTop: "24px" }}>
-            이미 계정이 있으신가요?{" "}
-            <span
-              className={styles.linkClickable}
-              onClick={() => navigate("/login")}
-            >
-              로그인하기
-            </span>
-          </p>
-        )}
+        {/* =========================================
+            💡 [우측 구역] 피그마 이미지 & 감성 텍스트
+            (PC에서만 보이고 모바일은 order로 밑으로)
+            ========================================= */}
+        <div className={styles.signupBrandSection}>
+          <p className={styles.brandLogo}>WITHDAY</p>
+          <div className={styles.brandImagePlaceholder}>
+            {/* 실제 이미지를 <img src={...}/>로 넣으시면 됩니다 */}
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" color="#aaa"><path d="M14.639 2.3s-2.023.238-3.018 1.127c-.995-.889-3.018-1.127-3.018-1.127a5 5 0 00-4.996 5c0 1.25.336 2.373 1 3.235A6 6 0 002.001 13h10v.001h10a6 6 0 00-2.606-4.937 5 5 0 00.999-3.23c0-2.762-2.239-5-5-5zM12 21.001s-1.8-1.8-1.8-3.6 1.8-3.6 1.8-3.6 1.8 1.8 1.8 3.6-1.8 3.6-1.8 3.6z"/><path d="M12 21.001v2M12 13.801v-1.8"/></svg>
+            <p style={{marginTop: '12px', fontSize: '13px', color: '#888'}}>WithDay 감성 이미지</p>
+          </div>
+          <h1 className={styles.brandTitle}>누군가와<br/>함께 떠나는 설렘</h1>
+          <p className={styles.brandSubtitle}>당신의 완벽한 여행 파트너를 만나고<br/>새로운 동행을 시작해보세요.</p>
+        </div>
       </div>
 
       {/* =========================================
-          팝업 및 모달 (기존 코드 그대로 보존)
+          MUI 팝업 및 모달 (기존 코드 보존)
           ========================================= */}
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={3000}
-        onClose={handleCloseToast}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        sx={{ bottom: "80px !important" }}
-      >
-        <Alert
-          onClose={handleCloseToast}
-          severity={toast.severity}
-          sx={{ width: "100%" }}
-        >
-          {toast.message}
-        </Alert>
+      <Snackbar open={toast.open} autoHideDuration={3000} onClose={handleCloseToast} anchorOrigin={{ vertical: "bottom", horizontal: "center" }} sx={{ bottom: "80px !important" }}>
+        <Alert onClose={handleCloseToast} severity={toast.severity} sx={{ width: "100%" }}>{toast.message}</Alert>
       </Snackbar>
 
-      <Dialog
-        open={isPostcodeOpen}
-        onClose={() => setIsPostcodeOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle
-          sx={{
-            m: 0,
-            p: 2,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          주소 검색
-          <IconButton onClick={() => setIsPostcodeOpen(false)}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers sx={{ p: 0 }}>
-          <DaumPostcode
-            onComplete={handleCompletePostcode}
-            style={{ width: "100%", height: "400px" }}
-          />
-        </DialogContent>
+      <Dialog open={isPostcodeOpen} onClose={() => setIsPostcodeOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ m: 0, p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>주소 검색<IconButton onClick={() => setIsPostcodeOpen(false)}><CloseIcon /></IconButton></DialogTitle>
+        <DialogContent dividers sx={{ p: 0 }}><DaumPostcode onComplete={handleCompletePostcode} style={{ width: "100%", height: "400px" }} /></DialogContent>
       </Dialog>
 
-      <Dialog
-        open={openTerms !== null}
-        onClose={() => setOpenTerms(null)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle
-          sx={{
-            m: 0,
-            p: 2,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            fontWeight: "bold",
-          }}
-        >
-          {openTerms ? getTermTitle(openTerms) : ""}
-          <IconButton onClick={() => setOpenTerms(null)}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          <pre className={styles.termPre}>
-            {openTerms ? getTermContent(openTerms) : ""}
-          </pre>
-        </DialogContent>
+      <Dialog open={openTerms !== null} onClose={() => setOpenTerms(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ m: 0, p: 2, display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: "bold" }}>{openTerms ? getTermTitle(openTerms) : ""}<IconButton onClick={() => setOpenTerms(null)}><CloseIcon /></IconButton></DialogTitle>
+        <DialogContent dividers><pre className={styles.termPre}>{openTerms ? getTermContent(openTerms) : ""}</pre></DialogContent>
       </Dialog>
     </div>
   );
