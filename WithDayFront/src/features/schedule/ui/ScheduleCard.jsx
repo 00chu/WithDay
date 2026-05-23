@@ -26,6 +26,8 @@ const resolveThumbnail = (schedule) =>
   schedule?.imageUrl?.trim() ||
   defaultThumbnail;
 
+const isDefaultThumbnail = (src) => src === defaultThumbnail;
+
 const resolveGenderLimitLabel = (genderLimit) =>
   GENDER_LIMIT_LABELS[
     String(genderLimit ?? "")
@@ -90,6 +92,7 @@ export default function ScheduleCard({
 }) {
   const navigate = useNavigate();
   const thumbnailSrc = resolveThumbnail(schedule);
+  const isFallbackThumbnail = isDefaultThumbnail(thumbnailSrc);
   const deadline = resolveDeadline(resolveDeadlineDate(schedule));
   const isCompact = variant === "compact";
   const descriptionText =
@@ -189,7 +192,10 @@ export default function ScheduleCard({
           <img
             src={thumbnailSrc}
             alt={schedule?.title ?? "일정 썸네일"}
-            className={styles.thumbnail}
+            className={clsx(
+              styles.thumbnail,
+              isFallbackThumbnail && styles.thumbnailFallback
+            )}
             onError={handleImageError}
           />
         </div>
