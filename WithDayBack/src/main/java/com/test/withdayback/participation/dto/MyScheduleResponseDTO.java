@@ -12,31 +12,38 @@ import java.time.LocalDate;
 @Data
 @Alias("MyScheduleResponse")
 public class MyScheduleResponseDTO {
-    // 1. 식별자
-    private Long scheduleId;      // 일정 PK
-    private Long participationId; // 참여 정보 PK (취소/상태변경 시 필요)
+    /*
+     * 내 일정 화면 카드에 필요한 데이터를 한 번에 내려주는 응답 DTO다.
+     * 참여한 일정과 내가 만든 일정을 같은 카드 컴포넌트로 그리기 위해 schedule 정보, participation 정보, host 여부를 함께 담는다.
+     */
 
-    // 2. 일정 기본 정보 (카드 상단 및 본문)
-    private String category;      // 카테고리 (travel, food 등)
-    private String title;         // 일정 제목
-    private String location;      // 장소 (시/도 + 시/군/구 결합 추천)
-    private String thumbnail;     // 썸네일 이미지 URL
+    // 일정 PK다. 프론트는 이 값으로 상세 페이지(/schedule/:id)로 이동한다.
+    private Long scheduleId;
 
-    // 3. 날짜 정보
+    // 참여 정보 PK다. 신청 취소/삭제 API는 scheduleId가 아니라 participationId를 기준으로 동작한다.
+    private Long participationId;
+
+    // 카드에 표시할 일정 기본 정보다.
+    private String category;
+    private String title;
+    private String location;
+    private String thumbnail;
+
+    // D-Day, 일정 기간, 모집 마감일 계산에 쓰이는 날짜 정보다.
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDate recruitEndDate;
-    // D-Day는 서버에서 계산해서 주거나, 프론트에서 날짜로 계산 (startDate 활용)
 
-    // 4. 인원 정보 (카드 하단)
-    private Integer currentPeople; // 현재 확정 인원
-    private Integer maxPeople;     // 최대 정원
+    // 현재 확정 인원과 최대 정원이다. 승인 처리 후 카드 인원 표시와 정원 마감 판단에 사용된다.
+    private Integer currentPeople;
+    private Integer maxPeople;
 
-    // 5. ★ 상태 정보 (핵심!)
-    private String dbStatus;       // PENDING, APPROVED, REJECTED, CANCELED, KICKED
-    private String scheduleStatus; // recruiting, closed, cancelled, completed
+    // 참여 상태다. Mapper에서 대문자 canonical 값(PENDING, APPROVED 등)으로 보정해서 내려준다.
+    private String dbStatus;
 
-    // 6. 호스트 여부 (이 일정이 내가 만든 건지 참여 신청한 건지 구분)
-    // "hosting" 탭 조회를 위해 필요할 수 있음
+    // 일정 자체의 상태다. 참여 상태와 별개로 모집중/마감/취소/종료 여부를 표시할 때 쓴다.
+    private String scheduleStatus;
+
+    // 이 카드가 내가 만든 일정인지 구분한다. host=true이면 취소/삭제 대신 상세 관리 화면으로 이동한다.
     private Boolean host;
 }
