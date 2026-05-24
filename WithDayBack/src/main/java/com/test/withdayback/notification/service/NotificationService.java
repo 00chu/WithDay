@@ -34,6 +34,7 @@ public class NotificationService {
         String message =
                 String.format("[요청] %s님이 참가 신청을 했습니다.", senderNickname);
 
+        // DB에 알림 저장
         Notification notification = new Notification();
 
         notification.setReceiverId(receiverId);
@@ -63,6 +64,7 @@ public class NotificationService {
         String message =
                 String.format("[승인] %s님이 참가 신청을 승인했습니다.", senderNickname);
 
+        // DB에 알림 저장
         Notification notification = new Notification();
 
         notification.setReceiverId(receiverId);
@@ -92,6 +94,7 @@ public class NotificationService {
         String message =
                 String.format("[거부] %s님이 참가 신청을 거절했습니다.", senderNickname);
 
+        // DB에 알림 저장
         Notification notification = new Notification();
 
         notification.setReceiverId(receiverId);
@@ -121,6 +124,7 @@ public class NotificationService {
         String message =
                 String.format("[추방] %s님이 플랜에서 추방했습니다.", senderNickname);
 
+        // DB에 알림 저장
         Notification notification = new Notification();
 
         notification.setReceiverId(receiverId);

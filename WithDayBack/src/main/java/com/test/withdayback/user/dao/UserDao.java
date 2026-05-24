@@ -22,4 +22,7 @@ public interface UserDao {
 
     // 약관 리스트 전체 가져오기
     List<Terms> getAllTerms();
+
+    // 아이디로 유저찾기
+    User findById(Long userId);
 }

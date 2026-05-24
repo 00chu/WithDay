@@ -84,6 +84,17 @@ const Login = () => {
 
       setLogin(token, user, variables.autoLogin); // authStore의 setLogin에 토큰, 유저정보, 자동 로그인 여부를 저장 (사이트 전체 로그인됨)
 
+      // 마케팅 동의한 사용자만
+      /*if (user_terms 4번 있을 때) {
+        if (window.OneSignal) {
+          await window.OneSignal.Notifications.requestPermission();
+
+          await window.OneSignal.login(user.email);
+        }
+      }
+      */
+
+      await OneSignal.Notifications.requestPermission();
       await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
 
       navigate("/");

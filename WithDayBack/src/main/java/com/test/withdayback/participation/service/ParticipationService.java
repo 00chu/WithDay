@@ -132,11 +132,13 @@ public class ParticipationService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "참여 신청에 실패했습니다.");
         }
 
+        // 알림 설정 부분
         String senderNickName = userDao.findByEmail(dto.getEmail()).getNickname();
+        String receiverEmail = userDao.findById(schedule.getUserId()).getEmail();
 
         notificationService.notifyApply(
-                schedule.getUserId(),          // receiverId
-                //id로 이메일 가져오기 필요
+                schedule.getUserId(),   // receiverId
+                receiverEmail,  // receiverEmail
                 senderNickName,
                 schedule.getTitle(),
                 scheduleId
@@ -270,11 +272,14 @@ public class ParticipationService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "일정 정보를 다시 불러오지 못했습니다.");
         }
 
+        // 알림 설정 부분
         String senderNickName = userDao.findByEmail(dto.getEmail()).getNickname();
+        String receiverEmail = userDao.findById(participation.getUserId()).getEmail();
 
         if (targetStatus == ParticipationStatus.APPROVED) {
             notificationService.notifyApproved(
                     participation.getUserId(),  // receiverId
+                    receiverEmail,  // receiverEmail
                     senderNickName,
                     schedule.getTitle()
             );
@@ -283,6 +288,7 @@ public class ParticipationService {
         if (targetStatus == ParticipationStatus.REJECTED) {
             notificationService.notifyRejected(
                     participation.getUserId(),  // receiverId
+                    receiverEmail,  // receiverEmail
                     senderNickName,
                     schedule.getTitle()
             );
