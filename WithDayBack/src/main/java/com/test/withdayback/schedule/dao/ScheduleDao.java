@@ -29,6 +29,10 @@ public interface ScheduleDao {
 
     int decreaseCurrentParticipants(@Param("scheduleId") Long scheduleId);
 
+    int closeScheduleWhenFull(@Param("scheduleId") Long scheduleId);
+
+    int reopenScheduleWhenSlotAvailable(@Param("scheduleId") Long scheduleId);
+
     // Param을 사용해 파라미터 매핑
     List<Schedule> getAllSchedules(
             @Param("category") String category,
@@ -63,4 +67,6 @@ public interface ScheduleDao {
     String getThumbnailImageUrl(Long scheduleId);
 
     void updateScheduleImage(Long scheduleId, List<String> imageUrls);
+
+    int closeExpiredSchedules();
 }

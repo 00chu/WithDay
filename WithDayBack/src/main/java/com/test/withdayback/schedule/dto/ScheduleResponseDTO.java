@@ -21,6 +21,9 @@ public class ScheduleResponseDTO {
     private String recruitEndDate;
     private String genderLimit;
     private String costType;
+    private Boolean viewerIsHost;
+    private String viewerParticipationStatus;
+    private Boolean viewerCanAccessChatLink;
     private Schedule schedule;
     private List<ScheduleDetail> details;
     private List<ScheduleImage> images;
@@ -39,5 +42,7 @@ public class ScheduleResponseDTO {
         this.costType = schedule != null && schedule.getCostType() != null
                 ? schedule.getCostType().name()
                 : null;
+        this.viewerIsHost = false;
+        this.viewerCanAccessChatLink = false;
     }
 }

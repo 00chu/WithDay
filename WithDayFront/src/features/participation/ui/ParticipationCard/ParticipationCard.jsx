@@ -40,6 +40,7 @@ function ParticipationCard({ item, onAction, isActionLoading = false }) {
         <div className={styles.tags}>
           <span className={styles.categoryBadge}>{item.category}</span>
           <span className={styles.dDayBadge}>{item.dDay}</span>
+          <span className={styles.phaseBadge}>{item.schedulePhase}</span>
           <span className={clsx(styles.statusBadge, styles[meta.badgeClass])}>
             {meta.badgeText}
           </span>

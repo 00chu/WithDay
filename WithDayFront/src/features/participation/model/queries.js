@@ -92,7 +92,12 @@ export const useParticipationMutation = (email) => {
   };
 };
 
-export const useScheduleApplicantsQuery = ({ scheduleId, email, status }) =>
+export const useScheduleApplicantsQuery = ({
+  scheduleId,
+  email,
+  status,
+  enabled,
+}) =>
   useQuery({
     queryKey: participationQueryKeys.scheduleApplicants(scheduleId, email, status),
     queryFn: () =>
@@ -101,7 +106,7 @@ export const useScheduleApplicantsQuery = ({ scheduleId, email, status }) =>
         email,
         status,
       }),
-    enabled: Boolean(scheduleId && email),
+    enabled: enabled ?? Boolean(scheduleId && email),
     select: normalizeScheduleApplicantsResponse,
     staleTime: 1000 * 30,
     retry: false,

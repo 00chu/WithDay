@@ -16,7 +16,7 @@ const ACTIONS_BY_STATUS = {
   ],
   APPROVED: [
     {
-      label: "승인 취소",
+      label: "참여 취소",
       status: "CANCELLED",
       variant: "outline",
     },

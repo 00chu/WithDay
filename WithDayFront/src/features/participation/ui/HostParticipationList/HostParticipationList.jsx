@@ -1,4 +1,6 @@
 import clsx from "clsx";
+import Button from "../../../../shared/ui/Button/Button";
+import { HOST_APPLICANT_STATUS_FILTERS } from "../../model/constants";
 import HostParticipationCard from "../HostParticipationCard/HostParticipationCard";
 import styles from "./HostParticipationList.module.css";
 import participationStyles from "../Participation.module.css";
@@ -10,6 +12,8 @@ function HostParticipationList({
   emptyMessage,
   hostEmail,
   onItemAction,
+  activeStatus,
+  onStatusChange,
   isActionLoading = false,
 }) {
   if (loading) {
@@ -49,6 +53,20 @@ function HostParticipationList({
         <p className={styles.description}>
           현재 일정에 신청한 사용자를 확인하고 상태를 변경할 수 있습니다.
         </p>
+      </div>
+
+      <div className={styles.filterGroup}>
+        {HOST_APPLICANT_STATUS_FILTERS.map((filter) => (
+          <Button
+            key={filter.value}
+            type="button"
+            variant={activeStatus === filter.value ? "accent" : "outline"}
+            size="sm"
+            onClick={() => onStatusChange(filter.value)}
+          >
+            {filter.label}
+          </Button>
+        ))}
       </div>
 
       {!items || items.length === 0 ? (

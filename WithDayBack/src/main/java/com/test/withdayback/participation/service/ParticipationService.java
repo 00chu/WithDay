@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -111,6 +112,18 @@ public class ParticipationService {
 
         if (schedule.getStatus() != ScheduleStatus.recruiting) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "모집 중인 일정만 신청할 수 있습니다.");
+        }
+
+        if (isScheduleEnded(schedule.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "종료된 일정에는 신청할 수 없습니다.");
+        }
+
+        if (isRecruitmentClosed(schedule.getRecruitEndDate())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "모집이 마감된 일정입니다.");
+        }
+
+        if (isScheduleFull(schedule)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "정원이 마감된 일정입니다.");
         }
 
         if (schedule.getUserId() != null && schedule.getUserId().longValue() == user.getId()) {
@@ -227,13 +240,21 @@ public class ParticipationService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "호스트만 상태를 변경할 수 있습니다.");
         }
 
-        if (schedule.getStatus() != ScheduleStatus.recruiting) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "모집 중인 일정만 상태를 변경할 수 있습니다.");
+        if (isScheduleEnded(schedule.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "종료된 일정의 참여 상태는 변경할 수 없습니다.");
         }
 
         ParticipationStatus currentStatus = participation.getStatus();
         if (currentStatus == null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "현재 상태를 확인할 수 없습니다.");
+        }
+
+        boolean canManageWhileClosed = currentStatus == ParticipationStatus.APPROVED
+                && targetStatus == ParticipationStatus.CANCELLED
+                && schedule.getStatus() == ScheduleStatus.closed;
+
+        if (schedule.getStatus() != ScheduleStatus.recruiting && !canManageWhileClosed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "모집 중인 일정만 상태를 변경할 수 있습니다.");
         }
 
         if (!currentStatus.canTransitionTo(targetStatus)) {
@@ -294,6 +315,15 @@ public class ParticipationService {
             );
         }
 
+        if (targetStatus == ParticipationStatus.APPROVED) {
+            scheduleDao.closeScheduleWhenFull(updatedSchedule.getId());
+            updatedSchedule = scheduleDao.selectScheduleById(updatedSchedule.getId());
+        } else if (currentStatus == ParticipationStatus.APPROVED
+                && targetStatus == ParticipationStatus.CANCELLED) {
+            scheduleDao.reopenScheduleWhenSlotAvailable(updatedSchedule.getId());
+            updatedSchedule = scheduleDao.selectScheduleById(updatedSchedule.getId());
+        }
+
         return new ParticipationStatusUpdateResponseDTO(
                 participationId,
                 updatedSchedule.getId(),
@@ -334,5 +364,37 @@ public class ParticipationService {
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
+    }
+
+    private boolean isScheduleEnded(String endDate) {
+        LocalDate parsedEndDate = parseDate(endDate);
+        return parsedEndDate != null && parsedEndDate.isBefore(LocalDate.now(ZoneId.of("Asia/Seoul")));
+    }
+
+    private boolean isRecruitmentClosed(String recruitEndDate) {
+        LocalDate parsedRecruitEndDate = parseDate(recruitEndDate);
+        return parsedRecruitEndDate != null
+                && parsedRecruitEndDate.isBefore(LocalDate.now(ZoneId.of("Asia/Seoul")));
+    }
+
+    private boolean isScheduleFull(Schedule schedule) {
+        if (schedule == null) {
+            return false;
+        }
+
+        Integer currentParticipants = schedule.getCurrentParticipants();
+        Integer maxParticipants = schedule.getMaxParticipants();
+
+        return currentParticipants != null
+                && maxParticipants != null
+                && currentParticipants >= maxParticipants;
+    }
+
+    private LocalDate parseDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return LocalDate.parse(value);
     }
 }

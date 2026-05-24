@@ -55,6 +55,12 @@ const COST_TYPE_LABELS = {
 
 const DEFAULT_IMAGE = "https://placehold.co/800x400?text=No+Image";
 const VIEWED_SCHEDULE_STORAGE_KEY_PREFIX = "viewed_schedule_";
+const HOST_STATUS_LABELS = {
+  PENDING: "승인 대기",
+  APPROVED: "승인 완료",
+  REJECTED: "거절",
+  CANCELLED: "참여 취소",
+};
 
 const formatLocation = (schedule) => {
   const region = schedule?.region?.trim() ?? "";
@@ -65,6 +71,62 @@ const formatLocation = (schedule) => {
   }
 
   return region || detailRegion || "장소 미정";
+};
+
+const resolveSchedulePhase = (schedule) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const normalizedStatus = schedule?.status?.trim()?.toLowerCase() ?? "";
+
+  const startDate = schedule?.startDate ? new Date(schedule.startDate) : null;
+  const endDate = schedule?.endDate ? new Date(schedule.endDate) : null;
+  const recruitEndDate = schedule?.recruitEndDate
+    ? new Date(schedule.recruitEndDate)
+    : null;
+
+  if (startDate) {
+    startDate.setHours(0, 0, 0, 0);
+  }
+
+  if (endDate) {
+    endDate.setHours(0, 0, 0, 0);
+  }
+
+  if (recruitEndDate) {
+    recruitEndDate.setHours(0, 0, 0, 0);
+  }
+
+  if (normalizedStatus === "cancelled") {
+    return { label: "취소됨", className: styles.statusClosed };
+  }
+
+  if (
+    normalizedStatus === "completed" ||
+    (endDate instanceof Date && !Number.isNaN(endDate.getTime()) && endDate < today)
+  ) {
+    return { label: "종료", className: styles.statusClosed };
+  }
+
+  if (
+    startDate instanceof Date &&
+    !Number.isNaN(startDate.getTime()) &&
+    startDate <= today &&
+    (!(endDate instanceof Date) || Number.isNaN(endDate.getTime()) || endDate >= today)
+  ) {
+    return { label: "진행중", className: styles.statusInProgress };
+  }
+
+  if (
+    normalizedStatus === "closed" ||
+    (recruitEndDate instanceof Date &&
+      !Number.isNaN(recruitEndDate.getTime()) &&
+      recruitEndDate < today)
+  ) {
+    return { label: "모집종료", className: styles.statusClosed };
+  }
+
+  return { label: "모집중", className: styles.statusOpen };
 };
 
 export default function ScheduleDetail() {
@@ -80,6 +142,7 @@ export default function ScheduleDetail() {
   const [viewCountReadyScheduleId, setViewCountReadyScheduleId] =
     useState(null);
   const [open, setOpen] = useState(false);
+  const [applicantStatus, setApplicantStatus] = useState("PENDING");
 
   const authEmail = authUser?.email?.trim() ?? "";
   const parsedScheduleId = Number(scheduleId);
@@ -147,8 +210,8 @@ export default function ScheduleDetail() {
     isError,
     error,
   } = useQuery({
-    queryKey: ["schedule-detail", parsedScheduleId],
-    queryFn: () => fetchScheduleDetail(parsedScheduleId),
+    queryKey: ["schedule-detail", parsedScheduleId, authEmail || "guest"],
+    queryFn: () => fetchScheduleDetail(parsedScheduleId, authEmail),
     enabled:
       Number.isFinite(parsedScheduleId) &&
       parsedScheduleId > 0 &&
@@ -157,6 +220,7 @@ export default function ScheduleDetail() {
   });
 
   const postHostEmail = data?.email;
+  const viewerIsHost = Boolean(data?.viewerIsHost);
 
   const {
     data: applicants = [],
@@ -165,7 +229,8 @@ export default function ScheduleDetail() {
   } = useScheduleApplicantsQuery({
     scheduleId: parsedScheduleId,
     email: authEmail,
-    status: "PENDING",
+    status: applicantStatus,
+    enabled: viewerIsHost,
   });
 
   const { updateParticipationStatus, isPending: isStatusUpdating } =
@@ -318,12 +383,15 @@ export default function ScheduleDetail() {
   }
 
   const schedule = data.schedule;
+  const viewerParticipationStatus = data.viewerParticipationStatus ?? "";
+  const viewerCanAccessChatLink = Boolean(data.viewerCanAccessChatLink);
   const details = Array.isArray(data.details) ? data.details : [];
   const rawImages = Array.isArray(data.images) ? data.images : [];
   const locationText = formatLocation(schedule);
 
   const categoryLabel =
     CATEGORY_LABELS[schedule.category] ?? schedule.category ?? "기타";
+  const schedulePhase = resolveSchedulePhase(schedule);
 
   const imageUrls =
     rawImages.length > 0
@@ -408,13 +476,9 @@ export default function ScheduleDetail() {
             <span className={styles.categoryBadge}>{categoryLabel}</span>
 
             <span
-              className={
-                schedule.status === "recruiting"
-                  ? styles.statusOpen
-                  : styles.statusClosed
-              }
+              className={schedulePhase.className}
             >
-              {schedule.status === "recruiting" ? "모집중" : "모집종료"}
+              {schedulePhase.label}
             </span>
           </div>
 
@@ -550,6 +614,28 @@ export default function ScheduleDetail() {
 
         <hr className={styles.divider} />
 
+        <section className={styles.chatLinkSection}>
+          <h2 className={styles.subTitle}>오픈채팅방</h2>
+          {viewerCanAccessChatLink && schedule.chatLink ? (
+            <a
+              href={schedule.chatLink}
+              target="_blank"
+              rel="noreferrer"
+              className={styles.chatLink}
+            >
+              오픈채팅방 바로가기
+            </a>
+          ) : (
+            <p className={styles.chatLinkNotice}>
+              {viewerIsHost || viewerParticipationStatus === "APPROVED"
+                ? "등록된 오픈채팅방 링크가 없습니다."
+                : "오픈채팅방 링크는 참여 승인 후 확인할 수 있습니다."}
+            </p>
+          )}
+        </section>
+
+        <hr className={styles.divider} />
+
         <section className={styles.descriptionSection}>
           <h2 className={styles.subTitle}>상세 설명</h2>
 
@@ -617,14 +703,16 @@ export default function ScheduleDetail() {
         )}
       </div>
 
-      {isLoggedIn && authEmail && !isApplicantsForbidden && (
+      {isLoggedIn && authEmail && viewerIsHost && !isApplicantsForbidden && (
         <HostParticipationList
           items={applicants}
           loading={isApplicantsLoading}
           errorMessage={applicantsErrorMessage}
-          emptyMessage="승인 대기중인 신청자가 없습니다."
+          emptyMessage={`${HOST_STATUS_LABELS[applicantStatus] ?? "선택한 상태"} 신청자가 없습니다.`}
           hostEmail={authEmail}
           onItemAction={handleApplicantAction}
+          activeStatus={applicantStatus}
+          onStatusChange={setApplicantStatus}
           isActionLoading={isStatusUpdating}
         />
       )}
@@ -639,6 +727,9 @@ export default function ScheduleDetail() {
         <ApplyScheduleButton
           scheduleId={schedule.id}
           status={schedule.status}
+          recruitEndDate={schedule.recruitEndDate}
+          viewerParticipationStatus={viewerParticipationStatus}
+          isHost={viewerIsHost}
         />
       </footer>
 

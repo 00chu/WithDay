@@ -45,6 +45,41 @@ const formatDisplayDDay = (startDate) => {
   return "-";
 };
 
+const resolveSchedulePhase = ({
+  endDate,
+  recruitEndDate,
+  scheduleStatus,
+  startDate,
+}) => {
+  const today = dayjs().startOf("day");
+  const normalizedStatus = scheduleStatus?.trim()?.toLowerCase() ?? "";
+  const end = endDate ? dayjs(endDate).startOf("day") : null;
+  const start = startDate ? dayjs(startDate).startOf("day") : null;
+  const recruitEnd = recruitEndDate ? dayjs(recruitEndDate).startOf("day") : null;
+
+  if (normalizedStatus === "cancelled") {
+    return "취소됨";
+  }
+
+  if (normalizedStatus === "completed" || (end?.isValid() && end.isBefore(today))) {
+    return "종료";
+  }
+
+  if (
+    start?.isValid() &&
+    (start.isSame(today) || start.isBefore(today)) &&
+    (!end?.isValid() || end.isSame(today) || end.isAfter(today))
+  ) {
+    return "진행중";
+  }
+
+  if (normalizedStatus === "closed" || (recruitEnd?.isValid() && recruitEnd.isBefore(today))) {
+    return "모집종료";
+  }
+
+  return "모집중";
+};
+
 export const normalizeMyScheduleItem = (item) => ({
   id: item.participationId ?? item.scheduleId,
   scheduleId: item.scheduleId,
@@ -57,6 +92,14 @@ export const normalizeMyScheduleItem = (item) => ({
   currentPeople: item.currentPeople ?? 0,
   maxPeople: item.maxPeople ?? 0,
   dbStatus: normalizeParticipationStatus(item.dbStatus),
+  scheduleStatus: item.scheduleStatus ?? "",
+  recruitEndDate: item.recruitEndDate ?? "",
+  schedulePhase: resolveSchedulePhase({
+    endDate: item.endDate,
+    recruitEndDate: item.recruitEndDate,
+    scheduleStatus: item.scheduleStatus,
+    startDate: item.startDate,
+  }),
   myRole: item.host ? "host" : undefined,
   thumbnail: item.thumbnail ?? "",
 });

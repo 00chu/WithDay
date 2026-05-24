@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  border-radius: 24px;
+  height: 100%;
   background: transparent;
   filter: var(--shadow-card-ticket);
   cursor: pointer;
@@ -33,33 +33,35 @@
 .cardTop {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 18px 18px 14px;
-  border-radius: 24px 24px 0 0;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 10px;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .cardTopCompact {
-  gap: 14px;
-  padding: 14px 14px 12px;
+  gap: 10px;
+  padding: 12px 12px 10px;
 }
 
 .headerRow {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
+  gap: 10px;
 }
 
 .deadlineBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 24px;
+  min-height: 22px;
   padding: 0 8px;
   border-radius: 999px;
   background: var(--color-status-available-bg);
   color: var(--color-status-available);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: -0.01em;
   flex-shrink: 0;
@@ -76,48 +78,42 @@
 }
 
 .deadlineBadgeCompact {
-  min-height: 22px;
-  padding: 0 7px;
-  font-size: 0.74rem;
+  min-height: 20px;
+  padding: 0 6px;
+  font-size: 0.68rem;
 }
 
 .infoStack {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
+  flex: 1 1 0;
+  gap: 4px;
   min-width: 0;
+  max-width: 100%;
   text-align: right;
 }
 
 .infoLine {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 4px;
+  width: 100%;
   min-width: 0;
   color: var(--color-text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .infoLineCompact {
-  gap: 4px;
-  font-size: 0.72rem;
-}
-
-.infoIcon {
-  flex-shrink: 0;
-  font-size: 0.88rem !important;
-  color: var(--color-text-muted);
-}
-
-.infoIconCompact {
-  font-size: 0.78rem !important;
+  font-size: 0.66rem;
 }
 
 .infoText {
+  display: block;
+  width: 100%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -125,41 +121,79 @@
 }
 
 .bodySection {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  gap: 8px;
+  min-height: 0;
+}
+
+.metaRow {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.categoryTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--color-surface-highlight);
+  color: var(--color-accent-dark);
+  font-size: 0.68rem;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .cardTitle {
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 1.9rem;
+  font-size: 1rem;
   font-weight: 800;
-  line-height: 1.25;
-  letter-spacing: -0.03em;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: calc(1.28em * 1);
+  max-height: calc(1.28em * 1);
   word-break: keep-all;
 }
 
 .cardTitleCompact {
-  font-size: 1.05rem;
-  line-height: 1.35;
+  font-size: 0.96rem;
+  line-height: 1.28;
+  min-height: calc(1.28em * 1);
+  max-height: calc(1.28em * 1);
 }
 
 .cardDescription {
   margin: 0;
   color: var(--color-text-secondary);
-  font-size: 0.82rem;
-  line-height: 1.55;
+  font-size: 0.74rem;
+  line-height: 1.45;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: calc(1.45em * 1);
+  max-height: calc(1.45em * 1);
   word-break: keep-all;
 }
 
 .cardDescriptionCompact {
-  font-size: 0.72rem;
-  -webkit-line-clamp: 2;
+  font-size: 0.7rem;
+  -webkit-line-clamp: 1;
+  min-height: calc(1.45em * 1);
+  max-height: calc(1.45em * 1);
 }
 
 .ticketDivider {
@@ -167,8 +201,7 @@
   height: 34px;
   background: var(--color-surface);
   transition: background-color 0.24s ease;
-  -webkit-mask-image:
-    radial-gradient(
+  -webkit-mask-image: radial-gradient(
       circle at left center,
       transparent 0 13px,
       var(--color-mask-solid) 13.5px
@@ -181,8 +214,7 @@
   -webkit-mask-size: 51% 100%;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: left, right;
-  mask-image:
-    radial-gradient(
+  mask-image: radial-gradient(
       circle at left center,
       transparent 0 13px,
       var(--color-mask-solid) 13.5px
@@ -208,20 +240,18 @@
 }
 
 .cardBottom {
-  padding: 0 18px 18px;
-  border-radius: 0 0 24px 24px;
+  padding: 0 14px 14px;
 }
 
 .cardBottomCompact {
-  padding: 0 14px 14px;
+  padding: 0 12px 12px;
 }
 
 .thumbnailWrap {
   position: relative;
   width: 100%;
-  height: 188px;
+  height: 138px;
   overflow: hidden;
-  border-radius: 16px;
   background: linear-gradient(
     180deg,
     var(--color-bg) 0%,
@@ -231,7 +261,6 @@
 
 .thumbnailWrapCompact {
   height: 118px;
-  border-radius: 12px;
 }
 
 .thumbnail {
@@ -239,6 +268,16 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+}
+
+.thumbnailFallback {
+  object-fit: fill;
+  object-position: center center;
+}
+
+.cardCompact .thumbnailFallback {
+  object-fit: fill;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -255,41 +294,41 @@
 
 @media (max-width: 639px) {
   .cardTop {
-    gap: 16px;
-    padding: 16px 16px 12px;
+    gap: 10px;
+    padding: 13px 13px 10px;
   }
 
   .cardTopCompact {
-    gap: 12px;
-    padding: 13px 13px 11px;
+    gap: 9px;
+    padding: 11px 11px 9px;
   }
 
   .headerRow {
-    gap: 12px;
+    gap: 8px;
   }
 
   .cardTitle {
-    font-size: 1.18rem;
+    font-size: 0.92rem;
   }
 
   .cardTitleCompact {
-    font-size: 0.98rem;
+    font-size: 0.88rem;
   }
 
   .cardDescription {
-    font-size: 0.78rem;
+    font-size: 0.68rem;
   }
 
   .cardDescriptionCompact {
-    font-size: 0.7rem;
+    font-size: 0.66rem;
   }
 
   .infoLine {
-    font-size: 0.76rem;
+    font-size: 0.66rem;
   }
 
   .infoLineCompact {
-    font-size: 0.68rem;
+    font-size: 0.62rem;
   }
 
   .thumbnailWrap {
@@ -298,5 +337,20 @@
 
   .thumbnailWrapCompact {
     height: 110px;
+  }
+}
+
+@media (max-width: 420px) {
+  .headerRow {
+    gap: 8px;
+  }
+
+  .cardTopCompact {
+    gap: 10px;
+    padding: 12px 12px 10px;
+  }
+
+  .infoLineCompact {
+    font-size: 0.62rem;
   }
 }
