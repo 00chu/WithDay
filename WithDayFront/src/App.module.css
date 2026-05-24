@@ -67,6 +67,10 @@
 
   /* ===== Layout ===== */
   --bottom-nav-height: 64px;
+  --bottom-nav-total-height: calc(
+    var(--bottom-nav-height) + 8px + env(safe-area-inset-bottom)
+  );
+  --toast-gap-from-chrome: 16px;
 }
 
 body {

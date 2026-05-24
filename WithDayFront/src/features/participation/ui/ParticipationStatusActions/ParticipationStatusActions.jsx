@@ -16,7 +16,7 @@ const ACTIONS_BY_STATUS = {
   ],
   APPROVED: [
     {
-      label: "참여 취소",
+      label: "추방 하기",
       status: "CANCELLED",
       variant: "outline",
     },
@@ -34,7 +34,9 @@ function ParticipationStatusActions({
   const actions = ACTIONS_BY_STATUS[status] ?? [];
 
   if (actions.length === 0) {
-    return <span className={styles.actionNote}>변경 가능한 상태가 아닙니다.</span>;
+    return (
+      <span className={styles.actionNote}>변경 가능한 상태가 아닙니다.</span>
+    );
   }
 
   return (

@@ -236,6 +236,14 @@ export default function ScheduleDetail() {
   const { updateParticipationStatus, isPending: isStatusUpdating } =
     useUpdateParticipationStatusMutation();
 
+  const handleApplyFeedback = useCallback(({ message, severity, id }) => {
+    setFeedback({
+      id: id ?? Date.now(),
+      message,
+      severity,
+    });
+  }, []);
+
   const handleDelete = async () => {
     try {
       await deleteSchedule(scheduleId);
@@ -730,6 +738,7 @@ export default function ScheduleDetail() {
           recruitEndDate={schedule.recruitEndDate}
           viewerParticipationStatus={viewerParticipationStatus}
           isHost={viewerIsHost}
+          onFeedback={handleApplyFeedback}
         />
       </footer>
 
