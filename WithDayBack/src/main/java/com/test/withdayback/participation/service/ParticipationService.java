@@ -449,6 +449,7 @@ public class ParticipationService {
              * 승인 취소로 빈자리가 생긴 경우, closed 상태였던 일정은 다시 recruiting으로 열릴 수 있다.
              * 상태 재계산 후 응답도 최신 schedule 기준으로 내려준다.
              */
+            // !!!!!!!! 여기에 승인 취소 추방으로 바꿔서 알림 설정 넣으면 될 것 가틈
             scheduleDao.reopenScheduleWhenSlotAvailable(updatedSchedule.getId());
             updatedSchedule = scheduleDao.selectScheduleById(updatedSchedule.getId());
         }
