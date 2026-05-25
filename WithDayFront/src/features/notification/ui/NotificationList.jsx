@@ -26,9 +26,14 @@ export default function NotificationList({ onClose }) {
     // 알림 읽음 처리
     await readNotification(notification.id);
 
-    // 알림 목록 다시 불러오기
+    // 알림 목록 재요청
     await queryClient.invalidateQueries({
       queryKey: ["notifications"],
+    });
+
+    // 알림 개수 재요청
+    await queryClient.invalidateQueries({
+      queryKey: ["notification-count"],
     });
 
     onClose();
