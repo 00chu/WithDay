@@ -4,10 +4,17 @@ import Snackbar from "@mui/material/Snackbar";
 function ParticipationFeedback({ feedback, onClose }) {
   return (
     <Snackbar
+      key={feedback?.id ?? "feedback"}
       open={Boolean(feedback)}
-      autoHideDuration={3000}
+      autoHideDuration={2500}
       onClose={onClose}
-      anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      sx={{
+        "&.MuiSnackbar-root": {
+          bottom:
+            "calc(var(--bottom-nav-total-height) + var(--toast-gap-from-chrome))",
+        },
+      }}
     >
       {feedback ? (
         <Alert

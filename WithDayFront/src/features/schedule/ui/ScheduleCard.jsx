@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
-import { formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
+import { dayjs, getDDay } from "../../../shared/lib/dateUtile";
 import styles from "./ScheduleCard.module.css";
 
 const GENDER_LIMIT_LABELS = {
@@ -85,6 +85,29 @@ const resolveDeadlineDate = (schedule) =>
   schedule?.start_date ??
   null;
 
+const resolvePeriodLines = (startDate, endDate) => {
+  const start = dayjs(startDate);
+  const end = dayjs(endDate);
+
+  if (!start.isValid() && !end.isValid()) {
+    return ["일정 미정"];
+  }
+
+  if (start.isValid() && !end.isValid()) {
+    return [start.format("YYYY.MM.DD")];
+  }
+
+  if (!start.isValid() && end.isValid()) {
+    return [end.format("YYYY.MM.DD")];
+  }
+
+  if (start.isSame(end, "day")) {
+    return [start.format("YYYY.MM.DD")];
+  }
+
+  return [start.format("YYYY.MM.DD"), `~ ${end.format("YYYY.MM.DD")}`];
+};
+
 export default function ScheduleCard({
   schedule,
   className,
@@ -100,8 +123,7 @@ export default function ScheduleCard({
   const categoryLabel = resolveCategoryLabel(schedule?.category);
   const regionLabel = resolveRegionLabel(schedule?.region);
   const genderLabel = resolveGenderLimitLabel(schedule?.genderLimit);
-  const periodLabel =
-    formatDateRange(schedule?.startDate, schedule?.endDate) ?? "일정 미정";
+  const periodLines = resolvePeriodLines(schedule?.startDate, schedule?.endDate);
 
   const handleCardClick = () => navigate(`/schedule/${schedule.id}`);
 
@@ -143,7 +165,19 @@ export default function ScheduleCard({
               <span className={styles.infoText}>{genderLabel}</span>
             </span>
             <span className={clsx(styles.infoLine, isCompact && styles.infoLineCompact)}>
-              <span className={styles.infoText}>{periodLabel}</span>
+              <span
+                className={clsx(
+                  styles.infoText,
+                  styles.periodText,
+                  periodLines.length > 1 && styles.periodTextMultiline
+                )}
+              >
+                {periodLines.map((line) => (
+                  <span key={line} className={styles.periodLine}>
+                    {line}
+                  </span>
+                ))}
+              </span>
             </span>
             <span className={clsx(styles.infoLine, isCompact && styles.infoLineCompact)}>
               <span className={styles.infoText}>{regionLabel}</span>

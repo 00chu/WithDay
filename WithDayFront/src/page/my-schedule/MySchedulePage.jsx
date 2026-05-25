@@ -23,11 +23,19 @@ const MySchedulePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  /*
+   * 내 일정 페이지는 참여중/신청중/호스팅 탭을 같은 화면에서 전환한다.
+   * 다른 화면에서 특정 탭으로 진입할 수 있도록 location.state.activeTab을 우선 사용한다.
+   */
   const [activeTab, setActiveTab] = useState(
     location.state?.activeTab || "participating",
   );
   const [feedback, setFeedback] = useState(null);
 
+  /*
+   * email은 내 참여 목록 조회와 취소/삭제 API의 사용자 식별값으로 쓰인다.
+   * 실제 권한 검증은 백엔드가 다시 수행하지만, 프론트에서는 사용자별 query key를 만들기 위해 필요하다.
+   */
   const email = useAuthStore((state) => state.user.email);
 
   const {
@@ -41,6 +49,7 @@ const MySchedulePage = () => {
     isPending: isMutationPending,
   } = useParticipationMutation(email);
 
+  // activeTab에 해당하는 목록만 ParticipationList에 내려준다.
   const currentItems = useMemo(
     () => schedules[activeTab] ?? [],
     [activeTab, schedules],
@@ -68,6 +77,11 @@ const MySchedulePage = () => {
     setFeedback({ severity, message });
   }, []);
 
+  /*
+   * 내 일정의 취소/삭제 액션 공통 실행 함수다.
+   * 확인창 -> API 호출 -> 성공/실패 토스트 순서가 같아서 중복을 줄였다.
+   * 성공 후 목록 재조회는 useParticipationMutation 내부의 react-query invalidate가 담당한다.
+   */
   const runScheduleMutation = useCallback(
     async ({ request, successMessage, failureMessage, confirmMessage }) => {
       if (confirmMessage && !window.confirm(confirmMessage)) {
@@ -87,6 +101,11 @@ const MySchedulePage = () => {
     [showFeedback],
   );
 
+  /*
+   * 카드 클릭/버튼 액션 분기다.
+   * host, APPROVED, CANCELLED 상태는 상세 페이지에서 확인하는 흐름이고,
+   * PENDING은 신청 취소, REJECTED/KICKED는 내역 삭제를 제공한다.
+   */
   const handleScheduleAction = useCallback(
     async (item) => {
       if (!email) {

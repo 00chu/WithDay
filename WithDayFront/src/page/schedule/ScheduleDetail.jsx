@@ -144,6 +144,10 @@ export default function ScheduleDetail() {
   const [open, setOpen] = useState(false);
   const [applicantStatus, setApplicantStatus] = useState("PENDING");
 
+  /*
+   * 참여 기능에서 email은 API 권한 확인과 사용자별 상태 조회의 기준으로 쓰인다.
+   * authStore의 user가 아직 준비되지 않았을 수 있으므로 빈 문자열 fallback을 두고, query enabled 조건에서 안전하게 제어한다.
+   */
   const authEmail = authUser?.email?.trim() ?? "";
   const parsedScheduleId = Number(scheduleId);
 
@@ -212,6 +216,11 @@ export default function ScheduleDetail() {
   } = useQuery({
     queryKey: ["schedule-detail", parsedScheduleId, authEmail || "guest"],
     queryFn: () => fetchScheduleDetail(parsedScheduleId, authEmail),
+    /*
+     * 상세 조회는 조회수 증가가 끝난 뒤 실행한다.
+     * 같은 schedule-detail 응답 안에 viewerParticipationStatus와 viewerIsHost가 포함되므로,
+     * 참여 버튼 라벨과 호스트 신청자 관리 영역도 이 query 결과를 기준으로 렌더링된다.
+     */
     enabled:
       Number.isFinite(parsedScheduleId) &&
       parsedScheduleId > 0 &&
@@ -222,6 +231,11 @@ export default function ScheduleDetail() {
   const postHostEmail = data?.email;
   const viewerIsHost = Boolean(data?.viewerIsHost);
 
+  /*
+   * 호스트 전용 신청자 목록 조회다.
+   * viewerIsHost가 true일 때만 enabled가 열리므로, 일반 참여자는 신청자 개인정보 조회 API를 호출하지 않는다.
+   * applicantStatus는 PENDING/APPROVED/REJECTED 탭 필터 역할을 한다.
+   */
   const {
     data: applicants = [],
     isPending: isApplicantsLoading,
@@ -235,6 +249,18 @@ export default function ScheduleDetail() {
 
   const { updateParticipationStatus, isPending: isStatusUpdating } =
     useUpdateParticipationStatusMutation();
+
+  /*
+   * ApplyScheduleButton은 버튼 클릭과 신청 API 호출만 담당하고, 토스트 표시는 상세 페이지에서 공통으로 처리한다.
+   * 이렇게 해야 신청 성공/실패와 호스트 승인/거절 피드백이 같은 Snackbar 위치와 스타일을 공유한다.
+   */
+  const handleApplyFeedback = useCallback(({ message, severity, id }) => {
+    setFeedback({
+      id: id ?? Date.now(),
+      message,
+      severity,
+    });
+  }, []);
 
   const handleDelete = async () => {
     try {
@@ -298,6 +324,11 @@ export default function ScheduleDetail() {
     window.open(url, "_blank");
   };
 
+  /*
+   * 호스트가 신청자 카드의 승인/거절/승인취소 버튼을 눌렀을 때 실행된다.
+   * 프론트는 먼저 로그인 사용자 email을 확인하고, 사용자 확인창을 거친 뒤 PATCH /participations/{id}/status를 호출한다.
+   * 실제 권한 검증, 상태 전이 가능 여부, 정원 증감은 백엔드 Service에서 최종 판단한다.
+   */
   const handleApplicantAction = useCallback(
     async ({ participationId, status, reason }) => {
       if (!isLoggedIn || !authEmail) {
@@ -317,6 +348,10 @@ export default function ScheduleDetail() {
       }
 
       try {
+        /*
+         * updateParticipationStatus mutation은 성공 시 신청자 목록, 내 일정 목록, 상세 화면 캐시를 무효화한다.
+         * 승인 성공 후 currentParticipants나 일정 마감 상태가 바뀔 수 있기 때문에 상세 데이터도 다시 읽어야 한다.
+         */
         await updateParticipationStatus({
           participationId,
           email: authEmail,
@@ -704,17 +739,23 @@ export default function ScheduleDetail() {
       </div>
 
       {isLoggedIn && authEmail && viewerIsHost && !isApplicantsForbidden && (
-        <HostParticipationList
-          items={applicants}
-          loading={isApplicantsLoading}
-          errorMessage={applicantsErrorMessage}
-          emptyMessage={`${HOST_STATUS_LABELS[applicantStatus] ?? "선택한 상태"} 신청자가 없습니다.`}
-          hostEmail={authEmail}
-          onItemAction={handleApplicantAction}
-          activeStatus={applicantStatus}
-          onStatusChange={setApplicantStatus}
-          isActionLoading={isStatusUpdating}
-        />
+        <>
+          {/*
+           * 신청자 관리 영역은 호스트에게만 노출한다.
+           * 일반 사용자는 viewerIsHost가 false라서 목록 API와 UI가 모두 열리지 않는다.
+           */}
+          <HostParticipationList
+            items={applicants}
+            loading={isApplicantsLoading}
+            errorMessage={applicantsErrorMessage}
+            emptyMessage={`${HOST_STATUS_LABELS[applicantStatus] ?? "선택한 상태"} 신청자가 없습니다.`}
+            hostEmail={authEmail}
+            onItemAction={handleApplicantAction}
+            activeStatus={applicantStatus}
+            onStatusChange={setApplicantStatus}
+            isActionLoading={isStatusUpdating}
+          />
+        </>
       )}
 
       <footer className={styles.stickyFooter}>
@@ -724,12 +765,18 @@ export default function ScheduleDetail() {
           </span>
         </div>
 
+        {/*
+         * 신청 버튼은 schedule.status와 recruitEndDate로 마감 여부를 먼저 판단하고,
+         * viewerParticipationStatus로 이미 신청한 사용자인지 확인한다.
+         * 최종 신청 가능 여부는 백엔드가 다시 검증하므로 프론트 판단은 UX 보조 역할이다.
+         */}
         <ApplyScheduleButton
           scheduleId={schedule.id}
           status={schedule.status}
           recruitEndDate={schedule.recruitEndDate}
           viewerParticipationStatus={viewerParticipationStatus}
           isHost={viewerIsHost}
+          onFeedback={handleApplyFeedback}
         />
       </footer>
 
