@@ -51,4 +51,10 @@
         set is_read = 1
         where id = #{notificationId}
     </update>
+
+    <select id="getNotificationTerm" resultType="int">
+        select agreed
+        from user_terms
+        where user_id = #{id} and terms_id = 4
+    </select>
 </mapper>

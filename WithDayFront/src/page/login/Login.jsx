@@ -5,7 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 // useQuery: 데이터를 가져올 때(Read) 사용. (예: 내 프로필 보기, 게시글 목록 가져오기)
 // useMutation: 데이터를 바꾸거나 보낼 때(Create, Update, Delete) 사용. (예: 로그인하기, 회원가입하기, 게시글 삭제하기)
 // 둘다 그때 사용하는 이유는 그것에 특화된 리엑트 쿼리들이라서
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { Snackbar, Alert } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -24,6 +24,7 @@ import Button from "../../shared/ui/Button/Button";
 import styles from "./Auth.module.css";
 
 import OneSignal from "../../shared/lib/oneSignal";
+import { getNotificationTerm } from "../../features/notification/api";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -84,18 +85,18 @@ const Login = () => {
 
       setLogin(token, user, variables.autoLogin); // authStore의 setLogin에 토큰, 유저정보, 자동 로그인 여부를 저장 (사이트 전체 로그인됨)
 
-      // 마케팅 동의한 사용자만
-      /*if (user_terms 4번 있을 때) {
+      // 로그인 후 진행해야 되는 부분으로 기존 방식 채택
+      // useQuery는 컴포넌트 최상단에서만 사용 가능.
+      const notificationTerm = await getNotificationTerm();
+
+      // 동의한 사용자만 OneSignal 연결
+      if (notificationTerm === 1) {
         if (window.OneSignal) {
           await window.OneSignal.Notifications.requestPermission();
 
-          await window.OneSignal.login(user.email);
+          await window.OneSignal.login(user.email.toString()); // OneSignal 유저 연결
         }
       }
-      */
-
-      await OneSignal.Notifications.requestPermission();
-      await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
 
       navigate("/");
     },
