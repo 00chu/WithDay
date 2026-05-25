@@ -44,6 +44,8 @@ const SocialExtra = () => {
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false); // 주소 검색창을 킬지 끌지 정하는 state
   const [openTerms, setOpenTerms] = useState(null); // 약관 팝업용 state(어떤 약관을 열었는지 문자열로 저장, null / "TOS" / "PRIVACY" / "MARKETING" / "NOTIFICATION")
 
+  const [step, setStep] = useState(1); // 소셜 회원가입 단계 결정하는 state ((1: 약관동의, 2: 기본정보, 3: 관심사 선택, 4: 회원가입 완료)
+
   // 페이지가 처음 딱 켜졌을 때 1번만 실행됨(useEffect니까). 이때 location 즉 다른페이지에서 넘긴 값(여기선 구글 정보)이 없다면 아래에 if문이 실행됨.
   useEffect(() => {
     // location.state: 로그인페이지에서 넘긴 구글 정보가 담긴 state.
@@ -81,6 +83,7 @@ const SocialExtra = () => {
     handleSubmit, // 에러(socialExtraSchema 규칙 틀림)가 있으면 통과 안시켜주고, 규칙을 다 지키면 진짜 제출 함수(onSubmit)를 실행시켜 줌.
     setValue, // 직접 타이핑하지 않고도 코드를 통해 강제로 값을 넣기위해 사용.
     watch, // 특정 입력창(체크박스등도 포함)을 보고 값이 바뀔때마다 화면에 반영함(렌더링). 여기선 약관 4개를 다 체크하면 전체체크에도 자동으로 체크되게 만들때 사용.
+    trigger, // 특정 입력창의 yup 검사를 강제로 실행시킴. 여기선 다음 step로 넘어갈 때 그 step에서 검사해야할 입력창들의 yup 검사를 실행시키는 데 사용.
     formState: { errors }, // 에러(socialExtraSchema 규칙 틀림)발생시 에러문구를 socialExtraSchema에서 가져옴.
   } = useForm({
     resolver: yupResolver(socialExtraSchema), // authSchema(yup)의 socialExtraSchema 규칙대로 검사한다고 지정 (일반 가입과 다르게 email, pw 검사가 빠진 규칙)
@@ -93,6 +96,26 @@ const SocialExtra = () => {
       agreeNotification: false,
     },
   }); // 여기서 세팅한 폼은 UI의 <form onSubmit={handleSubmit(onSubmit)}> 와 연결되어 검사 통과 시 onSubmit 함수로 데이터를 넘겨주고 mutation.mutate를 통해 백엔드로 값을 보냄.
+
+  // 다음으로 버튼을 눌렀을 때 step 이동 로직
+  const handleNextStep = async () => {
+    let isStepValid = false;
+
+    if (step === 1) {
+      // 1단계: 약관 필수 항목 2개만 검사 (이용약관 동의, 개인정보 수집 및 이용 동의)
+      isStepValid = await trigger(["agreeTos", "agreePrivacy"]);
+    } else if (step === 2) {
+      // 2단계: 기본 정보 검사 (닉네임, 생년월일, 성별, 전화번호, 주소)
+      isStepValid = await trigger([
+        "nickname", "birthday", "gender", "phone", "postcode", "address", "detailAddress",
+      ]);
+    }
+
+    // 검사가 통과(isStepValid가 true)하면 step을 1 증가시켜서 다음 step으로 넘어가게 함.
+    if (isStepValid) {
+      setStep((prev) => prev + 1);
+    }
+  };
 
   // watch로 4개의 체크박스를 실시간으로 확인하여 4개 다 true면 allAgreed도 true가 됨.
   const allAgreed =

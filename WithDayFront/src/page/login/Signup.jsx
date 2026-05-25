@@ -809,12 +809,16 @@ const Signup = () => {
       </div>
 
       <div className={styles.imageSection}>
+        <img 
+          src="/withday_signup_bg.jpg" 
+          alt="WithDay Background" 
+          className={styles.bgImage} 
+        />
+        
         <div className={styles.imageOverlay}>
           <p className={styles.overlayLogo}>WITHDAY</p>
           <h1 className={styles.overlayTitle}>누군가와<br/>함께 떠나는 설렘</h1>
-          <p className={styles.overlaySubtitle}>
-            당신의 완벽한 여행 파트너를 만나고<br/>새로운 동행을 시작해보세요.
-          </p>
+          {/* 소제목 삭제 완료 */}
         </div>
       </div>
 

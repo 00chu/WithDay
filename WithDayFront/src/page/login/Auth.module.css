@@ -1,151 +1,411 @@
 /* =========================================
-   [공통 & 로그인 전용] 기본 뼈대 스타일
-   (🚨 로그인 페이지가 망가지지 않게 절대 보존!)
+   [공통 & 로그인 전용]
    ========================================= */
-.container { display: flex; justify-content: center; align-items: center; padding: 20px; min-height: calc(100vh - 120px); }
-.card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); width: 100%; max-width: 400px; }
-.header { text-align: center; margin-bottom: 30px; }
-.title { font-size: 24px; font-weight: bold; color: #333; margin-bottom: 8px; }
-.subtitle { font-size: 14px; color: #666; }
-.form { display: flex; flex-direction: column; gap: 20px; }
-.linkText { text-align: center; margin-top: 24px; font-size: 14px; color: #666; }
-.linkClickable { cursor: pointer; text-decoration: underline; color: #007bff; font-weight: bold; }
-.inputRow { display: flex; gap: 8px; }
-.inputRowCenter { display: flex; gap: 8px; align-items: center; }
-.flex1 { flex: 1; width: 100%; }
-.marginBottom8 { margin-bottom: 8px; }
-.errorText { color: #ff4d4f; font-size: 12px; margin-top: 4px; font-weight: bold; }
-.successText { color: #28a745; font-size: 12px; margin-top: 4px; font-weight: bold; }
-.pwInputWrap { position: relative; width: 100%; }
-.pwIcon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #aaa; display: flex; align-items: center; justify-content: center; transition: color 0.2s ease; }
-.pwIcon:hover { color: #333; }
-.checkboxLabel { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
-.checkboxText { font-size: 14px; color: #333; }
-.googleLoginWrap { margin-top: 24px; display: flex; justify-content: center; }
-.termPre { white-space: pre-wrap; word-break: break-word; font-family: inherit; margin: 0; font-size: 14px; line-height: 1.6; color: #444; padding: 10px; }
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f7fa;
+  padding: 20px;
+  min-height: calc(100vh - 120px);
+}
+
+.card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.linkText {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+  color: #666;
+}
+
+.linkClickable {
+  cursor: pointer;
+  text-decoration: underline;
+  color: #007bff;
+  font-weight: bold;
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.inputRowCenter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.flex1 {
+  flex: 1;
+  width: 100%;
+}
+
+.marginBottom8 {
+  margin-bottom: 8px;
+}
+
+.errorText {
+  color: #ff4d4f;
+  font-size: 12.5px;
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+.successText {
+  color: #28a745;
+  font-size: 12.5px;
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+.pwInputWrap {
+  position: relative;
+  width: 100%;
+}
+
+.pwIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.pwIcon:hover {
+  color: #333;
+}
+
+.termPre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #444;
+  padding: 10px;
+}
 
 
 /* =========================================
-   🚀 [회원가입 전용] 피그마 완벽 구현 레이아웃
+   [회원가입 전용] 메인 레이아웃
    ========================================= */
 .signupPage {
-  /* 💡 App.module.css 팔레트 색상 동기화 완벽 해결 (WithDay 청록색) */
-  --color-primary: #1e293b; 
   --color-accent: var(--wd-main, #00b8d4); 
   --color-accent-dark: var(--wd-main-dark, #009eb5);
+  --color-surface: #ffffff; 
+  --color-border: #dee2e6; 
+  --color-border-light: #e9ecef;
   
-  --color-surface: #ffffff; --color-border: #dee2e6; --color-border-light: #e9ecef;
-  --color-text-primary: #212529; --color-text-secondary: #495057; --color-text-muted: #adb5bd;
-  --color-text-inverse: #ffffff;
-  --shadow-hero: 0 16px 48px rgba(0,0,0,0.07);
-  
-  display: flex;
-  min-height: calc(100vh - 120px);
-  position: relative;
-  overflow: hidden;
-}
-
-/* --- [우측 구역] 배경 이미지 --- */
-.imageSection {
-  flex: 1; 
-  position: relative;
-  background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=800');
-  background-size: cover; 
-  background-position: center;
-  z-index: 1;
-}
-
-.imageOverlay {
-  position: absolute;
-  top: 0; bottom: 0; right: 0; left: -2px; 
-  background: linear-gradient(to right, rgba(245,247,250, 1) 0%, rgba(245,247,250, 0) 10%, rgba(0,0,0,0.15) 30%), 
-              linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
-  display: flex;
-  flex-direction: column;
-  justify-content: center; 
-  padding: 80px 10% 80px 15%; 
-  text-align: left;
-  color: white;
-}
-
-.overlayLogo { font-size: 14px; font-weight: 800; letter-spacing: 0.2em; margin-bottom: 12px; color: var(--color-accent); text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.overlayTitle { font-size: 40px; font-weight: 800; line-height: 1.25; margin: 0 0 16px 0; letter-spacing: -0.03em; text-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-.overlaySubtitle { font-size: 16px; line-height: 1.6; font-weight: 500; opacity: 0.95; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-
-/* --- [좌측 구역] 회원가입 폼 (카드 형태) --- */
-.formSection {
-  flex: 1.1; 
   display: flex;
   justify-content: center;
-  align-items: center; 
-  position: relative;
+  align-items: center;
+  gap: 50px;
+  min-height: calc(100vh - 120px);
+  padding: 40px 20px;
+  
+  /* 💡 배경색 완전 투명 처리 -> 사이트 공통 배경색(--color-bg)과 완벽 동기화 */
+  background-color: transparent; 
+  box-sizing: border-box;
+}
+
+/* --- [좌측 구역] 회원가입 폼 --- */
+.formSection {
+  flex: 0 1 660px; 
+  width: 100%;
+  display: flex;
+  justify-content: center;
   z-index: 10; 
-  padding: 40px;
 }
 
 .formCard {
   width: 100%;
-  max-width: 660px; 
   height: 740px; 
   background: white;
   padding: 50px;
   border-radius: 24px; 
-  box-shadow: var(--shadow-hero); 
+  box-shadow: 0 16px 48px rgba(0,0,0,0.07);
   overflow-y: auto; 
-  -ms-overflow-style: none;
-  scrollbar-width: none;
   display: flex;
   flex-direction: column;
+  
+  /* 💡 높이 오차 해결: padding이 높이에 덧셈되지 않게 만듦 */
+  box-sizing: border-box; 
 }
+
+/* 스크롤바 완전 숨김 */
+.formCard { -ms-overflow-style: none; scrollbar-width: none; }
 .formCard::-webkit-scrollbar { display: none; }
 
 
+/* --- [우측 구역] 감성 꼴라주 이미지 --- */
+.imageSection {
+  height: 740px; 
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 24px; 
+  overflow: hidden; 
+  
+  /* 💡 폼카드와 높이를 완벽 일치시킴 */
+  box-sizing: border-box;
+}
+
+.bgImage {
+  width: 100%; 
+  height: 100%;
+  object-fit: contain; 
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.55);
+  padding: 40px 30px;
+  border-radius: 24px;
+  text-align: center;
+  width: 60%;
+  max-width: 420px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.overlayLogo {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  margin-bottom: 12px;
+  color: var(--color-accent);
+}
+
+.overlayTitle {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.3;
+  margin: 0;
+  letter-spacing: -0.03em;
+  color: #1e293b;
+}
+
+
 /* --- 상단 스텝바 --- */
-.signupStepper { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-bottom: 40px; flex-shrink: 0; }
-.signupStep { position: relative; text-align: center; color: var(--color-text-muted); font-size: 13px; font-weight: 700; }
-.signupStep:not(:last-child)::after { content: ""; position: absolute; top: 15px; left: calc(50% + 24px); width: calc(100% - 32px); height: 1.5px; background: var(--color-border-light); }
-.signupStepDone:not(:last-child)::after { background: var(--color-accent); }
-.signupStepNumber { position: relative; z-index: 1; display: grid; place-items: center; width: 32px; height: 32px; margin: 0 auto 10px; border: 1px solid var(--color-border); border-radius: 50%; background: var(--color-surface); color: var(--color-text-muted); font-size: 15px; font-weight: 800; }
-.signupStepActive, .signupStepDone { color: var(--color-accent-dark); }
-.signupStepActive .signupStepNumber, .signupStepDone .signupStepNumber { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-text-inverse); }
-.signupStepDone .signupStepNumber::before { content: ""; width: 10px; height: 6px; border-left: 2px solid var(--color-text-inverse); border-bottom: 2px solid var(--color-text-inverse); transform: rotate(-45deg) translate(1px, -1px); }
-.signupStepDone .signupStepNumber span { display: none; }
-.signupStepLabel { word-break: keep-all; }
+.signupStepper {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 40px;
+  flex-shrink: 0;
+}
+
+.signupStep {
+  position: relative;
+  text-align: center;
+  color: #adb5bd;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.signupStep:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: calc(50% + 24px);
+  width: calc(100% - 32px);
+  height: 1.5px;
+  background: var(--color-border-light);
+}
+
+.signupStepDone:not(:last-child)::after {
+  background: var(--color-accent);
+}
+
+.signupStepNumber {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: #adb5bd;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.signupStepActive, .signupStepDone {
+  color: var(--color-accent-dark);
+}
+
+.signupStepActive .signupStepNumber, .signupStepDone .signupStepNumber {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+.signupStepDone .signupStepNumber::before {
+  content: "";
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid var(--color-text-inverse);
+  border-bottom: 2px solid var(--color-text-inverse);
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+
+.signupStepDone .signupStepNumber span {
+  display: none;
+}
+
+.signupStepLabel {
+  word-break: keep-all;
+}
 
 
 /* --- 스텝 제목 및 폼 레이아웃 --- */
-.flowHero { margin-bottom: 30px; text-align: left; flex-shrink: 0; }
-.flowEyebrow { margin: 0 0 8px; color: var(--color-accent); font-size: 12px; font-weight: 800; letter-spacing: 0.12em; }
-.flowTitle { margin: 0; color: var(--color-text-primary); line-height: 1.3; letter-spacing: -0.04em; font-size: 28px; font-weight: 800;}
+.flowHero {
+  margin-bottom: 30px;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.flowEyebrow {
+  margin: 0 0 8px;
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.flowTitle {
+  margin: 0;
+  color: #212529;
+  line-height: 1.3;
+  letter-spacing: -0.04em;
+  font-size: 28px;
+  font-weight: 800;
+}
 
 .stackLg { display: flex; flex-direction: column; gap: 22px; }
 .inputSpace { display: flex; flex-direction: column; gap: 24px; } 
 
 
 /* --- 약관 패널 --- */
-.panel { border: 1px solid var(--color-border-light); border-radius: 16px; background: var(--color-surface); display: block; overflow: hidden; }
-.panelStrong { border-color: color-mix(in srgb, #007bff 8%, transparent); background: linear-gradient(135deg, #0056b3 0%, #339af0 100%); }
-.panelInteractive { transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease; }
-.panelInteractive:hover { transform: translateY(-1px); border-color: var(--color-accent-dark); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.panel {
+  border: 1px solid var(--color-border-light);
+  border-radius: 16px;
+  background: var(--color-surface);
+  display: block;
+  overflow: hidden;
+}
 
-.checkCard { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; cursor: pointer; position: relative;}
+.panelStrong {
+  border-color: color-mix(in srgb, #007bff 8%, transparent);
+  background: linear-gradient(135deg, #0056b3 0%, #339af0 100%);
+}
+
+.panelInteractive {
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.panelInteractive:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-accent-dark);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.checkCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 20px;
+  cursor: pointer;
+  position: relative;
+}
+
 .checkCardStrong { color: var(--color-text-inverse); }
 .checkCardStrong .checkTitle { color: inherit; }
-.checkInput input { width: 18px; height: 18px; accent-color: var(--color-accent); cursor: pointer; margin-top: 2px; }
+
+/* 💡 너무 화려했던 accent-color 삭제 -> 평범하고 정직한 기본 블루 컬러 적용 */
+.checkInput input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  margin-top: 2px;
+}
 
 .checkBody { 
   display: flex; 
-  flex-direction: row; 
+  flex-direction: row; /* PC 기본은 가로 배치 */
   align-items: center;
   flex-wrap: wrap; 
   gap: 4px; 
   flex: 1; 
   min-width: 0; 
 }
-.checkHeader { display: flex; align-items: center; gap: 8px; }
-.checkTitle { color: var(--color-text-primary); font-size: 15px; font-weight: 800; white-space: nowrap; }
-.badge { display: inline-flex; align-items: center; min-height: 22px; padding: 0 8px; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface)); color: var(--color-accent-dark); font-size: 11px; font-weight: 800; flex-shrink: 0; }
+
+.checkHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkTitle {
+  color: #212529;
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+  color: var(--color-accent-dark);
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
 
 .flowLinkText { 
   color: var(--color-accent); 
@@ -153,77 +413,206 @@
   font-weight: 800; 
   text-decoration: underline; 
   white-space: nowrap; 
-  margin-left: auto; 
+  margin-left: auto; /* PC: 우측 끝으로 밀어냄 */
   margin-top: 1px;
-}
-
-.errorText { 
-  width: 100%; 
-  margin-top: 2px; 
-  color: #ff4d4f; 
-  font-size: 12.5px; 
-  font-weight: 700; 
+  pointer-events: auto; 
 }
 
 
 /* --- 성별 라디오 --- */
-.radioGroup { display: flex; gap: 24px; margin-top: 6px; }
-.radioLabel { cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--color-text-primary);}
+.radioGroup {
+  display: flex;
+  gap: 24px;
+  margin-top: 6px;
+}
+
+.radioLabel {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #212529;
+}
 
 
 /* --- 하단 버튼 --- */
-.signupActions { display: flex; justify-content: space-between; gap: 12px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--color-border-light); flex-shrink: 0; }
-.signupActions > * { flex: 1; min-height: 52px; font-size: 16px; font-weight: 800; }
+.signupActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+}
+
+.signupActions > * {
+  flex: 1;
+  min-height: 52px;
+  font-size: 16px;
+  font-weight: 800;
+}
 
 
-/* --- 5단계 가입 완료 --- */
-.completeArea { width: min(100%, 600px); margin: 0 auto; text-align: center; }
-.celebration { position: relative; height: 180px; margin: 20px auto 40px; }
-.checkCircle { position: absolute; inset: 50% auto auto 50%; display: grid; place-items: center; width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%); color: var(--color-text-inverse); box-shadow: 0 20px 42px color-mix(in srgb, var(--color-accent) 28%, transparent); transform: translate(-50%, -50%); z-index: 10;}
-.confetti { position: absolute; width: 9px; height: 9px; border-radius: 2px; background: var(--color-accent); opacity: 0.8; }
+/* --- 가입 완료 애니메이션 --- */
+.completeArea {
+  width: min(100%, 600px);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.celebration {
+  position: relative;
+  height: 180px;
+  margin: 20px auto 40px;
+}
+
+.checkCircle {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+  color: var(--color-text-inverse);
+  box-shadow: 0 20px 42px color-mix(in srgb, var(--color-accent) 28%, transparent);
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.confetti {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  opacity: 0.8;
+}
+
 .confettiWarning { background: #ffc107; }
 .c1 { left: 20%; top: 50%; transform: rotate(26deg); }
 .c2 { left: 30%; top: 28%; transform: rotate(-35deg); }
 .c3 { right: 20%; top: 30%; transform: rotate(38deg); }
 .c4 { right: 30%; top: 68%; transform: rotate(-18deg); }
-.autoRedirectText { margin-top: 30px; font-size: 14px; color: #888; animation: pulse 1.5s infinite; }
-@keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+.autoRedirectText {
+  margin-top: 30px;
+  font-size: 14px;
+  color: #888;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
 
 
 /* =========================================
-   📱 [반응형 실무 세밀 튜닝]
+   📱 [반응형 처리: 모바일 완벽 제어]
    ========================================= */
+
+/* 태블릿 (1100px 이하) */
 @media (max-width: 1100px) {
-  .signupPage { flex-direction: column; padding: 30px 20px; overflow-y: auto; background-color: #f5f7fa; }
-  .formSection { padding: 0; width: 100%; max-width: 700px; margin: 0 auto; flex: none; }
-  .formCard { height: auto; padding: 40px 30px; border-radius: 20px; overflow: visible; } 
-  .imageSection { flex: none; width: 100%; max-width: 700px; height: 320px; margin: 24px auto 0; border-radius: 20px; overflow: hidden; }
-  .imageOverlay { background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%); padding: 40px; justify-content: center; align-items: center; text-align: center; max-width: 100%; left: 0; }
-  .overlayTitle { font-size: 32px; }
+  .signupPage { 
+    flex-direction: column;
+    padding: 30px 20px; 
+    gap: 24px;
+  }
+  
+  .formSection { 
+    flex: none; 
+  }
+  
+  .formCard { 
+    height: auto; /* 💡 높이 고정을 풀어서 내용에 맞춰 늘어나게 함 */
+    padding: 40px 30px; 
+    border-radius: 20px; 
+  } 
+  
+  .imageSection { 
+    flex: none; 
+    width: 100%; 
+    height: 300px; /* 💡 모바일 배너 높이 고정 (사진 찌그러짐 방지) */
+    margin: 0 auto;
+    border-radius: 20px;
+  }
+  
+  .bgImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 💡 사진을 공간에 빈틈없이 채우기 */
+    border-radius: 20px;
+  }
+
+  .imageOverlay { 
+    width: 90%; 
+    padding: 30px 40px; 
+  }
 }
 
+/* 모바일 폰 (768px 이하) */
 @media (max-width: 768px) {
-  .signupPage { padding: 16px; }
-  .formCard { padding: 30px 20px; border-radius: 16px; box-shadow: var(--shadow-sm); }
+  .signupPage {
+    padding: 16px;
+    gap: 20px;
+  }
+  
+  .formCard {
+    padding: 30px 20px;
+    border-radius: 16px;
+  }
+  
   .signupStepper { gap: 3px; margin-bottom: 28px; }
   .signupStep { font-size: 11px; }
   .signupStep:not(:last-child)::after { top: 11px; left: calc(50% + 14px); width: calc(100% - 20px); height: 1px; }
   .signupStepNumber { width: 24px; height: 24px; font-size: 12px; margin-bottom: 6px;}
+  
   .flowHero { text-align: center; } 
   .flowTitle { font-size: 24px; }
   
-  .checkCard { padding: 14px; flex-direction: column; gap: 10px; align-items: flex-start;}
+  /* 💡 모바일 약관 레이아웃 완벽 제어 (요청사항 100% 반영) */
+  .checkCard {
+    flex-direction: row; /* 체크박스와 내용을 가로로 유지 */
+    align-items: flex-start;
+    padding: 14px;
+  }
+  
+  .checkBody {
+    flex-direction: column; /* 💡 [제목/뱃지]와 [자세히보기]를 세로로 나눔 */
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
   .checkInput input { margin-top: 0; }
   .checkHeader { gap: 6px; }
-  .badge { padding: 0 6px; font-size: 10px;}
+  .badge { padding: 0 6px; font-size: 10px; }
   
-  /* 모바일 환경: '자세히 보기'를 다시 왼쪽(0)으로 붙임 */
-  .flowLinkText { margin-top: 1px; margin-left: 0; }
+  .flowLinkText {
+    margin-left: 0; /* 💡 자세히보기 무조건 왼쪽 정렬 */
+    margin-top: 4px;
+  }
   
-  .signupActions { flex-direction: column-reverse; gap: 8px; margin-top: 28px; }
-  .signupActions > * { width: 100%; flex: none; }
+  .signupActions {
+    flex-direction: column-reverse;
+    gap: 8px;
+    margin-top: 28px;
+  }
+  
+  .signupActions > * {
+    width: 100%;
+    flex: none;
+  }
 
-  .imageSection { height: 280px; margin-top: 16px; border-radius: 16px; }
+  .imageSection {
+    height: 260px;
+    border-radius: 16px;
+  }
+  
   .overlayTitle { font-size: 26px; }
-  .overlaySubtitle { font-size: 14px; }
 }
