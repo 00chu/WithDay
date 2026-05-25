@@ -7,8 +7,16 @@ import ScheduleCard from "../../features/schedule/ui/ScheduleCard";
 import HomeCarousel from "./HomeCarousel";
 import { fetchSchedules } from "../../features/schedule/api";
 
+/*
+ * 홈 탭은 전체 일정 중 일부만 "추천/미리보기" 형태로 보여준다.
+ * 탐색 탭처럼 검색/카테고리 UI를 직접 노출하지 않고, 현재 선택된 지역만 반영해 가볍게 목록을 구성한다.
+ */
 const MAX_HOME_ITEMS = 8;
 
+/*
+ * React 리스트 key는 가능하면 서버 PK(id)를 사용한다.
+ * 임시 데이터나 이전 API 응답처럼 id가 비어 있을 수 있어 scheduleId와 제목/날짜 조합을 fallback으로 둔다.
+ */
 const getScheduleKey = (schedule) =>
   String(
     schedule?.id ??
@@ -18,6 +26,10 @@ const getScheduleKey = (schedule) =>
 
 const normalizeRegionValue = (value) => value?.trim() ?? "";
 
+/*
+ * 홈에서는 "가까운 일정"이 먼저 보이도록 endDate/startDate 기준으로 정렬한다.
+ * 백엔드 기본 정렬은 최신 등록순이지만, 홈 섹션은 탐색 목록이 아니라 추천 영역이라 노출 우선순위를 프론트에서 한 번 더 잡는다.
+ */
 const sortByPriorityDate = (left, right) => {
   const leftTime = new Date(left?.endDate ?? left?.startDate ?? 0).getTime();
   const rightTime = new Date(right?.endDate ?? right?.startDate ?? 0).getTime();
@@ -28,6 +40,11 @@ export default function Home({ selectedRegion = "" }) {
   const navigate = useNavigate();
   const normalizedRegion = normalizeRegionValue(selectedRegion);
 
+  /*
+   * 페이지 진입 또는 지역 필터 변경 시 react-query가 GET /schedules를 호출한다.
+   * queryKey에 normalizedRegion을 넣은 이유는 지역별 결과를 별도 캐시로 관리하기 위해서다.
+   * staleTime 1분 동안은 같은 지역으로 다시 돌아왔을 때 즉시 캐시를 보여주고, 불필요한 재요청을 줄인다.
+   */
   const {
     data: schedules = [],
     isLoading,
@@ -43,6 +60,10 @@ export default function Home({ selectedRegion = "" }) {
     staleTime: 1000 * 60,
   });
 
+  /*
+   * API 응답은 방어적으로 배열인지 확인한 뒤 정렬/자르기를 수행한다.
+   * 원본 schedules를 직접 sort하면 react-query 캐시 데이터까지 변형될 수 있으므로 복사본([...schedules])을 정렬한다.
+   */
   const featuredSchedules = useMemo(() => {
     const safeSchedules = Array.isArray(schedules) ? [...schedules] : [];
     return safeSchedules.sort(sortByPriorityDate).slice(0, MAX_HOME_ITEMS);
@@ -99,6 +120,11 @@ export default function Home({ selectedRegion = "" }) {
         {!isLoading && !isError && featuredSchedules.length > 0 && (
           <div className={styles.cardRail}>
             {featuredSchedules.map((schedule) => (
+              /*
+               * 홈은 가로 스크롤 카드 레일에 compact variant를 사용한다.
+               * schedule 객체는 카드가 필요한 썸네일/제목/날짜/지역/모집정보를 모두 포함하고,
+               * className은 홈 레일의 scroll-snap 같은 레이아웃만 보강한다.
+               */
               <ScheduleCard
                 key={getScheduleKey(schedule)}
                 schedule={schedule}

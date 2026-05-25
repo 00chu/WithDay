@@ -121,6 +121,10 @@
 }
 
 .periodText {
+  /*
+    카드 우측 날짜는 시작일/종료일을 세로로 쌓아 좁은 카드에서도 잘리지 않게 한다.
+    align-items: flex-end를 유지해 기존 우측 정렬 UI와 같은 축에 맞춘다.
+  */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -268,6 +272,10 @@
 }
 
 .thumbnailWrap {
+  /*
+    썸네일은 height 고정 대신 aspect-ratio로 비율을 고정한다.
+    카드 폭이 모바일/태블릿/데스크탑에서 달라져도 이미지 영역 비율은 동일하게 유지된다.
+  */
   position: relative;
   width: 100%;
   aspect-ratio: 2 / 1;

@@ -2,12 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.test.withdayback.schedule.dao.ScheduleDao">
+    <!--
+        일정 상세 조회에서 작성자 email을 찾는다.
+        Service는 이 email과 viewerEmail을 비교해 현재 사용자가 호스트인지 계산한다.
+    -->
     <select id="getEmailByScheduleId" resultType="String">
         select email
         from user
         where id = (select user_id from schedule where id = #{id})
     </select>
 
+    <!--
+        일정 상세의 기본 schedule row를 조회한다.
+        SELECT * 대신 화면과 DTO에 필요한 컬럼을 명시적으로 alias 처리해 Java VO 필드명과 DB 컬럼명의 차이를 분명하게 맞춘다.
+        deleted_at IS NULL 조건으로 삭제된 일정은 상세에서 조회되지 않게 한다.
+    -->
     <select id="selectScheduleById" resultType="Schedule">
         SELECT id,
                user_id              AS userId,
@@ -42,6 +51,10 @@
           AND deleted_at IS NULL
     </select>
 
+    <!--
+        상세 페이지의 세부 일정(Day-by-Day)을 조회한다.
+        day_number ASC 정렬을 SQL에서 보장해 프론트가 별도 정렬 없이 순서대로 렌더링할 수 있게 한다.
+    -->
     <select id="selectDetailsByScheduleId" resultType="ScheduleDetail">
         SELECT *
         FROM schedule_detail
@@ -49,6 +62,10 @@
         ORDER BY day_number ASC
     </select>
 
+    <!--
+        상세 페이지 이미지 슬라이더에 사용할 이미지 목록이다.
+        id ASC는 업로드/저장 순서를 유지하기 위한 정렬이며, 첫 번째 이미지는 썸네일 fallback 후보로도 쓰인다.
+    -->
     <select id="selectImageByScheduleId" resultType="ScheduleImage">
         SELECT *
         FROM schedule_image
@@ -113,6 +130,11 @@
         AND deleted_at IS NULL
     </update>
 
+    <!--
+        홈/탐색 탭의 일정 리스트 조회다.
+        category, keyword, region은 모두 선택 조건이므로 MyBatis dynamic SQL로 값이 있을 때만 WHERE에 붙인다.
+        현재는 카드에 필요한 schedule VO 전체를 반환하지만, 삭제된 일정은 항상 제외한다.
+    -->
     <select id="getAllSchedules" resultType="Schedule">
         SELECT
         *
@@ -120,10 +142,12 @@
         <where>
             deleted_at IS NULL
 
+            <!-- 탐색 탭에서 "전체"가 아닌 카테고리를 선택했을 때만 적용된다. -->
             <if test="category != null and category != ''">
                 AND category = #{category}
             </if>
 
+            <!-- 검색어는 제목 또는 설명 중 하나라도 포함하면 결과에 포함한다. -->
             <if test="keyword != null and keyword != ''">
                 AND (
                 title LIKE CONCAT('%', #{keyword}, '%')
@@ -131,10 +155,12 @@
                 )
             </if>
 
+            <!-- Header 지역 필터는 공백/대소문자 차이를 줄이기 위해 TRIM + UPPER로 비교한다. -->
             <if test="region != null and region != ''">
                 AND UPPER(TRIM(region)) = UPPER(TRIM(#{region}))
             </if>
         </where>
+        <!-- 최신 등록 일정이 탐색 탭 상단에 보이도록 id DESC 정렬을 사용한다. -->
         ORDER BY id DESC
     </select>
 

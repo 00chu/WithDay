@@ -22,10 +22,18 @@ public class ScheduleController {
     private ScheduleService scheduleService;
 
     /**
-     * 일정 상세 조회
+     * 일정 상세 조회 API
      *
-     * @param id
-     * @return ResponseEntity
+     * 상세 페이지는 단순 schedule row만으로 화면을 만들 수 없다.
+     * 기본 일정 정보, Day-by-Day 세부 일정, 이미지 목록, 현재 사용자의 참여 상태를 함께 내려줘야
+     * 프론트가 상세 본문, 참여 버튼, 호스트 신청자 관리, 오픈채팅 링크 노출 여부를 한 번에 판단할 수 있다.
+     *
+     * email은 선택 파라미터다.
+     * 비로그인 사용자는 email 없이 상세를 볼 수 있고, 로그인 사용자는 email을 보내 viewerIsHost/viewerParticipationStatus 계산을 받는다.
+     *
+     * @param id 상세 조회할 일정 ID
+     * @param email 현재 로그인 사용자의 email. 없으면 guest 관점으로 응답한다.
+     * @return 일정이 존재하면 ScheduleResponseDTO, 삭제되었거나 없으면 404
      */
     @GetMapping("/{id}")
     public ResponseEntity<ScheduleResponseDTO> getSchedule(
@@ -61,11 +69,19 @@ public class ScheduleController {
 
 
     /**
-     * 일정 조회
+     * 홈/탐색 탭에서 사용하는 일정 리스트 조회 API
      *
-     * @param category
-     * @param keyword
-     * @return ResponseEntity
+     * 프론트 Home.jsx와 ExplorePage.jsx가 모두 이 endpoint를 사용한다.
+     * Home은 전체 목록을 받아 가까운 일정 8개만 보여주고,
+     * Explore는 category/keyword/region 파라미터를 조합해 필터링된 목록을 카드 그리드로 보여준다.
+     *
+     * Controller는 HTTP query parameter만 받고 실제 필터 조합은 Service/Mapper에 위임한다.
+     * 이렇게 해두면 화면이 늘어나도 같은 리스트 API를 재사용할 수 있고, SQL 조건은 mapper 한 곳에서 관리된다.
+     *
+     * @param category travel, food 같은 카테고리 코드. null이면 전체 카테고리 조회.
+     * @param keyword 제목/설명 검색어. null이면 검색 조건 없음.
+     * @param region Header에서 선택한 지역. null이면 전체 지역 조회.
+     * @return 조건에 맞는 일정 목록
      */
     @GetMapping
     public ResponseEntity<List<Schedule>> getAllSchedules(
