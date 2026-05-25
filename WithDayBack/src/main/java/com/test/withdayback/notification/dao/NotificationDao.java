@@ -12,4 +12,6 @@ public interface NotificationDao {
     void insertNotification(Notification notification);
 
     void readNotification(Long notificationId);
+
+    int getNotificationCountById(Long id);
 }

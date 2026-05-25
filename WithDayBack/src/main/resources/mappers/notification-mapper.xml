@@ -2,10 +2,16 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.test.withdayback.notification.dao.NotificationDao">
+    <select id="getNotificationCountById" resultType="int">
+        select count(*)
+        from notification
+        where receiver_id = #{id} and is_read = 0
+    </select>
+
     <select id="getNotificationsById"
             parameterType="long"
             resultType="Notification">
-        SELECT
+        select
             id,
             receiver_id AS receiverId,
             target_url AS targetUrl,
@@ -14,13 +20,13 @@
             message,
             is_read AS isRead,
             created_at AS createdAt
-        FROM notification
-        WHERE receiver_id = #{id}
-        ORDER BY created_at DESC
+        from notification
+        where receiver_id = #{id}
+        order by created_at desc
     </select>
 
     <insert id="insertNotification" parameterType="Notification">
-        INSERT INTO notification (
+        insert into notification (
             receiver_id,
             target_url,
             type,
@@ -29,7 +35,7 @@
             is_read,
             created_at
         )
-        VALUES (
+        values (
                    #{receiverId},
                    #{targetUrl},
                    #{type},
@@ -41,8 +47,8 @@
     </insert>
 
     <update id="readNotification">
-        UPDATE notification
-        SET is_read = 1
-        WHERE id = #{notificationId}
+        update notification
+        set is_read = 1
+        where id = #{notificationId}
     </update>
 </mapper>

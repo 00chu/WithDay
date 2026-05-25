@@ -150,4 +150,8 @@ public class NotificationService {
     public void readNotification(Long notificationId) {
         notificationDao.readNotification(notificationId);
     }
+
+    public int getNotificationCount(Long id) {
+        return notificationDao.getNotificationCountById(id);
+    }
 }
