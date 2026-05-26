@@ -21,6 +21,69 @@
   margin: 0;
 }
 
+.hostingSections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.scheduleSection,
+.closedSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.closedSection {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.closedHeadingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #222;
+}
+
+.sectionDescription {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.closedToggleButton {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.paginationWrap {
+  padding-top: 8px;
+}
+
 /* 탭 네비게이션 */
 .tabWrap {
   display: flex;

@@ -153,6 +153,14 @@
 .buttonWrap {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.executionNotice {
+  margin: 8px 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #64748b);
 }
 
 .metaInfo {
@@ -300,7 +308,7 @@
 --------------------------------------------------------- */
 .stickyFooter {
   position: sticky;
-  bottom: 0;
+  bottom: calc(var(--bottom-nav-total-height) + 16px);
   background: var(--color-surface, #ffffff);
   border-top: 1px solid var(--color-border, #e2e8f0);
   padding: 16px 24px;
@@ -308,8 +316,10 @@
   justify-content: space-between;
   align-items: center;
   z-index: 100;
-  /* 아이폰 하단 바 대응 */
-  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  gap: 16px;
+  margin: 0 16px 16px;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
 }
 
 .footerInfo {
@@ -321,6 +331,13 @@
   font-size: 0.8125rem;
   color: #ef4444; /* Error red */
   font-weight: 600;
+}
+
+@media screen and (max-width: 640px) {
+  .stickyFooter {
+    padding: 14px 16px;
+    margin: 0 12px 12px;
+  }
 }
 
 /* ---------------------------------------------------------

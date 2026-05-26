@@ -11,6 +11,7 @@ import com.test.withdayback.participation.dto.MyScheduleResponseDTO;
 import com.test.withdayback.participation.enums.ParticipationStatus;
 import com.test.withdayback.participation.vo.Participation;
 import com.test.withdayback.schedule.dao.ScheduleDao;
+import com.test.withdayback.schedule.enums.GenderLimit;
 import com.test.withdayback.schedule.enums.ScheduleStatus;
 import com.test.withdayback.schedule.vo.Schedule;
 import com.test.withdayback.user.dao.UserDao;
@@ -25,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
@@ -110,6 +112,14 @@ public class ParticipationService {
         Schedule schedule = scheduleDao.selectScheduleById(participation.getScheduleId());
         if (schedule == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "일정 정보를 찾을 수 없습니다.");
+        }
+
+        /*
+         * completed는 "이미 일정이 진행 중이라 참여 구성이 잠긴 상태"를 뜻한다.
+         * 사용자가 이 시점에 빠질 수 있게 열어 두면 실제 진행 인원과 시스템 인원이 어긋날 수 있으므로 취소를 막는다.
+         */
+        if (schedule.getStatus() == ScheduleStatus.completed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "진행 중인 일정은 참여 취소할 수 없습니다.");
         }
 
         if (isScheduleEnded(schedule.getEndDate())) {
@@ -224,7 +234,7 @@ public class ParticipationService {
 
         /*
          * schedule.status가 recruiting이 아니면 신청을 받지 않는다.
-         * 날짜상 아직 가능해 보여도 운영자가 closed/cancelled/completed로 바꾼 상태라면 서버 상태를 우선한다.
+         * 날짜상 아직 가능해 보여도 운영자가 closed/canceled/completed로 바꾼 상태라면 서버 상태를 우선한다.
          */
         if (schedule.getStatus() != ScheduleStatus.recruiting) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "모집 중인 일정만 신청할 수 있습니다.");
@@ -262,35 +272,57 @@ public class ParticipationService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "호스트는 자신의 일정에 신청할 수 없습니다.");
         }
 
+        validateEligibility(user, schedule);
+
         /*
-         * 같은 사용자가 같은 일정에 중복 신청하지 못하게 한다.
-         * Mapper는 가장 최근 participation row를 가져오며, 기존 row가 있으면 상태와 무관하게 새 신청 생성을 막는다.
+         * 같은 사용자가 같은 일정에 과거 신청 이력이 있는지 확인한다.
+         * 현재 정책은 중복 row를 계속 쌓기보다, 마지막 상태가 CANCELED일 때만 기존 row를 재사용해 PENDING으로 복구한다.
+         * 이렇게 하면 재신청 후에도 같은 participationId를 유지할 수 있고, 상세 화면 취소/재신청 흐름이 단순해진다.
          */
         Participation existing = participationDao.findByEmailAndScheduleId(email, scheduleId);
-        if (existing != null) {
+        if (existing != null && existing.getStatus() != ParticipationStatus.CANCELED) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 신청한 일정입니다.");
         }
 
-        /*
-         * DB 저장값:
-         * - user_id: 신청한 사용자 PK
-         * - schedule_id: 신청 대상 일정 PK
-         * - status: enum의 databaseValue인 "pending" 저장
-         * 신청 직후에는 호스트 승인이 필요하므로 APPROVED가 아니라 PENDING으로 시작한다.
-         */
-        Participation participation = new Participation();
-        participation.setUserId(user.getId());
-        participation.setScheduleId(scheduleId);
-        participation.setStatus(ParticipationStatus.PENDING);
+        Participation participation;
 
-        /*
-         * @Transactional이 필요한 이유:
-         * participation insert 이후 알림 전송이나 후속 처리 중 예외가 발생하면, 신청 row만 남고 사용자에게 실패가 보이는 불일치가 생길 수 있다.
-         * 이 메서드를 트랜잭션으로 묶어 실패 시 DB 변경을 롤백할 수 있게 한다.
-         */
-        int inserted = participationDao.insertParticipation(participation);
-        if (inserted <= 0 || participation.getId() == null) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "참여 신청에 실패했습니다.");
+        if (existing != null) {
+            int updated = participationDao.updateStatus(
+                    existing.getId(),
+                    ParticipationStatus.CANCELED.name(),
+                    ParticipationStatus.PENDING.getDatabaseValue()
+            );
+            if (updated <= 0) {
+                log.warn("재신청 상태 복구 실패 - participationId: {}, scheduleId: {}", existing.getId(), scheduleId);
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "재신청 처리에 실패했습니다.");
+            }
+
+            participation = participationDao.findById(existing.getId());
+            if (participation == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "재신청 정보를 다시 불러오지 못했습니다.");
+            }
+        } else {
+            /*
+             * DB 저장값:
+             * - user_id: 신청한 사용자 PK
+             * - schedule_id: 신청 대상 일정 PK
+             * - status: enum의 databaseValue인 "pending" 저장
+             * 신청 직후에는 호스트 승인이 필요하므로 APPROVED가 아니라 PENDING으로 시작한다.
+             */
+            participation = new Participation();
+            participation.setUserId(user.getId());
+            participation.setScheduleId(scheduleId);
+            participation.setStatus(ParticipationStatus.PENDING);
+
+            /*
+             * @Transactional이 필요한 이유:
+             * participation insert 이후 알림 전송이나 후속 처리 중 예외가 발생하면, 신청 row만 남고 사용자에게 실패가 보이는 불일치가 생길 수 있다.
+             * 이 메서드를 트랜잭션으로 묶어 실패 시 DB 변경을 롤백할 수 있게 한다.
+             */
+            int inserted = participationDao.insertParticipation(participation);
+            if (inserted <= 0 || participation.getId() == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "참여 신청에 실패했습니다.");
+            }
         }
 
         /*
@@ -312,8 +344,8 @@ public class ParticipationService {
                 participation.getId(),
                 scheduleId,
                 email,
-                participation.getStatus(),
-                "참여 신청이 완료되었습니다."
+                ParticipationStatus.PENDING,
+                existing == null ? "참여 신청이 완료되었습니다." : "참여 신청이 다시 완료되었습니다."
         );
     }
 
@@ -404,6 +436,14 @@ public class ParticipationService {
 
         if (schedule.getUserId() == null || schedule.getUserId().longValue() != actor.getId()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "호스트만 상태를 변경할 수 있습니다.");
+        }
+
+        /*
+         * 일정 실행이 시작된 뒤에는 승인/거절/강퇴도 막는다.
+         * 실행 중간에 참여 상태를 바꾸면 currentParticipants, 채팅 권한, 실제 현장 인원이 뒤늦게 뒤틀릴 수 있기 때문이다.
+         */
+        if (schedule.getStatus() == ScheduleStatus.completed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "진행 중인 일정의 참여 상태는 변경할 수 없습니다.");
         }
 
         /*
@@ -625,6 +665,86 @@ public class ParticipationService {
         return currentParticipants != null
                 && maxParticipants != null
                 && currentParticipants >= maxParticipants;
+    }
+
+    private void validateEligibility(User user, Schedule schedule) {
+        if (!isGenderEligible(user, schedule)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "성별 조건에 맞지 않아 참여할 수 없습니다.");
+        }
+
+        if (!isAgeEligible(user, schedule)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "참여 가능 연령이 아닙니다.");
+        }
+    }
+
+    private boolean isGenderEligible(User user, Schedule schedule) {
+        GenderLimit genderLimit = schedule == null ? null : schedule.getGenderLimit();
+        if (genderLimit == null || genderLimit == GenderLimit.all) {
+            return true;
+        }
+
+        Integer userGender = user == null ? null : user.getGender();
+        if (userGender == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "성별 정보가 없어 참여할 수 없습니다.");
+        }
+
+        if (genderLimit == GenderLimit.male) {
+            return userGender == 1;
+        }
+
+        if (genderLimit == GenderLimit.female) {
+            return userGender == 2;
+        }
+
+        return true;
+    }
+
+    private boolean isAgeEligible(User user, Schedule schedule) {
+        if (schedule == null) {
+            return true;
+        }
+
+        Integer ageMin = schedule.getAgeMin();
+        Integer ageMax = schedule.getAgeMax();
+        if (ageMin == null && ageMax == null) {
+            return true;
+        }
+
+        Integer age = calculateFullAge(user == null ? null : user.getBirthday(), LocalDate.now(ZoneId.of("Asia/Seoul")));
+        if (age == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "생년월일 정보가 없어 참여할 수 없습니다.");
+        }
+
+        if (ageMin != null && age < ageMin) {
+            return false;
+        }
+
+        if (ageMax != null && age > ageMax) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private Integer calculateFullAge(String birthday, LocalDate today) {
+        LocalDate birthDate = parseBirthday(birthday);
+        if (birthDate == null || today == null) {
+            return null;
+        }
+
+        return Period.between(birthDate, today).getYears();
+    }
+
+    private LocalDate parseBirthday(String birthday) {
+        if (birthday == null || birthday.isBlank()) {
+            return null;
+        }
+
+        try {
+            return LocalDate.parse(birthday.trim());
+        } catch (RuntimeException exception) {
+            return null;
+        }
     }
 
     private LocalDate parseDate(String value) {

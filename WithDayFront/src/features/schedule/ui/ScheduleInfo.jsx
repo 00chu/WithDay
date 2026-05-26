@@ -5,6 +5,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PeopleIcon from "@mui/icons-material/People";
 import PaymentsIcon from "@mui/icons-material/Payments";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { SCHEDULE_STATUS } from "../model/constants";
 import styles from "../../../page/schedule/ScheduleDetail.module.css";
 
 const CATEGORY_MAP = {
@@ -25,7 +26,19 @@ const costTypeMap = {
 };
 
 export default function ScheduleInfo({ schedule }) {
-  const isRecruiting = schedule.status === "recruiting";
+  const normalizedStatus = String(schedule?.status ?? "").trim().toLowerCase();
+  const statusLabel =
+    normalizedStatus === SCHEDULE_STATUS.COMPLETED
+      ? "진행중"
+      : normalizedStatus === SCHEDULE_STATUS.RECRUITING
+        ? "모집중"
+        : "모집종료";
+  const statusClassName =
+    normalizedStatus === SCHEDULE_STATUS.COMPLETED
+      ? styles.statusInProgress
+      : normalizedStatus === SCHEDULE_STATUS.RECRUITING
+        ? styles.statusOpen
+        : styles.statusClosed;
 
   return (
     <div className={styles.contentWrapper}>
@@ -36,11 +49,9 @@ export default function ScheduleInfo({ schedule }) {
             {CATEGORY_MAP[schedule.category] || schedule.category}
           </span>
           <span
-            className={clsx(
-              isRecruiting ? styles.statusOpen : styles.statusClosed,
-            )}
+            className={clsx(statusClassName)}
           >
-            {isRecruiting ? "모집중" : "모집종료"}
+            {statusLabel}
           </span>
         </div>
         <h1 className={styles.title}>{schedule.title}</h1>

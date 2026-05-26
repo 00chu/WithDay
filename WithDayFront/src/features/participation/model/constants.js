@@ -63,7 +63,7 @@ export const PARTICIPATION_TABS = [
  */
 export const PARTICIPATION_TAB_STATUS_PARAMS = {
   participating: "APPROVED,KICKED",
-  pending: "PENDING,REJECTED,CANCELED",
+  pending: "PENDING",
 };
 
 /*

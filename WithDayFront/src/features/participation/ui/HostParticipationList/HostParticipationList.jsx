@@ -28,6 +28,7 @@ function HostParticipationList({
   activeStatus,
   onStatusChange,
   isActionLoading = false,
+  isReadOnly = false,
 }) {
   /*
    * 신청자 목록은 일반 사용자에게는 아예 열리지 않는 데이터라,
@@ -77,7 +78,9 @@ function HostParticipationList({
       <div className={styles.header}>
         <h2 className={styles.title}>신청자 관리</h2>
         <p className={styles.description}>
-          현재 일정에 신청한 사용자를 확인하고 상태를 변경할 수 있습니다.
+          {isReadOnly
+            ? "진행 중인 일정은 신청자 상태를 변경할 수 없습니다."
+            : "현재 일정에 신청한 사용자를 확인하고 상태를 변경할 수 있습니다."}
         </p>
       </div>
 
@@ -108,7 +111,6 @@ function HostParticipationList({
 
       {/* 선택한 상태에 해당하는 신청자가 없는 경우다.
        예를 들어 KICKED 필터를 눌렀지만 강퇴된 사람이 아직 없으면 emptyMessage가 표시된다. */}
-
       {!items || items.length === 0 ? (
         <div className={participationStyles.stateBox}>{emptyMessage}</div>
       ) : (
@@ -124,6 +126,7 @@ function HostParticipationList({
               hostEmail={hostEmail}
               onAction={onItemAction}
               isActionLoading={isActionLoading}
+              isReadOnly={isReadOnly}
             />
           ))}
         </div>

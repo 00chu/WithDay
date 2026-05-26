@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PeopleIcon from "@mui/icons-material/People";
@@ -15,6 +15,8 @@ import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
 
 import {
+  completeSchedule,
+  rollbackCompletedSchedule,
   fetchScheduleDetail,
   incrementScheduleViewCount,
   deleteSchedule,
@@ -25,6 +27,7 @@ import { useUpdateParticipationStatusMutation } from "../../features/participati
 import ParticipationFeedback from "../../features/participation/ui/ParticipationFeedback/ParticipationFeedback";
 import HostParticipationList from "../../features/participation/ui/HostParticipationList/HostParticipationList";
 import ApplyScheduleButton from "../../features/schedule/ui/ApplyScheduleButton";
+import { SCHEDULE_STATUS } from "../../features/schedule/model/constants";
 import Button from "../../shared/ui/Button/Button";
 import styles from "./ScheduleDetail.module.css";
 
@@ -74,6 +77,12 @@ const formatLocation = (schedule) => {
   return region || detailRegion || "장소 미정";
 };
 
+/*
+ * 상세 상단 배지에 보여줄 "일정 단계 문구"를 계산한다.
+ * 여기서 중요한 점은 completed를 단순 "종료"로 보지 않는다는 것이다.
+ * 이번 기능에서는 completed를 "호스트가 일정 시작을 확정했고, 참여/수정/삭제가 잠긴 진행 상태"로 사용하므로
+ * 배지 문구도 종료가 아니라 진행중으로 보여줘야 사용자가 현재 제약을 올바르게 이해할 수 있다.
+ */
 const resolveSchedulePhase = (schedule) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -98,14 +107,15 @@ const resolveSchedulePhase = (schedule) => {
     recruitEndDate.setHours(0, 0, 0, 0);
   }
 
-  if (normalizedStatus === "cancelled") {
+  if (normalizedStatus === SCHEDULE_STATUS.CANCELED) {
     return { label: "취소됨", className: styles.statusClosed };
   }
 
-  if (
-    normalizedStatus === "completed" ||
-    (endDate instanceof Date && !Number.isNaN(endDate.getTime()) && endDate < today)
-  ) {
+  if (normalizedStatus === SCHEDULE_STATUS.COMPLETED) {
+    return { label: "진행중", className: styles.statusInProgress };
+  }
+
+  if (endDate instanceof Date && !Number.isNaN(endDate.getTime()) && endDate < today) {
     return { label: "종료", className: styles.statusClosed };
   }
 
@@ -119,7 +129,7 @@ const resolveSchedulePhase = (schedule) => {
   }
 
   if (
-    normalizedStatus === "closed" ||
+    normalizedStatus === SCHEDULE_STATUS.CLOSED ||
     (recruitEndDate instanceof Date &&
       !Number.isNaN(recruitEndDate.getTime()) &&
       recruitEndDate < today)
@@ -252,6 +262,83 @@ export default function ScheduleDetail() {
     useUpdateParticipationStatusMutation();
 
   /*
+   * 일정 실행/실행 취소, 참여 상태 변경, 삭제 같은 여러 API가 서로 다른 에러 shape를 줄 수 있어서
+   * 화면에서는 이 helper로 문자열을 한 번 정규화해 공통 Snackbar로 보낸다.
+   * 이렇게 해두면 각 버튼 핸들러가 에러 파싱 코드를 중복해서 들고 있지 않아도 된다.
+   */
+  const resolveRequestErrorMessage = useCallback((requestError, fallbackMessage) => {
+    const responseData = requestError?.response?.data;
+
+    if (typeof responseData?.message === "string" && responseData.message.trim()) {
+      return responseData.message;
+    }
+
+    if (typeof responseData === "string" && responseData.trim()) {
+      return responseData;
+    }
+
+    if (typeof requestError?.message === "string" && requestError.message.trim()) {
+      return requestError.message;
+    }
+
+    return fallbackMessage;
+  }, []);
+
+  const { mutateAsync: executeSchedule, isPending: isCompletingSchedule } = useMutation({
+    mutationFn: completeSchedule,
+    onSuccess: async () => {
+      /*
+       * 실행 상태 전환은 상세 화면 하나만 바뀌는 일이 아니다.
+       * - 상세: 호스트 버튼, 상태 배지, 참여 버튼 제약이 바뀜
+       * - 탐색/홈: 공개 리스트에서 상태 라벨이 바뀔 수 있음
+       * - 내 일정/신청자 관리: 진행 상태 문구와 제약이 달라짐
+       *
+       * 그래서 schedule-detail만 invalidate하면 다른 화면이 오래된 상태로 남을 수 있어 관련 캐시를 함께 무효화한다.
+       */
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["schedule-detail", parsedScheduleId],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["schedules"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["home-schedules"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["participation"],
+        }),
+      ]);
+    },
+  });
+
+  const { mutateAsync: rollbackScheduleExecution, isPending: isRollbackPending } =
+    useMutation({
+      mutationFn: rollbackCompletedSchedule,
+      onSuccess: async () => {
+        /*
+         * 실행 취소도 실행과 같은 범위의 화면에 영향을 준다.
+         * 특히 completed에서 recruiting/closed로 돌아가면 참여 버튼이 다시 열리거나 계속 막혀야 하므로
+         * 상세/목록/내 일정 캐시를 한 번에 갱신한다.
+         */
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["schedule-detail", parsedScheduleId],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["schedules"],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["home-schedules"],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["participation"],
+          }),
+        ]);
+      },
+    });
+
+  /*
    * ApplyScheduleButton은 버튼 클릭과 신청 API 호출만 담당하고, 토스트 표시는 상세 페이지에서 공통으로 처리한다.
    * 이렇게 해야 신청 성공/실패와 호스트 승인/거절 피드백이 같은 Snackbar 위치와 스타일을 공유한다.
    */
@@ -370,21 +457,101 @@ export default function ScheduleDetail() {
                 : "참여자를 강퇴했습니다.",
         });
       } catch (requestError) {
-        const message =
-          requestError?.response?.data?.message ??
-          requestError?.response?.data ??
-          requestError?.message ??
-          "상태 변경에 실패했습니다.";
-
         setFeedback({
           severity: "error",
-          message:
-            typeof message === "string" ? message : "상태 변경에 실패했습니다.",
+          message: resolveRequestErrorMessage(
+            requestError,
+            "상태 변경에 실패했습니다.",
+          ),
         });
       }
     },
-    [authEmail, isLoggedIn, navigate, updateParticipationStatus],
+    [authEmail, isLoggedIn, navigate, resolveRequestErrorMessage, updateParticipationStatus],
   );
+
+  const handleExecuteSchedule = useCallback(async () => {
+    if (!isLoggedIn || !authEmail) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    /*
+     * 실행은 되돌릴 수는 있지만 영향이 큰 상태 변경이므로 확인창을 둔다.
+     * 사용자는 이 버튼 한 번으로 이후 참여 취소, 승인/거절, 수정/삭제가 잠긴다는 사실을 인지해야 한다.
+     */
+    if (!window.confirm("이 일정을 실행 상태로 변경하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      await executeSchedule({
+        scheduleId: parsedScheduleId,
+        email: authEmail,
+      });
+
+      /*
+       * 성공 후에는 mutation onSuccess에서 캐시가 무효화되고,
+       * 상세 재조회가 끝나면 배지/버튼/신청자 관리 영역이 새 상태에 맞게 다시 렌더링된다.
+       */
+      setFeedback({
+        severity: "success",
+        message: "일정이 실행 상태로 변경되었습니다.",
+      });
+    } catch (requestError) {
+      setFeedback({
+        severity: "error",
+        message: resolveRequestErrorMessage(
+          requestError,
+          "일정 실행 처리에 실패했습니다.",
+        ),
+      });
+    }
+  }, [
+    authEmail,
+    executeSchedule,
+    isLoggedIn,
+    navigate,
+    parsedScheduleId,
+    resolveRequestErrorMessage,
+  ]);
+
+  const handleRollbackScheduleExecution = useCallback(async () => {
+    if (!isLoggedIn || !authEmail) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    if (!window.confirm("실행 상태를 취소하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      await rollbackScheduleExecution({
+        scheduleId: parsedScheduleId,
+        email: authEmail,
+      });
+
+      setFeedback({
+        severity: "success",
+        message: "일정 실행이 취소되었습니다.",
+      });
+    } catch (requestError) {
+      setFeedback({
+        severity: "error",
+        message: resolveRequestErrorMessage(
+          requestError,
+          "일정 실행 취소에 실패했습니다.",
+        ),
+      });
+    }
+  }, [
+    authEmail,
+    isLoggedIn,
+    navigate,
+    parsedScheduleId,
+    resolveRequestErrorMessage,
+    rollbackScheduleExecution,
+  ]);
 
   const isApplicantsForbidden = applicantsError?.response?.status === 403;
 
@@ -428,6 +595,15 @@ export default function ScheduleDetail() {
   const categoryLabel =
     CATEGORY_LABELS[schedule.category] ?? schedule.category ?? "기타";
   const schedulePhase = resolveSchedulePhase(schedule);
+  const normalizedScheduleStatus = schedule?.status?.trim()?.toLowerCase() ?? "";
+  const isScheduleCompleted = normalizedScheduleStatus === SCHEDULE_STATUS.COMPLETED;
+  /*
+   * 실행 버튼 활성 조건은 프론트에서도 먼저 계산한다.
+   * 다만 이것은 UX 보조 장치일 뿐이고, 실제 최소 인원 충족 여부는 백엔드 completeSchedule이 최종 검증한다.
+   */
+  const canExecuteSchedule =
+    Number(schedule.currentParticipants ?? 0) >= Number(schedule.minParticipants ?? 0);
+  const isScheduleActionPending = isCompletingSchedule || isRollbackPending;
 
   const imageUrls =
     rawImages.length > 0
@@ -459,7 +635,12 @@ export default function ScheduleDetail() {
     const end = new Date(schedule.recruitEndDate);
     end.setHours(0, 0, 0, 0);
 
-    return end >= today;
+    /*
+     * 수정 버튼은 모집 마감일이 지나면 숨기고,
+     * 추가로 completed 상태에서도 무조건 숨긴다.
+     * 이렇게 프론트에서 먼저 감추더라도 서버는 updateSchedule에서 다시 차단한다.
+     */
+    return !isScheduleCompleted && end >= today;
   })();
 
   console.log("schedule detail render", {
@@ -523,6 +704,30 @@ export default function ScheduleDetail() {
 
             {postHostEmail === authEmail ? (
               <div className={styles.buttonWrap}>
+                {/*
+                 * 실행 관리 버튼은 호스트에게만 보인다.
+                 * 일반 참여자에게 이 버튼이 보이면 권한이 없는 액션을 기대하게 되므로
+                 * 화면 단계에서 먼저 숨기고, 서버는 complete/rollback API에서 다시 권한을 검증한다.
+                 *
+                 * 버튼 동작:
+                 * - status !== completed: 일정 실행
+                 * - status === completed: 실행 취소
+                 */}
+                <Button
+                  variant={isScheduleCompleted ? "outline" : "accent"}
+                  disabled={
+                    isScheduleActionPending ||
+                    (!isScheduleCompleted && !canExecuteSchedule)
+                  }
+                  onClick={
+                    isScheduleCompleted
+                      ? handleRollbackScheduleExecution
+                      : handleExecuteSchedule
+                  }
+                >
+                  {isScheduleCompleted ? "실행 취소" : "일정 실행"}
+                </Button>
+
                 {isEditable ? (
                   <Button
                     variant="outline"
@@ -535,7 +740,11 @@ export default function ScheduleDetail() {
                   </Button>
                 ) : null}
 
-                <Button variant="outline" onClick={handleOpen}>
+                <Button
+                  variant="outline"
+                  onClick={handleOpen}
+                  disabled={isScheduleCompleted}
+                >
                   삭제
                   <DeleteIcon fontSize="small" />
                 </Button>
@@ -572,6 +781,26 @@ export default function ScheduleDetail() {
               </div>
             ) : null}
           </div>
+
+          {viewerIsHost && !isScheduleCompleted && !canExecuteSchedule ? (
+            /*
+             * 최소 인원 미달은 단순 disabled만으로는 이유가 잘 전달되지 않으므로
+             * 바로 아래에 정책 문구를 같이 노출한다.
+             */
+            <p className={styles.executionNotice}>
+              최소 {schedule.minParticipants ?? 0}명이 모여야 일정 실행이 가능합니다.
+            </p>
+          ) : null}
+
+          {viewerIsHost && isScheduleCompleted ? (
+            /*
+             * completed 상태의 핵심 제약을 호스트에게 명시적으로 보여준다.
+             * 이 문구가 있어야 "왜 수정/삭제/승인 버튼이 안 되지?"를 빠르게 이해할 수 있다.
+             */
+            <p className={styles.executionNotice}>
+              진행 중인 일정입니다. 참여 상태 변경, 일정 수정, 삭제는 잠겨 있습니다.
+            </p>
+          ) : null}
 
           <div className={styles.metaInfo}>
             <span>
@@ -754,7 +983,8 @@ export default function ScheduleDetail() {
             onItemAction={handleApplicantAction}
             activeStatus={applicantStatus}
             onStatusChange={setApplicantStatus}
-            isActionLoading={isStatusUpdating}
+            isActionLoading={isStatusUpdating || isScheduleCompleted}
+            isReadOnly={isScheduleCompleted}
           />
         </>
       )}
@@ -769,12 +999,17 @@ export default function ScheduleDetail() {
         {/*
          * 신청 버튼은 schedule.status와 recruitEndDate로 마감 여부를 먼저 판단하고,
          * viewerParticipationStatus로 이미 신청한 사용자인지 확인한다.
+         * completed 상태일 때는 "일정 진행 중"으로 고정되어 신청/취소가 모두 막힌다.
          * 최종 신청 가능 여부는 백엔드가 다시 검증하므로 프론트 판단은 UX 보조 역할이다.
          */}
         <ApplyScheduleButton
           scheduleId={schedule.id}
           status={schedule.status}
           recruitEndDate={schedule.recruitEndDate}
+          genderLimit={schedule.genderLimit}
+          ageMin={schedule.ageMin}
+          ageMax={schedule.ageMax}
+          viewerParticipationId={data.viewerParticipationId}
           viewerParticipationStatus={viewerParticipationStatus}
           isHost={viewerIsHost}
           onFeedback={handleApplyFeedback}
