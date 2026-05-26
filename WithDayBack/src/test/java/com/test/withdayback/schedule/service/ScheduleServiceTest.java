@@ -1,6 +1,8 @@
 package com.test.withdayback.schedule.service;
 
 import com.test.withdayback.participation.dao.ParticipationDao;
+import com.test.withdayback.participation.enums.ParticipationStatus;
+import com.test.withdayback.participation.vo.Participation;
 import com.test.withdayback.schedule.dao.ScheduleDao;
 import com.test.withdayback.schedule.dto.ScheduleResponseDTO;
 import com.test.withdayback.schedule.enums.CostType;
@@ -107,8 +109,12 @@ class ScheduleServiceTest {
         when(scheduleDao.selectScheduleById(scheduleId)).thenReturn(schedule);
         when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
         when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
-        when(participationDao.findScheduleParticipationStatus(scheduleId, "guest@withday.test"))
-                .thenReturn("PENDING");
+        Participation participation = new Participation();
+        participation.setId(201L);
+        participation.setStatus(ParticipationStatus.PENDING);
+
+        when(participationDao.findByEmailAndScheduleId("guest@withday.test", scheduleId))
+                .thenReturn(participation);
 
         ScheduleResponseDTO result =
                 scheduleService.getScheduleFullDetails(scheduleId, "guest@withday.test");
@@ -116,6 +122,7 @@ class ScheduleServiceTest {
         assertNotNull(result);
         assertFalse(result.getViewerIsHost());
         assertFalse(result.getViewerCanAccessChatLink());
+        assertEquals(201L, result.getViewerParticipationId());
         assertEquals("PENDING", result.getViewerParticipationStatus());
         assertNull(result.getSchedule().getChatLink());
     }
@@ -130,14 +137,20 @@ class ScheduleServiceTest {
         when(scheduleDao.selectScheduleById(scheduleId)).thenReturn(schedule);
         when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
         when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
-        when(participationDao.findScheduleParticipationStatus(scheduleId, "approved@withday.test"))
-                .thenReturn("APPROVED");
+        Participation participation = new Participation();
+        participation.setId(202L);
+        participation.setStatus(ParticipationStatus.APPROVED);
+
+        when(participationDao.findByEmailAndScheduleId("approved@withday.test", scheduleId))
+                .thenReturn(participation);
 
         ScheduleResponseDTO result =
                 scheduleService.getScheduleFullDetails(scheduleId, "approved@withday.test");
 
         assertNotNull(result);
         assertTrue(result.getViewerCanAccessChatLink());
+        assertEquals(202L, result.getViewerParticipationId());
+        assertEquals("APPROVED", result.getViewerParticipationStatus());
         assertEquals("https://open.kakao.com/test-room", result.getSchedule().getChatLink());
     }
 }

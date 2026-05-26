@@ -1,4 +1,5 @@
 import { api } from "../../shared/lib/api";
+import { PARTICIPATION_TAB_STATUS_PARAMS } from "./model/constants";
 
 /*
  * participation feature의 네트워크 진입점이다.
@@ -100,8 +101,14 @@ export const fetchHostingSchedules = async ({ email }) => {
  */
 export const fetchMySchedules = async ({ email }) => {
   const [participating, pending, hosting] = await Promise.all([
-    fetchParticipationList({ email, statuses: "APPROVED,KICKED" }),
-    fetchParticipationList({ email, statuses: "PENDING,REJECTED,CANCELED" }),
+    fetchParticipationList({
+      email,
+      statuses: PARTICIPATION_TAB_STATUS_PARAMS.participating,
+    }),
+    fetchParticipationList({
+      email,
+      statuses: PARTICIPATION_TAB_STATUS_PARAMS.pending,
+    }),
     fetchHostingSchedules({ email }),
   ]);
 

@@ -60,7 +60,12 @@ function HostParticipationList({
             호스트 전용 신청자 관리 영역입니다.
           </p>
         </div>
-        <div className={clsx(participationStyles.stateBox, participationStyles.errorState)}>
+        <div
+          className={clsx(
+            participationStyles.stateBox,
+            participationStyles.errorState
+          )}
+        >
           {errorMessage}
         </div>
       </section>
@@ -101,10 +106,8 @@ function HostParticipationList({
         ))}
       </div>
 
-      /*
-       * 선택한 상태에 해당하는 신청자가 없는 경우다.
-       * 예를 들어 KICKED 필터를 눌렀지만 강퇴된 사람이 아직 없으면 emptyMessage가 표시된다.
-       */
+      {/* 선택한 상태에 해당하는 신청자가 없는 경우다.
+       예를 들어 KICKED 필터를 눌렀지만 강퇴된 사람이 아직 없으면 emptyMessage가 표시된다. */}
       {!items || items.length === 0 ? (
         <div className={participationStyles.stateBox}>{emptyMessage}</div>
       ) : (

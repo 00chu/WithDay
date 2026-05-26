@@ -2,6 +2,7 @@ package com.test.withdayback.participation.service;
 
 import com.test.withdayback.notification.service.NotificationService;
 import com.test.withdayback.participation.dao.ParticipationDao;
+import com.test.withdayback.participation.dto.ParticipationApplyResponseDTO;
 import com.test.withdayback.participation.dto.ParticipationStatusUpdateRequestDTO;
 import com.test.withdayback.participation.dto.ParticipationStatusUpdateResponseDTO;
 import com.test.withdayback.participation.enums.ParticipationStatus;
@@ -192,5 +193,62 @@ class ParticipationServiceTest {
 
         assertEquals("400 BAD_REQUEST \"호스트는 취소 상태로 변경할 수 없습니다.\"", exception.getMessage());
         verify(participationDao, never()).findById(99L);
+    }
+
+    @Test
+    void applyScheduleReusesCanceledParticipationAsPending() {
+        User user = new User();
+        user.setId(29L);
+        user.setEmail("user@withday.test");
+        user.setNickname("참여자");
+
+        User host = new User();
+        host.setId(77L);
+        host.setEmail("host@withday.test");
+
+        Schedule schedule = new Schedule();
+        schedule.setId(5L);
+        schedule.setUserId(77L);
+        schedule.setStatus(ScheduleStatus.recruiting);
+        schedule.setTitle("재신청 테스트");
+        schedule.setCurrentParticipants(1);
+        schedule.setMaxParticipants(4);
+        schedule.setRecruitEndDate("2099-12-31");
+        schedule.setEndDate("2099-12-31");
+
+        Participation canceledParticipation = new Participation();
+        canceledParticipation.setId(101L);
+        canceledParticipation.setUserId(29L);
+        canceledParticipation.setScheduleId(5L);
+        canceledParticipation.setStatus(ParticipationStatus.CANCELED);
+
+        Participation pendingParticipation = new Participation();
+        pendingParticipation.setId(101L);
+        pendingParticipation.setUserId(29L);
+        pendingParticipation.setScheduleId(5L);
+        pendingParticipation.setStatus(ParticipationStatus.PENDING);
+
+        when(userDao.findByEmail("user@withday.test"))
+                .thenReturn(user, user);
+        when(scheduleDao.selectScheduleById(5L)).thenReturn(schedule);
+        when(participationDao.findByEmailAndScheduleId("user@withday.test", 5L))
+                .thenReturn(canceledParticipation);
+        when(participationDao.updateStatus(101L, "CANCELED", "pending"))
+                .thenReturn(1);
+        when(participationDao.findById(101L)).thenReturn(pendingParticipation);
+        when(userDao.findById(77L)).thenReturn(host);
+
+        ParticipationApplyResponseDTO response = participationService.applySchedule(
+                new com.test.withdayback.participation.dto.ParticipationRequestDTO(
+                        5L,
+                        "user@withday.test"
+                )
+        );
+
+        assertEquals(101L, response.getParticipationId());
+        assertEquals(ParticipationStatus.PENDING, response.getStatus());
+        assertEquals("참여 신청이 다시 완료되었습니다.", response.getMessage());
+        verify(participationDao).updateStatus(101L, "CANCELED", "pending");
+        verify(notificationService).notifyApply(77L, "host@withday.test", "참여자", "재신청 테스트", 5L);
     }
 }

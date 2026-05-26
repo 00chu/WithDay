@@ -775,6 +775,7 @@ export default function ScheduleDetail() {
           scheduleId={schedule.id}
           status={schedule.status}
           recruitEndDate={schedule.recruitEndDate}
+          viewerParticipationId={data.viewerParticipationId}
           viewerParticipationStatus={viewerParticipationStatus}
           isHost={viewerIsHost}
           onFeedback={handleApplyFeedback}

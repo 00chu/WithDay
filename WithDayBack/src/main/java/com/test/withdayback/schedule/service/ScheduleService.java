@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.test.withdayback.participation.dao.ParticipationDao;
 import com.test.withdayback.participation.enums.ParticipationStatus;
+import com.test.withdayback.participation.vo.Participation;
 import com.test.withdayback.schedule.dao.ScheduleDao;
 import com.test.withdayback.schedule.dto.ScheduleRequestDTO;
 import com.test.withdayback.schedule.dto.ScheduleResponseDTO;
@@ -76,6 +77,7 @@ public class ScheduleService {
          */
         String normalizedViewerEmail = viewerEmail == null ? "" : viewerEmail.trim();
         boolean viewerIsHost = !normalizedViewerEmail.isBlank() && normalizedViewerEmail.equalsIgnoreCase(email);
+        Long viewerParticipationId = null;
         String viewerParticipationStatus = null;
 
         /*
@@ -83,7 +85,14 @@ public class ScheduleService {
          * 이 값은 프론트 ApplyScheduleButton의 "참여 신청하기/신청 완료/참여 확정" 라벨 결정에 쓰인다.
          */
         if (!normalizedViewerEmail.isBlank()) {
-            viewerParticipationStatus = participationDao.findScheduleParticipationStatus(id, normalizedViewerEmail);
+            Participation viewerParticipation =
+                    participationDao.findByEmailAndScheduleId(normalizedViewerEmail, id);
+            if (viewerParticipation != null) {
+                viewerParticipationId = viewerParticipation.getId();
+                viewerParticipationStatus = viewerParticipation.getStatus() != null
+                        ? viewerParticipation.getStatus().name()
+                        : null;
+            }
         }
 
         /*
@@ -98,6 +107,7 @@ public class ScheduleService {
         }
 
         response.setViewerIsHost(viewerIsHost);
+        response.setViewerParticipationId(viewerParticipationId);
         response.setViewerParticipationStatus(viewerParticipationStatus);
         response.setViewerCanAccessChatLink(viewerCanAccessChatLink);
 

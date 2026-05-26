@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   applySchedule,
+  cancelParticipation,
   updateParticipationStatusByHost,
 } from "../api";
 import { participationQueryKeys } from "./queries";
@@ -52,6 +53,33 @@ export const useApplyScheduleMutation = () => {
 
   return {
     applySchedule: mutation.mutateAsync,
+    isPending: mutation.isPending,
+  };
+};
+
+/*
+ * 일정 상세 화면에서 사용자가 자신의 참여를 취소할 때 쓰는 mutation이다.
+ * 성공 후에는 상세 화면의 viewerParticipationStatus와 내 일정 목록이 모두 바뀌므로 두 캐시를 함께 무효화한다.
+ */
+export const useCancelParticipationMutation = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: cancelParticipation,
+    onSuccess: async (_data, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["schedule-detail", Number(variables.scheduleId)],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: participationQueryKeys.all,
+        }),
+      ]);
+    },
+  });
+
+  return {
+    cancelParticipation: mutation.mutateAsync,
     isPending: mutation.isPending,
   };
 };

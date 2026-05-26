@@ -263,34 +263,54 @@ public class ParticipationService {
         }
 
         /*
-         * 같은 사용자가 같은 일정에 중복 신청하지 못하게 한다.
-         * Mapper는 가장 최근 participation row를 가져오며, 기존 row가 있으면 상태와 무관하게 새 신청 생성을 막는다.
+         * 같은 사용자가 같은 일정에 과거 신청 이력이 있는지 확인한다.
+         * 현재 정책은 중복 row를 계속 쌓기보다, 마지막 상태가 CANCELED일 때만 기존 row를 재사용해 PENDING으로 복구한다.
+         * 이렇게 하면 재신청 후에도 같은 participationId를 유지할 수 있고, 상세 화면 취소/재신청 흐름이 단순해진다.
          */
         Participation existing = participationDao.findByEmailAndScheduleId(email, scheduleId);
-        if (existing != null) {
+        if (existing != null && existing.getStatus() != ParticipationStatus.CANCELED) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 신청한 일정입니다.");
         }
 
-        /*
-         * DB 저장값:
-         * - user_id: 신청한 사용자 PK
-         * - schedule_id: 신청 대상 일정 PK
-         * - status: enum의 databaseValue인 "pending" 저장
-         * 신청 직후에는 호스트 승인이 필요하므로 APPROVED가 아니라 PENDING으로 시작한다.
-         */
-        Participation participation = new Participation();
-        participation.setUserId(user.getId());
-        participation.setScheduleId(scheduleId);
-        participation.setStatus(ParticipationStatus.PENDING);
+        Participation participation;
 
-        /*
-         * @Transactional이 필요한 이유:
-         * participation insert 이후 알림 전송이나 후속 처리 중 예외가 발생하면, 신청 row만 남고 사용자에게 실패가 보이는 불일치가 생길 수 있다.
-         * 이 메서드를 트랜잭션으로 묶어 실패 시 DB 변경을 롤백할 수 있게 한다.
-         */
-        int inserted = participationDao.insertParticipation(participation);
-        if (inserted <= 0 || participation.getId() == null) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "참여 신청에 실패했습니다.");
+        if (existing != null) {
+            int updated = participationDao.updateStatus(
+                    existing.getId(),
+                    ParticipationStatus.CANCELED.name(),
+                    ParticipationStatus.PENDING.getDatabaseValue()
+            );
+            if (updated <= 0) {
+                log.warn("재신청 상태 복구 실패 - participationId: {}, scheduleId: {}", existing.getId(), scheduleId);
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "재신청 처리에 실패했습니다.");
+            }
+
+            participation = participationDao.findById(existing.getId());
+            if (participation == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "재신청 정보를 다시 불러오지 못했습니다.");
+            }
+        } else {
+            /*
+             * DB 저장값:
+             * - user_id: 신청한 사용자 PK
+             * - schedule_id: 신청 대상 일정 PK
+             * - status: enum의 databaseValue인 "pending" 저장
+             * 신청 직후에는 호스트 승인이 필요하므로 APPROVED가 아니라 PENDING으로 시작한다.
+             */
+            participation = new Participation();
+            participation.setUserId(user.getId());
+            participation.setScheduleId(scheduleId);
+            participation.setStatus(ParticipationStatus.PENDING);
+
+            /*
+             * @Transactional이 필요한 이유:
+             * participation insert 이후 알림 전송이나 후속 처리 중 예외가 발생하면, 신청 row만 남고 사용자에게 실패가 보이는 불일치가 생길 수 있다.
+             * 이 메서드를 트랜잭션으로 묶어 실패 시 DB 변경을 롤백할 수 있게 한다.
+             */
+            int inserted = participationDao.insertParticipation(participation);
+            if (inserted <= 0 || participation.getId() == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "참여 신청에 실패했습니다.");
+            }
         }
 
         /*
@@ -312,8 +332,8 @@ public class ParticipationService {
                 participation.getId(),
                 scheduleId,
                 email,
-                participation.getStatus(),
-                "참여 신청이 완료되었습니다."
+                ParticipationStatus.PENDING,
+                existing == null ? "참여 신청이 완료되었습니다." : "참여 신청이 다시 완료되었습니다."
         );
     }
 

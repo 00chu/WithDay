@@ -26,7 +26,7 @@ public class ParticipationController {
      * 내 참여/신청 일정 조회 (내 일정 페이지의 참여중 / 신청중 탭)
      *
      * 프론트는 탭에 따라 조회해야 하는 참여 상태 목록을 쿼리 파라미터로 넘긴다.
-     * 예를 들어 "참여중" 탭은 APPROVED,KICKED를, "신청중" 탭은 PENDING,REJECTED,CANCELED를 요청한다.
+     * 예를 들어 "참여중" 탭은 APPROVED,KICKED를, "신청중" 탭은 PENDING만 요청한다.
      * 상태 필터를 컨트롤러에서 직접 해석하지 않고 Service로 넘기는 이유는,
      * DB에 저장된 소문자 상태값과 프론트에서 쓰는 대문자 상태값 보정 규칙을 한 레이어에서 관리하기 위해서다.
      *

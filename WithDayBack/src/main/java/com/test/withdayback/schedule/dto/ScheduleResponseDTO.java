@@ -33,6 +33,7 @@ public class ScheduleResponseDTO {
 
     // 현재 viewer 기준 권한/참여 상태다. 참여 버튼과 오픈채팅 링크 노출 여부를 결정한다.
     private Boolean viewerIsHost;
+    private Long viewerParticipationId;
     private String viewerParticipationStatus;
     private Boolean viewerCanAccessChatLink;
 
@@ -61,6 +62,7 @@ public class ScheduleResponseDTO {
                 ? schedule.getCostType().name()
                 : null;
         this.viewerIsHost = false;
+        this.viewerParticipationId = null;
         this.viewerCanAccessChatLink = false;
     }
 }
