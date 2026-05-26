@@ -45,6 +45,8 @@ const UpdateSchedule = () => {
   const { scheduleId } = useParams();
   const parsedScheduleId = Number(scheduleId);
 
+  const email = useAuthStore((state) => state.user.email);
+
   const {
     data: response,
     isPending: isLoading,
@@ -52,12 +54,10 @@ const UpdateSchedule = () => {
     error,
   } = useQuery({
     queryKey: ["schedule-detail", parsedScheduleId],
-    queryFn: () => fetchScheduleDetail(parsedScheduleId),
+    queryFn: () => fetchScheduleDetail(parsedScheduleId, email),
     enabled: Number.isFinite(parsedScheduleId) && parsedScheduleId > 0,
     staleTime: 1000 * 30,
   });
-
-  const email = useAuthStore((state) => state.user.email);
 
   const {
     register,
@@ -272,95 +272,97 @@ const UpdateSchedule = () => {
           >
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>기본 정보</h2>
-              <ul className={`${styles.inputWrap} ${styles.title}`}>
-                <li>
-                  <label htmlFor="title">일정명</label>
-                </li>
-                <li>
-                  <Input
-                    type="text"
-                    name="title"
-                    id="title"
-                    placeholder="일정명"
-                    {...register("post.title")}
-                  />
-                </li>
-              </ul>
+              <div className={styles.sectionContent}>
+                <ul className={`${styles.inputWrap} ${styles.title}`}>
+                  <li>
+                    <label htmlFor="title">일정명</label>
+                  </li>
+                  <li>
+                    <Input
+                      type="text"
+                      name="title"
+                      id="title"
+                      placeholder="일정명"
+                      {...register("post.title")}
+                    />
+                  </li>
+                </ul>
 
-              <ul className={`${styles.inputWrap} ${styles.description}`}>
-                <li>
-                  <label htmlFor="description">일정 설명</label>
-                </li>
-                <li>
-                  <TextArea
-                    name="description"
-                    id="description"
-                    placeholder="일정 설명"
-                    {...register("post.description")}
-                  />
-                </li>
-              </ul>
+                <ul className={`${styles.inputWrap} ${styles.description}`}>
+                  <li>
+                    <label htmlFor="description">일정 설명</label>
+                  </li>
+                  <li>
+                    <TextArea
+                      name="description"
+                      id="description"
+                      placeholder="일정 설명"
+                      {...register("post.description")}
+                    />
+                  </li>
+                </ul>
 
-              <ul className={`${styles.inputWrap} ${styles.category}`}>
-                <li>
-                  <label htmlFor="category">일정 종류</label>
-                </li>
-                <li>
-                  <select {...register("post.category")}>
-                    {categories.map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
-                      </option>
-                    ))}
-                  </select>
-                </li>
-              </ul>
+                <ul className={`${styles.inputWrap} ${styles.category}`}>
+                  <li>
+                    <label htmlFor="category">일정 종류</label>
+                  </li>
+                  <li>
+                    <select {...register("post.category")}>
+                      {categories.map((item) => (
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
+                  </li>
+                </ul>
 
-              <ul className={`${styles.inputWrap} ${styles.region}`}>
-                <li>
-                  <label htmlFor="region">지역(시/도)</label>
-                </li>
-                <li>
-                  <select {...register("post.region")}>
-                    <option value="">시/도</option>
-                    {regions?.map((item) => (
-                      <option key={item.regionId} value={item.regionName}>
-                        {item.regionName}
-                      </option>
-                    ))}
-                  </select>
-                </li>
-              </ul>
-              <ul className={`${styles.inputWrap} ${styles.detailRegion}`}>
-                <li>
-                  <label htmlFor="detailRegion">지역(시/군/구)</label>
-                </li>
-                <li>
-                  <select {...register("post.detailRegion")}>
-                    <option value="">시/군/구</option>
-                    {detailRegions?.map((item) => (
-                      <option key={item.detailId} value={item.detailName}>
-                        {item.detailName}
-                      </option>
-                    ))}
-                  </select>
-                </li>
-              </ul>
+                <ul className={`${styles.inputWrap} ${styles.link}`}>
+                  <li>
+                    <label htmlFor="link">오픈 채팅 링크</label>
+                  </li>
+                  <li>
+                    <Input
+                      type="text"
+                      placeholder="오픈 채팅 링크"
+                      {...register("post.chatLink")}
+                    />
+                  </li>
+                </ul>
 
-              <ul className={`${styles.inputWrap} ${styles.link}`}>
-                <li>
-                  <label htmlFor="link">오픈 채팅 링크</label>
-                </li>
-                <li>
-                  <Input
-                    type="text"
-                    placeholder="오픈 채팅 링크"
-                    {...register("post.chatLink")}
-                  />
-                </li>
-              </ul>
+                <ul className={`${styles.inputWrap} ${styles.region}`}>
+                  <li>
+                    <label htmlFor="region">지역(시/도)</label>
+                  </li>
+                  <li>
+                    <select {...register("post.region")}>
+                      <option value="">시/도</option>
+                      {regions?.map((item) => (
+                        <option key={item.regionId} value={item.regionName}>
+                          {item.regionName}
+                        </option>
+                      ))}
+                    </select>
+                  </li>
+                </ul>
+
+                <ul className={`${styles.inputWrap} ${styles.detailRegion}`}>
+                  <li>
+                    <label htmlFor="detailRegion">지역(시/군/구)</label>
+                  </li>
+                  <li>
+                    <select {...register("post.detailRegion")}>
+                      <option value="">시/군/구</option>
+                      {detailRegions?.map((item) => (
+                        <option key={item.detailId} value={item.detailName}>
+                          {item.detailName}
+                        </option>
+                      ))}
+                    </select>
+                  </li>
+                </ul>
+              </div>
             </div>
-
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>인원 및 성별 정보</h2>
               <div className={styles.gridContainer}>
@@ -566,40 +568,43 @@ const UpdateSchedule = () => {
                 </ul>
               </div>
             </div>
-
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>일정 및 모집 기간</h2>
-              <CalendarRange
-                startDate={watch("post.startDate")}
-                endDate={watch("post.endDate")}
-                setValue={setValue}
-              />
+              <div>
+                <CalendarRange
+                  startDate={watch("post.startDate")}
+                  endDate={watch("post.endDate")}
+                  setValue={setValue}
+                />
 
-              <ul className={`${styles.inputWrap} ${styles.recruitmentPeriod}`}>
-                <li>
-                  <label>모집 마감일</label>
-                </li>
-                <li>
-                  <DatePicker
-                    locale="ko"
-                    selected={recruitEndDate}
-                    onChange={(date) =>
-                      setValue("post.recruitEndDate", date, {
-                        shouldValidate: true,
-                      })
-                    }
-                    minDate={new Date()}
-                    maxDate={startDate}
-                    customInput={
-                      <button type="button" className={styles.dateButton}>
-                        📅 {recruitEndDate?.toLocaleDateString() || "날짜 선택"}
-                      </button>
-                    }
-                  />
-                </li>
-              </ul>
+                <ul
+                  className={`${styles.inputWrap} ${styles.recruitmentPeriod}`}
+                >
+                  <li>
+                    <label>모집 마감일</label>
+                  </li>
+                  <li>
+                    <DatePicker
+                      locale="ko"
+                      selected={recruitEndDate}
+                      onChange={(date) =>
+                        setValue("post.recruitEndDate", date, {
+                          shouldValidate: true,
+                        })
+                      }
+                      minDate={new Date()}
+                      maxDate={startDate}
+                      customInput={
+                        <button type="button" className={styles.dateButton}>
+                          📅{" "}
+                          {recruitEndDate?.toLocaleDateString() || "날짜 선택"}
+                        </button>
+                      }
+                    />
+                  </li>
+                </ul>
+              </div>
             </div>
-
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>상세 일정</h2>
               <ScheduleTable
@@ -611,74 +616,80 @@ const UpdateSchedule = () => {
                 watch={watch}
               />
             </div>
-
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>정산 방식</h2>
-              <ul className={`${styles.inputWrap} ${styles.costWrap}`}>
-                <li>총액</li>
-                <li className={styles.cost}>
-                  <input
-                    type="text"
-                    className={styles.costInput}
-                    value={formatNumber(totalPrice)}
-                    onChange={(e) => {
-                      const onlyNumber = e.target.value.replace(/[^0-9]/g, "");
+              <div>
+                <ul className={`${styles.inputWrap} ${styles.costWrap}`}>
+                  <li>총액</li>
+                  <li className={styles.cost}>
+                    <input
+                      type="text"
+                      className={styles.costInput}
+                      value={formatNumber(totalPrice)}
+                      onChange={(e) => {
+                        const onlyNumber = e.target.value.replace(
+                          /[^0-9]/g,
+                          "",
+                        );
 
-                      setValue(
-                        "post.totalPrice",
-                        onlyNumber === "" ? null : Number(onlyNumber),
-                      );
-                    }}
-                  />
-                  <span className={styles.won}>₩</span>
-                </li>
-              </ul>
+                        setValue(
+                          "post.totalPrice",
+                          onlyNumber === "" ? null : Number(onlyNumber),
+                        );
+                      }}
+                    />
+                    <span className={styles.won}>원</span>
+                  </li>
+                </ul>
 
-              <ul className={`${styles.inputWrap} ${styles.costSharingWrap}`}>
-                <li>정산 방식</li>
-                <li className={styles.costSharingContent}>
-                  <div className={styles.costSharing}>
-                    <Button
-                      type="button"
-                      variant={
-                        costType === "per_person" ? "primary" : "outline"
-                      }
-                      onClick={() => setValue("post.costType", "per_person")}
-                    >
-                      총액 1 / N<div className={styles.desc}>나누어 지불</div>
-                    </Button>
+                <ul className={`${styles.inputWrap} ${styles.costSharingWrap}`}>
+                  <li>정산 방식</li>
+                  <li className={styles.costSharingContent}>
+                    <div className={styles.costSharing}>
+                      <Button
+                        type="button"
+                        variant={
+                          costType === "per_person" ? "primary" : "outline"
+                        }
+                        onClick={() => setValue("post.costType", "per_person")}
+                      >
+                        총액 1 / N<div className={styles.desc}>나누어 지불</div>
+                      </Button>
 
-                    <Button
-                      type="button"
-                      variant={
-                        costType === "host_covered" ? "primary" : "outline"
-                      }
-                      onClick={() => setValue("post.costType", "host_covered")}
-                    >
-                      호스트 지불
-                      <div className={styles.desc}>호스트 전액 부담</div>
-                    </Button>
+                      <Button
+                        type="button"
+                        variant={
+                          costType === "host_covered" ? "primary" : "outline"
+                        }
+                        onClick={() =>
+                          setValue("post.costType", "host_covered")
+                        }
+                      >
+                        호스트 지불
+                        <div className={styles.desc}>호스트 전액 부담</div>
+                      </Button>
 
-                    <Button
-                      type="button"
-                      variant={costType === "free" ? "primary" : "outline"}
-                      onClick={() => setValue("post.costType", "free")}
-                    >
-                      무료
-                      <div className={styles.desc}>비용 없음</div>
-                    </Button>
+                      <Button
+                        type="button"
+                        variant={costType === "free" ? "primary" : "outline"}
+                        onClick={() => setValue("post.costType", "free")}
+                      >
+                        무료
+                        <div className={styles.desc}>비용 없음</div>
+                      </Button>
 
-                    <Button
-                      type="button"
-                      variant={costType === "custom" ? "primary" : "outline"}
-                      onClick={() => setValue("post.costType", "custom")}
-                    >
-                      인당 고정
-                      <div className={styles.desc}>정해진 금액 지불</div>
-                    </Button>
-                  </div>
-                </li>
-              </ul>
+                      <Button
+                        type="button"
+                        variant={costType === "custom" ? "primary" : "outline"}
+                        onClick={() => setValue("post.costType", "custom")}
+                      >
+                        인당 고정
+                        <div className={styles.desc}>정해진 금액 지불</div>
+                      </Button>
+                    </div>
+                  </li>
+                </ul>
+              </div>
             </div>
 
             <div className={styles.inputContentWrap}>
@@ -690,9 +701,8 @@ const UpdateSchedule = () => {
                 setDeletedImageIds={setDeletedImageIds}
               />
             </div>
-
             <div className={styles.registButtonWrap}>
-              <Button type="submit">수정</Button>
+              <Button type="submit">등록</Button>
               <Button
                 type="button"
                 variant="outline"
@@ -820,42 +830,51 @@ const ScheduleTable = ({
   };
 
   return (
-    <div className={styles.scheduleTableWrap}>
-      <table className={styles.scheduleTable}>
-        <thead>
-          <tr>
-            <th>일차</th>
-            <th>제목</th>
-            <th>소개</th>
-          </tr>
-        </thead>
+    <div className={styles.scheduleTimeline}>
+      {fields.map((row, i) => (
+        <div key={row.id} className={styles.scheduleCard}>
+          {/* 왼쪽 일차 */}
+          <div className={styles.dayBadge}>
+            <span>{row.dayNumber}</span>
+            <p>일차</p>
+          </div>
 
-        <tbody>
-          {fields.map((row, i) => (
-            <tr key={row.id}>
-              <td>{row.dayNumber}</td>
+          {/* 오른쪽 */}
+          <div className={styles.scheduleContent}>
+            <div className={styles.scheduleField}>
+              <label>제목</label>
 
-              <td>
-                <input
-                  className={styles.scheduleInput}
-                  value={watch(`detailSchedule.${i}.title`) || ""}
-                  onChange={(e) => handleChange(i, "title", e.target.value)}
-                />
-              </td>
+              <input
+                className={styles.scheduleInput}
+                placeholder="일정 제목을 입력해주세요"
+                value={watch(`detailSchedule.${i}.title`) || ""}
+                onChange={(e) => handleChange(i, "title", e.target.value)}
+              />
+            </div>
 
-              <td>
+            <div className={styles.scheduleField}>
+              <label>소개</label>
+
+              <div className={styles.textareaWrap}>
                 <textarea
                   className={styles.scheduleTextarea}
+                  placeholder="일정 소개를 입력해주세요"
+                  maxLength={300}
                   value={watch(`detailSchedule.${i}.description`) || ""}
                   onChange={(e) =>
                     handleChange(i, "description", e.target.value)
                   }
                 />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+                <div className={styles.textCount}>
+                  {(watch(`detailSchedule.${i}.description`) || "").length}
+                  /300
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
