@@ -47,7 +47,7 @@
   padding: 42px 32px;
   border-right: 1px solid #edf2f7;
 
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 800;
   color: #0f172a;
 
@@ -865,12 +865,186 @@
 /* ========================= */
 
 @media (max-width: 1200px) {
-  .costSharing {
-    grid-template-columns: repeat(2, 1fr);
+  /* 전체 여백 */
+  .main {
+    padding: 20px 16px 100px;
   }
 
+  .contentWrap {
+    max-width: 100%;
+  }
+
+  /* 카드 */
+  .inputContentWrap {
+    grid-template-columns: 180px 1fr;
+
+    border-radius: 20px;
+  }
+
+  .inputTitle {
+    padding: 32px 24px;
+
+    font-size: 24px;
+  }
+
+  .sectionContent,
+  .inputContentWrap > *:not(.inputTitle) {
+    padding: 28px 24px;
+  }
+
+  /* input row */
+  .inputWrap {
+    gap: 16px;
+  }
+
+  .inputWrap li:first-child {
+    width: 120px;
+    min-width: 120px;
+
+    font-size: 14px;
+  }
+
+  /* input */
+  .inputWrap input,
+  .inputWrap textarea,
+  .inputWrap select,
+  .scheduleInput,
+  .scheduleTextarea {
+    padding: 14px 16px;
+
+    font-size: 14px;
+  }
+
+  /* select 화살표 */
+  .inputWrap select {
+    padding-right: 42px;
+    background-position: right 14px center;
+  }
+
+  /* 인원 */
+  .gridContainer {
+    gap: 18px;
+  }
+
+  /* 캘린더 */
+  .calendarWrapper {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .calendarWrapper :global(.rdrCalendarWrapper),
+  .calendarWrapper :global(.rdrMonth) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* 날짜 */
+  .duringDate p {
+    padding: 12px 24px;
+
+    font-size: 14px;
+  }
+
+  .dateButton {
+    padding: 12px 24px;
+
+    font-size: 14px;
+  }
+
+  /* 상세 일정 */
+  .scheduleCard {
+    padding: 16px;
+  }
+
+  .dayBadge {
+    width: 72px;
+    min-width: 72px;
+    height: 96px;
+  }
+
+  .dayBadge span {
+    font-size: 34px;
+  }
+
+  .dayBadge p {
+    font-size: 16px;
+  }
+
+  .scheduleField label {
+    width: 36px;
+    min-width: 36px;
+
+    font-size: 14px;
+  }
+
+  /* 총액 */
+  .costWrap,
+  .costSharingWrap {
+    gap: 18px;
+  }
+
+  .costWrap > li:first-child,
+  .costSharingWrap > li:first-child {
+    width: 110px;
+    min-width: 110px;
+
+    font-size: 14px;
+  }
+
+  .cost {
+    width: 100%;
+
+    padding: 0 16px;
+
+    box-sizing: border-box;
+  }
+
+  .costInput {
+    font-size: 18px;
+  }
+
+  .won {
+    font-size: 16px;
+  }
+
+  /* 정산 버튼 */
+  .costSharing {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .costSharing button {
+    min-height: 110px;
+
+    padding: 18px !important;
+  }
+
+  .costSharing button > span,
+  .costSharing button {
+    font-size: 15px;
+  }
+
+  .desc {
+    font-size: 12px;
+  }
+
+  /* 이미지 */
   .previewGrid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .image {
+    height: 220px;
+  }
+
+  /* 버튼 */
+  .registButtonWrap {
+    gap: 12px;
+  }
+
+  .registButtonWrap button {
+    min-height: 52px;
   }
 }
 
@@ -1249,10 +1423,6 @@
     justify-content: center;
 
     box-sizing: border-box;
-  }
-
-  .costWrap {
-    width: 100%;
   }
 
   .costWrap li:last-child {
