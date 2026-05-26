@@ -42,6 +42,7 @@ public class ScheduleController {
             @RequestParam(required = false) String email
     ) {
         ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(id, email);
+        System.out.println(result);
 
         if (result == null) {
             return ResponseEntity.notFound().build();

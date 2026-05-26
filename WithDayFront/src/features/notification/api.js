@@ -21,8 +21,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// 알림 개수 조회
+export const getNotificationCount = async () => {
+  // 백엔드에서 현재 로그인한 사용자를 꺼내 그 사람의 알림만 조회하도록 설정
+  const response = await api.get("/notifications/count", {
+    headers: {
+      Authorization: `Bearer ${useAuthStore.getState().token}`,
+    },
+  });
+
+  return response.data;
+};
+
 // 알림 조회
-export const fetchNotifications = async () => {
+export const getNotifications = async () => {
   // 백엔드에서 현재 로그인한 사용자를 꺼내 그 사람의 알림만 조회하도록 설정
   const response = await api.get("/notifications", {
     headers: {
@@ -36,6 +48,17 @@ export const fetchNotifications = async () => {
 // 알림 읽음 처리
 export const readNotification = async (notificationId) => {
   const response = await api.patch(`/notifications/${notificationId}/read`);
+
+  return response.data;
+};
+
+// 알림 동의 여부 조회
+export const getNotificationTerm = async (token) => {
+  const response = await api.get("/notifications/notification-term", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   return response.data;
 };

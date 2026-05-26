@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { fetchNotifications, readNotification } from "../api";
+import { getNotifications, readNotification } from "../api";
 import styles from "./Notification.module.css";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
@@ -11,7 +11,7 @@ export default function NotificationList({ onClose }) {
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ["notifications"],
-    queryFn: fetchNotifications,
+    queryFn: getNotifications,
   });
 
   if (isLoading) {
@@ -26,16 +26,17 @@ export default function NotificationList({ onClose }) {
     // 알림 읽음 처리
     await readNotification(notification.id);
 
-    // 알림 목록 다시 불러오기
+    // 알림 목록 재요청
     await queryClient.invalidateQueries({
       queryKey: ["notifications"],
     });
 
-    onClose();
+    // 알림 개수 재요청
+    await queryClient.invalidateQueries({
+      queryKey: ["notification-count"],
+    });
 
-    // 참가 신청 알림 -> 신청중 탭
-    if (notification.type === "APPLY") {
-    }
+    onClose();
 
     // 승인 알림 -> 참여중 탭
     if (notification.type === "APPROVE") {

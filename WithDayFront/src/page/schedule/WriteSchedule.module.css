@@ -2,12 +2,16 @@
   text-align: start;
 }
 
+/* ========================= */
+/* 전체 레이아웃 */
+/* ========================= */
+
 .main {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 16px;
-  background-color: var(--color-bg);
-  /* 크롬/사파리 스크롤바 숨김 */
+  padding: 32px 20px 120px;
+  background: #f6f8fb;
+
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -16,405 +20,670 @@
   display: none;
 }
 
-.backButton {
-  border: none;
-  background-color: inherit;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-text-secondary);
+.contentWrap {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.contentWrap {
-  padding: 20px;
+/* ========================= */
+/* 공통 섹션 카드 */
+/* ========================= */
+
+.inputContentWrap {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #e7edf3;
+  overflow: hidden;
+  margin-bottom: 28px;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
 }
+
+/* 왼쪽 타이틀 영역 */
+.inputTitle {
+  margin: 0;
+  padding: 42px 32px;
+  border-right: 1px solid #edf2f7;
+
+  font-size: 30px;
+  font-weight: 800;
+  color: #0f172a;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  background: #ffffff;
+}
+
+/* 오른쪽 컨텐츠 */
+.inputContentWrap > *:not(.inputTitle) {
+  padding: 38px 40px;
+}
+
+/* ========================= */
+/* 기본 input row */
+/* ========================= */
 
 .inputWrap {
-  list-style-type: none;
+  list-style: none;
   display: flex;
-  padding: 0;
-  margin: 10px 0;
+  align-items: flex-start;
+  gap: 22px;
+
   width: 100%;
+  margin: 0 0 24px;
+  padding: 0;
+}
+
+.inputWrap:last-child {
+  margin-bottom: 0;
 }
 
 .inputWrap li {
   box-sizing: border-box;
 }
 
-.inputWrap li input,
-.inputWrap li textarea {
+.inputWrap li:first-child {
+  width: 160px;
+  min-width: 160px;
+
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+
+  padding-top: 14px;
+}
+
+.inputWrap li:last-child {
+  flex: 1;
+}
+
+/* ========================= */
+/* input */
+/* ========================= */
+
+.inputWrap input,
+.inputWrap textarea,
+.inputWrap select {
+  width: 100%;
+  border: 1px solid #d9e2ec;
+  background: #ffffff;
+
+  border-radius: 14px;
+  padding: 16px 18px;
+
+  font-size: 15px;
+  color: #111827;
+
+  outline: none;
+  transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
+.inputWrap select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding-right: 48px !important;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 14px;
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+  .inputWrap select {
+    padding-right: 44px !important;
+    background-position: right 14px center;
+  }
+}
+
+.inputWrap input::placeholder,
+.inputWrap textarea::placeholder {
+  color: #9ca3af;
+}
+
+.inputWrap input:focus,
+.inputWrap textarea:focus,
+.inputWrap select:focus {
+  border-color: #10b8b4;
+  box-shadow: 0 0 0 4px rgba(16, 184, 180, 0.08);
+}
+
 .inputWrap textarea {
-  width: 100%;
-  height: 200px;
+  min-height: 180px;
   resize: none;
 }
 
-.inputWrap li:first-of-type {
-  width: 15%;
-  text-align: start;
+/* ========================= */
+/* 기본정보 영역 */
+/* ========================= */
+
+.title,
+.description {
+  width: 100%;
 }
 
-.inputWrap li:nth-of-type(2) {
-  width: 85%;
-  text-align: start;
+/* 오른쪽 컨텐츠 */
+.sectionContent {
+  width: 100%;
+  min-width: 0;
+
+  padding: 38px 40px;
+
+  box-sizing: border-box;
+}
+
+.title,
+.description {
+  width: 100%;
+}
+
+.inputContentWrap:first-of-type {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+}
+
+.inputContentWrap:first-of-type > ul {
+  margin-bottom: 20px;
+}
+
+.inputContentWrap:first-of-type > ul:nth-child(n + 4) {
+  display: inline-flex;
+}
+
+.inputWrap li:last-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ========================= */
+/* 인원 정보 */
+/* ========================= */
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px 28px;
+}
+
+.peopleInfo {
+  margin-bottom: 0;
 }
 
 .peopleInfo li:last-child {
-  width: 150px;
   display: flex;
-  gap: 10px;
-}
-
-.peopleInfo li:last-child {
   align-items: center;
+  gap: 10px;
 }
 
 .peopleInfo input {
   text-align: center;
 }
 
+.peopleInfo span {
+  font-weight: 600;
+  color: #475467;
+}
+
+/* ========================= */
+/* 성별 버튼 */
+/* ========================= */
+
+.genderInfo {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
 .genderInfo li:last-child {
   display: flex;
-  width: 400px;
-  gap: 10px;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-.genderInfo label {
-  font-size: 15px;
-}
-
-.genderWrap {
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 20px;
-}
-
-.inputTitle {
-  padding-bottom: 10px;
-  text-align: start;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.inputContentWrap {
-  padding-bottom: 40px;
-}
+/* ========================= */
+/* 캘린더 */
+/* ========================= */
 
 .calendarWrapper {
   width: 100%;
-  font-size: 16px;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 14px;
+
+  background: white;
+  border-radius: 20px;
+  box-sizing: border-box;
 }
 
-/* ========================= */
-/* 📅 기본 구조 */
-/* ========================= */
-
+/* 핵심 */
 .calendarWrapper :global(.rdrCalendarWrapper) {
   width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
 }
 
 .calendarWrapper :global(.rdrMonth) {
   width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  box-sizing: border-box;
 }
 
-/* ========================= */
-/* 📅 grid layout */
-/* ========================= */
-
+/* 요일 + 날짜 영역 */
+.calendarWrapper :global(.rdrWeekDays),
 .calendarWrapper :global(.rdrDays) {
-  display: flex;
-  flex-wrap: wrap;
   width: 100% !important;
-  row-gap: 12px;
 }
 
-/* 날짜 칸 */
-.calendarWrapper :global(.rdrDay) {
-  width: calc(100% / 7) !important;
-  max-width: calc(100% / 7) !important;
-  flex: none !important;
-  padding: 6px 0;
-}
-
-/* ========================= */
-/* 📅 텍스트 */
-/* ========================= */
-
+/* 날짜칸 */
+.calendarWrapper :global(.rdrDay),
 .calendarWrapper :global(.rdrWeekDay) {
   width: calc(100% / 7) !important;
-  font-size: 16px;
-}
-
-.calendarWrapper :global(.rdrDayNumber span) {
-  font-size: 16px;
-}
-
-/* ========================= */
-/* 🎨 토/일 색상 */
-/* ========================= */
-
-.calendarWrapper :global(.rdrWeekDay:nth-child(1)) {
-  color: var(--color-error) !important;
-}
-
-.calendarWrapper :global(.rdrWeekDay:nth-child(7)) {
-  color: blue !important;
-}
-
-.calendarWrapper :global(.rdrDay:nth-child(7n + 1) .rdrDayNumber span) {
-  color: var(--color-error) !important;
-}
-
-.calendarWrapper :global(.rdrDay:nth-child(7n) .rdrDayNumber span) {
-  color: blue !important;
-}
-
-/* ========================= */
-/* 📅 range 스타일 */
-/* ========================= */
-
-.calendarWrapper :global(.rdrInRange) {
-  background: rgba(0, 110, 255, 0.4) !important;
-  border-radius: 0 !important;
-}
-/* 시작/끝 강조 */
-.calendarWrapper :global(.rdrStartEdge),
-.calendarWrapper :global(.rdrEndEdge) {
-  background: rgba(0, 110, 255, 0.55) !important;
-}
-
-/* ========================= */
-/* 🎯 선택 상태 (핵심 통합) */
-/* ========================= */
-
-.calendarWrapper :global(.rdrSelected),
-.calendarWrapper :global(.rdrStartEdge),
-.calendarWrapper :global(.rdrEndEdge) {
-  border-radius: 4px !important;
-}
-
-/* ========================= */
-/* 🚫 hover/preview 완전 제거 */
-/* ========================= */
-
-/* preview 라인 제거 */
-.calendarWrapper :global(.rdrDayStartPreview),
-.calendarWrapper :global(.rdrDayEndPreview),
-.calendarWrapper :global(.rdrDayInPreview) {
-  background: transparent !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-
-/* hover range 제거 */
-.calendarWrapper :global(.rdrDayHovered),
-.calendarWrapper :global(.rdrDayPassive) {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-/* ========================= */
-/* 📅 간격 */
-/* ========================= */
-
-.calendarWrapper :global(.rdrDayNumber span) {
-  width: 34px;
-  height: 34px;
-  line-height: 34px;
-}
-
-/* ========================= */
-/* 📅 버튼/상단 */
-/* ========================= */
-
-.calendarWrapper :global(.rdrNextPrevButton) {
-  transform: scale(1.2);
-}
-
-.calendarWrapper :global(.rdrMonthAndYearPickers select),
-.calendarWrapper :global(.rdrMonthAndYearWrapper) {
-  font-size: 16px;
-}
-
-/* 캘린더 */
-.calendarWrapper {
-  font-size: 14px;
-}
-
-.calendarWrapper :global(.rdrMonthAndYearWrapper) {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-direction: row !important; /* 핵심 */
-  gap: 8px;
-}
-
-.dateWrap {
-  margin-top: 20px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.duringDate > li {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  justify-content: start;
-  align-items: center;
-}
-
-.duringDate > li > p {
-  border: 1px solid var(--color-border);
-  background-color: white;
-  padding: 10px 45px;
-  border-radius: 4px;
-
-  width: auto;
-  max-width: 100%;
+  max-width: calc(100% / 7) !important;
+  flex-basis: calc(100% / 7) !important;
   box-sizing: border-box;
-  font-size: 16px;
 }
 
-.recruitmentPeriod > li {
-  display: flex;
-  align-items: center;
+/* 모바일 대응 */
+@media (max-width: 768px) {
+  .calendarWrapper {
+    border-radius: 4px;
+  }
+
+  .calendarWrapper :global(.rdrMonthAndYearWrapper) {
+    padding: 0 4px;
+  }
+
+  .calendarWrapper :global(.rdrDayNumber span) {
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 14px;
+  }
 }
 
-.scheduleTableWrap {
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.scheduleTable {
-  width: 100%;
-  border-collapse: collapse;
-  border-spacing: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  overflow: hidden;
-  background-color: white;
-}
-
-.scheduleTable th,
-.scheduleTable td {
-  border: 1px solid var(--color-border);
-  padding: 8px;
-}
-
-.scheduleTable th:nth-child(1) {
-  width: 10%;
-}
-
-.scheduleTable th:nth-child(2) {
-  width: 20%;
-}
-
-.scheduleTable th:nth-child(3) {
-  width: 70%;
-}
-
-.scheduleTable tbody td:first-child {
-  text-align: center;
-}
-
-.scheduleInput,
-.scheduleTextarea {
+.calendarWrapper :global(.rdrDayNumber span) {
   font-size: 15px;
 }
 
-.scheduleInput {
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  text-align: center;
+.calendarWrapper :global(.rdrWeekDays) {
+  margin-bottom: 8px;
 }
 
-.textareaWrap > div {
-  text-align: end;
+.calendarWrapper :global(.rdrDays) {
+  row-gap: 10px;
 }
 
-.scheduleTextarea {
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  height: 50px;
-  resize: none;
+.calendarWrapper :global(.rdrDayNumber span) {
+  font-size: 15px;
+  margin-bottom: 1px;
+}
+
+.calendarWrapper :global(.rdrDayToday .rdrDayNumber span:after) {
+  background: #10b8b4 !important;
+}
+
+/* 선택 */
+.calendarWrapper :global(.rdrInRange) {
+  background: rgba(16, 184, 180, 0.5) !important;
+}
+
+.calendarWrapper :global(.rdrStartEdge),
+.calendarWrapper :global(.rdrEndEdge),
+.calendarWrapper :global(.rdrSelected) {
+  background: #10b8b4 !important;
+}
+
+/* 날짜 출력 */
+.dateWrap {
+  margin-top: 26px;
+}
+
+.duringDate > li:last-child {
+  display: flex;
+  gap: 14px;
+}
+
+.duringDate p {
+  margin: 0;
+
+  padding: 12px 60px;
+  border-radius: 14px;
+
+  background: #ffffff;
+  border: 1px solid #dbe5ec;
+
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ========================= */
+/* 모집 마감일 */
+/* ========================= */
+
+.recruitmentPeriod {
+  margin-top: 22px;
 }
 
 .dateButton {
   width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  padding: 12px 75px;
+  border-radius: 14px;
+
+  border: 1px solid #d9e2ec;
+  background: #ffffff;
+
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+
+  cursor: pointer;
+}
+
+/* ========================= */
+/* 상세 일정 */
+/* ========================= */
+
+.scheduleTimeline {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* 카드 */
+.scheduleCard {
+  position: relative;
+
+  display: flex;
+  gap: 18px;
+
+  background: #ffffff;
+  border: 1px solid #e5edf3;
+  border-radius: 22px;
+
+  padding: 18px;
+
+  z-index: 1;
+}
+
+/* 일차 뱃지 */
+.dayBadge {
+  min-width: 80px;
+  width: 80px;
+  height: 110px;
+
+  border-radius: 14px;
+
+  background: linear-gradient(180deg, #effbfb 0%, #dff7f6 100%);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.dayBadge span {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1;
+
+  color: #0ea5a4;
+}
+
+.dayBadge p {
+  margin: 6px 0 0;
+
+  font-size: 18px;
+  font-weight: 700;
+
+  color: #0ea5a4;
+}
+
+/* 오른쪽 */
+.scheduleContent {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.scheduleField {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.scheduleField label {
+  width: 40px;
+  min-width: 40px;
+
+  padding-top: 14px;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  color: #111827;
+}
+
+/* input */
+.scheduleInput,
+.scheduleTextarea {
+  width: 100%;
+
+  border: 1px solid #dbe5ec;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  padding: 14px 16px;
+
+  font-size: 15px;
+  color: #111827;
+
+  outline: none;
+  box-sizing: border-box;
+
+  transition: 0.2s;
+}
+
+.scheduleInput:focus,
+.scheduleTextarea:focus {
+  border-color: #10b8b4;
+  box-shadow: 0 0 0 4px rgba(16, 184, 180, 0.08);
+}
+
+.textareaWrap {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.textCount {
+  margin-top: 6px;
+
+  display: flex;
+  justify-content: flex-end;
+
+  font-size: 13px;
+  color: #9ca3af;
+}
+.scheduleTextarea {
+  min-height: 90px;
+  resize: none;
+}
+
+/* 글자수 */
+.textCount {
+  margin-top: 6px;
+
+  text-align: right;
+
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+  .scheduleTimeline::before {
+    display: none;
+  }
+
+  .scheduleCard {
+    flex-direction: column;
+  }
+
+  .dayBadge {
+    width: 100%;
+    min-width: 0;
+
+    height: auto;
+
+    flex-direction: row;
+    gap: 8px;
+
+    padding: 14px;
+
+    align-items: flex-end;
+
+    box-sizing: border-box;
+  }
+
+  .dayBadge span {
+    font-size: 28px;
+  }
+
+  .dayBadge p {
+    margin: 0;
+    font-size: 16px;
+  }
+
+  .scheduleField {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .scheduleField label {
+    width: auto;
+    min-width: auto;
+    padding-top: 0;
+  }
+}
+
+/* ========================= */
+/* 💰 정산 영역 */
+/* ========================= */
+
+.costWrap,
+.costSharingWrap {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+
+  width: 100%;
+  margin: 18px 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+/* 왼쪽 라벨 */
+.costWrap li:first-child,
+.costSharingWrap li:first-child {
+  width: 120px;
+  min-width: 120px;
+
   display: flex;
   align-items: center;
   justify-content: flex-start;
 
-  padding: 10px 50px;
-  border-radius: 4px;
-  border: 1px solid var(--color-border);
-  background-color: white;
-
   font-size: 16px;
-  box-sizing: border-box;
-  gap: 6px;
+  font-weight: 700;
+  color: #222;
 }
 
-.dateButton span {
-  margin-right: 10px;
+/* 오른쪽 영역 */
+.costWrap li:last-child,
+.costSharingWrap li:last-child {
+  flex: 1;
 }
 
-.scheduleBtnWrap {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
+/* ========================= */
+/* 공통 */
+/* ========================= */
 
-.scheduleAddBtn {
-  margin-top: 30px;
-  background-color: white;
-  border: 1px solid var(--color-border);
-  outline: none;
-  padding: 10px 15px;
-  border-radius: 50%;
-  font-size: 20px;
-  color: var(--color-text-secondary);
-}
-
-.scheduleMinusBtn {
-  margin-top: 30px;
-  background-color: white;
-  border: 1px solid var(--color-border);
-  outline: none;
-  padding: 10px 18px;
-  border-radius: 50%;
-  font-size: 20px;
-  color: var(--color-text-secondary);
-}
-
-.costWrap > li {
-  display: flex;
+.costWrap,
+.costSharingWrap {
   align-items: center;
 }
+
+.costWrap > li:first-child,
+.costSharingWrap > li:first-child {
+  width: 140px;
+  min-width: 140px;
+
+  display: flex;
+  align-items: center;
+
+  font-weight: 600;
+  color: #374151;
+}
+
+/* 핵심 */
+.costWrap > li:last-child,
+.costSharingWrap > li:last-child {
+  flex: 1;
+  width: 100%;
+}
+
+/* ========================= */
+/* 총액 input */
+/* ========================= */
 
 .cost {
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 10px 80px;
+  width: 100%;
+  height: 64px;
+
+  flex: 1;
+
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
+
+  background: #ffffff;
+  border-radius: 18px;
+
+  box-sizing: border-box;
 }
 
-.won {
-  display: flex;
-  align-items: center;
-  line-height: 1;
+.costInput {
+  width: 100%;
+  flex: 1;
+
+  border: none;
+  outline: none;
+  background: transparent;
+
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
 }
 
 .costInput::-webkit-outer-spin-button,
@@ -423,90 +692,131 @@
   margin: 0;
 }
 
-.costInput {
-  width: 120px;
-  font-size: 16px;
-  border: none;
-  outline: none;
-  -moz-appearance: textfield;
-  text-align: center;
+.won {
+  flex-shrink: 0;
+
+  font-size: 18px;
+  font-weight: 700;
+  color: #6b7280;
 }
 
+/* ========================= */
+/* 정산 버튼 */
+/* ========================= */
+
 .costSharingContent {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  width: 100%;
 }
 
 .costSharing {
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .costSharing button {
   width: 100%;
-  text-align: left;
+  min-height: 120px;
+
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
+
+  padding: 20px !important;
+
+  border-radius: 20px !important;
+
+  transition: 0.2s ease;
 }
 
-.costSharing div {
-  font-size: 14px;
+/* 버튼 제목 */
+.costSharing button > span,
+.costSharing button {
+  font-size: 16px;
+  font-weight: 700;
 }
 
-.costWrap {
-  display: flex;
+/* 설명 */
+.desc {
+  margin-top: 10px;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  line-height: 1.5;
+  opacity: 0.65;
 }
 
-.costWrap > li:first-child {
-  width: 15%;
+/* ========================= */
+/* 모바일 */
+/* ========================= */
+
+@media (max-width: 768px) {
+  .costWrap,
+  .costSharingWrap {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .costWrap > li:first-child,
+  .costSharingWrap > li:first-child {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .costSharing {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .costSharing button {
+    min-height: 100px;
+  }
 }
 
-.costWrap > li:last-child {
-  width: auto;
-}
-
-W .titleWrap {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.titleWrap > h2 {
-  margin-bottom: 0;
-  border: none;
-}
+/* ========================= */
+/* 이미지 */
+/* ========================= */
 
 .imageZone {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: stretch;
-  margin-top: 20px;
+  gap: 18px;
 }
 
 .dropZone {
   width: 100%;
-  height: 100px;
-  border: 2px dashed gray;
+  height: 180px;
+
+  border: 2px dashed #cbd5e1;
+  border-radius: 20px;
+
+  background: #f8fafc;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  font-size: 15px;
+  font-weight: 600;
+  color: #64748b;
+
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropZone:hover {
+  border-color: #10b8b4;
+  background: #f0fdfd;
 }
 
 .previewGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 10px;
+  gap: 18px;
 }
 
 .imageWrap {
@@ -515,193 +825,461 @@ W .titleWrap {
 
 .image {
   width: 100%;
-  height: 300px;
+  height: 240px;
   object-fit: cover;
-  border: 1px solid #ccc;
+
+  border-radius: 18px;
 }
 
 .deleteBtn {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 20px;
-  height: 20px;
+  top: 10px;
+  right: 10px;
+
+  width: 32px;
+  height: 32px;
+
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
+
+  background: rgba(15, 23, 42, 0.75);
   color: white;
+
   cursor: pointer;
-  font-size: 12px;
-  line-height: 20px;
-  text-align: center;
 }
 
-.deleteBtn {
-  opacity: 0;
-  transition: 0.2s;
-}
-
-.imageWrap:hover .deleteBtn {
-  opacity: 1;
-}
+/* ========================= */
+/* 버튼 */
+/* ========================= */
 
 .registButtonWrap {
   display: flex;
-  justify-content: center;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: 14px;
+
+  margin-top: 40px;
 }
 
 /* ========================= */
-/* 📱 MOBILE (768px 이하) */
+/* 반응형 */
 /* ========================= */
 
+@media (max-width: 1200px) {
+  .costSharing {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .previewGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
-  /* 전체 패딩 줄이기 */
+  .main {
+    padding: 10px 10px 80px;
+  }
+
   .contentWrap {
-    padding: 12px;
+    width: 100%;
+    max-width: 100%;
   }
 
-  .inputWrap {
+  /* 카드 전체 */
+  .inputContentWrap {
+    display: flex !important;
     flex-direction: column !important;
+
+    width: 100%;
+
+    border-radius: 18px;
+    margin-bottom: 16px;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+  }
+
+  .inputContentWrap:first-of-type {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: unset !important;
+  }
+
+  /* 왼쪽 타이틀 -> 상단 */
+  .inputTitle {
+    width: 100%;
+
+    padding: 18px 16px;
+
+    border-right: none;
+    border-bottom: 1px solid #edf2f7;
+
+    font-size: 20px;
+
+    box-sizing: border-box;
+  }
+
+  /* 오른쪽 컨텐츠 */
+  .sectionContent,
+  .inputContentWrap > *:not(.inputTitle) {
+    width: 100%;
+    min-width: 0;
+
+    padding: 16px;
+
+    box-sizing: border-box;
+  }
+
+  /* row 전체 */
+  .inputWrap {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+
     gap: 6px;
+
+    margin-bottom: 16px;
+
+    box-sizing: border-box;
   }
 
-  .inputWrap li:first-of-type {
-    width: 100%;
+  .inputWrap:last-child {
+    margin-bottom: 0;
+  }
+
+  /* label */
+  .inputWrap li:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    padding-top: 0;
+
     font-size: 14px;
-    color: var(--color-text-secondary);
+
+    box-sizing: border-box;
   }
 
-  .inputWrap li:nth-of-type(2) {
-    width: 100%;
+  /* 핵심 */
+  .inputWrap li:last-child {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    flex: 1 1 auto !important;
+
+    box-sizing: border-box;
   }
 
-  /* textarea 높이 줄이기 */
+  /* 기본정보 오른쪽 2열들 전부 100% */
+  .category,
+  .region,
+  .detailRegion,
+  .link,
+  .title,
+  .description,
+  .peopleInfo,
+  .genderInfo,
+  .costWrap,
+  .costSharingWrap,
+  .recruitmentPeriod,
+  .duringDate {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    flex: 1 1 auto !important;
+
+    box-sizing: border-box;
+  }
+
+  /* input */
+  .inputWrap input,
+  .inputWrap textarea,
+  .inputWrap select,
+  .scheduleInput,
+  .scheduleTextarea,
+  .costInput {
+    width: 100% !important;
+    min-width: 0;
+
+    padding: 14px;
+
+    font-size: 14px;
+
+    box-sizing: border-box;
+  }
+
   .inputWrap textarea {
-    height: 140px;
+    min-height: 140px;
   }
 
-  /* 인원 입력 */
+  /* 인원 */
+  .gridContainer {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 1fr;
+
+    gap: 16px;
+  }
+
+  .peopleInfo {
+    margin-bottom: 0;
+  }
+
   .peopleInfo li:last-child {
     width: 100%;
-    justify-content: flex-start;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+  }
+
+  .peopleInfo input {
+    flex: 1;
+    width: 100%;
   }
 
   /* 성별 버튼 */
   .genderInfo li:last-child {
     width: 100%;
-    flex-wrap: wrap;
-  }
 
-  /* 날짜 표시 */
-  .duringDate > li {
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
+
+    gap: 10px;
   }
 
-  .duringDate > li > p {
-    width: 100%;
-    padding: 10px;
-  }
-
-  /* 테이블 */
-  .scheduleTable th,
-  .scheduleTable td {
-    font-size: 12px;
-    padding: 6px;
-  }
-
-  .scheduleTable th:nth-child(1) {
-    width: 20%;
-  }
-
-  .scheduleTable th:nth-child(2) {
-    width: 30%;
-  }
-
-  .scheduleTable th:nth-child(3) {
-    width: 50%;
-  }
-
-  .duringDate {
+  .genderInfo button {
     width: 100%;
   }
 
-  .duringDate > li {
+  /* 날짜 */
+  .duringDate > li:last-child {
     width: 100%;
+
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
+
+    gap: 10px;
   }
 
-  .duringDate > li > p {
+  .duringDate p {
     width: 100%;
-    padding: 10px 16px;
+
+    padding: 12px 14px;
+
+    box-sizing: border-box;
   }
 
-  .inputWrap {
-    flex-direction: column !important;
-  }
-
-  .recruitmentPeriod {
-    width: 100%;
-  }
-
-  .recruitmentPeriod > li {
-    width: 100% !important;
-    flex: none !important;
-  }
-
-  .recruitmentPeriod :global(.react-datepicker-wrapper),
-  .recruitmentPeriod :global(.react-datepicker__input-container) {
-    width: 100% !important;
+  .recruitmentPeriod li:last-child {
+    width: 340px;
+    max-width: 100%;
   }
 
   .dateButton {
     width: 100%;
-    padding: 10px 16px;
+
+    padding: 14px;
+
+    justify-content: center;
+
+    box-sizing: border-box;
   }
 
-  .scheduleBtnWrap {
-    flex-direction: row;
+  /* 정산 */
+  .costWrap,
+  .costSharingWrap {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: stretch;
+
+    gap: 10px;
   }
 
-  /* 비용 */
+  .costWrap > li:first-child,
+  .costSharingWrap > li:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .costWrap > li:last-child,
+  .costSharingWrap > li:last-child {
+    width: 100% !important;
+  }
+
   .cost {
     width: 100%;
-    padding: 10px;
-    justify-content: space-between;
+    box-sizing: border-box;
   }
 
-  .costInput {
+  .costSharing {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+  }
+
+  .costSharing button {
+    width: 100%;
+
+    min-height: 90px;
+  }
+
+  /* 상세 일정 */
+  .scheduleCard {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 14px;
+
+    gap: 14px;
+
+    box-sizing: border-box;
+  }
+
+  .dayBadge {
+    width: 100%;
+    min-width: 0;
+
+    height: auto;
+
+    padding: 12px;
+
+    display: flex;
+    flex-direction: row;
+
+    align-items: center;
+
+    gap: 6px;
+
+    box-sizing: border-box;
+  }
+
+  .dayBadge span {
+    font-size: 24px;
+  }
+
+  .dayBadge p {
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .scheduleContent {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .scheduleField {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+  }
+
+  .scheduleField label {
+    width: auto;
+    min-width: 0;
+
+    padding-top: 0;
+  }
+
+  .textareaWrap {
     width: 100%;
   }
 
   /* 이미지 */
   .previewGrid {
+    width: 100%;
+
+    display: grid;
     grid-template-columns: 1fr;
+
+    gap: 12px;
   }
 
   .image {
-    height: 200px;
+    height: 220px;
   }
 
-  /* 등록 버튼 */
+  /* 버튼 */
   .registButtonWrap {
-    flex-direction: column;
-  }
-}
-
-/* ========================= */
-/* 📱 TABLET (769 ~ 1024px) */
-/* ========================= */
-
-@media (max-width: 1024px) {
-  .previewGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .genderInfo li:last-child {
     width: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+  }
+
+  .registButtonWrap button {
+    width: 100%;
+  }
+
+  /* 모집마감일 */
+  .recruitmentPeriod {
+    width: 100%;
+  }
+
+  .recruitmentPeriod li:last-child {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .recruitmentPeriod :global(.react-datepicker-wrapper) {
+    width: 100%;
+  }
+
+  .recruitmentPeriod :global(.react-datepicker__input-container) {
+    width: 100%;
+  }
+
+  .dateButton {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    box-sizing: border-box;
+  }
+
+  .costWrap {
+    width: 100%;
+  }
+
+  .costWrap li:last-child {
+    width: 100% !important;
+
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  .costWrap {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .costWrap .cost {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    flex: unset !important;
+
+    box-sizing: border-box;
+  }
+
+  .costWrap .costInput {
+    width: 100%;
+    flex: 1;
+    min-width: 0;
   }
 }

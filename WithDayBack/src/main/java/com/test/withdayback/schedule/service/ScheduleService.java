@@ -414,8 +414,6 @@ public class ScheduleService {
         scheduleDao.updateThumbnail(scheduleId, thumbnailUrl);
     }
 
-
-
     public int deleteSchedule(Long scheduleId) {
         /*
          * 실행 중 일정 삭제를 막는 이유는 운영 일관성 때문이다.
