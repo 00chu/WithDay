@@ -85,20 +85,54 @@ const Login = () => {
 
       setLogin(token, user, variables.autoLogin); // authStore의 setLogin에 토큰, 유저정보, 자동 로그인 여부를 저장 (사이트 전체 로그인됨)
 
-      // 로그인 후 진행해야 되는 부분으로 기존 방식 채택
-      // useQuery는 컴포넌트 최상단에서만 사용 가능.
-      const notificationTerm = await getNotificationTerm();
+      (async () => {
+        try {
+          const notificationTerm = await getNotificationTerm(token);
 
-      // 동의한 사용자만 OneSignal 연결
-      if (notificationTerm === 1) {
-        if (window.OneSignal) {
-          await window.OneSignal.Notifications.requestPermission();
+          if (notificationTerm === 1) {
+            const permission = await OneSignal.Notifications.permissionNative;
 
-          await window.OneSignal.login(user.email.toString()); // OneSignal 유저 연결
+            console.log("현재 권한:", permission);
+
+            if (permission === "default") {
+              await OneSignal.Notifications.requestPermission();
+            }
+
+            await OneSignal.login(user.email.toString());
+
+            console.log("OneSignal 연결 완료");
+          }
+        } catch (error) {
+          console.error("OneSignal 연결 실패:", error);
+        } finally {
+          navigate("/");
         }
-      }
+      })();
 
-      navigate("/");
+      // 백그라운드에서 실행
+      /*(async () => {
+        try {
+          // 로그인 후 진행해야 되는 부분으로 기존 방식 채택
+          // useQuery는 컴포넌트 최상단에서만 사용 가능.
+          const notificationTerm = await getNotificationTerm(token);
+
+          // 동의한 사용자만 OneSignal 연결
+          if (notificationTerm === 1) {
+            await window.OneSignal.login(user.email.toString()); // OneSignal 유저 연결
+
+            await window.OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
+
+            await window.OneSignal.User.PushSubscription.optIn(); // 브라우저 알림 구독을 강제 활성화
+
+            console.log(
+              "구독 여부:",
+              window.OneSignal.User.PushSubscription.optedIn,
+            );
+          }
+        } catch (error) {
+          console.error("OneSignal 연결 실패:", error);
+        }
+      })();*/
     },
     // 통신 실패시
     onError: (error) => {
@@ -132,9 +166,32 @@ const Login = () => {
 
         setLogin(token, user, true); // authStore의 setLogin에 토큰, 유저정보를 저장 (사이트 전체 로그인됨), 자동 로그인 여부는 true(소셜 로그인은 자동 로그인으로 처리)
 
-        await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
-
         navigate("/");
+
+        // 백그라운드에서 실행
+        (async () => {
+          try {
+            // 로그인 후 진행해야 되는 부분으로 기존 방식 채택
+            // useQuery는 컴포넌트 최상단에서만 사용 가능.
+            const notificationTerm = await getNotificationTerm(token);
+
+            // 동의한 사용자만 OneSignal 연결
+            if (notificationTerm === 1) {
+              await window.OneSignal.login(user.email.toString()); // OneSignal 유저 연결
+
+              await window.OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
+
+              await window.OneSignal.User.PushSubscription.optIn();
+
+              console.log(
+                "구독 여부:",
+                window.OneSignal.User.PushSubscription.optedIn,
+              );
+            }
+          } catch (error) {
+            console.error("OneSignal 연결 실패:", error);
+          }
+        })();
       }
     },
     // 통신 실패시
