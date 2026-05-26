@@ -11,6 +11,7 @@ import com.test.withdayback.participation.dto.MyScheduleResponseDTO;
 import com.test.withdayback.participation.enums.ParticipationStatus;
 import com.test.withdayback.participation.vo.Participation;
 import com.test.withdayback.schedule.dao.ScheduleDao;
+import com.test.withdayback.schedule.enums.GenderLimit;
 import com.test.withdayback.schedule.enums.ScheduleStatus;
 import com.test.withdayback.schedule.vo.Schedule;
 import com.test.withdayback.user.dao.UserDao;
@@ -25,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
@@ -110,6 +112,14 @@ public class ParticipationService {
         Schedule schedule = scheduleDao.selectScheduleById(participation.getScheduleId());
         if (schedule == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "일정 정보를 찾을 수 없습니다.");
+        }
+
+        /*
+         * completed는 "이미 일정이 진행 중이라 참여 구성이 잠긴 상태"를 뜻한다.
+         * 사용자가 이 시점에 빠질 수 있게 열어 두면 실제 진행 인원과 시스템 인원이 어긋날 수 있으므로 취소를 막는다.
+         */
+        if (schedule.getStatus() == ScheduleStatus.completed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "진행 중인 일정은 참여 취소할 수 없습니다.");
         }
 
         if (isScheduleEnded(schedule.getEndDate())) {
@@ -224,7 +234,7 @@ public class ParticipationService {
 
         /*
          * schedule.status가 recruiting이 아니면 신청을 받지 않는다.
-         * 날짜상 아직 가능해 보여도 운영자가 closed/cancelled/completed로 바꾼 상태라면 서버 상태를 우선한다.
+         * 날짜상 아직 가능해 보여도 운영자가 closed/canceled/completed로 바꾼 상태라면 서버 상태를 우선한다.
          */
         if (schedule.getStatus() != ScheduleStatus.recruiting) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "모집 중인 일정만 신청할 수 있습니다.");
@@ -261,6 +271,8 @@ public class ParticipationService {
         if (schedule.getUserId() != null && schedule.getUserId().longValue() == user.getId()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "호스트는 자신의 일정에 신청할 수 없습니다.");
         }
+
+        validateEligibility(user, schedule);
 
         /*
          * 같은 사용자가 같은 일정에 과거 신청 이력이 있는지 확인한다.
@@ -424,6 +436,14 @@ public class ParticipationService {
 
         if (schedule.getUserId() == null || schedule.getUserId().longValue() != actor.getId()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "호스트만 상태를 변경할 수 있습니다.");
+        }
+
+        /*
+         * 일정 실행이 시작된 뒤에는 승인/거절/강퇴도 막는다.
+         * 실행 중간에 참여 상태를 바꾸면 currentParticipants, 채팅 권한, 실제 현장 인원이 뒤늦게 뒤틀릴 수 있기 때문이다.
+         */
+        if (schedule.getStatus() == ScheduleStatus.completed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "진행 중인 일정의 참여 상태는 변경할 수 없습니다.");
         }
 
         /*
@@ -645,6 +665,86 @@ public class ParticipationService {
         return currentParticipants != null
                 && maxParticipants != null
                 && currentParticipants >= maxParticipants;
+    }
+
+    private void validateEligibility(User user, Schedule schedule) {
+        if (!isGenderEligible(user, schedule)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "성별 조건에 맞지 않아 참여할 수 없습니다.");
+        }
+
+        if (!isAgeEligible(user, schedule)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "참여 가능 연령이 아닙니다.");
+        }
+    }
+
+    private boolean isGenderEligible(User user, Schedule schedule) {
+        GenderLimit genderLimit = schedule == null ? null : schedule.getGenderLimit();
+        if (genderLimit == null || genderLimit == GenderLimit.all) {
+            return true;
+        }
+
+        Integer userGender = user == null ? null : user.getGender();
+        if (userGender == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "성별 정보가 없어 참여할 수 없습니다.");
+        }
+
+        if (genderLimit == GenderLimit.male) {
+            return userGender == 1;
+        }
+
+        if (genderLimit == GenderLimit.female) {
+            return userGender == 2;
+        }
+
+        return true;
+    }
+
+    private boolean isAgeEligible(User user, Schedule schedule) {
+        if (schedule == null) {
+            return true;
+        }
+
+        Integer ageMin = schedule.getAgeMin();
+        Integer ageMax = schedule.getAgeMax();
+        if (ageMin == null && ageMax == null) {
+            return true;
+        }
+
+        Integer age = calculateFullAge(user == null ? null : user.getBirthday(), LocalDate.now(ZoneId.of("Asia/Seoul")));
+        if (age == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "생년월일 정보가 없어 참여할 수 없습니다.");
+        }
+
+        if (ageMin != null && age < ageMin) {
+            return false;
+        }
+
+        if (ageMax != null && age > ageMax) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private Integer calculateFullAge(String birthday, LocalDate today) {
+        LocalDate birthDate = parseBirthday(birthday);
+        if (birthDate == null || today == null) {
+            return null;
+        }
+
+        return Period.between(birthDate, today).getYears();
+    }
+
+    private LocalDate parseBirthday(String birthday) {
+        if (birthday == null || birthday.isBlank()) {
+            return null;
+        }
+
+        try {
+            return LocalDate.parse(birthday.trim());
+        } catch (RuntimeException exception) {
+            return null;
+        }
     }
 
     private LocalDate parseDate(String value) {

@@ -1,4 +1,5 @@
 import { dayjs, formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
+import { SCHEDULE_STATUS } from "../../schedule/model/constants";
 import { PARTICIPATION_CATEGORY_LABELS } from "./constants";
 
 /*
@@ -76,7 +77,7 @@ const formatDisplayDDay = (startDate) => {
  * participation status와 별개로 "이 일정이 현재 모집중인가, 진행중인가, 종료됐는가"를 알려주기 위해 사용한다.
  *
  * 판단 순서가 중요한 이유:
- * - 명시적 schedule.status(cancelled/closed/completed)를 우선 반영
+ * - 명시적 schedule.status(canceled/closed/completed)를 우선 반영
  * - 그다음 날짜 기준으로 진행중/종료 여부를 보정
  * - 마지막 fallback을 모집중으로 둔다
  */
@@ -92,11 +93,15 @@ const resolveSchedulePhase = ({
   const start = startDate ? dayjs(startDate).startOf("day") : null;
   const recruitEnd = recruitEndDate ? dayjs(recruitEndDate).startOf("day") : null;
 
-  if (normalizedStatus === "cancelled") {
+  if (normalizedStatus === SCHEDULE_STATUS.CANCELED) {
     return "취소됨";
   }
 
-  if (normalizedStatus === "completed" || (end?.isValid() && end.isBefore(today))) {
+  if (normalizedStatus === SCHEDULE_STATUS.COMPLETED) {
+    return "진행중";
+  }
+
+  if (end?.isValid() && end.isBefore(today)) {
     return "종료";
   }
 
@@ -108,7 +113,10 @@ const resolveSchedulePhase = ({
     return "진행중";
   }
 
-  if (normalizedStatus === "closed" || (recruitEnd?.isValid() && recruitEnd.isBefore(today))) {
+  if (
+    normalizedStatus === SCHEDULE_STATUS.CLOSED ||
+    (recruitEnd?.isValid() && recruitEnd.isBefore(today))
+  ) {
     return "모집종료";
   }
 

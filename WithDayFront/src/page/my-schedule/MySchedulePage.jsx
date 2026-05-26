@@ -3,12 +3,15 @@ import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./MySchedulePage.module.css";
 
 import { useAuthStore } from "../../features/auth/store/authStore";
+import { dayjs } from "../../shared/lib/dateUtile";
+import Pagination from "../../shared/ui/Pagination/Pagination";
 
 import { PARTICIPATION_TABS } from "../../features/participation/model/constants";
 import {
   useMySchedulesQuery,
   useParticipationMutation,
 } from "../../features/participation/model/queries";
+import { SCHEDULE_STATUS } from "../../features/schedule/model/constants";
 import ParticipationFeedback from "../../features/participation/ui/ParticipationFeedback/ParticipationFeedback";
 import ParticipationList from "../../features/participation/ui/ParticipationList/ParticipationList";
 import ParticipationTabs from "../../features/participation/ui/ParticipationTabs/ParticipationTabs";
@@ -18,6 +21,76 @@ const DEFAULT_SCHEDULES = {
   pending: [],
   hosting: [],
 };
+
+const CLOSED_HOSTING_PAGE_SIZE = 4;
+const CLOSED_HOSTING_NAV_SIZE = 5;
+
+const normalizeScheduleStatus = (value) => String(value ?? "").trim().toLowerCase();
+
+const resolvePrimaryDeadline = (item) => {
+  const recruitEnd = dayjs(item?.recruitEndDate).startOf("day");
+  if (recruitEnd.isValid()) {
+    return recruitEnd;
+  }
+
+  const end = dayjs(item?.endDate).startOf("day");
+  if (end.isValid()) {
+    return end;
+  }
+
+  return null;
+};
+
+const resolveEndDate = (item) => {
+  const end = dayjs(item?.endDate).startOf("day");
+  return end.isValid() ? end : null;
+};
+
+const isClosedHostingSchedule = (item) => {
+  const normalizedStatus = normalizeScheduleStatus(item?.scheduleStatus);
+  const today = dayjs().startOf("day");
+  const endDate = resolveEndDate(item);
+
+  if (endDate && endDate.isBefore(today)) {
+    return true;
+  }
+
+  return (
+    normalizedStatus === SCHEDULE_STATUS.CLOSED ||
+    normalizedStatus === SCHEDULE_STATUS.COMPLETED ||
+    normalizedStatus === SCHEDULE_STATUS.CANCELED
+  );
+};
+
+const compareHostingDeadlineAsc = (left, right) => {
+  const leftDeadline = resolvePrimaryDeadline(left);
+  const rightDeadline = resolvePrimaryDeadline(right);
+
+  if (leftDeadline && rightDeadline) {
+    if (leftDeadline.isBefore(rightDeadline)) return -1;
+    if (leftDeadline.isAfter(rightDeadline)) return 1;
+  } else if (leftDeadline) {
+    return -1;
+  } else if (rightDeadline) {
+    return 1;
+  }
+
+  const leftEndDate = resolveEndDate(left);
+  const rightEndDate = resolveEndDate(right);
+  if (leftEndDate && rightEndDate) {
+    if (leftEndDate.isBefore(rightEndDate)) return -1;
+    if (leftEndDate.isAfter(rightEndDate)) return 1;
+  } else if (leftEndDate) {
+    return -1;
+  } else if (rightEndDate) {
+    return 1;
+  }
+
+  return Number(left?.scheduleId ?? 0) - Number(right?.scheduleId ?? 0);
+};
+
+const compareHostingDeadlineDesc = (left, right) =>
+  compareHostingDeadlineAsc(right, left);
 
 const MySchedulePage = () => {
   const navigate = useNavigate();
@@ -31,6 +104,8 @@ const MySchedulePage = () => {
     location.state?.activeTab || "participating",
   );
   const [feedback, setFeedback] = useState(null);
+  const [showClosedHosting, setShowClosedHosting] = useState(false);
+  const [closedHostingPage, setClosedHostingPage] = useState(0);
 
   /*
    * email은 내 참여 목록 조회와 취소/삭제 API의 사용자 식별값으로 쓰인다.
@@ -54,6 +129,40 @@ const MySchedulePage = () => {
     () => schedules[activeTab] ?? [],
     [activeTab, schedules],
   );
+
+  const hostingSections = useMemo(() => {
+    const hostingItems = Array.isArray(schedules.hosting) ? schedules.hosting : [];
+    const activeHostingItems = hostingItems
+      .filter((item) => !isClosedHostingSchedule(item))
+      .sort(compareHostingDeadlineAsc);
+    const closedHostingItems = hostingItems
+      .filter((item) => isClosedHostingSchedule(item))
+      .sort(compareHostingDeadlineDesc);
+
+    return {
+      activeHostingItems,
+      closedHostingItems,
+    };
+  }, [schedules.hosting]);
+
+  const closedHostingTotalPage = useMemo(
+    () =>
+      Math.ceil(
+        hostingSections.closedHostingItems.length / CLOSED_HOSTING_PAGE_SIZE,
+      ),
+    [hostingSections.closedHostingItems.length],
+  );
+
+  const safeClosedHostingPage =
+    closedHostingTotalPage > 0
+      ? Math.min(closedHostingPage, closedHostingTotalPage - 1)
+      : 0;
+
+  const pagedClosedHostingItems = useMemo(() => {
+    const startIndex = safeClosedHostingPage * CLOSED_HOSTING_PAGE_SIZE;
+    const endIndex = startIndex + CLOSED_HOSTING_PAGE_SIZE;
+    return hostingSections.closedHostingItems.slice(startIndex, endIndex);
+  }, [hostingSections.closedHostingItems, safeClosedHostingPage]);
 
   const errorMessage = useMemo(
     () =>
@@ -161,6 +270,14 @@ const MySchedulePage = () => {
 
   const isPendingState = isPending;
 
+  const handleTabChange = useCallback((nextTab) => {
+    setActiveTab(nextTab);
+
+    if (nextTab === "hosting") {
+      setClosedHostingPage(0);
+    }
+  }, []);
+
   return (
     <div className={styles.container}>
       <div className={styles.pageHeader}>
@@ -175,17 +292,88 @@ const MySchedulePage = () => {
       <ParticipationTabs
         tabs={PARTICIPATION_TABS}
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
       />
 
-      <ParticipationList
-        items={currentItems}
-        loading={isPendingState}
-        errorMessage={error ? errorMessage : ""}
-        emptyMessage={emptyMessage}
-        onItemAction={handleScheduleAction}
-        isActionLoading={isMutationPending}
-      />
+      {activeTab === "hosting" ? (
+        <div className={styles.hostingSections}>
+          <section className={styles.scheduleSection}>
+            <div className={styles.sectionHeader}>
+              <h3 className={styles.sectionTitle}>진행 중 일정</h3>
+              <p className={styles.sectionDescription}>
+                모집이 아직 열려 있거나 종료일이 지나지 않은 일정입니다.
+              </p>
+            </div>
+
+            <ParticipationList
+              items={hostingSections.activeHostingItems}
+              loading={isPendingState}
+              errorMessage={error ? errorMessage : ""}
+              emptyMessage="진행 중인 일정이 없습니다."
+              onItemAction={handleScheduleAction}
+              isActionLoading={isMutationPending}
+            />
+          </section>
+
+          {hostingSections.closedHostingItems.length > 0 ? (
+            <section className={styles.closedSection}>
+              <div className={styles.sectionHeader}>
+                <div className={styles.closedHeadingRow}>
+                  <div>
+                    <h3 className={styles.sectionTitle}>마감된 일정</h3>
+                    <p className={styles.sectionDescription}>
+                      모집이 마감되었거나 종료된 일정입니다.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={styles.closedToggleButton}
+                    onClick={() => setShowClosedHosting((prev) => !prev)}
+                  >
+                    {showClosedHosting
+                      ? "마감된 일정 숨기기"
+                      : `마감된 일정 보기 (${hostingSections.closedHostingItems.length})`}
+                  </button>
+                </div>
+              </div>
+
+              {showClosedHosting ? (
+                <>
+                  <ParticipationList
+                    items={pagedClosedHostingItems}
+                    loading={isPendingState}
+                    errorMessage={error ? errorMessage : ""}
+                    emptyMessage="마감된 일정이 없습니다."
+                    onItemAction={handleScheduleAction}
+                    isActionLoading={isMutationPending}
+                  />
+
+                  {closedHostingTotalPage > 1 ? (
+                    <div className={styles.paginationWrap}>
+                      <Pagination
+                        page={safeClosedHostingPage}
+                        setPage={setClosedHostingPage}
+                        totalPage={closedHostingTotalPage}
+                        naviSize={CLOSED_HOSTING_NAV_SIZE}
+                      />
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+            </section>
+          ) : null}
+        </div>
+      ) : (
+        <ParticipationList
+          items={currentItems}
+          loading={isPendingState}
+          errorMessage={error ? errorMessage : ""}
+          emptyMessage={emptyMessage}
+          onItemAction={handleScheduleAction}
+          isActionLoading={isMutationPending}
+        />
+      )}
     </div>
   );
 };

@@ -1,3 +1,7 @@
+import FirstPageRoundedIcon from "@mui/icons-material/FirstPageRounded";
+import KeyboardArrowLeftRoundedIcon from "@mui/icons-material/KeyboardArrowLeftRounded";
+import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
+import LastPageRoundedIcon from "@mui/icons-material/LastPageRounded";
 import styles from "./Pagination.module.css";
 
 const Pagination = ({ page, setPage, totalPage, naviSize }) => {
@@ -25,49 +29,65 @@ const Pagination = ({ page, setPage, totalPage, naviSize }) => {
   return (
     <div className={styles.pagination_wrap}>
       <button
+        type="button"
         onClick={() => {
           setPage(0);
         }}
         disabled={isFirst}
+        className={styles.navButton}
+        aria-label="첫 페이지"
       >
-        {"<<"}
+        <FirstPageRoundedIcon className={styles.navIcon} />
       </button>
       <button
+        type="button"
         onClick={() => {
           setPage(page - 1);
         }}
         disabled={isFirst}
+        className={styles.navButton}
+        aria-label="이전 페이지"
       >
-        {"<"}
+        <KeyboardArrowLeftRoundedIcon className={styles.navIcon} />
       </button>
       {pages.map((p, i) => {
         return (
           <button
+            type="button"
             key={"pagination-" + i}
             onClick={() => {
               setPage(p - 1);
             }}
-            className={p === current ? styles.active : ""}
+            className={`${styles.pageButton} ${
+              p === current ? styles.active : ""
+            }`}
+            aria-current={p === current ? "page" : undefined}
           >
             {p}
           </button>
         );
       })}
       <button
+        type="button"
         onClick={() => {
           setPage(page + 1);
         }}
         disabled={isLast}
+        className={styles.navButton}
+        aria-label="다음 페이지"
       >
-        {">"}
+        <KeyboardArrowRightRoundedIcon className={styles.navIcon} />
       </button>
       <button
+        type="button"
         onClick={() => {
           setPage(totalPage - 1);
         }}
         disabled={isLast}
+        className={styles.navButton}
+        aria-label="마지막 페이지"
       >
-        {">>"}
+        <LastPageRoundedIcon className={styles.navIcon} />
       </button>
     </div>
   );

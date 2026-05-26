@@ -28,6 +28,7 @@ function HostParticipationList({
   activeStatus,
   onStatusChange,
   isActionLoading = false,
+  isReadOnly = false,
 }) {
   /*
    * 신청자 목록은 일반 사용자에게는 아예 열리지 않는 데이터라,
@@ -77,7 +78,9 @@ function HostParticipationList({
       <div className={styles.header}>
         <h2 className={styles.title}>신청자 관리</h2>
         <p className={styles.description}>
-          현재 일정에 신청한 사용자를 확인하고 상태를 변경할 수 있습니다.
+          {isReadOnly
+            ? "진행 중인 일정은 신청자 상태를 변경할 수 없습니다."
+            : "현재 일정에 신청한 사용자를 확인하고 상태를 변경할 수 있습니다."}
         </p>
       </div>
 
@@ -123,6 +126,7 @@ function HostParticipationList({
               hostEmail={hostEmail}
               onAction={onItemAction}
               isActionLoading={isActionLoading}
+              isReadOnly={isReadOnly}
             />
           ))}
         </div>

@@ -41,6 +41,16 @@ public interface ScheduleDao {
 
     int reopenScheduleWhenSlotAvailable(@Param("scheduleId") Long scheduleId);
 
+    int completeSchedule(
+            @Param("scheduleId") Long scheduleId,
+            @Param("currentStatus") String currentStatus
+    );
+
+    int rollbackCompletedSchedule(
+            @Param("scheduleId") Long scheduleId,
+            @Param("targetStatus") String targetStatus
+    );
+
     /*
      * 홈/탐색 탭의 일정 리스트 조회다.
      * category, keyword, region은 모두 선택 필터라 null/빈 문자열일 때는 mapper에서 조건을 붙이지 않는다.

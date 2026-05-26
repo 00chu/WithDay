@@ -44,6 +44,42 @@ export const incrementScheduleViewCount = async (scheduleId) => {
   await api.post(`/schedules/${scheduleId}/view`);
 };
 
+/*
+ * 호스트가 일정 실행 버튼을 눌렀을 때 호출하는 API다.
+ * 요청 자체는 단순 POST지만, 서버에서는 아래 정책을 함께 검증한다.
+ * - 요청자가 실제 호스트인지
+ * - 최소 인원이 충족됐는지
+ * - 현재 상태가 recruiting/closed인지
+ *
+ * 프론트는 "실행 요청"만 보내고, 상태 전이 가능 여부의 최종 판단은 서버에 맡긴다.
+ */
+export const completeSchedule = async ({ scheduleId, email }) => {
+  const normalizedEmail = email?.trim() ?? "";
+  const { data } = await api.post(`/schedules/${scheduleId}/complete`, null, {
+    params: normalizedEmail ? { email: normalizedEmail } : {},
+  });
+
+  return data;
+};
+
+/*
+ * 호스트가 실행 취소 버튼을 눌렀을 때 호출하는 API다.
+ * 서버는 이 요청을 받아 completed -> recruiting 또는 completed -> closed 중 어느 쪽으로 갈지 결정한다.
+ * 즉, 프론트는 복귀 상태를 계산하지 않고 "실행 취소 의도"만 전달한다.
+ */
+export const rollbackCompletedSchedule = async ({ scheduleId, email }) => {
+  const normalizedEmail = email?.trim() ?? "";
+  const { data } = await api.post(
+    `/schedules/${scheduleId}/complete/rollback`,
+    null,
+    {
+      params: normalizedEmail ? { email: normalizedEmail } : {},
+    },
+  );
+
+  return data;
+};
+
 const normalizeRegionValue = (value) => value?.trim() ?? "";
 
 /*

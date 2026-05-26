@@ -154,6 +154,9 @@
         사용자가 호스트로 만든 일정 목록이다.
         이 목록은 participation row가 없기 때문에 participation_id를 NULL로 내려준다.
         프론트는 host=true와 participationId=null 조합을 보고 취소/삭제가 아니라 상세 이동만 제공한다.
+        호스팅 탭은 "진행 중 일정"과 "마감된 일정"을 프론트에서 나눠 보여줘야 하므로,
+        여기서는 end_date로 미리 잘라내지 않고 삭제되지 않은 일정 전체를 내려준다.
+        그래야 closed/completed/canceled처럼 이미 끝난 일정도 호스트 화면의 마감 섹션에서 볼 수 있다.
     -->
     <select id="getMyHostingSchedules" resultType="com.test.withdayback.participation.dto.MyScheduleResponseDTO">
         SELECT
@@ -178,7 +181,6 @@
               AND si.is_thumbnail = 1
         WHERE u.email = #{email}
           AND s.deleted_at IS NULL
-          AND (s.end_date IS NULL OR s.end_date >= CURDATE())
         ORDER BY s.start_date ASC, s.id DESC
     </select>
 

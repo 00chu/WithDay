@@ -6,23 +6,34 @@ import com.test.withdayback.participation.dao.ParticipationDao;
 import com.test.withdayback.participation.enums.ParticipationStatus;
 import com.test.withdayback.participation.vo.Participation;
 import com.test.withdayback.schedule.dao.ScheduleDao;
+import com.test.withdayback.schedule.dto.ScheduleExecutionResponseDTO;
 import com.test.withdayback.schedule.dto.ScheduleRequestDTO;
 import com.test.withdayback.schedule.dto.ScheduleResponseDTO;
+import com.test.withdayback.schedule.enums.ScheduleStatus;
 import com.test.withdayback.schedule.vo.Schedule;
 import com.test.withdayback.schedule.vo.ScheduleDetail;
 import com.test.withdayback.schedule.vo.ScheduleImage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
 @Service
 public class ScheduleService {
+    private static final Logger log = LoggerFactory.getLogger(ScheduleService.class);
 
     private final ScheduleDao scheduleDao;
     private final ParticipationDao participationDao;
@@ -137,6 +148,143 @@ public class ScheduleService {
         return scheduleDao.getAllSchedules(category, keyword, region);
     }
 
+    /*
+     * 호스트가 "일정 실행" 버튼을 눌렀을 때의 핵심 상태 전환이다.
+     * 이 기능은 단순 status 변경이 아니라 운영 정책을 서버에서 확정하는 지점이므로
+     * 프론트에서 버튼을 숨기거나 비활성화해도 백엔드에서 같은 규칙을 반드시 다시 검증해야 한다.
+     *
+     * 처리 순서:
+     * 1. 일정 존재 여부 확인
+     * 2. 요청 사용자가 실제 호스트인지 확인
+     * 3. 현재 상태가 실행 가능한 상태인지 확인
+     * 4. 최소 인원 조건 충족 여부 확인
+     * 5. status를 completed로 변경
+     * 6. 최신 schedule row를 다시 읽어 응답 반환
+     *
+     * @Transactional을 붙인 이유:
+     * - 실행 가능 여부를 확인한 뒤 status를 바꾸는 흐름이 하나의 작업 단위여야 한다.
+     * - 중간에 예외가 나면 부분 반영 없이 전체를 실패시켜야 "버튼은 눌렸는데 상태는 안 바뀐" 어정쩡한 상태를 줄일 수 있다.
+     */
+    @Transactional
+    public ScheduleExecutionResponseDTO completeSchedule(Long scheduleId, String email) {
+        Schedule schedule = requireSchedule(scheduleId);
+        String normalizedEmail = normalizeEmail(email);
+        validateHostAction(scheduleId, normalizedEmail, schedule);
+
+        /*
+         * 이미 completed인 일정은 중복 실행을 허용하지 않는다.
+         * 같은 상태로 다시 덮어써도 기능상 의미가 없고, 사용자는 "실행"이 성공했다고 오해할 수 있기 때문이다.
+         */
+        if (schedule.getStatus() == ScheduleStatus.completed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 실행 중인 일정입니다.");
+        }
+
+        /*
+         * 취소된 일정은 운영상 종료된 상태로 간주하므로 실행 대상으로 되살리지 않는다.
+         * 이 정책을 풀고 싶다면 status 전이 규칙 자체를 다시 설계해야 한다.
+         */
+        if (schedule.getStatus() == ScheduleStatus.canceled) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "취소된 일정은 실행할 수 없습니다.");
+        }
+
+        /*
+         * 이번 기능에서 실행 가능한 출발 상태는 recruiting, closed 두 가지뿐이다.
+         * recruiting은 일반 모집중 상태이고,
+         * closed는 정원이 찼거나 모집이 닫힌 상태지만 이미 모인 인원으로 일정 시작은 가능하다는 정책을 따른다.
+         */
+        if (schedule.getStatus() != ScheduleStatus.recruiting
+                && schedule.getStatus() != ScheduleStatus.closed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "실행할 수 없는 일정 상태입니다.");
+        }
+
+        /*
+         * 최소 인원 조건은 "일정이 실제로 성립했는가"를 판단하는 마지막 안전장치다.
+         * 프론트에서도 버튼을 비활성화하지만, 사용자가 직접 API를 호출할 수 있으므로 서버에서 다시 확인한다.
+         */
+        int currentParticipants = schedule.getCurrentParticipants() == null ? 0 : schedule.getCurrentParticipants();
+        int minParticipants = schedule.getMinParticipants() == null ? 0 : schedule.getMinParticipants();
+        if (currentParticipants < minParticipants) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "최소 인원이 충족되지 않아 실행할 수 없습니다.");
+        }
+
+        /*
+         * update 쿼리에 currentStatus를 함께 넣는 이유는 동시성 충돌 감지다.
+         * 예를 들어 조회 직후 다른 요청이 먼저 closed/completed로 바꿨다면 update row 수가 0이 되고,
+         * 서비스는 이를 충돌로 판단해 재시도를 유도할 수 있다.
+         */
+        int updated = scheduleDao.completeSchedule(scheduleId, schedule.getStatus().name());
+        if (updated <= 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "일정 실행 처리에 실패했습니다.");
+        }
+
+        /*
+         * TODO: 일정 실행 알림 전송
+         * - 위치: 이 status 변경 성공 직후
+         * - 대상: APPROVED 상태 참여자
+         * - 내용 예시: "일정이 시작되었습니다"
+         * - OneSignalService 또는 NotificationService 래퍼를 통해 비동기 전송 권장
+         *
+         * 알림 전송은 핵심 상태 변경과 트랜잭션을 분리하는 편이 안전하다.
+         * 이유:
+         * - 알림 실패가 schedule.status = completed 자체를 롤백시키면 운영자가 일정을 시작하지 못하는 문제가 생긴다.
+         * - 상태 변경은 핵심 도메인 작업이고, 알림은 후속 부가 작업으로 취급하는 것이 장애 전파를 줄인다.
+         */
+        Schedule updatedSchedule = requireSchedule(scheduleId);
+        log.info("일정 실행 완료 - scheduleId: {}, actorEmail: {}, from: {}, to: {}",
+                scheduleId, normalizedEmail, schedule.getStatus(), updatedSchedule.getStatus());
+
+        return toExecutionResponse(updatedSchedule);
+    }
+
+    /*
+     * 호스트가 "실행 취소" 버튼을 눌렀을 때의 롤백 로직이다.
+     * completed를 무조건 recruiting으로 되돌리지 않고, 모집 마감일이 지났는지에 따라 recruiting/closed를 나눈다.
+     *
+     * 정책 이유:
+     * - 마감일이 지나지 않았다면 다시 모집을 열 수 있으므로 recruiting
+     * - 마감일이 이미 지났다면 더 이상 새 참여를 받을 수 없으므로 closed
+     */
+    @Transactional
+    public ScheduleExecutionResponseDTO rollbackCompletedSchedule(Long scheduleId, String email) {
+        Schedule schedule = requireSchedule(scheduleId);
+        String normalizedEmail = normalizeEmail(email);
+        validateHostAction(scheduleId, normalizedEmail, schedule);
+
+        /*
+         * 실행 취소는 completed 상태에서만 의미가 있다.
+         * recruiting/closed에서 호출되면 "실행 취소"가 아니라 단순 중복 요청이므로 명시적으로 막는다.
+         */
+        if (schedule.getStatus() != ScheduleStatus.completed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "실행 중인 일정만 취소할 수 있습니다.");
+        }
+
+        /*
+         * 롤백 목표 상태는 서비스에서 계산한다.
+         * 이렇게 해야 매퍼는 "어떤 상태로 바꿀지"만 알고, 날짜 정책의 의미는 서비스 레이어 한 곳에서 관리할 수 있다.
+         */
+        ScheduleStatus targetStatus = isRecruitEnded(schedule.getRecruitEndDate())
+                ? ScheduleStatus.closed
+                : ScheduleStatus.recruiting;
+
+        int updated = scheduleDao.rollbackCompletedSchedule(scheduleId, targetStatus.name());
+        if (updated <= 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "일정 실행 취소 처리에 실패했습니다.");
+        }
+
+        /*
+         * TODO: 일정 실행 취소 알림 전송
+         * - 위치: status 롤백 성공 직후
+         * - 대상: APPROVED 상태 참여자
+         * - 내용 예시: "일정 실행이 취소되었습니다"
+         * - 알림 실패가 롤백 자체를 막지 않도록 트랜잭션 외부 처리 또는 예외 격리 필요
+         */
+        Schedule updatedSchedule = requireSchedule(scheduleId);
+        log.info("일정 실행 취소 완료 - scheduleId: {}, actorEmail: {}, from: {}, to: {}",
+                scheduleId, normalizedEmail, schedule.getStatus(), updatedSchedule.getStatus());
+
+        return toExecutionResponse(updatedSchedule);
+    }
+
     @Transactional
     public void insertSchedule(ScheduleRequestDTO dto, List<MultipartFile> images) {
         Schedule schedule = dto.getSchedule();
@@ -182,6 +330,13 @@ public class ScheduleService {
 
     @Transactional
     public void updateSchedule(Long scheduleId, ScheduleRequestDTO dto, List<MultipartFile> images) {
+        /*
+         * 진행 중인 일정은 내용을 바꾸지 못하게 막는다.
+         * 일정이 이미 시작된 뒤 제목/날짜/모집 조건이 바뀌면 참여자 입장에서 계약이 바뀐 것처럼 보일 수 있기 때문이다.
+         */
+        Schedule existingSchedule = requireSchedule(scheduleId);
+        validateScheduleNotCompleted(existingSchedule, "진행 중인 일정은 수정할 수 없습니다.");
+
         Schedule schedule = dto.getSchedule();
 
         // email로 userId get
@@ -262,6 +417,89 @@ public class ScheduleService {
 
 
     public int deleteSchedule(Long scheduleId) {
+        /*
+         * 실행 중 일정 삭제를 막는 이유는 운영 일관성 때문이다.
+         * 이미 시작한 일정은 "취소" 또는 별도 종료 정책으로 다뤄야 하고, 단순 삭제는 추적성을 크게 떨어뜨린다.
+         */
+        Schedule existingSchedule = requireSchedule(scheduleId);
+        validateScheduleNotCompleted(existingSchedule, "진행 중인 일정은 삭제할 수 없습니다.");
         return scheduleDao.deleteSchedule(scheduleId);
+    }
+
+    /*
+     * scheduleId로 조회했을 때 null이면 즉시 404를 만든다.
+     * 서비스 전역에서 같은 null-check를 반복하지 않도록 공통 helper로 분리했다.
+     */
+    private Schedule requireSchedule(Long scheduleId) {
+        Schedule schedule = scheduleDao.selectScheduleById(scheduleId);
+        if (schedule == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "일정 정보를 찾을 수 없습니다.");
+        }
+        return schedule;
+    }
+
+    /*
+     * 실행/실행 취소는 호스트만 가능하므로 email을 일정 작성자와 비교해 권한을 검증한다.
+     * 참여자나 제3자가 직접 API를 호출해도 여기서 차단된다.
+     */
+    private void validateHostAction(Long scheduleId, String normalizedEmail, Schedule schedule) {
+        if (normalizedEmail.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "로그인 사용자 정보가 필요합니다.");
+        }
+
+        String hostEmail = scheduleDao.getEmailByScheduleId(scheduleId);
+        if (hostEmail == null || !normalizedEmail.equalsIgnoreCase(hostEmail.trim())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "호스트만 상태를 변경할 수 있습니다.");
+        }
+    }
+
+    /*
+     * completed 상태는 "진행 중이라 주요 관리 액션이 잠긴 상태"라는 뜻이다.
+     * 수정/삭제 같은 관리자 액션도 이 helper 하나로 같은 정책을 재사용한다.
+     */
+    private void validateScheduleNotCompleted(Schedule schedule, String message) {
+        if (schedule.getStatus() == ScheduleStatus.completed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, message);
+        }
+    }
+
+    /*
+     * 실행 취소 후 recruiting으로 되돌릴 수 있는지 판단하는 날짜 helper다.
+     * KST 기준 오늘보다 recruitEndDate가 이전이면 이미 모집 기간이 끝난 것으로 보고 closed로 유지한다.
+     */
+    private boolean isRecruitEnded(String recruitEndDate) {
+        LocalDate parsedDate = parseDate(recruitEndDate);
+        return parsedDate != null && parsedDate.isBefore(LocalDate.now(ZoneId.of("Asia/Seoul")));
+    }
+
+    private LocalDate parseDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        try {
+            return LocalDate.parse(value.trim());
+        } catch (Exception exception) {
+            return null;
+        }
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? "" : email.trim();
+    }
+
+    /*
+     * 실행/실행 취소 API는 상세 DTO 전체가 아니라, 상태 전환 결과 확인에 필요한 최소 필드만 반환한다.
+     * 프론트는 이 응답을 직접 렌더링하기보다 invalidate 후 재조회에 쓰지만,
+     * 그래도 현재 상태와 인원 수를 응답에 넣어두면 추후 optimistic UI 확장 시 재사용할 수 있다.
+     */
+    private ScheduleExecutionResponseDTO toExecutionResponse(Schedule schedule) {
+        return new ScheduleExecutionResponseDTO(
+                schedule.getId(),
+                schedule.getStatus() != null ? schedule.getStatus().name().toUpperCase(Locale.ROOT) : null,
+                schedule.getCurrentParticipants(),
+                schedule.getMaxParticipants(),
+                OffsetDateTime.now(ZoneId.of("Asia/Seoul"))
+        );
     }
 }
