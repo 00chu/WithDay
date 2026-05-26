@@ -19,9 +19,16 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1024px) and (max-width: 1439px) {
   .grid {
     /* 데스크탑에서는 4열 고정 계약을 사용해 Home/Explore 카드 폭이 예측 가능하게 유지된다. */
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1440px) {
+  .grid {
+    /* 넓은 데스크탑에서는 5열로 늘려 Explore 목록 밀도를 높인다. */
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
