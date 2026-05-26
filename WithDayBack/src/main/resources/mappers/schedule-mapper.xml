@@ -121,6 +121,24 @@
           AND (end_date IS NULL OR end_date >= CURDATE())
     </update>
 
+    <update id="completeSchedule">
+        UPDATE schedule
+        SET status = 'completed',
+            updated_at = NOW()
+        WHERE id = #{scheduleId}
+          AND deleted_at IS NULL
+          AND status = #{currentStatus}
+    </update>
+
+    <update id="rollbackCompletedSchedule">
+        UPDATE schedule
+        SET status = #{targetStatus},
+            updated_at = NOW()
+        WHERE id = #{scheduleId}
+          AND deleted_at IS NULL
+          AND status = 'completed'
+    </update>
+
     <update id="closeExpiredSchedules">
         UPDATE schedule
         SET status = 'closed',
@@ -130,17 +148,21 @@
         AND deleted_at IS NULL
     </update>
 
-    <!--
-        홈/탐색 탭의 일정 리스트 조회다.
-        category, keyword, region은 모두 선택 조건이므로 MyBatis dynamic SQL로 값이 있을 때만 WHERE에 붙인다.
-        현재는 카드에 필요한 schedule VO 전체를 반환하지만, 삭제된 일정은 항상 제외한다.
-    -->
+    <!-- 홈/탐색 탭 일정 리스트 조회 -->
     <select id="getAllSchedules" resultType="Schedule">
         SELECT
         *
         FROM schedule
         <where>
             deleted_at IS NULL
+            AND (
+                status = 'recruiting'
+                OR (
+                    status = 'closed'
+                    AND current_participants >= max_participants
+                    AND (recruit_end_date IS NULL OR recruit_end_date >= CURDATE())
+                )
+            )
 
             <!-- 탐색 탭에서 "전체"가 아닌 카테고리를 선택했을 때만 적용된다. -->
             <if test="category != null and category != ''">

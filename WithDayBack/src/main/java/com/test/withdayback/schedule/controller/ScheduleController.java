@@ -1,6 +1,7 @@
 package com.test.withdayback.schedule.controller;
 
 import com.test.withdayback.schedule.dto.ScheduleRequestDTO;
+import com.test.withdayback.schedule.dto.ScheduleExecutionResponseDTO;
 import com.test.withdayback.schedule.dto.ScheduleResponseDTO;
 import com.test.withdayback.schedule.service.ScheduleService;
 import com.test.withdayback.schedule.vo.Schedule;
@@ -94,6 +95,41 @@ public class ScheduleController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(list);
+    }
+
+    /**
+     * 호스트가 일정을 "실행 중(completed)" 상태로 전환하는 API다.
+     *
+     * 이 endpoint를 별도로 두는 이유:
+     * - 일반 일정 수정 API와 섞으면 "status만 바꾸는 강한 정책 액션"의 의미가 흐려진다.
+     * - 실행은 최소 인원, 호스트 권한, 상태 전이 가능 여부를 같이 검증해야 하므로 목적형 API가 더 안전하다.
+     *
+     * Controller는 HTTP 입력만 받고,
+     * 실제 정책 판단은 Service가 수행한다.
+     */
+    @PostMapping("/{scheduleId}/complete")
+    public ResponseEntity<ScheduleExecutionResponseDTO> completeSchedule(
+            @PathVariable Long scheduleId,
+            @RequestParam String email
+    ) {
+        ScheduleExecutionResponseDTO result = scheduleService.completeSchedule(scheduleId, email);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * completed 상태를 다시 recruiting 또는 closed로 되돌리는 실행 취소 API다.
+     *
+     * 복귀 상태는 Controller가 결정하지 않는다.
+     * 모집 마감일이 지났는지에 따라 recruiting/closed를 나누는 정책은 Service 한 곳에서 관리해야
+     * 프론트와 다른 엔드포인트가 같은 규칙을 재사용할 수 있다.
+     */
+    @PostMapping("/{scheduleId}/complete/rollback")
+    public ResponseEntity<ScheduleExecutionResponseDTO> rollbackCompletedSchedule(
+            @PathVariable Long scheduleId,
+            @RequestParam String email
+    ) {
+        ScheduleExecutionResponseDTO result = scheduleService.rollbackCompletedSchedule(scheduleId, email);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

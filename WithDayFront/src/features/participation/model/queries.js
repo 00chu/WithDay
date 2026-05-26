@@ -112,6 +112,7 @@ export const useMySchedulesQuery = (email) => {
  */
 export const useParticipationMutation = (email) => {
   const queryClient = useQueryClient();
+  const mySchedulesQueryKey = participationQueryKeys.mySchedules(email);
 
   const invalidateMySchedules = async () => {
     /*
@@ -131,7 +132,29 @@ export const useParticipationMutation = (email) => {
     }
 
     await queryClient.invalidateQueries({
-      queryKey: participationQueryKeys.mySchedules(email),
+      queryKey: mySchedulesQueryKey,
+    });
+  };
+
+  const removeParticipationFromMySchedulesCache = (participationId) => {
+    if (!email?.trim() || !participationId) {
+      return;
+    }
+
+    queryClient.setQueryData(mySchedulesQueryKey, (previous) => {
+      if (!previous) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        pending: (previous.pending ?? []).filter(
+          (item) => item.participationId !== participationId
+        ),
+        participating: (previous.participating ?? []).filter(
+          (item) => item.participationId !== participationId
+        ),
+      };
     });
   };
 
@@ -161,6 +184,21 @@ export const useParticipationMutation = (email) => {
    */
   const cancelMutation = useMutation({
     mutationFn: cancelParticipation,
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({
+        queryKey: mySchedulesQueryKey,
+      });
+
+      const previousMySchedules = queryClient.getQueryData(mySchedulesQueryKey);
+      removeParticipationFromMySchedulesCache(variables?.participationId);
+
+      return { previousMySchedules };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousMySchedules) {
+        queryClient.setQueryData(mySchedulesQueryKey, context.previousMySchedules);
+      }
+    },
     onSuccess: invalidateMySchedules,
   });
 

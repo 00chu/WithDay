@@ -44,6 +44,7 @@ function ParticipationStatusActions({
   email,
   status,
   disabled = false,
+  isReadOnly = false,
   onAction,
 }) {
   /*
@@ -51,6 +52,14 @@ function ParticipationStatusActions({
    * 정의되지 않은 상태는 빈 배열이 되어, 아래에서 "변경 가능한 상태가 아닙니다" 문구로 자연스럽게 처리된다.
    */
   const actions = ACTIONS_BY_STATUS[status] ?? [];
+
+  if (isReadOnly) {
+    return (
+      <span className={styles.actionNote}>
+        진행 중인 일정은 상태를 변경할 수 없습니다.
+      </span>
+    );
+  }
 
   /*
    * 이미 최종 상태에 들어간 신청자는 액션 버튼을 숨긴다.

@@ -41,7 +41,6 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding-bottom: 80px;
 }
 
 /* 로딩/에러/빈 상태 메시지를 공통 스타일로 보여주는 박스 */

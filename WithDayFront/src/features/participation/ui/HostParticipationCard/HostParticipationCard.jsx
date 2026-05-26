@@ -22,7 +22,13 @@ import hostStyles from "../HostParticipationList/HostParticipationList.module.cs
  * 신청자 개인정보 표시와 상태별 액션 버튼 렌더링을 담당하고,
  * 실제 승인/거절 API 호출은 ScheduleDetail의 handleApplicantAction으로 위임한다.
  */
-function HostParticipationCard({ item, hostEmail, onAction, isActionLoading }) {
+function HostParticipationCard({
+  item,
+  hostEmail,
+  onAction,
+  isActionLoading,
+  isReadOnly = false,
+}) {
   /*
    * 신청자 카드도 상태별로 배지 색과 문구가 달라져야 하므로,
    * 참여 카드와 같은 메타 사전을 재사용한다.
@@ -88,6 +94,7 @@ function HostParticipationCard({ item, hostEmail, onAction, isActionLoading }) {
           email={hostEmail}
           status={item.status}
           disabled={isActionLoading}
+          isReadOnly={isReadOnly}
           onAction={onAction}
         />
       </div>
