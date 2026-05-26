@@ -80,7 +80,7 @@ export default function ApplyScheduleButton({
     if (normalizedParticipationStatus === "APPROVED") return "참여 확정";
     if (normalizedParticipationStatus === "PENDING") return "신청 완료";
     if (normalizedParticipationStatus === "REJECTED") return "거절됨";
-    if (normalizedParticipationStatus === "CANCELLED") return "신청 취소됨";
+    if (normalizedParticipationStatus === "CANCELED") return "신청 취소됨";
     if (normalizedParticipationStatus === "KICKED") return "참여 불가";
     if (isClosed) return "모집 종료";
     if (isApplied) return "신청 완료";

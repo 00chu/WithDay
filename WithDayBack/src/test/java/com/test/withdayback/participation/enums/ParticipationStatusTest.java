@@ -7,14 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ParticipationStatusTest {
 
     @Test
-    void fromValueMapsCanceledAliasToCancelled() {
-        assertEquals(ParticipationStatus.CANCELLED, ParticipationStatus.fromValue("canceled"));
-        assertEquals(ParticipationStatus.CANCELLED, ParticipationStatus.fromValue("CANCELLED"));
+    void fromValueMapsCanceledAliasToCanceled() {
+        assertEquals(ParticipationStatus.CANCELED, ParticipationStatus.fromValue("canceled"));
+        assertEquals(ParticipationStatus.CANCELED, ParticipationStatus.fromValue("CANCELLED"));
     }
 
     @Test
     void getDatabaseValueReturnsLowercaseEnumLiteral() {
         assertEquals("pending", ParticipationStatus.PENDING.getDatabaseValue());
-        assertEquals("canceled", ParticipationStatus.CANCELLED.getDatabaseValue());
+        assertEquals("canceled", ParticipationStatus.CANCELED.getDatabaseValue());
     }
 }

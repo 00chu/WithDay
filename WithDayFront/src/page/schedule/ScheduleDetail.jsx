@@ -59,7 +59,8 @@ const HOST_STATUS_LABELS = {
   PENDING: "승인 대기",
   APPROVED: "승인 완료",
   REJECTED: "거절",
-  CANCELLED: "참여 취소",
+  CANCELED: "참여 취소",
+  KICKED: "강퇴",
 };
 
 const formatLocation = (schedule) => {
@@ -234,7 +235,7 @@ export default function ScheduleDetail() {
   /*
    * 호스트 전용 신청자 목록 조회다.
    * viewerIsHost가 true일 때만 enabled가 열리므로, 일반 참여자는 신청자 개인정보 조회 API를 호출하지 않는다.
-   * applicantStatus는 PENDING/APPROVED/REJECTED 탭 필터 역할을 한다.
+   * applicantStatus는 PENDING/APPROVED/REJECTED/CANCELED/KICKED 탭 필터 역할을 한다.
    */
   const {
     data: applicants = [],
@@ -325,7 +326,7 @@ export default function ScheduleDetail() {
   };
 
   /*
-   * 호스트가 신청자 카드의 승인/거절/승인취소 버튼을 눌렀을 때 실행된다.
+   * 호스트가 신청자 카드의 승인/거절/강퇴 버튼을 눌렀을 때 실행된다.
    * 프론트는 먼저 로그인 사용자 email을 확인하고, 사용자 확인창을 거친 뒤 PATCH /participations/{id}/status를 호출한다.
    * 실제 권한 검증, 상태 전이 가능 여부, 정원 증감은 백엔드 Service에서 최종 판단한다.
    */
@@ -341,7 +342,7 @@ export default function ScheduleDetail() {
           ? "이 신청을 승인하시겠습니까?"
           : status === "REJECTED"
             ? "이 신청을 거절하시겠습니까?"
-            : "승인을 취소하시겠습니까?";
+            : "이 참여자를 강퇴하시겠습니까?";
 
       if (!window.confirm(confirmText)) {
         return;
@@ -366,7 +367,7 @@ export default function ScheduleDetail() {
               ? "신청을 승인했습니다."
               : status === "REJECTED"
                 ? "신청을 거절했습니다."
-                : "승인을 취소했습니다.",
+                : "참여자를 강퇴했습니다.",
         });
       } catch (requestError) {
         const message =

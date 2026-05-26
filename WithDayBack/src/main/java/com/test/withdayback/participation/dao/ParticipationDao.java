@@ -49,7 +49,7 @@ public interface ParticipationDao {
     // 내 일정 페이지의 호스팅 탭 목록을 가져온다.
     List<MyScheduleResponseDTO> getMyHostingSchedules(@Param("email") String email);
 
-    // 사용자가 본인의 PENDING 신청을 CANCELLED 상태로 바꿀 때 사용한다.
+    // 사용자가 본인 참여를 CANCELED 상태로 바꿀 때 사용한다.
     int cancelParticipation(
             @Param("participationId") Long participationId,
             @Param("email") String email,
