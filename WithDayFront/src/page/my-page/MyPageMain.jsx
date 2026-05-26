@@ -1,6 +1,7 @@
 import styles from "./MyPageMain.module.css";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import Button from "../../shared/ui/Button/Button";
+import OneSignal from "../../shared/lib/oneSignal";
 
 const MyPageMain = () => {
   const user = useAuthStore((state) => state.user);
@@ -66,7 +67,10 @@ const MyPageMain = () => {
         <Button
           size="sm"
           variant="primary"
-          onClick={() => useAuthStore.getState().setLogout()}
+          onClick={() => {
+            OneSignal.logout();
+            useAuthStore.getState().setLogout();
+          }}
         >
           로그아웃
         </Button>

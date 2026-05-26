@@ -20,7 +20,7 @@ export default function NotificationPopover({ open, anchorEl, handleClose }) {
         paper: {
           sx: {
             mt: 3,
-            width: 460,
+            width: 480,
             maxWidth: "95vw",
             maxHeight: 600,
             overflowY: "auto",

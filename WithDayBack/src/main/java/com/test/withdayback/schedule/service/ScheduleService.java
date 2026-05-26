@@ -249,8 +249,6 @@ public class ScheduleService {
         scheduleDao.updateThumbnail(scheduleId, thumbnailUrl);
     }
 
-
-
     public int deleteSchedule(Long scheduleId) {
         return scheduleDao.deleteSchedule(scheduleId);
     }

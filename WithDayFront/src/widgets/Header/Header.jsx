@@ -11,6 +11,8 @@ import { useAuthStore } from "../../features/auth/store/authStore";
 import LayoutContainer from "../../shared/ui/LayoutContainer/LayoutContainer";
 import RegionSelect from "../../shared/ui/RegionSelect/RegionSelect";
 import NotificationPopover from "../../features/notification/ui/NotificationPopover";
+import Badge from "@mui/material/Badge";
+import { getNotificationCount } from "../../features/notification/api";
 
 const DEFAULT_REGION_OPTION = { label: "전체", value: "" };
 
@@ -25,6 +27,13 @@ export default function Header({ selectedRegion, onRegionChange }) {
     queryKey: ["header-region-options"],
     queryFn: getRegion,
     staleTime: 1000 * 60 * 10,
+  });
+
+  const { data: notificationCount = 0 } = useQuery({
+    queryKey: ["notification-count"],
+    queryFn: getNotificationCount,
+    enabled: isLoggedIn,
+    refetchInterval: 30000, // 30초마다 자동 갱신 (선택)
   });
 
   const regionOptions = useMemo(() => {
@@ -97,18 +106,29 @@ export default function Header({ selectedRegion, onRegionChange }) {
         </div>
 
         <div className={styles.rightGroup}>
-          <IconButton
-            className={styles.actionButton}
-            aria-label="알림"
-            onClick={handleNotificationClick}
-          >
-            <NotificationsNoneRoundedIcon />
-          </IconButton>
-          <NotificationPopover
-            open={Boolean(anchorEl)}
-            anchorEl={anchorEl}
-            handleClose={handleClose}
-          />
+          {isLoggedIn && (
+            <>
+              <IconButton
+                className={styles.actionButton}
+                aria-label="알림"
+                onClick={handleNotificationClick}
+              >
+                <Badge
+                  color="error"
+                  variant="dot"
+                  invisible={notificationCount === 0}
+                >
+                  <NotificationsNoneRoundedIcon />
+                </Badge>
+              </IconButton>
+
+              <NotificationPopover
+                open={Boolean(anchorEl)}
+                anchorEl={anchorEl}
+                handleClose={handleClose}
+              />
+            </>
+          )}
           <IconButton
             className={styles.actionButton}
             aria-label="마이페이지"
