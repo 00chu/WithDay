@@ -16,4 +16,6 @@ public interface NotificationDao {
     int getNotificationCountById(Long id);
 
     int getNotificationTerm(Long id);
+
+    void deleteNotification(Long notificationId);
 }

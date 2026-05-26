@@ -158,4 +158,7 @@ public class NotificationService {
     public int getNotificationTerm(Long id) {
         return  notificationDao.getNotificationTerm(id);
     }
+
+    public void deleteNotification(Long notificationId) {notificationDao.deleteNotification(notificationId);
+    }
 }

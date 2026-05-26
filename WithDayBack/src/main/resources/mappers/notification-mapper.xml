@@ -57,4 +57,10 @@
         from user_terms
         where user_id = #{id} and terms_id = 4
     </select>
+
+    <delete id="deleteNotification">
+        delete
+        from notification
+        where id = #{notificationId}
+    </delete>
 </mapper>
