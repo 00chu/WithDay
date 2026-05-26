@@ -64,6 +64,24 @@ const SocialExtra = () => {
     }
   }, [location]); // 에러나면 여기에 navigate도 넣어보기(리엑트 ESLint때문에 navigate도 넣으라고 할 수 있음)
 
+  // 회원가입 완료 단계(step이 4)가 되면 3초 뒤에 로그인 화면으로 이동하는 useEffect
+  useEffect(() => {
+    // step이 4일 때(소셜 회원가입 완료 단계)
+    if (step === 4) {
+      // 3초(3000ms) 뒤에 로그인 화면으로 이동하는 타이머 설정
+      const timer = setTimeout(() => {
+        navigate("/login", {
+          state: {
+            toastMessage: "회원가입이 완료되었습니다! 다시 로그인해주세요.", 
+          },
+        });
+      }, 3000);
+
+      // 회원가입 완료 단계에서 페이지를 떠나거나(step이 4가 아니게 되거나) 컴포넌트가 사라질 때 타이머 정지 (안그러면 3초 뒤에 갑자기 로그인 화면으로 이동하는 버그 발생)
+      return () => clearTimeout(timer);
+    }
+  }, [step, navigate]);
+
   // 구글이 준 4가지 데이터(이메일, 이름, providerId(google), 프사)를 변수에 저장. location.state가 있으면 googleData를 꺼내고, 없으면 빈 객체를 줌. (빈 객체로 안 하면 undefined에러남.)
   const googleData = location.state?.googleData || {};
 
@@ -199,11 +217,7 @@ const SocialExtra = () => {
     mutationFn: socialSignupUser, // api.js에 있는 socialSignupUser로 POST 요청 함수 실행해서 백엔드로 회원가입 정보를 보냄
     // 통신 성공시
     onSuccess: () => {
-      navigate("/login", {
-        state: {
-          toastMessage: "회원가입이 완료되었습니다! 다시 로그인해주세요.", // login의 useEffect와 연계. login의 location.state?.toastMessage로 알람창(toast)을 보냄.
-        },
-      });
+      setStep(4); // 회원가입 완료 단계로 이동
     },
     // 통신 실패시
     onError: (error) => {
@@ -243,184 +257,321 @@ const SocialExtra = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>조금만 더 알려주세요!</h1>
-          <p className={styles.subtitle}>
-            원활한 서비스 이용을 위해 필수 정보를 입력해주세요.
-          </p>
-        </div>
-
-        {/* handleSubmit(onSubmit): HTML 기본 제출 기능을 막고(이게 없으면 html의 form은 누르면 바로 sumbit하려함), React Hook Form의 검증을 거친 후 onSubmit을 실행시킴 */}
-        <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-          {/* FormField: 폼 UI의 일관성을 위해 만든 공통 컴포넌트. label과 error 객체만 props로 던져주면, 내부의 children(<Input>)과 조합하여 라벨-입력창-에러메세지 세트를 자동으로 완성해줌. */}
-          <FormField label="생년월일" error={errors.birthday}>
-            {/* {...register('birthday')}: 이 input창을 폼(useForm)이 값을 추적해서, yup(보안규칙)의 'birthday'규칙과 연결시킴 */}
-            {/* max 속성을 오늘 날짜로 설정해서 미래의 날짜 선택 안되게함*/}
-            <Input
-              type="date"
-              max={todayDate}
-              // 이전 프로젝트에서는 {...register("")} 대신 아래 주석과 같이 사용했었음. 이번엔 react-hook-form 라이브러리를 활용해서 함.
-              // name="email"
-              // value={member.email}
-              // onChange={(e) => {
-              //   setMember({ ...member, [e.target.name]: e.target.value });
-              // }}
-              {...register("birthday")}
-            />
-          </FormField>
-
-          <FormField label="성별" error={errors.gender}>
-            <div className={styles.radioGroup}>
-              {/* 둘 중 하나만 선택되는 라디오 버튼. 백엔드 규칙에 맞게 1(남자), 2(여자) 값 */}
-              <label className={styles.radioLabel}>
-                <input type="radio" value="1" {...register("gender")} /> 남
-              </label>
-              <label className={styles.radioLabel}>
-                <input type="radio" value="2" {...register("gender")} /> 여
-              </label>
-            </div>
-          </FormField>
-
-          <FormField label="전화번호" error={errors.phone}>
-            <Input
-              type="tel"
-              placeholder="010-1234-5678"
-              {...register("phone")}
-            />
-          </FormField>
-
-          <FormField label="주소" error={errors.postcode || errors.address}>
-            <div className={`${styles.inputRow} ${styles.marginBottom8}`}>
-              <div className={styles.flex1}>
-                <Input
-                  type="text"
-                  placeholder="우편번호"
-                  readOnly // 주소 검색 버튼을 눌러서 우편번호가 자동으로 입력되게 함. 직접 타이핑을 막음.
-                  {...register("postcode")}
-                />
+    <div className={styles.signupPage}>
+      <div className={styles.formSection}>
+        <div className={styles.formCard}>
+          {step < 4 && (
+            <nav className={styles.signupStepperSocial} aria-label="회원가입 단계">
+              {["약관 동의", "기본 정보", "관심사 선택"].map((label, index) => {
+                const stepNumber = index + 1;
+                return (
+                  <div
+                    key={label}
+                    className={`${styles.signupStep} ${
+                      step === stepNumber ? styles.signupStepActive : ""
+                    } ${step > stepNumber ? styles.signupStepDone : ""}`}
+                  >
+                    <div className={styles.signupStepNumber}>
+                      <span>{stepNumber}</span>
+                    </div>
+                    <div className={styles.signupStepLabel}>{label}</div>
+                  </div>
+                );
+              })}
+              <div className={`${styles.signupStep} ${step === 4 ? styles.signupStepActive : ""}`}>
+                <div className={styles.signupStepNumber}><span>4</span></div>
+                <div className={styles.signupStepLabel}>가입 완료</div>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setIsPostcodeOpen(true); // 주소 검색 버튼을 누르면 주소 검색 모달이 열리게 함.
-                }}
-              >
-                주소 검색
-              </Button>
-            </div>
-            <div className={styles.marginBottom8}>
-              <Input
-                type="text"
-                placeholder="기본 주소"
-                readOnly // 주소 검색 버튼을 눌러서 주소가 자동으로 입력되게 함. 직접 타이핑을 막음.
-                {...register("address")}
-              />
-            </div>
-            <Input
-              type="text"
-              placeholder="상세 주소를 입력해주세요"
-              {...register("detailAddress")}
-              error={errors.detailAddress}
-            />
-          </FormField>
+            </nav>
+          )}
 
-          <div className={styles.termsContainer}>
-            <label className={styles.termLabelAll}>
-              <input
-                type="checkbox"
-                checked={allAgreed} // 전체 동의 박스는 allAgreed가 true면 체크, false면 체크해제
-                onChange={handleAgreeAll} // 전체 동의 박스를 클릭했을 때 handleAgreeAll 함수 실행
-              />
-              <span className={styles.termText}>이용약관 전체 동의합니다.</span>
-            </label>
+          {/* handleSubmit(onSubmit): HTML 기본 제출 기능을 막고(이게 없으면 html의 form은 누르면 바로 sumbit하려함), React Hook Form의 검증을 거친 후 onSubmit을 실행시킴 */}
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {step === 1 && (
+              <div className={styles.flowSection}>
+                <div className={styles.flowHero}>
+                  <p className={styles.flowEyebrow}>WITHDAY SOCIAL SIGN UP</p>
+                  <h2 className={styles.flowTitle}>약관 동의 후 가입을 시작합니다</h2>
+                </div>
 
-            <label className={styles.termLabel}>
-              <input type="checkbox" {...register("agreeTos")} />
-              <span className={styles.termText}>
-                [필수] 이용약관에 동의합니다.
-              </span>
-              <span
-                className={styles.termLink}
-                onClick={(e) => {
-                  e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
-                  setOpenTerms("TOS"); // openTerms state에 "TOS"를 넣어서 이용약관 모달이 열리게 함.
-                }}
-              >
-                보기
-              </span>
-            </label>
-            {/* errors.agreeTos가 있으면 에러메세지 띄움 */}
-            {errors.agreeTos && (
-              <p className={styles.termError}>{errors.agreeTos.message}</p>
+                <label className={`${styles.panel} ${styles.panelStrong} ${styles.checkCard} ${styles.checkCardStrong}`}>
+                  <span className={styles.checkInput}>
+                    <input
+                      type="checkbox"
+                      checked={allAgreed} // 전체 동의 박스는 allAgreed가 true면 체크, false면 체크해제
+                      onChange={handleAgreeAll} // 전체 동의 박스를 클릭했을 때 handleAgreeAll 함수 실행
+                    />
+                  </span>
+                  <span className={styles.checkBody}>
+                    <span className={styles.checkTitle}>약관 전체 동의</span>
+                  </span>
+                </label>
+
+                <div className={styles.stackMd} style={{ marginTop: '16px' }}>
+                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
+                    <span className={styles.checkInput}>
+                      <input type="checkbox" {...register("agreeTos")} />
+                    </span>
+                    <span className={styles.checkBody}>
+                      <span className={styles.checkHeader}>
+                        <span className={styles.checkTitle}>서비스 이용약관</span>
+                        <span className={styles.badge}>필수</span>
+                      </span>
+                      <span
+                        className={styles.flowLinkText}
+                        onClick={(e) => {
+                          e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
+                          setOpenTerms("TOS"); // openTerms state에 "TOS"를 넣어서 이용약관 모달이 열리게 함.
+                        }}
+                      >
+                        자세히 보기
+                      </span>
+                      {/* errors.agreeTos가 있으면 에러메세지 띄움 */}
+                      {errors.agreeTos && <span className={styles.errorText}>{errors.agreeTos.message}</span>}
+                    </span>
+                  </label>
+
+                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
+                    <span className={styles.checkInput}>
+                      <input type="checkbox" {...register("agreePrivacy")} />
+                    </span>
+                    <span className={styles.checkBody}>
+                      <span className={styles.checkHeader}>
+                        <span className={styles.checkTitle}>개인정보 수집 및 이용</span>
+                        <span className={styles.badge}>필수</span>
+                      </span>
+                      <span
+                        className={styles.flowLinkText}
+                        onClick={(e) => {
+                          e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
+                          setOpenTerms("PRIVACY"); // openTerms state에 "PRIVACY"를 넣어서 개인정보 수집 및 이용 모달이 열리게 함.
+                        }}
+                      >
+                        자세히 보기
+                      </span>
+                      {/* errors.agreePrivacy가 있으면 에러메세지 띄움 */}
+                      {errors.agreePrivacy && <span className={styles.errorText}>{errors.agreePrivacy.message}</span>}
+                    </span>
+                  </label>
+
+                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
+                    <span className={styles.checkInput}>
+                      <input type="checkbox" {...register("agreeMarketing")} />
+                    </span>
+                    <span className={styles.checkBody}>
+                      <span className={styles.checkHeader}>
+                        <span className={styles.checkTitle}>마케팅 정보 수신</span>
+                        <span className={styles.badge} style={{ background: '#e9ecef', color: '#666' }}>선택</span>
+                      </span>
+                      <span
+                        className={styles.flowLinkText}
+                        onClick={(e) => {
+                          e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
+                          setOpenTerms("MARKETING"); // openTerms state에 "MARKETING"를 넣어서 마케팅 정보 수신 모달이 열리게 함.
+                        }}
+                      >
+                        자세히 보기
+                      </span>
+                    </span>
+                  </label>
+
+                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
+                    <span className={styles.checkInput}>
+                      <input type="checkbox" {...register("agreeNotification")} />
+                    </span>
+                    <span className={styles.checkBody}>
+                      <span className={styles.checkHeader}>
+                        <span className={styles.checkTitle}>앱 푸시 알림 수신</span>
+                        <span className={styles.badge} style={{ background: '#e9ecef', color: '#666' }}>선택</span>
+                      </span>
+                      <span
+                        className={styles.flowLinkText}
+                        onClick={(e) => {
+                          e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
+                          setOpenTerms("NOTIFICATION"); // openTerms state에 "NOTIFICATION"를 넣어서 마케팅 정보 수신 모달이 열리게 함.
+                        }}
+                      >
+                        자세히 보기
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
             )}
 
-            <label className={styles.termLabel}>
-              <input type="checkbox" {...register("agreePrivacy")} />
-              <span className={styles.termText}>
-                [필수] 개인정보 수집 및 이용에 동의합니다.
-              </span>
-              <span
-                className={styles.termLink}
-                onClick={(e) => {
-                  e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
-                  setOpenTerms("PRIVACY"); // openTerms state에 "PRIVACY"를 넣어서 개인정보 수집 및 이용 모달이 열리게 함.
-                }}
-              >
-                보기
-              </span>
-            </label>
-            {/* errors.agreePrivacy가 있으면 에러메세지 띄움 */}
-            {errors.agreePrivacy && (
-              <p className={styles.termError}>{errors.agreePrivacy.message}</p>
+            {step === 2 && (
+              <div className={styles.flowSection}>
+                <div className={styles.flowHero}>
+                  <p className={styles.flowEyebrow}>WITHDAY SOCIAL SIGN UP</p>
+                  <h2 className={styles.flowTitle}>기본 정보를 입력해주세요</h2>
+                </div>
+
+                <div className={styles.stackLg}>
+                  <FormField label="닉네임" error={errors.nickname}>
+                    <Input type="text" placeholder="멋진 닉네임" {...register("nickname")} />
+                  </FormField>
+
+                  <FormField label="프로필 이미지" error={errors.profileImage}>
+                    {/* type이 file이면 내 컴퓨터의 탐색기 창이 열림. accept="image/*"로 이미지만 선택 가능하게 필터링 */}
+                    <Input type="file" accept="image/*" {...register("profileImage")} style={{ padding: '10px 14px' }} />
+                  </FormField>
+
+                  <FormField label="생년월일" error={errors.birthday}>
+                    {/* max 속성을 오늘 날짜로 설정해서 미래의 날짜 선택 안되게함*/}
+                    <Input type="date" max={todayDate} {...register("birthday")} />
+                  </FormField>
+
+                  <FormField label="성별" error={errors.gender}>
+                    <div className={styles.radioGroup}>
+                      {/* 둘 중 하나만 선택되는 라디오 버튼. 백엔드 규칙에 맞게 1(남자), 2(여자) 값 */}
+                      <label className={styles.radioLabel}>
+                        <input type="radio" value="1" {...register("gender")} /> 남
+                      </label>
+                      <label className={styles.radioLabel}>
+                        <input type="radio" value="2" {...register("gender")} /> 여
+                      </label>
+                    </div>
+                  </FormField>
+
+                  <FormField label="전화번호" error={errors.phone}>
+                    <Input type="tel" placeholder="010-1234-5678" {...register("phone")} />
+                  </FormField>
+
+                  <FormField label="주소" error={errors.postcode || errors.address}>
+                    <div className={`${styles.inputRow} ${styles.marginBottom8}`}>
+                      <div className={styles.flex1}>
+                        <Input
+                          type="text"
+                          placeholder="우편번호"
+                          readOnly // 주소 검색 버튼을 눌러서 우편번호가 자동으로 입력되게 함. 직접 타이핑을 막음.
+                          {...register("postcode")}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        style={{ width: 'auto', fontSize: '13px' }}
+                        onClick={() => {
+                          setIsPostcodeOpen(true); // 주소 검색 버튼을 누르면 주소 검색 모달이 열리게 함.
+                        }}
+                      >
+                        주소 검색
+                      </Button>
+                    </div>
+                    <div className={styles.marginBottom8}>
+                      <Input
+                        type="text"
+                        placeholder="기본 주소"
+                        readOnly // 주소 검색 버튼을 눌러서 주소가 자동으로 입력되게 함. 직접 타이핑을 막음.
+                        {...register("address")}
+                      />
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder="상세 주소를 입력해주세요"
+                      {...register("detailAddress")}
+                      error={errors.detailAddress}
+                    />
+                  </FormField>
+                </div>
+              </div>
             )}
 
-            <label className={styles.termLabel}>
-              <input type="checkbox" {...register("agreeMarketing")} />
-              <span className={styles.termText}>
-                [선택] 마케팅 정보 수신에 동의합니다.
-              </span>
-              <span
-                className={styles.termLink}
-                onClick={(e) => {
-                  e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
-                  setOpenTerms("MARKETING"); // openTerms state에 "MARKETING"를 넣어서 마케팅 정보 수신 모달이 열리게 함.
-                }}
-              >
-                보기
-              </span>
-            </label>
+            {step === 3 && (
+              <div className={styles.flowSectionWide}>
+                <div className={styles.flowHero}>
+                  <p className={styles.flowEyebrow}>WITHDAY SOCIAL SIGN UP</p>
+                  <h2 className={styles.flowTitle}>관심사를 선택해주세요</h2>
+                </div>
+                <div className={styles.interestsContainer}>
+                  <p>여기에 DB에서 불러온 관심사 칩(Chip)들이 들어갈 예정입니다!</p>
+                </div>
+              </div>
+            )}
 
-            <label className={styles.termLabel}>
-              <input type="checkbox" {...register("agreeNotification")} />
-              <span className={styles.termText}>
-                [선택] 알림 수신에 동의합니다.
-              </span>
-              <span
-                className={styles.termLink}
-                onClick={(e) => {
-                  e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
-                  setOpenTerms("NOTIFICATION"); // openTerms state에 "NOTIFICATION"를 넣어서 알림 수신 모달이 열리게 함.
-                }}
-              >
-                보기
-              </span>
-            </label>
-          </div>
+            {step === 4 && (
+              <div className={styles.completeArea}>
+                <div className={styles.flowHero}>
+                  <p className={styles.flowEyebrow}>WITHDAY SOCIAL SIGN UP</p>
+                  <h2 className={styles.completeTitle}>가입이 완료되었습니다!</h2>
+                  <p className={styles.autoRedirectText}>
+                    잠시 후 로그인 페이지로 자동 이동합니다...
+                  </p>
+                </div>
+                <div className={styles.celebration}>
+                  <div className={`${styles.confetti} ${styles.c1}`} />
+                  <div className={`${styles.confetti} ${styles.c2}`} />
+                  <div className={`${styles.confetti} ${styles.c3}`} />
+                  <div className={`${styles.confetti} ${styles.c4} ${styles.confettiWarning}`} />
+                  <div className={styles.checkCircle}>
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            )}
 
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            fullWidth
-            disabled={mutation.isPending} // mutation.isPending: 가입 요청이 진행중
-          >
-            {mutation.isPending ? "가입 처리 중..." : "추가 정보 입력 완료"}
-          </Button>
-        </form>
+            {step < 4 && (
+              <div className={styles.signupActions}>
+                {step > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    onClick={() => setStep((prev) => prev - 1)}
+                  >
+                    이전
+                  </Button>
+                )}
+
+                {step < 3 ? (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="lg"
+                    onClick={handleNextStep}
+                  >
+                    다음으로
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="lg"
+                    disabled={mutation.isPending}
+                  >
+                    {mutation.isPending ? "가입하는 중..." : "회원가입 완료"}
+                  </Button>
+                )}
+              </div>
+            )}
+          </form>
+
+          {step < 4 && (
+            <p className={styles.linkText} style={{ marginTop: '24px' }}>
+              다른 계정으로 로그인하시겠어요?{" "}
+              <span className={styles.linkClickable} onClick={() => navigate("/login")}>
+                로그인 화면으로
+              </span>
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className={styles.imageSection}>
+        {/* public 폴더에 넣은 이미지를 img 태그로 직관적으로 불러옵니다! */}
+        <img 
+          src="/withday_signup_bg.jpg" 
+          alt="WithDay Background" 
+          className={styles.bgImage} 
+        />
+        
+        <div className={styles.imageOverlay}>
+          <p className={styles.overlayLogo}>WITHDAY</p>
+          <h1 className={styles.overlayTitle}>누군가와<br/>함께 떠나는 설렘</h1>
+          {/* 소제목 삭제 완료 */}
+        </div>
       </div>
 
       {/* MUI 알림창: toast 상태에 따라 화면 하단에 나타났다가 3초(autoHideDuration={3000ms}) 후 사라짐 */}
@@ -440,12 +591,13 @@ const SocialExtra = () => {
         </Alert>
       </Snackbar>
 
-      {/* 주소 검색 모달: isPostcodeOpen state에 따라 열리고 닫힘. */}
+      {/* 주소 검색 모달: isPostcodeOpen state에 따라 열리고 닫힘. 
+          작은 화면에서는 꽉 찬 모달, 큰 화면에서는 적당한 크기의 모달이 됨. */}
       <Dialog
         open={isPostcodeOpen} // 주소 검색창 열릴지 말지 결정하는 state
         onClose={() => setIsPostcodeOpen(false)} // 주소 검색창 닫는 함수
         maxWidth="sm"
-        fullWidth // 화면 크기에 따라 Dialog의 최대 너비를 'sm'으로 설정하고, fullWidth로 너비를 100%로 만듦. 작은 화면에서는 꽉 찬 모달, 큰 화면에서는 적당한 크기의 모달이 됨.
+        fullWidth 
       >
         {/* DialogTitle(제목)의 sx prop으로 스타일링 */}
         <DialogTitle
@@ -472,9 +624,10 @@ const SocialExtra = () => {
         </DialogContent>
       </Dialog>
 
-      {/* 약관 모달: openTerms state에 따라 열리고 닫힘. */}
+      {/* 약관 모달: openTerms state에 따라 열리고 닫힘. 
+          (openTerms에는 "TOS", "PRIVACY", "MARKETING" 중 하나가 들어감.) */}
       <Dialog
-        open={openTerms !== null} // openTerms가 null이 아니면 약관 모달이 열림. (openTerms에는 "TOS", "PRIVACY", "MARKETING" 중 하나가 들어감.)
+        open={openTerms !== null} // openTerms가 null이 아니면 약관 모달이 열림.
         onClose={() => setOpenTerms(null)}
         maxWidth="sm"
         fullWidth

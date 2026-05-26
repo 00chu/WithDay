@@ -233,6 +233,14 @@
   flex-shrink: 0;
 }
 
+.signupStepperSocial {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 40px;
+  flex-shrink: 0;
+}
+
 .signupStep {
   position: relative;
   text-align: center;
@@ -459,7 +467,7 @@
 /* --- 가입 완료 애니메이션 --- */
 .completeArea {
   width: min(100%, 600px);
-  margin: 0 auto;
+  margin: 140px auto 0;
   text-align: center;
 }
 

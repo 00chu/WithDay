@@ -67,7 +67,11 @@ const Signup = () => {
     if (step === 5) {
       // 3초(3000ms) 뒤에 로그인 화면으로 이동하는 타이머 설정
       const timer = setTimeout(() => {
-        navigate("/login");
+        navigate("/login", {
+          state: {
+            toastMessage: "회원가입이 완료되었습니다! 다시 로그인해주세요.", 
+          },
+        });
       }, 3000);
 
       // 회원가입 완료 단계에서 페이지를 떠나거나(step이 5가 아니게 되거나) 컴포넌트가 사라질 때 타이머 정지 (안그러면 3초 뒤에 갑자기 로그인 화면으로 이동하는 버그 발생)

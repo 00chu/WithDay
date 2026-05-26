@@ -29,4 +29,17 @@
         FROM terms
     </select>
 
+    <select id="getAllInterests" resultType="Interest">
+        SELECT
+            interest_id AS id,
+            interest_name AS interestName,
+            icon_name AS iconName
+        FROM interests
+    </select>
+
+    <insert id="insertUserInterest" parameterType="UserInterest">
+        INSERT INTO user_interests (user_id, interest_id)
+        VALUES (#{userId}, #{interestId})
+    </insert>
+
 </mapper>
