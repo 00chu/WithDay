@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { getNotifications, readNotification } from "../api";
+import { getNotifications, readNotification, deleteNotification } from "../api";
 import styles from "./Notification.module.css";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
@@ -64,6 +64,22 @@ export default function NotificationList({ onClose }) {
     navigate(notification.targetUrl);
   };
 
+  const handleDeleteNotification = async (e, notificationId) => {
+    e.stopPropagation();
+
+    await deleteNotification(notificationId);
+
+    // 목록 다시 조회
+    await queryClient.invalidateQueries({
+      queryKey: ["notifications"],
+    });
+
+    // 빨간 점 갱신
+    await queryClient.invalidateQueries({
+      queryKey: ["notification-count"],
+    });
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
 
@@ -101,9 +117,7 @@ export default function NotificationList({ onClose }) {
 
             <button
               className={styles.closeBtn}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
+              onClick={(e) => handleDeleteNotification(e, notification.id)}
             >
               ✕
             </button>

@@ -62,3 +62,10 @@ export const getNotificationTerm = async (token) => {
 
   return response.data;
 };
+
+// 알림 삭제
+export const deleteNotification = async (notificationId) => {
+  const response = await api.delete(`/notifications/${notificationId}`);
+
+  return response.data;
+};

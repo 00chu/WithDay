@@ -97,5 +97,12 @@ public class NotificationController {
                     .body(e.getMessage());
         }
     }
+
+    @DeleteMapping("/{notificationId}")
+    public ResponseEntity<?> deleteNotification(@PathVariable Long notificationId){
+        notificationService.deleteNotification(notificationId);
+
+        return ResponseEntity.ok().build();
+    }
 }
 
