@@ -85,22 +85,23 @@ const Login = () => {
 
       setLogin(token, user, variables.autoLogin); // authStore의 setLogin에 토큰, 유저정보, 자동 로그인 여부를 저장 (사이트 전체 로그인됨)
 
+      // 백그라운드에서 실행
       (async () => {
         try {
+          // 로그인 후 진행해야 되는 부분으로 기존 방식 채택
+          // useQuery는 컴포넌트 최상단에서만 사용 가능.
           const notificationTerm = await getNotificationTerm(token);
 
           if (notificationTerm === 1) {
             const permission = await OneSignal.Notifications.permissionNative;
 
-            console.log("현재 권한:", permission);
-
             if (permission === "default") {
-              await OneSignal.Notifications.requestPermission();
+              await OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
             }
 
-            await OneSignal.login(user.email.toString());
+            await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
 
-            console.log("OneSignal 연결 완료");
+            await window.OneSignal.User.PushSubscription.optIn();
           }
         } catch (error) {
           console.error("OneSignal 연결 실패:", error);
@@ -175,21 +176,21 @@ const Login = () => {
             // useQuery는 컴포넌트 최상단에서만 사용 가능.
             const notificationTerm = await getNotificationTerm(token);
 
-            // 동의한 사용자만 OneSignal 연결
             if (notificationTerm === 1) {
-              await window.OneSignal.login(user.email.toString()); // OneSignal 유저 연결
+              const permission = await OneSignal.Notifications.permissionNative;
 
-              await window.OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
+              if (permission === "default") {
+                await OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
+              }
+
+              await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
 
               await window.OneSignal.User.PushSubscription.optIn();
-
-              console.log(
-                "구독 여부:",
-                window.OneSignal.User.PushSubscription.optedIn,
-              );
             }
           } catch (error) {
             console.error("OneSignal 연결 실패:", error);
+          } finally {
+            navigate("/");
           }
         })();
       }
