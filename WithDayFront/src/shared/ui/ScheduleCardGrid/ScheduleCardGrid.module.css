@@ -1,4 +1,8 @@
 .grid {
+  /*
+    모바일 기본값은 2열이다.
+    minmax(0, 1fr)를 사용해 카드 내부 긴 텍스트가 grid column을 밀어내지 않게 한다.
+  */
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
@@ -10,12 +14,14 @@
 
 @media (min-width: 768px) {
   .grid {
+    /* 태블릿부터는 3열로 늘려 한 화면에 더 많은 일정을 비교할 수 있게 한다. */
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 1024px) {
   .grid {
+    /* 데스크탑에서는 4열 고정 계약을 사용해 Home/Explore 카드 폭이 예측 가능하게 유지된다. */
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

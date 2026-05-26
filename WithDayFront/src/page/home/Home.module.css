@@ -145,6 +145,10 @@
 }
 
 .cardRail {
+  /*
+    홈은 탐색처럼 전체 그리드를 보여주지 않고, 추천 카드 몇 개를 가로 레일로 노출한다.
+    grid-auto-flow: column과 grid-auto-columns 조합으로 카드 개수가 달라도 같은 폭 규칙을 유지한다.
+  */
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(252px, 78vw);
@@ -356,12 +360,14 @@
 
 @media (max-width: 767px) {
   .cardRail {
+    /* 모바일에서는 카드가 화면 대부분을 차지하게 해 한 장씩 넘겨보는 느낌을 만든다. */
     grid-auto-columns: minmax(252px, 84vw);
   }
 }
 
 @media (min-width: 768px) {
   .cardRail {
+    /* 태블릿 이상에서는 한 번에 여러 compact 카드를 볼 수 있도록 폭을 줄인다. */
     grid-auto-columns: minmax(238px, 25%);
   }
 }

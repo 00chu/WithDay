@@ -34,30 +34,62 @@ public class ScheduleService {
         this.participationDao = participationDao;
     }
 
+    /*
+     * 일정 상세 조회의 Service 흐름이다.
+     * Controller는 id/email만 넘기고, Service는 화면에 필요한 여러 테이블 데이터를 조합한다.
+     * schedule, schedule_detail, schedule_image, participation 상태가 서로 다른 테이블에 있기 때문에
+     * DTO로 묶어 내려줘야 프론트가 여러 API를 순차 호출하지 않아도 된다.
+     */
     public ScheduleResponseDTO getScheduleFullDetails(Long id, String viewerEmail) {
+        /*
+         * 일정 작성자의 email은 상세 화면에서 호스트 판별 기준으로 사용한다.
+         * 이후 viewerEmail과 비교해 현재 사용자가 호스트인지 계산한다.
+         */
         String email = scheduleDao.getEmailByScheduleId(id);
 
-        // 1. 일정 기본 정보 조회
+        /*
+         * 1. 일정 기본 정보 조회
+         * selectScheduleById는 삭제되지 않은 schedule row만 가져온다.
+         * 상세 화면의 제목, 설명, 날짜, 모집 인원, 썸네일, 오픈채팅 링크 등이 이 객체에 들어 있다.
+         */
         Schedule schedule = scheduleDao.selectScheduleById(id);
 
         if (schedule == null) return null;
 
-        // 2. 세부 계획 리스트 조회
+        /*
+         * 2. Day-by-Day 세부 계획 조회
+         * 일정 본문 아래에 날짜별 계획을 순서대로 렌더링하기 위해 day_number 오름차순으로 가져온다.
+         */
         List<ScheduleDetail> details = scheduleDao.selectDetailsByScheduleId(id);
 
-        // 3. 이미지 리스트 조회
+        /*
+         * 3. 이미지 목록 조회
+         * 상세 페이지의 이미지 슬라이더와 썸네일 fallback을 위해 schedule_image row를 함께 내려준다.
+         */
         List<ScheduleImage> images = scheduleDao.selectImageByScheduleId(id);
 
         ScheduleResponseDTO response = new ScheduleResponseDTO(email, schedule, details, images);
 
+        /*
+         * viewerEmail은 선택값이다.
+         * 비로그인 사용자는 guest로 상세를 볼 수 있지만, 참여 버튼 상태와 채팅 링크 권한은 로그인 사용자일 때만 계산할 수 있다.
+         */
         String normalizedViewerEmail = viewerEmail == null ? "" : viewerEmail.trim();
         boolean viewerIsHost = !normalizedViewerEmail.isBlank() && normalizedViewerEmail.equalsIgnoreCase(email);
         String viewerParticipationStatus = null;
 
+        /*
+         * 현재 사용자가 이 일정에 신청/승인된 적이 있는지 조회한다.
+         * 이 값은 프론트 ApplyScheduleButton의 "참여 신청하기/신청 완료/참여 확정" 라벨 결정에 쓰인다.
+         */
         if (!normalizedViewerEmail.isBlank()) {
             viewerParticipationStatus = participationDao.findScheduleParticipationStatus(id, normalizedViewerEmail);
         }
 
+        /*
+         * 오픈채팅 링크는 호스트 또는 승인된 참여자에게만 보여준다.
+         * 권한이 없으면 schedule.chatLink를 null로 지워 내려보내 프론트가 실수로 링크를 렌더링하지 않게 한다.
+         */
         boolean viewerCanAccessChatLink = viewerIsHost
                 || ParticipationStatus.APPROVED.name().equals(viewerParticipationStatus);
 
@@ -86,7 +118,11 @@ public class ScheduleService {
         return scheduleDao.increaseViewCount(id) > 0;
     }
 
-    // 🌟 파라미터를 받아서 Dao로 넘겨주도록 수정
+    /*
+     * 홈/탐색 탭의 일정 리스트 조회 흐름이다.
+     * Service는 별도 비즈니스 가공 없이 Controller에서 받은 필터를 Dao로 넘긴다.
+     * 필터 조건 조립은 MyBatis dynamic SQL이 더 적합하므로 mapper에서 category/keyword/region 조건을 선택적으로 붙인다.
+     */
     public List<Schedule> getAllSchedules(String category, String keyword, String region) {
         return scheduleDao.getAllSchedules(category, keyword, region);
     }

@@ -10,10 +10,18 @@ import java.util.List;
 
 @Mapper
 public interface ScheduleDao {
+    /*
+     * schedule-mapper.xml과 연결되는 일정 DB 접근 인터페이스다.
+     * 홈/탐색 리스트, 상세 조회, 조회수 증가, 참여 승인 시 인원 수 변경 같은 schedule 관련 SQL을 담당한다.
+     */
+
+    // 상세 페이지의 기본 일정 정보를 조회한다. 삭제된 일정은 mapper에서 제외한다.
     Schedule selectScheduleById(Long id);
 
+    // 상세 페이지의 Day-by-Day 계획을 조회한다.
     List<ScheduleDetail> selectDetailsByScheduleId(Long id);
 
+    // 상세 페이지 이미지 슬라이더에 사용할 이미지 목록을 조회한다.
     List<ScheduleImage> selectImageByScheduleId(Long id);
 
     /**
@@ -33,12 +41,16 @@ public interface ScheduleDao {
 
     int reopenScheduleWhenSlotAvailable(@Param("scheduleId") Long scheduleId);
 
-    // Param을 사용해 파라미터 매핑
+    /*
+     * 홈/탐색 탭의 일정 리스트 조회다.
+     * category, keyword, region은 모두 선택 필터라 null/빈 문자열일 때는 mapper에서 조건을 붙이지 않는다.
+     */
     List<Schedule> getAllSchedules(
             @Param("category") String category,
             @Param("keyword") String keyword,
             @Param("region") String region);
             
+    // 일정 생성/수정에서 로그인 email을 schedule.user_id로 변환할 때 사용한다.
     Long findUserIdByEmail(String email);
 
     void insertSchedule(Schedule schedule);
@@ -50,6 +62,7 @@ public interface ScheduleDao {
             @Param("imageUrls") List<String> imageUrls
     );
 
+    // 상세 응답에서 현재 사용자가 호스트인지 판단하기 위해 일정 작성자의 email을 찾는다.
     String getEmailByScheduleId(Long id);
 
     void updateSchedule(Schedule schedule);

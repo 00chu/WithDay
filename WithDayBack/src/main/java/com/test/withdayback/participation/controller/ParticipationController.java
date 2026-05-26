@@ -26,7 +26,7 @@ public class ParticipationController {
      * 내 참여/신청 일정 조회 (내 일정 페이지의 참여중 / 신청중 탭)
      *
      * 프론트는 탭에 따라 조회해야 하는 참여 상태 목록을 쿼리 파라미터로 넘긴다.
-     * 예를 들어 "참여중" 탭은 APPROVED,KICKED를, "신청중" 탭은 PENDING,REJECTED,CANCELLED를 요청한다.
+     * 예를 들어 "참여중" 탭은 APPROVED,KICKED를, "신청중" 탭은 PENDING,REJECTED,CANCELED를 요청한다.
      * 상태 필터를 컨트롤러에서 직접 해석하지 않고 Service로 넘기는 이유는,
      * DB에 저장된 소문자 상태값과 프론트에서 쓰는 대문자 상태값 보정 규칙을 한 레이어에서 관리하기 위해서다.
      *
@@ -79,21 +79,16 @@ public class ParticipationController {
     /**
      * 참여 신청 취소
      *
-     * 사용자가 아직 승인되지 않은 PENDING 신청을 취소할 때 호출한다.
-     * DB row를 삭제하지 않고 status를 CANCELLED(canceled)로 바꾸는 이유는,
-     * 사용자의 신청 이력과 화면의 "신청 취소됨" 상태를 보존하기 위해서다.
-     * 실제 상태 변경 조건(PENDING일 때만 취소 가능)은 Service/Mapper에서 함께 제한한다.
+     * 사용자가 본인 참여를 취소할 때 호출한다.
+     * DB row를 삭제하지 않고 status를 CANCELED(canceled)로 바꾸는 이유는,
+     * 사용자 자발 취소 이력을 KICKED와 구분해 보존하기 위해서다.
+     * 실제 허용 상태(PENDING/APPROVED)와 인원 수 조정은 Service에서 검증한다.
      */
     @PatchMapping("/{participationId}/cancel")
     public ResponseEntity<?> cancelParticipation(
             @PathVariable Long participationId,
             @RequestParam String email) {
-
-        boolean updated = participationService.cancelParticipation(participationId, email);
-        if (!updated) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("취소할 신청 정보를 찾을 수 없습니다.");
-        }
+        participationService.cancelParticipation(participationId, email);
 
         return ResponseEntity.ok().build();
     }
@@ -134,11 +129,12 @@ public class ParticipationController {
     /**
      * 참여 상태 변경 (호스트 전용)
      *
-     * 호스트가 신청자를 승인(APPROVED)하거나 거절(REJECTED)할 때 호출한다.
+     * 호스트가 신청자를 승인(APPROVED)하거나 거절(REJECTED), 강퇴(KICKED)할 때 호출한다.
      * 승인 시에는 participation.status 변경뿐 아니라 schedule.current_participants 증가와
-     * 정원 도달 시 schedule.status 자동 마감 처리가 이어지므로 Service에서 트랜잭션으로 묶는다.
+     * 정원 도달 시 schedule.status 자동 마감 처리가 이어지고,
+     * 강퇴 시에는 current_participants 감소와 재오픈 판단이 이어지므로 Service에서 트랜잭션으로 묶는다.
      *
-     * Body 예시: { "email": "host@test.com", "status": "APPROVED", "reason": "정원 가능" }
+     * Body 예시: { "email": "host@test.com", "status": "KICKED", "reason": "운영 정책 위반" }
      */
     @PatchMapping("/{participationId}/status")
     public ResponseEntity<ParticipationStatusUpdateResponseDTO> updateParticipationStatus(

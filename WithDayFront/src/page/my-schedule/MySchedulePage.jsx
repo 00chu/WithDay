@@ -103,7 +103,7 @@ const MySchedulePage = () => {
 
   /*
    * 카드 클릭/버튼 액션 분기다.
-   * host, APPROVED, CANCELLED 상태는 상세 페이지에서 확인하는 흐름이고,
+   * host, APPROVED, CANCELED 상태는 상세 페이지에서 확인하는 흐름이고,
    * PENDING은 신청 취소, REJECTED/KICKED는 내역 삭제를 제공한다.
    */
   const handleScheduleAction = useCallback(
@@ -116,7 +116,7 @@ const MySchedulePage = () => {
       if (
         item.myRole === "host" ||
         item.dbStatus === "APPROVED" ||
-        item.dbStatus === "CANCELLED"
+        item.dbStatus === "CANCELED"
       ) {
         navigate(`/schedule/${item.scheduleId}`);
         return;

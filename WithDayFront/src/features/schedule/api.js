@@ -2,6 +2,10 @@ import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_BACKSERVER;
 
+/*
+ * 일정 관련 API 클라이언트다.
+ * Home/Explore/ScheduleDetail 모두 같은 axios 인스턴스를 사용해 baseURL과 Authorization 헤더 규칙을 공유한다.
+ */
 export const api = axios.create({
   baseURL: `http://${BASE_URL}`,
 });
@@ -16,6 +20,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+/*
+ * 일정 상세 API다.
+ * email을 함께 보내면 백엔드가 viewerIsHost, viewerParticipationStatus, viewerCanAccessChatLink를 계산해준다.
+ * 이 값들은 상세 페이지에서 참여 버튼 상태와 오픈채팅 링크 노출 여부를 결정하는 데 사용된다.
+ */
 export const fetchScheduleDetail = async (scheduleId, email = "") => {
   const normalizedEmail = email?.trim() ?? "";
   const { data } = await api.get(`/schedules/${scheduleId}`, {
@@ -37,18 +46,25 @@ export const incrementScheduleViewCount = async (scheduleId) => {
 
 const normalizeRegionValue = (value) => value?.trim() ?? "";
 
+/*
+ * 홈/탐색 탭의 일정 리스트 API다.
+ * 같은 GET /schedules 엔드포인트를 사용하지만, 홈은 category=all/keyword=""로 전체 목록을 받고,
+ * 탐색은 사용자가 선택한 category/keyword/region을 params로 전달한다.
+ */
 export const fetchSchedules = async ({ category, keyword, region }) => {
   const params = {};
 
-  // "all"이 아닐 때만 백엔드로 카테고리 파라미터를 보냄
+  // "전체" 카테고리는 백엔드 필터를 걸지 않는다는 의미라 category 파라미터를 생략한다.
   if (category && category !== "all") {
     params.category = category;
   }
 
+  // 검색어는 submit된 값만 들어온다. 입력 중인 값은 SearchForm 내부 상태에 머문다.
   if (keyword) {
     params.keyword = keyword;
   }
 
+  // Header 지역 선택값은 공백을 제거한 뒤, 값이 있을 때만 백엔드 region 필터로 보낸다.
   const normalizedRegion = normalizeRegionValue(region);
   if (normalizedRegion) {
     params.region = normalizedRegion;

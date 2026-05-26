@@ -15,6 +15,8 @@ import com.test.withdayback.schedule.enums.ScheduleStatus;
 import com.test.withdayback.schedule.vo.Schedule;
 import com.test.withdayback.user.dao.UserDao;
 import com.test.withdayback.user.vo.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,8 @@ import java.util.Objects;
 
 @Service
 public class ParticipationService {
+    private static final Logger log = LoggerFactory.getLogger(ParticipationService.class);
+
     @Autowired
     private ParticipationDao participationDao;
 
@@ -72,22 +76,97 @@ public class ParticipationService {
     }
 
     /*
-     * 참여 신청 취소 흐름이다.
-     * 사용자가 신청을 취소해도 row를 지우지 않고 PENDING -> CANCELLED 상태로 바꾼다.
-     * 이렇게 해야 "사용자가 신청했다가 취소했다"는 이력을 남길 수 있고, 프론트도 취소 상태를 명확히 표시할 수 있다.
-     * Mapper에는 현재 상태(PENDING)와 목표 저장값(canceled)을 같이 넘겨서 이미 승인/거절된 신청이 취소되지 않도록 막는다.
+     * 참여자 본인 취소 흐름이다.
+     * PENDING 신청 취소와 APPROVED 참여 취소를 모두 CANCELED로 기록해,
+     * "사용자가 스스로 빠졌다"는 의미를 KICKED와 분리한다.
      */
-    public boolean cancelParticipation(Long participationId, String email) {
-        if (participationId == null || email == null || email.isBlank()) {
-            return false;
+    @Transactional
+    public void cancelParticipation(Long participationId, String email) {
+        String normalizedEmail = normalizeEmail(email);
+        if (participationId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "참여 정보가 필요합니다.");
         }
 
-        return participationDao.cancelParticipation(
+        if (normalizedEmail.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "로그인 사용자 정보가 필요합니다.");
+        }
+
+        Participation participation = participationDao.findById(participationId);
+        if (participation == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "취소할 참여 정보를 찾을 수 없습니다.");
+        }
+
+        User actor = userDao.findByEmail(normalizedEmail);
+        if (actor == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자 정보를 찾을 수 없습니다.");
+        }
+
+        if (!actor.getId().equals(participation.getUserId())) {
+            log.warn("참여자 취소 권한 없음 - participationId: {}, actorId: {}, ownerId: {}",
+                    participationId, actor.getId(), participation.getUserId());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인의 참여만 취소할 수 있습니다.");
+        }
+
+        Schedule schedule = scheduleDao.selectScheduleById(participation.getScheduleId());
+        if (schedule == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "일정 정보를 찾을 수 없습니다.");
+        }
+
+        if (isScheduleEnded(schedule.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "종료된 일정의 참여는 취소할 수 없습니다.");
+        }
+
+        ParticipationStatus currentStatus = participation.getStatus();
+        if (currentStatus == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "현재 상태를 확인할 수 없습니다.");
+        }
+
+        if (currentStatus == ParticipationStatus.CANCELED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 취소된 참여입니다.");
+        }
+
+        if (currentStatus == ParticipationStatus.KICKED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "강퇴된 참여는 사용자가 취소할 수 없습니다.");
+        }
+
+        if (currentStatus == ParticipationStatus.REJECTED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "거절된 신청은 취소할 수 없습니다.");
+        }
+
+        boolean canCancelWhileClosed = currentStatus == ParticipationStatus.APPROVED
+                && schedule.getStatus() == ScheduleStatus.closed;
+
+        if (schedule.getStatus() != ScheduleStatus.recruiting && !canCancelWhileClosed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "모집 중인 일정만 취소할 수 있습니다.");
+        }
+
+        if (!currentStatus.canTransitionTo(ParticipationStatus.CANCELED)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "변경할 수 없는 상태 전이입니다.");
+        }
+
+        int updated = participationDao.cancelParticipation(
                 participationId,
-                email,
-                ParticipationStatus.PENDING.name(),
-                ParticipationStatus.CANCELLED.getDatabaseValue()
-        ) > 0;
+                normalizedEmail,
+                currentStatus.name(),
+                ParticipationStatus.CANCELED.getDatabaseValue()
+        );
+        if (updated <= 0) {
+            log.warn("참여 취소 update 충돌 - participationId: {}, currentStatus: {}",
+                    participationId, currentStatus);
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "참여 취소 처리에 실패했습니다.");
+        }
+
+        if (currentStatus == ParticipationStatus.APPROVED) {
+            int decreased = scheduleDao.decreaseCurrentParticipants(schedule.getId());
+            if (decreased <= 0) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "정원 수를 조정할 수 없습니다.");
+            }
+
+            scheduleDao.reopenScheduleWhenSlotAvailable(schedule.getId());
+        }
+
+        log.info("참여자 취소 완료 - participationId: {}, scheduleId: {}, actorId: {}, from: {}, to: {}",
+                participationId, schedule.getId(), actor.getId(), currentStatus, ParticipationStatus.CANCELED);
     }
 
     /*
@@ -279,7 +358,7 @@ public class ParticipationService {
         /*
          * 호스트가 신청자의 참여 상태를 변경하는 흐름이다.
          * 승인(APPROVED)은 participation.status 변경과 schedule.current_participants 증가가 함께 일어나야 하고,
-         * 승인 취소(CANCELLED)는 인원 감소와 일정 재오픈이 함께 일어날 수 있다.
+         * 호스트 강퇴(KICKED)는 인원 감소와 일정 재오픈이 함께 일어날 수 있다.
          * 그래서 중간에 실패하면 전체를 되돌릴 수 있도록 트랜잭션으로 묶는다.
          */
         if (participationId == null) {
@@ -300,12 +379,8 @@ public class ParticipationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "변경할 상태가 필요합니다.");
         }
 
-        /*
-         * KICKED는 현재 UI에서 직접 선택하는 호스트 액션이 아니다.
-         * 잘못된 클라이언트 요청으로 강퇴 상태가 직접 저장되지 않도록 서버에서 차단한다.
-         */
-        if (targetStatus == ParticipationStatus.KICKED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "강퇴 상태는 직접 변경할 수 없습니다.");
+        if (targetStatus == ParticipationStatus.CANCELED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "호스트는 취소 상태로 변경할 수 없습니다.");
         }
 
         /*
@@ -345,22 +420,22 @@ public class ParticipationService {
         }
 
         boolean canManageWhileClosed = currentStatus == ParticipationStatus.APPROVED
-                && targetStatus == ParticipationStatus.CANCELLED
+                && targetStatus == ParticipationStatus.KICKED
                 && schedule.getStatus() == ScheduleStatus.closed;
 
         /*
          * 기본적으로 모집중인 일정만 상태 변경을 허용한다.
-         * 단, 정원 도달로 closed가 된 일정에서 이미 승인된 사람을 취소하는 경우는 예외로 허용한다.
-         * 이 예외가 있어야 승인 취소 후 정원 수를 줄이고 일정 재오픈을 할 수 있다.
+         * 단, 정원 도달로 closed가 된 일정에서 이미 승인된 사람을 강퇴하는 경우는 예외로 허용한다.
+         * 이 예외가 있어야 강퇴 후 정원 수를 줄이고 일정 재오픈을 할 수 있다.
          */
         if (schedule.getStatus() != ScheduleStatus.recruiting && !canManageWhileClosed) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "모집 중인 일정만 상태를 변경할 수 있습니다.");
         }
 
         /*
-         * 상태 전이는 enum에 정의된 규칙을 따른다.
-         * 예: PENDING -> APPROVED/REJECTED/CANCELLED, APPROVED -> CANCELLED만 가능하다.
-         * 이미 끝난 상태(REJECTED, CANCELLED, KICKED)는 다시 승인하는 식의 역방향 전이를 막는다.
+         * 상태 전이는 enum에 정의된 규칙과 호스트 전용 정책을 함께 따른다.
+         * 호스트 액션에서는 PENDING -> APPROVED/REJECTED, APPROVED -> KICKED만 가능하다.
+         * 이미 끝난 상태(REJECTED, CANCELED, KICKED)는 다시 승인하는 식의 역방향 전이를 막는다.
          */
         if (!currentStatus.canTransitionTo(targetStatus)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "변경할 수 없는 상태 전이입니다.");
@@ -396,10 +471,10 @@ public class ParticipationService {
         }
 
         /*
-         * 승인된 참여자를 취소하면 확정 인원 수를 되돌려야 한다.
+         * 승인된 참여자를 강퇴하면 확정 인원 수를 되돌려야 한다.
          * participation 상태만 바꾸고 schedule 인원 수를 줄이지 않으면 정원 마감 판단과 화면 인원 표시가 틀어진다.
          */
-        if (currentStatus == ParticipationStatus.APPROVED && targetStatus == ParticipationStatus.CANCELLED) {
+        if (currentStatus == ParticipationStatus.APPROVED && targetStatus == ParticipationStatus.KICKED) {
             int decreased = scheduleDao.decreaseCurrentParticipants(schedule.getId());
             if (decreased <= 0) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "정원 수를 조정할 수 없습니다.");
@@ -440,19 +515,31 @@ public class ParticipationService {
             );
         }
 
+        if (targetStatus == ParticipationStatus.KICKED) {
+            notificationService.notifyKick(
+                    participation.getUserId(),
+                    receiverEmail,
+                    senderNickName,
+                    schedule.getTitle()
+            );
+        }
+
         if (targetStatus == ParticipationStatus.APPROVED) {
             scheduleDao.closeScheduleWhenFull(updatedSchedule.getId());
             updatedSchedule = scheduleDao.selectScheduleById(updatedSchedule.getId());
         } else if (currentStatus == ParticipationStatus.APPROVED
-                && targetStatus == ParticipationStatus.CANCELLED) {
+                && targetStatus == ParticipationStatus.KICKED) {
             /*
-             * 승인 취소로 빈자리가 생긴 경우, closed 상태였던 일정은 다시 recruiting으로 열릴 수 있다.
+             * 강퇴로 빈자리가 생긴 경우, closed 상태였던 일정은 다시 recruiting으로 열릴 수 있다.
              * 상태 재계산 후 응답도 최신 schedule 기준으로 내려준다.
              */
             // !!!!!!!! 여기에 승인 취소 추방으로 바꿔서 알림 설정 넣으면 될 것 가틈
             scheduleDao.reopenScheduleWhenSlotAvailable(updatedSchedule.getId());
             updatedSchedule = scheduleDao.selectScheduleById(updatedSchedule.getId());
         }
+
+        log.info("호스트 상태 변경 완료 - participationId: {}, scheduleId: {}, actorId: {}, from: {}, to: {}",
+                participationId, updatedSchedule.getId(), actor.getId(), currentStatus, targetStatus);
 
         return new ParticipationStatusUpdateResponseDTO(
                 participationId,
@@ -467,8 +554,8 @@ public class ParticipationService {
     private String normalizeStatusFilter(String status) {
         /*
          * 프론트와 DB의 상태 표현을 서버 enum 이름으로 맞춘다.
-         * 특히 취소 상태는 DB 저장값이 "canceled"이고 코드 enum은 CANCELLED라서,
-         * CANCELED/CANCELLED 입력을 모두 CANCELLED로 받아준다.
+         * 특히 취소 상태는 DB 저장값이 "canceled"이고 코드 enum은 CANCELED라서,
+         * CANCELED/CANCELLED 입력을 모두 CANCELED로 받아준다.
          */
         if (status == null || status.isBlank()) {
             return null;
@@ -478,8 +565,8 @@ public class ParticipationService {
             return ParticipationStatus.fromValue(status).name();
         } catch (IllegalArgumentException exception) {
             String normalized = status.trim().toUpperCase(Locale.ROOT);
-            if ("CANCELED".equals(normalized)) {
-                return ParticipationStatus.CANCELLED.name();
+            if ("CANCELED".equals(normalized) || "CANCELLED".equals(normalized)) {
+                return ParticipationStatus.CANCELED.name();
             }
             throw exception;
         }

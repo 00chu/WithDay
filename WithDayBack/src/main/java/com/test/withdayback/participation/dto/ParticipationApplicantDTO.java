@@ -27,7 +27,7 @@ public class ParticipationApplicantDTO {
     private String email;
     private String nickname;
 
-    // PENDING, APPROVED, REJECTED, CANCELLED 등 현재 신청 상태다.
+    // PENDING, APPROVED, REJECTED, CANCELED, KICKED 등 현재 신청 상태다.
     private ParticipationStatus status;
 
     // 신청 생성 시각이다. 정렬과 호스트 판단 보조 정보로 사용한다.
