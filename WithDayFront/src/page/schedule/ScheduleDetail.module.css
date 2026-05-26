@@ -139,7 +139,8 @@
 .titleWrap {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 16px;
 }
 
 .title {
@@ -148,6 +149,8 @@
   color: var(--color-text-primary, #1e293b);
   margin: 12px 0;
   line-height: 1.4;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .buttonWrap {
@@ -155,6 +158,15 @@
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
+}
+
+.bookmarkButton {
+  /*
+    위시 버튼은 상세 페이지의 보조 액션이다.
+    실행/참여 같은 주요 CTA보다 우선순위는 낮지만, 제목 우측에 두어 현재 저장 상태를 가장 먼저 확인할 수 있게 한다.
+  */
+  min-width: 104px;
 }
 
 .executionNotice {
@@ -334,6 +346,19 @@
 }
 
 @media screen and (max-width: 640px) {
+  .titleWrap {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .buttonWrap {
+    justify-content: flex-start;
+  }
+
+  .bookmarkButton {
+    width: fit-content;
+  }
+
   .stickyFooter {
     padding: 14px 16px;
     margin: 0 12px 12px;

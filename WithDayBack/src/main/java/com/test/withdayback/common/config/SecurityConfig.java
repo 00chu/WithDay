@@ -39,6 +39,7 @@ public class SecurityConfig {
                                 "/users/social-signup",
                                 "/users/email-verification",
                                 "/schedules/**",
+                                "/bookmarks/**",
                                 "/participations/**",
                                 "/region/**",
                                 "/notifications/**"

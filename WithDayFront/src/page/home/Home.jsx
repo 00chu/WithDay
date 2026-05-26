@@ -6,6 +6,7 @@ import styles from "./Home.module.css";
 import ScheduleCard from "../../features/schedule/ui/ScheduleCard";
 import HomeCarousel from "./HomeCarousel";
 import { fetchSchedules } from "../../features/schedule/api";
+import { useAuthStore } from "../../features/auth/store/authStore";
 
 /*
  * 홈 탭은 전체 일정 중 일부만 "추천/미리보기" 형태로 보여준다.
@@ -39,6 +40,7 @@ const sortByPriorityDate = (left, right) => {
 export default function Home({ selectedRegion = "" }) {
   const navigate = useNavigate();
   const normalizedRegion = normalizeRegionValue(selectedRegion);
+  const authEmail = useAuthStore((state) => state.user?.email?.trim() ?? "");
 
   /*
    * 페이지 진입 또는 지역 필터 변경 시 react-query가 GET /schedules를 호출한다.
@@ -50,12 +52,13 @@ export default function Home({ selectedRegion = "" }) {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["home-schedules", normalizedRegion],
+    queryKey: ["home-schedules", normalizedRegion, authEmail || "guest"],
     queryFn: () =>
       fetchSchedules({
         category: "all",
         keyword: "",
         region: normalizedRegion,
+        email: authEmail,
       }),
     staleTime: 1000 * 60,
   });

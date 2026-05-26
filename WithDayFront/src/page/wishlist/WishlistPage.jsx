@@ -1,16 +1,87 @@
+import { useQuery } from "@tanstack/react-query";
+import clsx from "clsx";
+import { useAuthStore } from "../../features/auth/store/authStore";
+import { fetchBookmarkedSchedules } from "../../features/schedule/api";
+import ScheduleCard from "../../features/schedule/ui/ScheduleCard";
+import ScheduleCardGrid from "../../shared/ui/ScheduleCardGrid/ScheduleCardGrid";
 import styles from "./WishlistPage.module.css";
 
+const getScheduleKey = (schedule) =>
+  String(
+    schedule?.id ??
+      schedule?.scheduleId ??
+      `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`
+  );
+
 export default function WishlistPage() {
+  const authEmail = useAuthStore((state) => state.user?.email?.trim() ?? "");
+
+  /*
+   * 위시리스트는 로그인 사용자별로 완전히 다른 데이터셋이므로,
+   * queryKey에도 email을 넣어 계정 전환 시 캐시가 섞이지 않게 분리한다.
+   */
+  const {
+    data: schedules = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["bookmarks", authEmail],
+    queryFn: fetchBookmarkedSchedules,
+    enabled: Boolean(authEmail),
+    staleTime: 1000 * 30,
+  });
+
   return (
-    <section className={styles.container}>
-      <div className={styles.card}>
+    <main className={styles.main}>
+      <section className={styles.hero}>
         <p className={styles.eyebrow}>WISHLIST</p>
-        <h2 className={styles.title}>위시리스트</h2>
+        <h1 className={styles.title}>저장해 둔 일정</h1>
         <p className={styles.description}>
-          저장한 일정들을 모아보는 화면은 다음 단계에서 연결할 수 있도록
-          자리만 먼저 열어두었습니다.
+          다시 보고 싶은 일정만 모아 최신 저장순으로 확인할 수 있어요.
         </p>
-      </div>
-    </section>
+      </section>
+
+      {isLoading && (
+        <section className={styles.stateBox}>
+          <div className={styles.loadingSpinner} />
+          <p>위시리스트를 불러오는 중...</p>
+        </section>
+      )}
+
+      {isError && (
+        <section className={clsx(styles.stateBox, styles.errorBox)}>
+          <p>위시리스트를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+        </section>
+      )}
+
+      {!isLoading && !isError && schedules.length === 0 && (
+        <section className={styles.emptyBox}>
+          <h2 className={styles.emptyTitle}>아직 저장한 일정이 없어요.</h2>
+          <p className={styles.emptyDescription}>
+            마음에 드는 일정을 상세 화면에서 위시리스트에 저장해 보세요.
+          </p>
+        </section>
+      )}
+
+      {!isLoading && !isError && schedules.length > 0 && (
+        <section className={styles.listSection}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>최근 저장한 일정</h2>
+            <p className={styles.sectionCaption}>
+              마감 여부와 일정 상태는 카드 배지에서 바로 확인할 수 있어요.
+            </p>
+          </div>
+
+          <ScheduleCardGrid>
+            {schedules.map((schedule) => (
+              <ScheduleCard
+                key={getScheduleKey(schedule)}
+                schedule={schedule}
+              />
+            ))}
+          </ScheduleCardGrid>
+        </section>
+      )}
+    </main>
   );
 }

@@ -1,5 +1,7 @@
 import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
+import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import { dayjs, getDDay } from "../../../shared/lib/dateUtile";
 import styles from "./ScheduleCard.module.css";
 
@@ -152,6 +154,10 @@ export default function ScheduleCard({
   const regionLabel = resolveRegionLabel(schedule?.region);
   const genderLabel = resolveGenderLimitLabel(schedule?.genderLimit);
   const periodLines = resolvePeriodLines(schedule?.startDate, schedule?.endDate);
+  const isBookmarked = Boolean(schedule?.isBookmarked);
+  const BookmarkIcon = isBookmarked
+    ? FavoriteRoundedIcon
+    : FavoriteBorderRoundedIcon;
 
   /*
    * 카드 전체를 클릭 가능한 article로 처리한다.
@@ -204,7 +210,22 @@ export default function ScheduleCard({
            * 우측 정보 스택은 성별 조건, 일정 기간, 지역을 오른쪽 정렬로 보여준다.
            * 날짜는 periodLines를 map으로 렌더링해 모바일에서도 긴 "start ~ end" 문자열이 한 줄로 잘리지 않게 한다.
            */}
-          <div className={styles.infoStack}>
+          <div className={styles.headerRight}>
+            {/*
+             * 카드의 하트는 액션 버튼이 아니라 "현재 저장 상태를 빠르게 읽는 배지"다.
+             * 실제 토글은 상세 화면에서만 허용하므로 pointer-events를 끄고 카드 클릭 동선과 충돌하지 않게 둔다.
+             */}
+            <span
+              className={clsx(
+                styles.bookmarkIndicator,
+                isBookmarked && styles.bookmarkIndicatorActive
+              )}
+              aria-label={isBookmarked ? "위시리스트에 저장된 일정" : "위시리스트에 저장되지 않은 일정"}
+            >
+              <BookmarkIcon className={styles.bookmarkIcon} />
+            </span>
+
+            <div className={styles.infoStack}>
             <span className={clsx(styles.infoLine, isCompact && styles.infoLineCompact)}>
               <span className={styles.infoText}>{genderLabel}</span>
             </span>
@@ -226,6 +247,7 @@ export default function ScheduleCard({
             <span className={clsx(styles.infoLine, isCompact && styles.infoLineCompact)}>
               <span className={styles.infoText}>{regionLabel}</span>
             </span>
+            </div>
           </div>
         </div>
 

@@ -30,6 +30,7 @@ public class ScheduleResponseDTO {
     private String recruitEndDate;
     private String genderLimit;
     private String costType;
+    private Boolean isBookmarked;
 
     // 현재 viewer 기준 권한/참여 상태다. 참여 버튼과 오픈채팅 링크 노출 여부를 결정한다.
     private Boolean viewerIsHost;
@@ -61,6 +62,7 @@ public class ScheduleResponseDTO {
         this.costType = schedule != null && schedule.getCostType() != null
                 ? schedule.getCostType().name()
                 : null;
+        this.isBookmarked = schedule != null ? schedule.getIsBookmarked() : Boolean.FALSE;
         this.viewerIsHost = false;
         this.viewerParticipationId = null;
         this.viewerCanAccessChatLink = false;

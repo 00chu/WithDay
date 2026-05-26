@@ -52,6 +52,41 @@
   gap: 10px;
 }
 
+.headerRight {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.bookmarkIndicator {
+  /*
+    카드의 하트는 액션 버튼이 아니라 현재 저장 상태를 읽는 시각 신호다.
+    그래서 hover/cursor/pointer 변화를 주지 않고, 카드 전체 클릭과 이벤트가 충돌하지 않도록 pointer-events를 끈다.
+  */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-surface) 72%, #fce7ef 28%);
+  color: #f08aa0;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.bookmarkIndicatorActive {
+  background: #fdecef;
+  color: #e55d79;
+}
+
+.bookmarkIcon {
+  font-size: 1rem;
+}
+
 .deadlineBadge {
   display: inline-flex;
   align-items: center;

@@ -8,6 +8,7 @@ import ScheduleCardGrid from "../../shared/ui/ScheduleCardGrid/ScheduleCardGrid"
 import SearchForm from "../../features/schedule/ui/SearchForm";
 import CategoryFilter from "../../features/schedule/ui/CategoryFilter";
 import { fetchSchedules } from "../../features/schedule/api";
+import { useAuthStore } from "../../features/auth/store/authStore";
 
 /*
  * 탐색 탭의 카드 key 생성 규칙이다.
@@ -37,6 +38,7 @@ export default function ExplorePage({ selectedRegion = "" }) {
    */
   const [submittedKeyword, setSubmittedKeyword] = useState("");
   const normalizedRegion = normalizeRegionValue(selectedRegion);
+  const authEmail = useAuthStore((state) => state.user?.email?.trim() ?? "");
 
   // 화면 제목은 API 값이 아니라 사용자에게 보여줄 한글 라벨을 사용한다.
   const CATEGORY_MAP = {
@@ -58,12 +60,19 @@ export default function ExplorePage({ selectedRegion = "" }) {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["schedules", activeCategory, submittedKeyword, normalizedRegion],
+    queryKey: [
+      "schedules",
+      activeCategory,
+      submittedKeyword,
+      normalizedRegion,
+      authEmail || "guest",
+    ],
     queryFn: () =>
       fetchSchedules({
         category: activeCategory,
         keyword: submittedKeyword,
         region: normalizedRegion,
+        email: authEmail,
       }),
     staleTime: 1000 * 60,
   });

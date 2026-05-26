@@ -76,8 +76,9 @@ class ScheduleServiceTest {
         schedule.setGenderLimit(GenderLimit.female);
         schedule.setCostType(CostType.host_covered);
 
+        schedule.setIsBookmarked(Boolean.TRUE);
         when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
-        when(scheduleDao.selectScheduleById(scheduleId)).thenReturn(schedule);
+        when(scheduleDao.selectScheduleByIdForViewer(scheduleId, "")).thenReturn(schedule);
         when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
         when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
 
@@ -89,6 +90,7 @@ class ScheduleServiceTest {
         assertEquals("2026-05-18", result.getRecruitEndDate());
         assertEquals("female", result.getGenderLimit());
         assertEquals("host_covered", result.getCostType());
+        assertTrue(result.getIsBookmarked());
     }
 
     @Test
@@ -96,7 +98,7 @@ class ScheduleServiceTest {
         Long scheduleId = 99L;
 
         when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn(null);
-        when(scheduleDao.selectScheduleById(scheduleId)).thenReturn(null);
+        when(scheduleDao.selectScheduleByIdForViewer(scheduleId, "")).thenReturn(null);
 
         ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(scheduleId, "");
 
@@ -110,7 +112,7 @@ class ScheduleServiceTest {
         schedule.setChatLink("https://open.kakao.com/test-room");
 
         when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
-        when(scheduleDao.selectScheduleById(scheduleId)).thenReturn(schedule);
+        when(scheduleDao.selectScheduleByIdForViewer(scheduleId, "guest@withday.test")).thenReturn(schedule);
         when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
         when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
         Participation participation = new Participation();
@@ -138,7 +140,7 @@ class ScheduleServiceTest {
         schedule.setChatLink("https://open.kakao.com/test-room");
 
         when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
-        when(scheduleDao.selectScheduleById(scheduleId)).thenReturn(schedule);
+        when(scheduleDao.selectScheduleByIdForViewer(scheduleId, "approved@withday.test")).thenReturn(schedule);
         when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
         when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
         Participation participation = new Participation();

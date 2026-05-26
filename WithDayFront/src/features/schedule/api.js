@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useAuthStore } from "../auth/store/authStore";
 
 const BASE_URL = import.meta.env.VITE_BACKSERVER;
 
@@ -11,7 +12,12 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  /*
+   * schedule feature도 로그인 사용자별 북마크/상세 권한 정보를 다루기 시작했기 때문에
+   * localStorage만 직접 읽는 방식으로는 sessionStorage 로그인 사용자를 놓치게 된다.
+   * authStore를 단일 source로 읽으면 자동 로그인/세션 로그인 모두 같은 경로로 토큰을 공급할 수 있다.
+   */
+  const token = useAuthStore.getState().token;
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -87,7 +93,7 @@ const normalizeRegionValue = (value) => value?.trim() ?? "";
  * 같은 GET /schedules 엔드포인트를 사용하지만, 홈은 category=all/keyword=""로 전체 목록을 받고,
  * 탐색은 사용자가 선택한 category/keyword/region을 params로 전달한다.
  */
-export const fetchSchedules = async ({ category, keyword, region }) => {
+export const fetchSchedules = async ({ category, keyword, region, email = "" }) => {
   const params = {};
 
   // "전체" 카테고리는 백엔드 필터를 걸지 않는다는 의미라 category 파라미터를 생략한다.
@@ -106,8 +112,44 @@ export const fetchSchedules = async ({ category, keyword, region }) => {
     params.region = normalizedRegion;
   }
 
+  /*
+   * 북마크 여부는 사용자별로 달라지는 값이라,
+   * 로그인 사용자가 목록을 볼 때만 email을 함께 보내 서버가 EXISTS 기반 isBookmarked를 계산하도록 한다.
+   */
+  const normalizedEmail = email?.trim() ?? "";
+  if (normalizedEmail) {
+    params.email = normalizedEmail;
+  }
+
   const { data } = await api.get("/schedules", { params });
-  console.log("API 응답 데이터:", data); // 디버깅용 로그
+  return data;
+};
+
+/*
+ * 위시리스트 목록은 bookmark 테이블 기준 최신 저장순으로 내려오며,
+ * 카드 렌더링에 필요한 schedule 필드를 그대로 받는다.
+ */
+export const fetchBookmarkedSchedules = async () => {
+  const { data } = await api.get("/bookmarks");
+  return data;
+};
+
+/*
+ * 북마크 추가/삭제 응답은 복잡한 payload보다 "대상 일정 id + 최종 저장 상태"만 확정한다.
+ * 프론트는 이 응답을 optimistic update 검증과 토스트 문구 결정에 사용한다.
+ */
+export const createBookmark = async (scheduleId) => {
+  const { data } = await api.post("/bookmarks", { scheduleId });
+  return data;
+};
+
+export const deleteBookmark = async (scheduleId) => {
+  const { data } = await api.delete(`/bookmarks/${scheduleId}`);
+  return data;
+};
+
+export const fetchBookmarkExists = async (scheduleId) => {
+  const { data } = await api.get(`/bookmarks/${scheduleId}/exists`);
   return data;
 };
 

@@ -53,6 +53,8 @@ public class ScheduleService {
      * DTO로 묶어 내려줘야 프론트가 여러 API를 순차 호출하지 않아도 된다.
      */
     public ScheduleResponseDTO getScheduleFullDetails(Long id, String viewerEmail) {
+        String normalizedViewerEmail = viewerEmail == null ? "" : viewerEmail.trim();
+
         /*
          * 일정 작성자의 email은 상세 화면에서 호스트 판별 기준으로 사용한다.
          * 이후 viewerEmail과 비교해 현재 사용자가 호스트인지 계산한다.
@@ -64,7 +66,7 @@ public class ScheduleService {
          * selectScheduleById는 삭제되지 않은 schedule row만 가져온다.
          * 상세 화면의 제목, 설명, 날짜, 모집 인원, 썸네일, 오픈채팅 링크 등이 이 객체에 들어 있다.
          */
-        Schedule schedule = scheduleDao.selectScheduleById(id);
+        Schedule schedule = scheduleDao.selectScheduleByIdForViewer(id, normalizedViewerEmail);
 
         if (schedule == null) return null;
 
@@ -86,7 +88,6 @@ public class ScheduleService {
          * viewerEmail은 선택값이다.
          * 비로그인 사용자는 guest로 상세를 볼 수 있지만, 참여 버튼 상태와 채팅 링크 권한은 로그인 사용자일 때만 계산할 수 있다.
          */
-        String normalizedViewerEmail = viewerEmail == null ? "" : viewerEmail.trim();
         boolean viewerIsHost = !normalizedViewerEmail.isBlank() && normalizedViewerEmail.equalsIgnoreCase(email);
         Long viewerParticipationId = null;
         String viewerParticipationStatus = null;
@@ -121,6 +122,7 @@ public class ScheduleService {
         response.setViewerParticipationId(viewerParticipationId);
         response.setViewerParticipationStatus(viewerParticipationStatus);
         response.setViewerCanAccessChatLink(viewerCanAccessChatLink);
+        response.setIsBookmarked(schedule.getIsBookmarked());
 
         return response;
     }
@@ -144,8 +146,8 @@ public class ScheduleService {
      * Service는 별도 비즈니스 가공 없이 Controller에서 받은 필터를 Dao로 넘긴다.
      * 필터 조건 조립은 MyBatis dynamic SQL이 더 적합하므로 mapper에서 category/keyword/region 조건을 선택적으로 붙인다.
      */
-    public List<Schedule> getAllSchedules(String category, String keyword, String region) {
-        return scheduleDao.getAllSchedules(category, keyword, region);
+    public List<Schedule> getAllSchedules(String category, String keyword, String region, String email) {
+        return scheduleDao.getAllSchedules(category, keyword, region, email);
     }
 
     /*

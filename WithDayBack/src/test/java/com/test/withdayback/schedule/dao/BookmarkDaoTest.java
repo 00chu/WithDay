@@ -14,11 +14,15 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MybatisTest
 @ActiveProfiles("test")
-class ScheduleDaoGetAllSchedulesTest {
+class BookmarkDaoTest {
+
+    @Autowired
+    private BookmarkDao bookmarkDao;
 
     @Autowired
     private ScheduleDao scheduleDao;
@@ -31,12 +35,14 @@ class ScheduleDaoGetAllSchedulesTest {
         jdbcTemplate.execute("DROP TABLE IF EXISTS bookmark");
         jdbcTemplate.execute("DROP TABLE IF EXISTS `user`");
         jdbcTemplate.execute("DROP TABLE IF EXISTS schedule");
+
         jdbcTemplate.execute("""
                 CREATE TABLE `user` (
                     id BIGINT PRIMARY KEY,
                     email VARCHAR(255) NOT NULL
                 )
                 """);
+
         jdbcTemplate.execute("""
                 CREATE TABLE schedule (
                     id BIGINT PRIMARY KEY,
@@ -69,6 +75,7 @@ class ScheduleDaoGetAllSchedulesTest {
                     deleted_at TIMESTAMP NULL
                 )
                 """);
+
         jdbcTemplate.execute("""
                 CREATE TABLE bookmark (
                     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -79,91 +86,41 @@ class ScheduleDaoGetAllSchedulesTest {
                 )
                 """);
 
-        jdbcTemplate.update("INSERT INTO `user` (id, email) VALUES (?, ?)", 100L, "viewer@withday.test");
-
-        LocalDate today = LocalDate.now();
-
-        insertSchedule(1L, "Open Travel", "Seoul mountain trip", "travel", "SEOUL",
-                "recruiting", 1, 5, today.plusDays(2), null);
-        insertSchedule(2L, "Full Travel", "Busan beach trip", "travel", "BUSAN",
-                "closed", 5, 5, today.plusDays(2), null);
-        insertSchedule(3L, "Expired Travel", "Daegu night walk", "travel", "DAEGU",
-                "closed", 2, 5, today.minusDays(1), null);
-        insertSchedule(4L, "Expired Full Travel", "Jeju full group", "travel", "JEJU",
-                "closed", 4, 4, today.minusDays(1), null);
-        insertSchedule(5L, "Cancelled Travel", "No longer active", "travel", "SEOUL",
-                "canceled", 1, 5, today.plusDays(2), null);
-        insertSchedule(6L, "Completed Travel", "Already done", "travel", "SEOUL",
-                "completed", 1, 5, today.plusDays(2), null);
-        insertSchedule(7L, "Deleted Travel", "Soft deleted", "travel", "SEOUL",
-                "recruiting", 1, 5, today.plusDays(2), Timestamp.valueOf(today.atStartOfDay()));
-        insertSchedule(8L, "Food Gathering", "Seoul dinner plan", "food", "SEOUL",
-                "recruiting", 2, 6, today.plusDays(3), null);
+        jdbcTemplate.update("INSERT INTO `user` (id, email) VALUES (?, ?)", 10L, "viewer@withday.test");
+        insertSchedule(1L, "First Schedule");
+        insertSchedule(2L, "Second Schedule");
     }
 
     @Test
-    void getAllSchedulesShowsRecruitingAndFullClosedButHidesExpiredClosed() {
-        List<Schedule> schedules = scheduleDao.getAllSchedules(null, null, null, null);
+    void existsBookmarkReturnsTrueAfterInsert() {
+        bookmarkDao.insertBookmark(10L, 1L);
 
-        assertEquals(3, schedules.size());
-        assertIterableEquals(List.of(8L, 2L, 1L), schedules.stream().map(Schedule::getId).toList());
-        assertEquals(Boolean.FALSE, schedules.get(0).getIsBookmarked());
+        assertTrue(bookmarkDao.existsBookmark(10L, 1L));
+        assertFalse(bookmarkDao.existsBookmark(10L, 2L));
     }
 
     @Test
-    void getAllSchedulesAppliesCategoryKeywordAndRegionFiltersOnTopOfVisibilityRule() {
-        List<Schedule> schedules = scheduleDao.getAllSchedules("travel", "beach", " busan ", null);
-
-        assertEquals(1, schedules.size());
-        assertEquals(2L, schedules.get(0).getId());
-    }
-
-    @Test
-    void getAllSchedulesKeepsFullClosedVisibleWhenRecruitEndDateIsToday() {
-        insertSchedule(9L, "Today Full Travel", "Still visible today", "travel", "SEOUL",
-                "closed", 3, 3, LocalDate.now(), null);
-
-        List<Schedule> schedules = scheduleDao.getAllSchedules("travel", null, "seoul", null);
-
-        assertIterableEquals(List.of(9L, 1L), schedules.stream().map(Schedule::getId).toList());
-    }
-
-    @Test
-    void getAllSchedulesMarksBookmarkedSchedulesForLoggedInViewer() {
+    void selectBookmarkedSchedulesReturnsLatestBookmarkFirst() {
         jdbcTemplate.update(
-                "INSERT INTO bookmark (user_id, schedule_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP())",
-                100L,
-                2L
+                "INSERT INTO bookmark (user_id, schedule_id, created_at) VALUES (?, ?, ?)",
+                10L,
+                1L,
+                Timestamp.valueOf("2026-05-25 10:00:00")
+        );
+        jdbcTemplate.update(
+                "INSERT INTO bookmark (user_id, schedule_id, created_at) VALUES (?, ?, ?)",
+                10L,
+                2L,
+                Timestamp.valueOf("2026-05-26 10:00:00")
         );
 
-        List<Schedule> schedules =
-                scheduleDao.getAllSchedules(null, null, null, "viewer@withday.test");
+        List<Schedule> bookmarkedSchedules = bookmarkDao.selectBookmarkedSchedules(10L);
 
-        Schedule bookmarkedSchedule = schedules.stream()
-                .filter(schedule -> schedule.getId().equals(2L))
-                .findFirst()
-                .orElseThrow();
-        Schedule unbookmarkedSchedule = schedules.stream()
-                .filter(schedule -> schedule.getId().equals(1L))
-                .findFirst()
-                .orElseThrow();
-
-        assertEquals(Boolean.TRUE, bookmarkedSchedule.getIsBookmarked());
-        assertEquals(Boolean.FALSE, unbookmarkedSchedule.getIsBookmarked());
+        assertEquals(List.of(2L, 1L), bookmarkedSchedules.stream().map(Schedule::getId).toList());
+        assertTrue(bookmarkedSchedules.stream().allMatch(schedule -> Boolean.TRUE.equals(schedule.getIsBookmarked())));
     }
 
-    private void insertSchedule(
-            Long id,
-            String title,
-            String description,
-            String category,
-            String region,
-            String status,
-            int currentParticipants,
-            int maxParticipants,
-            LocalDate recruitEndDate,
-            Timestamp deletedAt
-    ) {
+    private void insertSchedule(Long id, String title) {
         jdbcTemplate.update("""
                         INSERT INTO schedule (
                             id, user_id, title, description, category, region, detail_region, chat_link,
@@ -177,18 +134,18 @@ class ScheduleDaoGetAllSchedulesTest {
                 id,
                 1L,
                 title,
-                description,
-                category,
-                region,
+                "description",
+                "travel",
+                "SEOUL",
                 null,
                 null,
-                Date.valueOf(LocalDate.now().plusDays(10)),
-                Date.valueOf(LocalDate.now().plusDays(12)),
+                Date.valueOf(LocalDate.now().plusDays(1)),
+                Date.valueOf(LocalDate.now().plusDays(2)),
                 Date.valueOf(LocalDate.now().minusDays(1)),
-                recruitEndDate == null ? null : Date.valueOf(recruitEndDate),
+                Date.valueOf(LocalDate.now().plusDays(1)),
                 1,
-                maxParticipants,
-                currentParticipants,
+                4,
+                1,
                 null,
                 null,
                 null,
@@ -196,12 +153,12 @@ class ScheduleDaoGetAllSchedulesTest {
                 null,
                 null,
                 0,
-                status,
+                "recruiting",
                 1,
                 null,
                 Timestamp.valueOf(LocalDate.now().atStartOfDay()),
                 Timestamp.valueOf(LocalDate.now().atStartOfDay()),
-                deletedAt
+                null
         );
     }
 }

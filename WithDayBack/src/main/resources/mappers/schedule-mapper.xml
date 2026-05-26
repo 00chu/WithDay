@@ -8,7 +8,7 @@
     -->
     <select id="getEmailByScheduleId" resultType="String">
         select email
-        from user
+        from `user`
         where id = (select user_id from schedule where id = #{id})
     </select>
 
@@ -49,6 +49,56 @@
         FROM schedule
         WHERE id = #{id}
           AND deleted_at IS NULL
+    </select>
+
+    <!--
+        상세 페이지는 단순 schedule row 외에 "현재 viewer가 이 일정을 저장했는가"도 함께 알아야 한다.
+        별도 북마크 API를 한 번 더 부르면 상세 진입 시 추가 round-trip이 생기므로,
+        게스트/로그인 모두 같은 상세 select에서 EXISTS 컬럼으로 해결한다.
+    -->
+    <select id="selectScheduleByIdForViewer" resultType="Schedule">
+        SELECT s.id,
+               s.user_id              AS userId,
+               s.title,
+               s.description,
+               s.category,
+               s.region,
+               s.detail_region        AS detailRegion,
+               s.chat_link            AS chatLink,
+               s.start_date           AS startDate,
+               s.end_date             AS endDate,
+               s.recruit_start_date   AS recruitStartDate,
+               s.recruit_end_date     AS recruitEndDate,
+               s.min_participants     AS minParticipants,
+               s.max_participants     AS maxParticipants,
+               s.current_participants AS currentParticipants,
+               s.age_min              AS ageMin,
+               s.age_max              AS ageMax,
+               s.gender_limit         AS genderLimit,
+               s.total_price          AS totalPrice,
+               s.cost_type            AS costType,
+               s.thumbnail_image      AS thumbnailImage,
+               s.view_count           AS viewCount,
+               s.status,
+               s.is_public            AS isPublic,
+               s.cancel_deadline      AS cancelDeadline,
+               s.created_at           AS createdAt,
+               s.updated_at           AS updatedAt,
+               s.deleted_at           AS deletedAt,
+               CASE
+                   WHEN #{email} IS NULL OR TRIM(#{email}) = '' THEN FALSE
+                   ELSE EXISTS(
+                       SELECT 1
+                       FROM bookmark b
+                       INNER JOIN `user` u
+                               ON u.id = b.user_id
+                       WHERE b.schedule_id = s.id
+                         AND u.email = #{email}
+                   )
+               END AS isBookmarked
+        FROM schedule s
+        WHERE s.id = #{id}
+          AND s.deleted_at IS NULL
     </select>
 
     <!--
@@ -151,44 +201,55 @@
     <!-- 홈/탐색 탭 일정 리스트 조회 -->
     <select id="getAllSchedules" resultType="Schedule">
         SELECT
-        *
-        FROM schedule
+        s.*,
+        CASE
+            WHEN #{email} IS NULL OR TRIM(#{email}) = '' THEN FALSE
+            ELSE EXISTS(
+                SELECT 1
+                FROM bookmark b
+                INNER JOIN `user` u
+                        ON u.id = b.user_id
+                WHERE b.schedule_id = s.id
+                  AND u.email = #{email}
+            )
+        END AS isBookmarked
+        FROM schedule s
         <where>
-            deleted_at IS NULL
+            s.deleted_at IS NULL
             AND (
-                status = 'recruiting'
+                s.status = 'recruiting'
                 OR (
-                    status = 'closed'
-                    AND current_participants >= max_participants
-                    AND (recruit_end_date IS NULL OR recruit_end_date >= CURDATE())
+                    s.status = 'closed'
+                    AND s.current_participants >= s.max_participants
+                    AND (s.recruit_end_date IS NULL OR s.recruit_end_date >= CURDATE())
                 )
             )
 
             <!-- 탐색 탭에서 "전체"가 아닌 카테고리를 선택했을 때만 적용된다. -->
             <if test="category != null and category != ''">
-                AND category = #{category}
+                AND s.category = #{category}
             </if>
 
             <!-- 검색어는 제목 또는 설명 중 하나라도 포함하면 결과에 포함한다. -->
             <if test="keyword != null and keyword != ''">
                 AND (
-                title LIKE CONCAT('%', #{keyword}, '%')
-                OR description LIKE CONCAT('%', #{keyword}, '%')
+                s.title LIKE CONCAT('%', #{keyword}, '%')
+                OR s.description LIKE CONCAT('%', #{keyword}, '%')
                 )
             </if>
 
             <!-- Header 지역 필터는 공백/대소문자 차이를 줄이기 위해 TRIM + UPPER로 비교한다. -->
             <if test="region != null and region != ''">
-                AND UPPER(TRIM(region)) = UPPER(TRIM(#{region}))
+                AND UPPER(TRIM(s.region)) = UPPER(TRIM(#{region}))
             </if>
         </where>
         <!-- 최신 등록 일정이 탐색 탭 상단에 보이도록 id DESC 정렬을 사용한다. -->
-        ORDER BY id DESC
+        ORDER BY s.id DESC
     </select>
 
     <select id="findUserIdByEmail" resultType="long">
         select id
-        from user
+        from `user`
         where email = #{email}
     </select>
 

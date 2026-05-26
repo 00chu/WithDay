@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -10,11 +10,15 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
 
 import {
+  createBookmark,
+  deleteBookmark as deleteBookmarkApi,
   completeSchedule,
   rollbackCompletedSchedule,
   fetchScheduleDetail,
@@ -140,9 +144,98 @@ const resolveSchedulePhase = (schedule) => {
   return { label: "모집중", className: styles.statusOpen };
 };
 
+/*
+ * optimistic update는 "클릭 직후 손맛"을 만들지만,
+ * 상세만 바꾸고 홈/탐색/위시리스트 캐시를 놓치면 화면마다 하트 상태가 어긋나는 문제가 생긴다.
+ * 그래서 이 파일은 각 캐시 shape에 맞는 작은 updater를 분리해 같은 토글 결과를 여러 query에 일관되게 반영한다.
+ */
+const updateScheduleSummaryBookmarkState = (schedule, targetScheduleId, isBookmarked) => {
+  if (!schedule || Number(schedule?.id) !== Number(targetScheduleId)) {
+    return schedule;
+  }
+
+  return {
+    ...schedule,
+    isBookmarked,
+  };
+};
+
+const updateScheduleCollectionBookmarkState = (
+  schedules,
+  targetScheduleId,
+  isBookmarked,
+) => {
+  if (!Array.isArray(schedules)) {
+    return schedules;
+  }
+
+  return schedules.map((schedule) =>
+    updateScheduleSummaryBookmarkState(schedule, targetScheduleId, isBookmarked),
+  );
+};
+
+const updateScheduleDetailBookmarkState = (detailData, isBookmarked) => {
+  if (!detailData) {
+    return detailData;
+  }
+
+  return {
+    ...detailData,
+    isBookmarked,
+    schedule: detailData.schedule
+      ? {
+          ...detailData.schedule,
+          isBookmarked,
+        }
+      : detailData.schedule,
+  };
+};
+
+const buildWishlistScheduleFromDetail = (detailData) => {
+  if (!detailData?.schedule) {
+    return null;
+  }
+
+  return {
+    ...detailData.schedule,
+    isBookmarked: true,
+  };
+};
+
+const updateBookmarkedSchedulesCache = (
+  schedules,
+  targetScheduleId,
+  isBookmarked,
+  detailData,
+) => {
+  if (!Array.isArray(schedules)) {
+    return schedules;
+  }
+
+  if (!isBookmarked) {
+    return schedules.filter(
+      (schedule) => Number(schedule?.id) !== Number(targetScheduleId),
+    );
+  }
+
+  const bookmarkedSchedule = buildWishlistScheduleFromDetail(detailData);
+  const hasSchedule = schedules.some(
+    (schedule) => Number(schedule?.id) === Number(targetScheduleId),
+  );
+
+  if (!hasSchedule) {
+    return bookmarkedSchedule ? [bookmarkedSchedule, ...schedules] : schedules;
+  }
+
+  return schedules.map((schedule) =>
+    updateScheduleSummaryBookmarkState(schedule, targetScheduleId, true),
+  );
+};
+
 export default function ScheduleDetail() {
   const { scheduleId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
 
   const { user: authUser, isLoggedIn } = useAuthStore();
@@ -154,6 +247,7 @@ export default function ScheduleDetail() {
     useState(null);
   const [open, setOpen] = useState(false);
   const [applicantStatus, setApplicantStatus] = useState("PENDING");
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
 
   /*
    * 참여 기능에서 email은 API 권한 확인과 사용자별 상태 조회의 기준으로 쓰인다.
@@ -161,6 +255,7 @@ export default function ScheduleDetail() {
    */
   const authEmail = authUser?.email?.trim() ?? "";
   const parsedScheduleId = Number(scheduleId);
+  const detailQueryKey = ["schedule-detail", parsedScheduleId, authEmail || "guest"];
 
   useEffect(() => {
     if (!Number.isFinite(parsedScheduleId) || parsedScheduleId <= 0) {
@@ -225,7 +320,7 @@ export default function ScheduleDetail() {
     isError,
     error,
   } = useQuery({
-    queryKey: ["schedule-detail", parsedScheduleId, authEmail || "guest"],
+    queryKey: detailQueryKey,
     queryFn: () => fetchScheduleDetail(parsedScheduleId, authEmail),
     /*
      * 상세 조회는 조회수 증가가 끝난 뒤 실행한다.
@@ -260,6 +355,18 @@ export default function ScheduleDetail() {
 
   const { updateParticipationStatus, isPending: isStatusUpdating } =
     useUpdateParticipationStatusMutation();
+
+  /*
+   * 이 상세 페이지는 참여/실행/북마크 등 여러 액션이 같은 토스트 surface를 공유한다.
+   * 공통 helper로 감싸 두면 동일 문구가 연속으로 와도 key가 바뀌어 Snackbar가 새 알림으로 다시 열린다.
+   */
+  const showFeedback = useCallback((severity, message) => {
+    setFeedback({
+      id: Date.now(),
+      severity,
+      message,
+    });
+  }, []);
 
   /*
    * 일정 실행/실행 취소, 참여 상태 변경, 삭제 같은 여러 API가 서로 다른 에러 shape를 줄 수 있어서
@@ -350,6 +457,121 @@ export default function ScheduleDetail() {
     });
   }, []);
 
+  /*
+   * 북마크 토글은 상세 화면 하나만 바꾸면 끝나지 않는다.
+   * 홈 추천, 탐색 목록, 위시리스트 목록이 모두 같은 일정의 저장 상태를 보여주므로,
+   * onMutate에서 이 캐시들을 함께 반전해야 사용자가 어느 화면으로 돌아가도 일관된 하트 상태를 본다.
+   */
+  const { mutateAsync: toggleBookmark, isPending: isBookmarkPending } = useMutation({
+    mutationFn: async (nextIsBookmarked) => {
+      if (nextIsBookmarked) {
+        return createBookmark(parsedScheduleId);
+      }
+
+      return deleteBookmarkApi(parsedScheduleId);
+    },
+    onMutate: async (nextIsBookmarked) => {
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: detailQueryKey }),
+        queryClient.cancelQueries({ queryKey: ["home-schedules"] }),
+        queryClient.cancelQueries({ queryKey: ["schedules"] }),
+        queryClient.cancelQueries({ queryKey: ["bookmarks", authEmail] }),
+      ]);
+
+      const previousDetail = queryClient.getQueryData(detailQueryKey);
+      const previousHomeQueries = queryClient.getQueriesData({
+        queryKey: ["home-schedules"],
+      });
+      const previousScheduleQueries = queryClient.getQueriesData({
+        queryKey: ["schedules"],
+      });
+      const previousBookmarks = queryClient.getQueryData(["bookmarks", authEmail]);
+      const detailSnapshot = previousDetail ?? data;
+
+      queryClient.setQueryData(detailQueryKey, (old) =>
+        updateScheduleDetailBookmarkState(old ?? data, nextIsBookmarked),
+      );
+
+      previousHomeQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData(queryKey, (old) =>
+          updateScheduleCollectionBookmarkState(
+            old,
+            parsedScheduleId,
+            nextIsBookmarked,
+          ),
+        );
+      });
+
+      previousScheduleQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData(queryKey, (old) =>
+          updateScheduleCollectionBookmarkState(
+            old,
+            parsedScheduleId,
+            nextIsBookmarked,
+          ),
+        );
+      });
+
+      queryClient.setQueryData(["bookmarks", authEmail], (old) =>
+        updateBookmarkedSchedulesCache(
+          old,
+          parsedScheduleId,
+          nextIsBookmarked,
+          detailSnapshot,
+        ),
+      );
+
+      return {
+        previousDetail,
+        previousHomeQueries,
+        previousScheduleQueries,
+        previousBookmarks,
+      };
+    },
+    onError: (requestError, nextIsBookmarked, context) => {
+      /*
+       * optimistic update는 빠른 대신 실패 시 복구 책임이 크다.
+       * 그래서 onMutate에서 저장한 snapshot을 그대로 되돌려 각 화면이 서버 진실과 다시 맞도록 한다.
+       */
+      if (context?.previousDetail !== undefined) {
+        queryClient.setQueryData(detailQueryKey, context.previousDetail);
+      }
+
+      context?.previousHomeQueries?.forEach(([queryKey, cachedData]) => {
+        queryClient.setQueryData(queryKey, cachedData);
+      });
+
+      context?.previousScheduleQueries?.forEach(([queryKey, cachedData]) => {
+        queryClient.setQueryData(queryKey, cachedData);
+      });
+
+      if (context?.previousBookmarks !== undefined) {
+        queryClient.setQueryData(["bookmarks", authEmail], context.previousBookmarks);
+      }
+
+      showFeedback(
+        "error",
+        resolveRequestErrorMessage(
+          requestError,
+          "위시 상태 변경에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        ),
+      );
+    },
+    onSuccess: async (response) => {
+      const successMessage = response?.isBookmarked
+        ? "위시리스트에 저장했어요"
+        : "위시리스트에서 삭제했어요";
+      showFeedback("success", successMessage);
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: detailQueryKey }),
+        queryClient.invalidateQueries({ queryKey: ["home-schedules"] }),
+        queryClient.invalidateQueries({ queryKey: ["schedules"] }),
+        queryClient.invalidateQueries({ queryKey: ["bookmarks", authEmail] }),
+      ]);
+    },
+  });
+
   const handleDelete = async () => {
     try {
       await deleteSchedule(scheduleId);
@@ -378,6 +600,47 @@ export default function ScheduleDetail() {
 
     setFeedback(null);
   }, []);
+
+  /*
+   * 비로그인 사용자를 클릭 즉시 로그인 화면으로 보내면
+   * "일정을 둘러보다가 하트를 눌렀더니 갑자기 화면이 바뀐다"는 단절감이 생긴다.
+   * 그래서 toast로 막힌 이유를 먼저 설명하고, Dialog에서 실제 이동 의사를 한 번 더 묻는다.
+   */
+  const handleRequireLoginForBookmark = useCallback(() => {
+    showFeedback("warning", "로그인 후 이용할 수 있습니다.");
+    setIsLoginPromptOpen(true);
+  }, [showFeedback]);
+
+  const handleCloseLoginPrompt = useCallback(() => {
+    setIsLoginPromptOpen(false);
+  }, []);
+
+  const handleMoveToLogin = useCallback(() => {
+    setIsLoginPromptOpen(false);
+    navigate("/login", {
+      state: { redirectTo: location.pathname },
+    });
+  }, [location.pathname, navigate]);
+
+  const handleToggleBookmark = useCallback(async () => {
+    if (!isLoggedIn || !authEmail) {
+      handleRequireLoginForBookmark();
+      return;
+    }
+
+    const currentIsBookmarked = Boolean(
+      data?.isBookmarked ?? data?.schedule?.isBookmarked,
+    );
+
+    await toggleBookmark(!currentIsBookmarked);
+  }, [
+    authEmail,
+    data?.isBookmarked,
+    data?.schedule?.isBookmarked,
+    handleRequireLoginForBookmark,
+    isLoggedIn,
+    toggleBookmark,
+  ]);
 
   const addToGoogleCalendar = () => {
     const schedule = data?.schedule;
@@ -447,26 +710,22 @@ export default function ScheduleDetail() {
           reason,
         });
 
-        setFeedback({
-          severity: "success",
-          message:
-            status === "APPROVED"
-              ? "신청을 승인했습니다."
-              : status === "REJECTED"
-                ? "신청을 거절했습니다."
-                : "참여자를 강퇴했습니다.",
-        });
+        showFeedback(
+          "success",
+          status === "APPROVED"
+            ? "신청을 승인했습니다."
+            : status === "REJECTED"
+              ? "신청을 거절했습니다."
+              : "참여자를 강퇴했습니다.",
+        );
       } catch (requestError) {
-        setFeedback({
-          severity: "error",
-          message: resolveRequestErrorMessage(
-            requestError,
-            "상태 변경에 실패했습니다.",
-          ),
-        });
+        showFeedback(
+          "error",
+          resolveRequestErrorMessage(requestError, "상태 변경에 실패했습니다."),
+        );
       }
     },
-    [authEmail, isLoggedIn, navigate, resolveRequestErrorMessage, updateParticipationStatus],
+    [authEmail, isLoggedIn, navigate, resolveRequestErrorMessage, showFeedback, updateParticipationStatus],
   );
 
   const handleExecuteSchedule = useCallback(async () => {
@@ -493,18 +752,12 @@ export default function ScheduleDetail() {
        * 성공 후에는 mutation onSuccess에서 캐시가 무효화되고,
        * 상세 재조회가 끝나면 배지/버튼/신청자 관리 영역이 새 상태에 맞게 다시 렌더링된다.
        */
-      setFeedback({
-        severity: "success",
-        message: "일정이 실행 상태로 변경되었습니다.",
-      });
+      showFeedback("success", "일정이 실행 상태로 변경되었습니다.");
     } catch (requestError) {
-      setFeedback({
-        severity: "error",
-        message: resolveRequestErrorMessage(
-          requestError,
-          "일정 실행 처리에 실패했습니다.",
-        ),
-      });
+      showFeedback(
+        "error",
+        resolveRequestErrorMessage(requestError, "일정 실행 처리에 실패했습니다."),
+      );
     }
   }, [
     authEmail,
@@ -513,6 +766,7 @@ export default function ScheduleDetail() {
     navigate,
     parsedScheduleId,
     resolveRequestErrorMessage,
+    showFeedback,
   ]);
 
   const handleRollbackScheduleExecution = useCallback(async () => {
@@ -531,18 +785,12 @@ export default function ScheduleDetail() {
         email: authEmail,
       });
 
-      setFeedback({
-        severity: "success",
-        message: "일정 실행이 취소되었습니다.",
-      });
+      showFeedback("success", "일정 실행이 취소되었습니다.");
     } catch (requestError) {
-      setFeedback({
-        severity: "error",
-        message: resolveRequestErrorMessage(
-          requestError,
-          "일정 실행 취소에 실패했습니다.",
-        ),
-      });
+      showFeedback(
+        "error",
+        resolveRequestErrorMessage(requestError, "일정 실행 취소에 실패했습니다."),
+      );
     }
   }, [
     authEmail,
@@ -551,6 +799,7 @@ export default function ScheduleDetail() {
     parsedScheduleId,
     resolveRequestErrorMessage,
     rollbackScheduleExecution,
+    showFeedback,
   ]);
 
   const isApplicantsForbidden = applicantsError?.response?.status === 403;
@@ -604,6 +853,10 @@ export default function ScheduleDetail() {
   const canExecuteSchedule =
     Number(schedule.currentParticipants ?? 0) >= Number(schedule.minParticipants ?? 0);
   const isScheduleActionPending = isCompletingSchedule || isRollbackPending;
+  const isBookmarked = Boolean(data?.isBookmarked ?? schedule?.isBookmarked);
+  const BookmarkIcon = isBookmarked
+    ? FavoriteRoundedIcon
+    : FavoriteBorderRoundedIcon;
 
   const imageUrls =
     rawImages.length > 0
@@ -702,8 +955,24 @@ export default function ScheduleDetail() {
           <div className={styles.titleWrap}>
             <h1 className={styles.title}>{schedule.title ?? "제목 없음"}</h1>
 
-            {postHostEmail === authEmail ? (
-              <div className={styles.buttonWrap}>
+            <div className={styles.buttonWrap}>
+              {/*
+               * 북마크 토글은 참여 CTA와 성격이 다르다.
+               * 사용자는 상세 상단에서 "이 일정이 저장된 상태인지"를 먼저 인지하고 바로 토글할 수 있어야 하므로
+               * sticky footer가 아니라 제목 우측 액션 묶음에 둔다.
+               */}
+              <Button
+                variant={isBookmarked ? "accent" : "outline"}
+                onClick={handleToggleBookmark}
+                disabled={isBookmarkPending}
+                className={styles.bookmarkButton}
+              >
+                <BookmarkIcon fontSize="small" />
+                {isBookmarked ? "위시 삭제" : "위시 추가"}
+              </Button>
+
+              {postHostEmail === authEmail ? (
+                <>
                 {/*
                  * 실행 관리 버튼은 호스트에게만 보인다.
                  * 일반 참여자에게 이 버튼이 보이면 권한이 없는 액션을 기대하게 되므로
@@ -748,39 +1017,72 @@ export default function ScheduleDetail() {
                   삭제
                   <DeleteIcon fontSize="small" />
                 </Button>
-
-                <Dialog
-                  open={open}
-                  onClose={handleClose}
-                  slotProps={{
-                    paper: {
-                      sx: {
-                        borderRadius: 3,
-                        p: 2,
-                        minWidth: 320,
-                      },
-                    },
-                  }}
-                >
-                  <DialogTitle sx={{ pb: 3 }}>일정 삭제</DialogTitle>
-
-                  <DialogContent sx={{ px: 10, py: 2 }}>
-                    <DialogContentText sx={{ fontSize: "15px", color: "#555" }}>
-                      삭제 후에는 복구할 수 없습니다.
-                    </DialogContentText>
-                  </DialogContent>
-
-                  <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
-                    <Button onClick={handleDelete}>삭제하기</Button>
-
-                    <Button onClick={handleClose} variant="outline">
-                      취소
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </div>
-            ) : null}
+                </>
+              ) : null}
+            </div>
           </div>
+
+          <Dialog
+            open={open}
+            onClose={handleClose}
+            slotProps={{
+              paper: {
+                sx: {
+                  borderRadius: 3,
+                  p: 2,
+                  minWidth: 320,
+                },
+              },
+            }}
+          >
+            <DialogTitle sx={{ pb: 3 }}>일정 삭제</DialogTitle>
+
+            <DialogContent sx={{ px: 10, py: 2 }}>
+              <DialogContentText sx={{ fontSize: "15px", color: "#555" }}>
+                삭제 후에는 복구할 수 없습니다.
+              </DialogContentText>
+            </DialogContent>
+
+            <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+              <Button onClick={handleDelete}>삭제하기</Button>
+
+              <Button onClick={handleClose} variant="outline">
+                취소
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog
+            open={isLoginPromptOpen}
+            onClose={handleCloseLoginPrompt}
+            slotProps={{
+              paper: {
+                sx: {
+                  borderRadius: 3,
+                  p: 2,
+                  minWidth: 320,
+                },
+              },
+            }}
+          >
+            <DialogTitle sx={{ pb: 2 }}>로그인이 필요합니다</DialogTitle>
+
+            <DialogContent sx={{ px: 4, py: 2 }}>
+              <DialogContentText sx={{ fontSize: "15px", color: "#555", lineHeight: 1.7 }}>
+                위시리스트 기능은 로그인 후 이용할 수 있습니다. 로그인 페이지로 이동하시겠습니까?
+              </DialogContentText>
+            </DialogContent>
+
+            <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+              <Button onClick={handleMoveToLogin} variant="accent">
+                로그인하기
+              </Button>
+
+              <Button onClick={handleCloseLoginPrompt} variant="outline">
+                취소
+              </Button>
+            </DialogActions>
+          </Dialog>
 
           {viewerIsHost && !isScheduleCompleted && !canExecuteSchedule ? (
             /*

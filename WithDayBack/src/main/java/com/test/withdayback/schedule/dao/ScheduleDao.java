@@ -18,6 +18,15 @@ public interface ScheduleDao {
     // 상세 페이지의 기본 일정 정보를 조회한다. 삭제된 일정은 mapper에서 제외한다.
     Schedule selectScheduleById(Long id);
 
+    /*
+     * 상세 페이지는 게스트/로그인 사용자에 따라 북마크 상태가 달라질 수 있다.
+     * 그래서 상세 read path는 "일정 자체"와 "현재 viewer의 저장 여부"를 한 번에 읽는 전용 메서드를 분리한다.
+     */
+    Schedule selectScheduleByIdForViewer(
+            @Param("id") Long id,
+            @Param("email") String email
+    );
+
     // 상세 페이지의 Day-by-Day 계획을 조회한다.
     List<ScheduleDetail> selectDetailsByScheduleId(Long id);
 
@@ -58,7 +67,8 @@ public interface ScheduleDao {
     List<Schedule> getAllSchedules(
             @Param("category") String category,
             @Param("keyword") String keyword,
-            @Param("region") String region);
+            @Param("region") String region,
+            @Param("email") String email);
             
     // 일정 생성/수정에서 로그인 email을 schedule.user_id로 변환할 때 사용한다.
     Long findUserIdByEmail(String email);

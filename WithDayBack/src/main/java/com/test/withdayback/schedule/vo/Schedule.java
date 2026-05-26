@@ -42,4 +42,5 @@ public class Schedule {
     private String createdAt;
     private String updatedAt;
     private String deletedAt;
+    private Boolean isBookmarked;
 }

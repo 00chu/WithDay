@@ -89,9 +89,10 @@ public class ScheduleController {
     public ResponseEntity<List<Schedule>> getAllSchedules(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String region
+            @RequestParam(required = false) String region,
+            @RequestParam(required = false) String email
     ) {
-        List<Schedule> list = scheduleService.getAllSchedules(category, keyword, region);
+        List<Schedule> list = scheduleService.getAllSchedules(category, keyword, region, email);
         if (list == null) {
             return ResponseEntity.notFound().build();
         }
