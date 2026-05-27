@@ -65,6 +65,11 @@ export const fetchTerms = async () => {
   return response.data;
 };
 
+export const fetchInterests = async () => {
+  const response = await api.get(`/users/interests`);
+  return response.data;
+};
+
 export const loginUser = async (loginData) => {
   const response = await api.post(`/users/login`, loginData);
   return response.data;
