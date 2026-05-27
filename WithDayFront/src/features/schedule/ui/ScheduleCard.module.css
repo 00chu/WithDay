@@ -33,142 +33,100 @@
 .cardTop {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 14px 10px;
+  gap: 10px;
+  padding: 14px 14px 12px;
   flex: 1 1 auto;
   min-height: 0;
 }
 
 .cardTopCompact {
-  gap: 10px;
+  gap: 8px;
   padding: 12px 12px 10px;
 }
 
-.headerRow {
+.headerSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.infoRow {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 10px;
-}
-
-.headerRight {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
   gap: 8px;
   min-width: 0;
-  flex: 1 1 0;
 }
 
-.bookmarkIndicator {
-  /*
-    카드의 하트는 액션 버튼이 아니라 현재 저장 상태를 읽는 시각 신호다.
-    그래서 hover/cursor/pointer 변화를 주지 않고, 카드 전체 클릭과 이벤트가 충돌하지 않도록 pointer-events를 끈다.
-  */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-surface) 72%, #fce7ef 28%);
-  color: #f08aa0;
-  pointer-events: none;
-  flex-shrink: 0;
-}
-
-.bookmarkIndicatorActive {
-  background: #fdecef;
-  color: #e55d79;
-}
-
-.bookmarkIcon {
-  font-size: 1rem;
-}
-
-.deadlineBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: var(--color-status-available-bg);
-  color: var(--color-status-available);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  flex-shrink: 0;
-}
-
-.deadlineBadgeToday {
-  background: var(--color-status-urgent-bg);
-  color: var(--color-status-urgent);
-}
-
-.deadlineBadgeClosed {
-  background: var(--color-status-closed-bg);
-  color: var(--color-status-closed);
-}
-
-.deadlineBadgeCompact {
-  min-height: 20px;
-  padding: 0 6px;
-  font-size: 0.68rem;
-}
-
-.infoStack {
+.rowLeft,
+.rowRight {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  flex: 1 1 0;
-  gap: 4px;
+  align-items: flex-start;
+  gap: 8px;
   min-width: 0;
-  max-width: 100%;
+}
+
+.rowLeft {
+  flex: 1 1 auto;
+}
+
+.rowRight {
+  justify-content: flex-end;
+  flex: 0 1 auto;
   text-align: right;
 }
 
-.infoLine {
-  display: flex;
+.regionPill {
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  width: 100%;
-  min-width: 0;
-  color: var(--color-text-secondary);
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
   font-size: 0.72rem;
-  font-weight: 600;
-  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
 }
 
-.infoLineCompact {
-  font-size: 0.66rem;
+.regionPillCompact {
+  min-height: 22px;
+  padding: 0 8px;
+  font-size: 0.68rem;
 }
 
-.infoText {
-  display: block;
-  width: 100%;
+.metaText,
+.dateText {
+  color: var(--color-text-primary);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.metaTextCompact,
+.dateTextCompact {
+  font-size: 0.68rem;
+}
+
+.dateGroup {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.periodText {
-  /*
-    카드 우측 날짜는 시작일/종료일을 세로로 쌓아 좁은 카드에서도 잘리지 않게 한다.
-    align-items: flex-end를 유지해 기존 우측 정렬 UI와 같은 축에 맞춘다.
-  */
+.dateText {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 1px;
-  white-space: normal;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
-.periodTextMultiline {
-  line-height: 1.1;
+.dateTextMultiline {
+  white-space: normal;
+  line-height: 1.15;
 }
 
 .periodLine {
@@ -179,80 +137,78 @@
   white-space: nowrap;
 }
 
-.bodySection {
-  display: grid;
-  grid-template-rows: auto auto auto;
-  align-content: start;
-  gap: 8px;
-  min-height: 0;
-}
-
-.metaRow {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  min-width: 0;
-}
-
-.categoryTag {
+.bookmarkIndicator {
+  /*
+    카드의 하트는 액션 버튼이 아니라 현재 저장 상태를 읽는 시각 신호다.
+    그래서 hover/cursor/pointer 변화를 주지 않고, 카드 전체 클릭과 이벤트가 충돌하지 않도록 pointer-events를 끈다.
+  */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: var(--color-surface-highlight);
-  color: var(--color-accent-dark);
-  font-size: 0.68rem;
-  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-muted);
+  pointer-events: none;
   flex-shrink: 0;
+}
+
+.bookmarkIndicatorActive {
+  color: var(--color-status-closed);
+}
+
+.bookmarkDesktopOnly {
+  display: none;
+}
+
+.bookmarkIcon {
+  font-size: 1rem;
 }
 
 .cardTitle {
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 1rem;
+  font-size: 0.98rem;
   font-weight: 800;
-  line-height: 1.28;
+  line-height: 1.3;
   letter-spacing: -0.02em;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: calc(1.28em * 1);
-  max-height: calc(1.28em * 1);
+  min-height: calc(1.3em * 1);
+  max-height: calc(1.3em * 1);
   word-break: keep-all;
 }
 
 .cardTitleCompact {
-  font-size: 0.96rem;
-  line-height: 1.28;
-  min-height: calc(1.28em * 1);
-  max-height: calc(1.28em * 1);
+  font-size: 0.88rem;
+  line-height: 1.3;
+  min-height: calc(1.3em * 1);
+  max-height: calc(1.3em * 1);
 }
 
 .cardDescription {
   margin: 0;
   color: var(--color-text-secondary);
-  font-size: 0.74rem;
-  line-height: 1.45;
+  font-size: 0.72rem;
+  line-height: 1.42;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: calc(1.45em * 1);
-  max-height: calc(1.45em * 1);
+  min-height: calc(1.42em * 1);
+  max-height: calc(1.42em * 1);
   word-break: keep-all;
+  padding-top: 2px;
 }
 
 .cardDescriptionCompact {
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   -webkit-line-clamp: 1;
-  min-height: calc(1.45em * 1);
-  max-height: calc(1.45em * 1);
+  min-height: calc(1.42em * 1);
+  max-height: calc(1.42em * 1);
 }
 
 .ticketDivider {
@@ -362,20 +318,20 @@
   }
 
   .cardTopCompact {
-    gap: 9px;
+    gap: 8px;
     padding: 11px 11px 9px;
   }
 
-  .headerRow {
+  .headerSection {
     gap: 8px;
   }
 
   .cardTitle {
-    font-size: 0.92rem;
+    font-size: 0.9rem;
   }
 
   .cardTitleCompact {
-    font-size: 0.88rem;
+    font-size: 0.84rem;
   }
 
   .cardDescription {
@@ -383,21 +339,24 @@
   }
 
   .cardDescriptionCompact {
+    font-size: 0.64rem;
+  }
+
+  .regionPill,
+  .metaText,
+  .dateText {
     font-size: 0.66rem;
   }
 
-  .infoLine {
-    font-size: 0.66rem;
-  }
-
-  .infoLineCompact {
+  .regionPillCompact,
+  .metaTextCompact,
+  .dateTextCompact {
     font-size: 0.62rem;
   }
-
 }
 
 @media (max-width: 420px) {
-  .headerRow {
+  .infoRow {
     gap: 8px;
   }
 
@@ -406,7 +365,13 @@
     padding: 12px 12px 10px;
   }
 
-  .infoLineCompact {
-    font-size: 0.62rem;
+  .rowRight {
+    gap: 6px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .bookmarkDesktopOnly {
+    display: inline-flex;
   }
 }

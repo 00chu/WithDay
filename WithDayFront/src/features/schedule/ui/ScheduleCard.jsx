@@ -2,28 +2,13 @@ import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
-import { dayjs, getDDay } from "../../../shared/lib/dateUtile";
+import { dayjs } from "../../../shared/lib/dateUtile";
 import styles from "./ScheduleCard.module.css";
 
 /*
  * ScheduleCard는 홈 탭과 탐색 탭이 공유하는 일정 카드 컴포넌트다.
  * 페이지별 레이아웃은 className/variant로만 조정하고, 카드 내부의 데이터 해석과 표시 규칙은 이 파일에 모아둔다.
  */
-const GENDER_LIMIT_LABELS = {
-  all: "성별무관",
-  male: "남자만",
-  female: "여자만",
-};
-
-const CATEGORY_LABELS = {
-  travel: "여행",
-  popup: "팝업",
-  food: "식사",
-  activity: "액티비티",
-  culture: "문화",
-  etc: "기타",
-};
-
 const defaultThumbnail = "/hero.png";
 
 /*
@@ -38,97 +23,45 @@ const resolveThumbnail = (schedule) =>
 
 const isDefaultThumbnail = (src) => src === defaultThumbnail;
 
-// DB/API 값은 영문 코드이고, 카드에는 사용자가 읽기 쉬운 한글 라벨을 보여준다.
-const resolveGenderLimitLabel = (genderLimit) =>
-  GENDER_LIMIT_LABELS[
-    String(genderLimit ?? "")
-      .trim()
-      .toLowerCase()
-  ] ?? "전체";
-
-const resolveCategoryLabel = (category) =>
-  CATEGORY_LABELS[
-    String(category ?? "")
-      .trim()
-      .toLowerCase()
-  ] ?? "기타";
-
 const resolveRegionLabel = (region) => region?.trim() || "지역 미정";
 
 /*
- * 모집 마감일을 카드 좌측 배지로 변환한다.
- * getDDay는 날짜 차이를 D-n/D-Day/마감으로 계산하고, 여기서는 배지 색상에 필요한 boolean까지 함께 만든다.
- */
-const resolveDeadline = (recruitEndDate) => {
-  const dDay = getDDay(recruitEndDate);
-
-  if (!dDay) {
-    return {
-      label: "일정 미정",
-      isToday: false,
-      isClosed: false,
-    };
-  }
-
-  if (dDay === "D-Day") {
-    return {
-      label: "D-day",
-      isToday: true,
-      isClosed: false,
-    };
-  }
-
-  if (dDay === "마감") {
-    return {
-      label: "마감",
-      isToday: false,
-      isClosed: true,
-    };
-  }
-
-  return {
-    label: dDay,
-    isToday: false,
-    isClosed: false,
-  };
-};
-
-/*
- * 일정 리스트 응답은 recruitEndDate camelCase를 주지만, 일부 이전 응답이나 매퍼는 snake_case를 줄 수 있다.
- * 카드가 두 형태를 모두 이해하면 백엔드 응답 전환 중에도 화면이 덜 깨진다.
- */
-const resolveDeadlineDate = (schedule) =>
-  schedule?.recruitEndDate ??
-  schedule?.recruit_end_date ??
-  schedule?.startDate ??
-  schedule?.start_date ??
-  null;
-
-/*
- * 카드 우측 날짜 영역은 좁은 화면에서 잘리지 않도록 시작일/종료일을 줄 단위로 나눈다.
- * 하루 일정은 한 줄만 보여주고, 여러 날 일정은 "시작일"과 "~ 종료일" 두 줄로 표시한다.
+ * 카드 상단 날짜는 요청된 카드 전용 형식 MM.DD(ddd)로 고정한다.
+ * 하루 일정은 한 줄, 여러 날 일정은 두 줄을 유지해 우측 정렬 레이아웃에서 줄바꿈을 예측 가능하게 만든다.
  */
 const resolvePeriodLines = (startDate, endDate) => {
   const start = dayjs(startDate);
   const end = dayjs(endDate);
+  const formatCardDate = (value) => value.format("MM.DD(ddd)");
 
   if (!start.isValid() && !end.isValid()) {
     return ["일정 미정"];
   }
 
   if (start.isValid() && !end.isValid()) {
-    return [start.format("YYYY.MM.DD")];
+    return [formatCardDate(start)];
   }
 
   if (!start.isValid() && end.isValid()) {
-    return [end.format("YYYY.MM.DD")];
+    return [formatCardDate(end)];
   }
 
   if (start.isSame(end, "day")) {
-    return [start.format("YYYY.MM.DD")];
+    return [formatCardDate(start)];
   }
 
-  return [start.format("YYYY.MM.DD"), `~ ${end.format("YYYY.MM.DD")}`];
+  return [formatCardDate(start), `~ ${formatCardDate(end)}`];
+};
+
+const resolveParticipantsLabel = (currentParticipants, maxParticipants) => {
+  const current = Number.isFinite(Number(currentParticipants))
+    ? Number(currentParticipants)
+    : 0;
+  const max = Number.isFinite(Number(maxParticipants))
+    ? Number(maxParticipants)
+    : 0;
+
+  return `${current} / ${max}명`;
 };
 
 export default function ScheduleCard({
@@ -146,14 +79,15 @@ export default function ScheduleCard({
    */
   const thumbnailSrc = resolveThumbnail(schedule);
   const isFallbackThumbnail = isDefaultThumbnail(thumbnailSrc);
-  const deadline = resolveDeadline(resolveDeadlineDate(schedule));
   const isCompact = variant === "compact";
   const descriptionText =
     schedule?.description?.trim() || "일정 소개가 아직 등록되지 않았어요.";
-  const categoryLabel = resolveCategoryLabel(schedule?.category);
   const regionLabel = resolveRegionLabel(schedule?.region);
-  const genderLabel = resolveGenderLimitLabel(schedule?.genderLimit);
   const periodLines = resolvePeriodLines(schedule?.startDate, schedule?.endDate);
+  const participantsLabel = resolveParticipantsLabel(
+    schedule?.currentParticipants,
+    schedule?.maxParticipants
+  );
   const isBookmarked = Boolean(schedule?.isBookmarked);
   const BookmarkIcon = isBookmarked
     ? FavoriteRoundedIcon
@@ -190,51 +124,65 @@ export default function ScheduleCard({
       tabIndex={0}
     >
       <div className={clsx(styles.cardTop, isCompact && styles.cardTopCompact)}>
-        <div className={styles.headerRow}>
-          {/*
-           * 좌측 배지는 모집 마감 상태를 빠르게 보여준다.
-           * deadline 상태에 따라 today/closed 클래스를 조합해 같은 DOM 구조에서 색상만 바꾼다.
-           */}
-          <span
-            className={clsx(
-              styles.deadlineBadge,
-              deadline.isToday && styles.deadlineBadgeToday,
-              deadline.isClosed && styles.deadlineBadgeClosed,
-              isCompact && styles.deadlineBadgeCompact
-            )}
-          >
-            {deadline.label}
-          </span>
-
-          {/*
-           * 우측 정보 스택은 성별 조건, 일정 기간, 지역을 오른쪽 정렬로 보여준다.
-           * 날짜는 periodLines를 map으로 렌더링해 모바일에서도 긴 "start ~ end" 문자열이 한 줄로 잘리지 않게 한다.
-           */}
-          <div className={styles.headerRight}>
-            {/*
-             * 카드의 하트는 액션 버튼이 아니라 "현재 저장 상태를 빠르게 읽는 배지"다.
-             * 실제 토글은 상세 화면에서만 허용하므로 pointer-events를 끄고 카드 클릭 동선과 충돌하지 않게 둔다.
-             */}
-            <span
-              className={clsx(
-                styles.bookmarkIndicator,
-                isBookmarked && styles.bookmarkIndicatorActive
-              )}
-              aria-label={isBookmarked ? "위시리스트에 저장된 일정" : "위시리스트에 저장되지 않은 일정"}
-            >
-              <BookmarkIcon className={styles.bookmarkIcon} />
-            </span>
-
-            <div className={styles.infoStack}>
-            <span className={clsx(styles.infoLine, isCompact && styles.infoLineCompact)}>
-              <span className={styles.infoText}>{genderLabel}</span>
-            </span>
-            <span className={clsx(styles.infoLine, isCompact && styles.infoLineCompact)}>
+        <div className={styles.headerSection}>
+          <div className={styles.infoRow}>
+            <div className={styles.rowLeft}>
               <span
                 className={clsx(
-                  styles.infoText,
-                  styles.periodText,
-                  periodLines.length > 1 && styles.periodTextMultiline
+                  styles.regionPill,
+                  isCompact && styles.regionPillCompact
+                )}
+              >
+                {regionLabel}
+              </span>
+            </div>
+            <div className={styles.rowRight}>
+              <span
+                className={clsx(
+                  styles.metaText,
+                  isCompact && styles.metaTextCompact
+                )}
+              >
+                {participantsLabel}
+              </span>
+              {/*
+               * 카드의 하트는 액션 버튼이 아니라 "현재 저장 상태를 읽는 시각 신호"다.
+               * 상세 화면에서만 토글하므로 여기서는 pointer-events를 끄고 아이콘 전환만 반영한다.
+               */}
+              <span
+                className={clsx(
+                  styles.bookmarkIndicator,
+                  styles.bookmarkDesktopOnly,
+                  isBookmarked && styles.bookmarkIndicatorActive
+                )}
+                aria-label={isBookmarked ? "위시리스트에 저장된 일정" : "위시리스트에 저장되지 않은 일정"}
+              >
+                <BookmarkIcon className={styles.bookmarkIcon} />
+              </span>
+            </div>
+          </div>
+
+          <div className={styles.infoRow}>
+            <div className={styles.rowLeft}>
+              <h3
+                className={clsx(
+                  styles.cardTitle,
+                  isCompact && styles.cardTitleCompact
+                )}
+              >
+                {schedule?.title ?? "제목 없는 일정"}
+              </h3>
+            </div>
+          </div>
+
+          <div className={styles.infoRow}>
+            <div className={styles.rowLeft} />
+            <div className={clsx(styles.rowRight, styles.dateGroup)}>
+              <span
+                className={clsx(
+                  styles.dateText,
+                  periodLines.length > 1 && styles.dateTextMultiline,
+                  isCompact && styles.dateTextCompact
                 )}
               >
                 {periodLines.map((line) => (
@@ -243,36 +191,18 @@ export default function ScheduleCard({
                   </span>
                 ))}
               </span>
-            </span>
-            <span className={clsx(styles.infoLine, isCompact && styles.infoLineCompact)}>
-              <span className={styles.infoText}>{regionLabel}</span>
-            </span>
             </div>
           </div>
         </div>
 
-        <div className={styles.bodySection}>
-          <div className={styles.metaRow}>
-            <span className={styles.categoryTag}>{categoryLabel}</span>
-          </div>
-
-          <h3
-            className={clsx(
-              styles.cardTitle,
-              isCompact && styles.cardTitleCompact
-            )}
-          >
-            {schedule?.title ?? "제목 없는 일정"}
-          </h3>
-          <p
-            className={clsx(
-              styles.cardDescription,
-              isCompact && styles.cardDescriptionCompact
-            )}
-          >
-            {descriptionText}
-          </p>
-        </div>
+        <p
+          className={clsx(
+            styles.cardDescription,
+            isCompact && styles.cardDescriptionCompact
+          )}
+        >
+          {descriptionText}
+        </p>
       </div>
 
       <div className={styles.ticketDivider} aria-hidden="true" />
