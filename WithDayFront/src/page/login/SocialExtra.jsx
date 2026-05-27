@@ -18,9 +18,13 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import * as FaIcons from "react-icons/fa";
 
 import { socialExtraSchema } from "../../features/auth/validation/authSchema";
-import { fetchTerms, socialSignupUser } from "../../features/auth/api"; // axios 대신에 api.js로 빼서 백엔드와 소통
+import { fetchTerms, 
+  socialSignupUser, 
+  fetchInterests, 
+} from "../../features/auth/api"; // axios 대신에 api.js로 빼서 백엔드와 소통
 
 import FormField from "../../shared/ui/Form/FormField";
 import { Input } from "../../shared/ui/Form/Form";
@@ -43,6 +47,7 @@ const SocialExtra = () => {
 
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false); // 주소 검색창을 킬지 끌지 정하는 state
   const [openTerms, setOpenTerms] = useState(null); // 약관 팝업용 state(어떤 약관을 열었는지 문자열로 저장, null / "TOS" / "PRIVACY" / "MARKETING" / "NOTIFICATION")
+  const [selectedInterests, setSelectedInterests] = useState([]); // 선택한 관심사 id들을 저장하는 state (배열로 저장, 예: [1, 3, 5])
 
   const [step, setStep] = useState(1); // 소셜 회원가입 단계 결정하는 state ((1: 약관동의, 2: 기본정보, 3: 관심사 선택, 4: 회원가입 완료)
 
@@ -113,7 +118,17 @@ const SocialExtra = () => {
       agreeMarketing: false,
       agreeNotification: false,
     },
-  }); // 여기서 세팅한 폼은 UI의 <form onSubmit={handleSubmit(onSubmit)}> 와 연결되어 검사 통과 시 onSubmit 함수로 데이터를 넘겨주고 mutation.mutate를 통해 백엔드로 값을 보냄.
+  }); // 여기서 세팅한 폼은 UI의 form 제출 흐름과 연결됨. 현재는 form 기본 제출을 preventDefault로 먼저 막고, handleSubmit(onSubmit)을 통해 React Hook Form 검증을 통과했을 때만 onSubmit 함수로 데이터를 넘겨줌.
+
+  // 구글이 준 이름을 닉네임 입력창에 기본값으로 넣어주는 useEffect. googleData.nickname이 바뀔 때마다 실행됨.
+  useEffect(() => {
+    if (googleData.nickname) {
+      setValue("nickname", googleData.nickname, {
+        shouldValidate: true,
+        shouldDirty: false,
+      });
+    }
+  }, [googleData.nickname, setValue]);
 
   // 다음으로 버튼을 눌렀을 때 step 이동 로직
   const handleNextStep = async () => {
@@ -159,6 +174,26 @@ const SocialExtra = () => {
     queryKey: ["terms"], // fetchTerms로 가져온 데이터를 terms라고 저장.
     queryFn: fetchTerms, // api.js에 있는 fetchTerms로 GET 요청 함수 실행해서 백엔드에서 약관 정보를 가져옴.
   });
+
+  // 백엔드에서 관심사 데이터 가져오기(useQuery니까 페이지 들어가자마자 데이터 가져옴)
+  // data는 interestsData라는 이름으로 사용하고, 아직 데이터가 없을 때를 대비해 기본값을 빈 배열([])로 둠.
+  // isLoading / isError는 관심사 목록을 불러오는 중이거나 실패했을 때 UI 표시와 가입 버튼 비활성화에 사용함.
+  const { 
+    data: interestsData = [],
+    isLoading: isInterestsLoading,
+    isError: isInterestsError,
+  } = useQuery({
+    queryKey: ["interests"], // fetchInterests로 가져온 데이터를 interests라고 저장.
+    queryFn: fetchInterests, // api.js에 있는 fetchInterests로 GET 요청 함수 실행해서 백엔드에서 관심사 정보를 가져옴.
+  });
+
+  // 칩(Chip)을 클릭했을 때 실행되는 토글 함수
+  const handleToggleInterest = (id) => {
+    setSelectedInterests((prev) =>
+      // 이미 배열에 있는 ID면 빼버리고(filter), 없으면 배열 끝에 추가함([...prev, id])
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
   // 백엔드/코드에서 쓰는 약관 이름(TOS 등)을 한글로 바꿔주는 함수 (약관 제목용)
   const getTermTitle = (type) => {
@@ -212,6 +247,25 @@ const SocialExtra = () => {
     setIsPostcodeOpen(false); // 주소 찾았으니 팝업은 닫음.
   };
 
+  // 전화번호 입력값에서 숫자만 남기고 010-1234-5678 형태로 바꿔주는 함수
+  const formatPhoneNumber = (value) => {
+    // 입력값에서 숫자만 추출하고 최대 11자리로 자르기, /\D/g는 숫자가 아닌 걸 전부 제거한다는 뜻
+    const onlyNumbers = value.replace(/\D/g, "").slice(0, 11);
+
+    // 숫자만 남긴 값이 3자리 이하이면 그대로 반환
+    if (onlyNumbers.length <= 3) {
+      return onlyNumbers;
+    }
+
+    // 숫자만 남긴 값이 4~7자리면 010-1234 형태로 반환
+    if (onlyNumbers.length <= 7) {
+      return `${onlyNumbers.slice(0, 3)}-${onlyNumbers.slice(3)}`;
+    }
+
+    // 숫자만 남긴 값이 8자리 이상이면 010-1234-5678 형태로 반환
+    return `${onlyNumbers.slice(0, 3)}-${onlyNumbers.slice(3, 7)}-${onlyNumbers.slice(7)}`;
+  };
+
   // 회원가입 mutation (백엔드 통신)
   const mutation = useMutation({
     mutationFn: socialSignupUser, // api.js에 있는 socialSignupUser로 POST 요청 함수 실행해서 백엔드로 회원가입 정보를 보냄
@@ -227,14 +281,19 @@ const SocialExtra = () => {
     },
   });
 
-  // 회원가입 완료 버튼을 눌렀을 때
+  // 소셜 회원가입 관심사 단계에서 가입 완료/건너뛰기 버튼을 눌렀을 때 실행되는 최종 회원가입 제출 함수
   const onSubmit = (data) => {
+    // step이 3이 아니면 함수 종료 (관심사 선택 단계에서만 onSubmit이 실행되게 함)
+    if (step !== 3) {
+      return;
+    }
+
     // 백엔드의 SignupRequestDTO 모양에 맞춰서 객체를 만듬.
     const signupData = {
       user: {
         // --- 구글에서 가져온 거 ---
         email: googleData.email,
-        nickname: googleData.nickname,
+        nickname: data.nickname, // 구글이 준 이름을 닉네임 입력창에 기본값으로 넣어줬지만, 유저가 수정할 수도 있으니까 입력창에서 가져온 data.nickname을 사용함.
         providerId: googleData.providerId, // 구글 고유 회원 번호 (백엔드 식별용)
         profileImage: googleData.profileImage, // 진짜 파일이 아니라 구글 프사 URL 텍스트임
         // --- 유저가 쓴 거 ---
@@ -251,415 +310,361 @@ const SocialExtra = () => {
         MARKETING: data.agreeMarketing || false, // false는 체크 안한 상태, true는 체크한 상태.
         NOTIFICATION: data.agreeNotification || false, // false는 체크 안한 상태, true는 체크한 상태.
       },
+      interests: selectedInterests, // 선택한 관심사 id 배열 그대로 넣음 (예: [1, 3, 5])
     };
 
     mutation.mutate(signupData); // 여기는 파일 전송(FormData, Blob)이 없으므로, 방금 조립한 깔끔한 JSON 객체(signupData)를 그대로 백엔드로 보냄.
   };
 
   return (
-    <div className={styles.signupPage}>
-      <div className={styles.formSection}>
-        <div className={styles.formCard}>
-          {step < 4 && (
-            <nav className={styles.signupStepperSocial} aria-label="회원가입 단계">
-              {["약관 동의", "기본 정보", "관심사 선택"].map((label, index) => {
-                const stepNumber = index + 1;
-                return (
-                  <div
-                    key={label}
-                    className={`${styles.signupStep} ${
-                      step === stepNumber ? styles.signupStepActive : ""
-                    } ${step > stepNumber ? styles.signupStepDone : ""}`}
-                  >
-                    <div className={styles.signupStepNumber}>
-                      <span>{stepNumber}</span>
-                    </div>
-                    <div className={styles.signupStepLabel}>{label}</div>
-                  </div>
-                );
-              })}
-              <div className={`${styles.signupStep} ${step === 4 ? styles.signupStepActive : ""}`}>
-                <div className={styles.signupStepNumber}><span>4</span></div>
-                <div className={styles.signupStepLabel}>가입 완료</div>
-              </div>
-            </nav>
-          )}
-
-          {/* handleSubmit(onSubmit): HTML 기본 제출 기능을 막고(이게 없으면 html의 form은 누르면 바로 sumbit하려함), React Hook Form의 검증을 거친 후 onSubmit을 실행시킴 */}
-          <form onSubmit={handleSubmit(onSubmit)}>
-            {step === 1 && (
-              <div className={styles.flowSection}>
-                <div className={styles.flowHero}>
-                  <p className={styles.flowEyebrow}>WITHDAY SOCIAL SIGN UP</p>
-                  <h2 className={styles.flowTitle}>약관 동의 후 가입을 시작합니다</h2>
-                </div>
-
-                <label className={`${styles.panel} ${styles.panelStrong} ${styles.checkCard} ${styles.checkCardStrong}`}>
-                  <span className={styles.checkInput}>
-                    <input
-                      type="checkbox"
-                      checked={allAgreed} // 전체 동의 박스는 allAgreed가 true면 체크, false면 체크해제
-                      onChange={handleAgreeAll} // 전체 동의 박스를 클릭했을 때 handleAgreeAll 함수 실행
-                    />
-                  </span>
-                  <span className={styles.checkBody}>
-                    <span className={styles.checkTitle}>약관 전체 동의</span>
-                  </span>
-                </label>
-
-                <div className={styles.stackMd} style={{ marginTop: '16px' }}>
-                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
-                    <span className={styles.checkInput}>
-                      <input type="checkbox" {...register("agreeTos")} />
-                    </span>
-                    <span className={styles.checkBody}>
-                      <span className={styles.checkHeader}>
-                        <span className={styles.checkTitle}>서비스 이용약관</span>
-                        <span className={styles.badge}>필수</span>
-                      </span>
-                      <span
-                        className={styles.flowLinkText}
-                        onClick={(e) => {
-                          e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
-                          setOpenTerms("TOS"); // openTerms state에 "TOS"를 넣어서 이용약관 모달이 열리게 함.
-                        }}
+      <div className={styles.signupPage}>
+        <main className={styles.signupMain}>
+          <section className={styles.formSection}>
+            <div className={styles.formCard}>
+              {step < 4 && (
+                <nav className={styles.signupStepperSocial} aria-label="소셜 회원가입 단계">
+                  {["약관동의", "기본 정보", "관심사 선택"].map((label, index) => {
+                    const stepNumber = index + 1;
+                    return (
+                      <div
+                        key={label}
+                        className={`${styles.signupStep} ${
+                          step === stepNumber ? styles.signupStepActive : ""
+                        } ${step > stepNumber ? styles.signupStepDone : ""}`}
                       >
-                        자세히 보기
-                      </span>
-                      {/* errors.agreeTos가 있으면 에러메세지 띄움 */}
-                      {errors.agreeTos && <span className={styles.errorText}>{errors.agreeTos.message}</span>}
-                    </span>
-                  </label>
-
-                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
-                    <span className={styles.checkInput}>
-                      <input type="checkbox" {...register("agreePrivacy")} />
-                    </span>
-                    <span className={styles.checkBody}>
-                      <span className={styles.checkHeader}>
-                        <span className={styles.checkTitle}>개인정보 수집 및 이용</span>
-                        <span className={styles.badge}>필수</span>
-                      </span>
-                      <span
-                        className={styles.flowLinkText}
-                        onClick={(e) => {
-                          e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
-                          setOpenTerms("PRIVACY"); // openTerms state에 "PRIVACY"를 넣어서 개인정보 수집 및 이용 모달이 열리게 함.
-                        }}
-                      >
-                        자세히 보기
-                      </span>
-                      {/* errors.agreePrivacy가 있으면 에러메세지 띄움 */}
-                      {errors.agreePrivacy && <span className={styles.errorText}>{errors.agreePrivacy.message}</span>}
-                    </span>
-                  </label>
-
-                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
-                    <span className={styles.checkInput}>
-                      <input type="checkbox" {...register("agreeMarketing")} />
-                    </span>
-                    <span className={styles.checkBody}>
-                      <span className={styles.checkHeader}>
-                        <span className={styles.checkTitle}>마케팅 정보 수신</span>
-                        <span className={styles.badge} style={{ background: '#e9ecef', color: '#666' }}>선택</span>
-                      </span>
-                      <span
-                        className={styles.flowLinkText}
-                        onClick={(e) => {
-                          e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
-                          setOpenTerms("MARKETING"); // openTerms state에 "MARKETING"를 넣어서 마케팅 정보 수신 모달이 열리게 함.
-                        }}
-                      >
-                        자세히 보기
-                      </span>
-                    </span>
-                  </label>
-
-                  <label className={`${styles.panel} ${styles.panelInteractive} ${styles.checkCard}`}>
-                    <span className={styles.checkInput}>
-                      <input type="checkbox" {...register("agreeNotification")} />
-                    </span>
-                    <span className={styles.checkBody}>
-                      <span className={styles.checkHeader}>
-                        <span className={styles.checkTitle}>앱 푸시 알림 수신</span>
-                        <span className={styles.badge} style={{ background: '#e9ecef', color: '#666' }}>선택</span>
-                      </span>
-                      <span
-                        className={styles.flowLinkText}
-                        onClick={(e) => {
-                          e.preventDefault(); // '보기' 클릭해도 체크박스 체크 안되게 막음
-                          setOpenTerms("NOTIFICATION"); // openTerms state에 "NOTIFICATION"를 넣어서 마케팅 정보 수신 모달이 열리게 함.
-                        }}
-                      >
-                        자세히 보기
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              </div>
-            )}
-
-            {step === 2 && (
-              <div className={styles.flowSection}>
-                <div className={styles.flowHero}>
-                  <p className={styles.flowEyebrow}>WITHDAY SOCIAL SIGN UP</p>
-                  <h2 className={styles.flowTitle}>기본 정보를 입력해주세요</h2>
-                </div>
-
-                <div className={styles.stackLg}>
-                  <FormField label="닉네임" error={errors.nickname}>
-                    <Input type="text" placeholder="멋진 닉네임" {...register("nickname")} />
-                  </FormField>
-
-                  <FormField label="프로필 이미지" error={errors.profileImage}>
-                    {/* type이 file이면 내 컴퓨터의 탐색기 창이 열림. accept="image/*"로 이미지만 선택 가능하게 필터링 */}
-                    <Input type="file" accept="image/*" {...register("profileImage")} style={{ padding: '10px 14px' }} />
-                  </FormField>
-
-                  <FormField label="생년월일" error={errors.birthday}>
-                    {/* max 속성을 오늘 날짜로 설정해서 미래의 날짜 선택 안되게함*/}
-                    <Input type="date" max={todayDate} {...register("birthday")} />
-                  </FormField>
-
-                  <FormField label="성별" error={errors.gender}>
-                    <div className={styles.radioGroup}>
-                      {/* 둘 중 하나만 선택되는 라디오 버튼. 백엔드 규칙에 맞게 1(남자), 2(여자) 값 */}
-                      <label className={styles.radioLabel}>
-                        <input type="radio" value="1" {...register("gender")} /> 남
-                      </label>
-                      <label className={styles.radioLabel}>
-                        <input type="radio" value="2" {...register("gender")} /> 여
-                      </label>
-                    </div>
-                  </FormField>
-
-                  <FormField label="전화번호" error={errors.phone}>
-                    <Input type="tel" placeholder="010-1234-5678" {...register("phone")} />
-                  </FormField>
-
-                  <FormField label="주소" error={errors.postcode || errors.address}>
-                    <div className={`${styles.inputRow} ${styles.marginBottom8}`}>
-                      <div className={styles.flex1}>
-                        <Input
-                          type="text"
-                          placeholder="우편번호"
-                          readOnly // 주소 검색 버튼을 눌러서 우편번호가 자동으로 입력되게 함. 직접 타이핑을 막음.
-                          {...register("postcode")}
-                        />
+                        <div className={styles.signupStepNumber}>
+                          <span>{stepNumber}</span>
+                        </div>
+                        <div className={styles.signupStepLabel}>{label}</div>
                       </div>
+                    );
+                  })}
+                  <div className={`${styles.signupStep} ${step === 4 ? styles.signupStepActive : ""}`}>
+                    <div className={styles.signupStepNumber}><span>4</span></div>
+                    <div className={styles.signupStepLabel}>가입 완료</div>
+                  </div>
+                </nav>
+              )}
+  
+              <form
+                className={styles.signupForm}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSubmit(onSubmit)(e);
+                }}
+              >
+                {step === 1 && (
+                  <section className={styles.flowSection}>
+                    <div className={styles.flowHeroCenter}>
+                      <h2 className={styles.flowTitle}>약관에 동의해주세요</h2>
+                      <p className={styles.flowDescription}>WithDay의 서비스 이용을 위해 아래 약관에 동의해주세요.</p>
+                    </div>
+  
+                    <label className={`${styles.termCard} ${styles.termCardAll}`}>
+                      <span className={styles.checkBoxWrap}>
+                        <input
+                          type="checkbox"
+                          className={styles.checkBoxNative}
+                          checked={allAgreed}
+                          onChange={handleAgreeAll}
+                        />
+                      </span>
+                      <span className={styles.termTextArea}>
+                        <strong className={styles.termTitle}>전체 동의</strong>
+                        <span className={styles.termDesc}>선택 항목을 포함한 모든 약관에 동의합니다.</span>
+                      </span>
+                    </label>
+  
+                    <div className={styles.termList}>
+                      <label className={styles.termRow}>
+                        <span className={styles.checkBoxWrap}>
+                          <input type="checkbox" className={styles.checkBoxNative} {...register("agreeTos")} />
+                        </span>
+                        <span className={styles.termRowTitle}><b>[필수]</b> 서비스 이용약관 동의</span>
+                        <button type="button" className={styles.termViewButton} onClick={(e) => { e.preventDefault(); setOpenTerms("TOS"); }}>자세히보기</button>
+                        {errors.agreeTos && <span className={styles.termError}>{errors.agreeTos.message}</span>}
+                      </label>
+  
+                      <label className={styles.termRow}>
+                        <span className={styles.checkBoxWrap}>
+                          <input type="checkbox" className={styles.checkBoxNative} {...register("agreePrivacy")} />
+                        </span>
+                        <span className={styles.termRowTitle}><b>[필수]</b> 개인정보 수집 및 이용 동의</span>
+                        <button type="button" className={styles.termViewButton} onClick={(e) => { e.preventDefault(); setOpenTerms("PRIVACY"); }}>자세히보기</button>
+                        {errors.agreePrivacy && <span className={styles.termError}>{errors.agreePrivacy.message}</span>}
+                      </label>
+  
+                      <label className={styles.termRow}>
+                        <span className={styles.checkBoxWrap}>
+                          <input type="checkbox" className={styles.checkBoxNative} {...register("agreeMarketing")} />
+                        </span>
+                        <span className={styles.termRowTitle}><b>[선택]</b> 마케팅 정보 수신 동의</span>
+                        <button type="button" className={styles.termViewButton} onClick={(e) => { e.preventDefault(); setOpenTerms("MARKETING"); }}>자세히보기</button>
+                      </label>
+  
+                      <label className={styles.termRow}>
+                        <span className={styles.checkBoxWrap}>
+                          <input type="checkbox" className={styles.checkBoxNative} {...register("agreeNotification")} />
+                        </span>
+                        <span className={styles.termRowTitle}><b>[선택]</b> 알림 수신 동의</span>
+                        <button type="button" className={styles.termViewButton} onClick={(e) => { e.preventDefault(); setOpenTerms("NOTIFICATION"); }}>자세히보기</button>
+                      </label>
+                    </div>
+  
+                    <p className={styles.noticeText}>필수 항목에 동의해야 회원가입을 진행하실 수 있습니다.</p>
+                  </section>
+                )}
+  
+                {step === 2 && (
+                  <section className={styles.flowSection}>
+                    <div className={styles.flowHeroCenter}>
+                      <h2 className={styles.flowTitle}>기본 정보를 입력해주세요</h2>
+                      <p className={styles.flowDescription}>소셜 계정에 연결할 기본 프로필 정보를 입력해주세요.</p>
+                    </div>
+  
+                    <div className={styles.profileGrid}>
+                      <div className={styles.basicFields}>
+                        <div className={styles.formRow}>
+                          <span className={styles.formRowLabel}>닉네임</span>
+                          <div className={styles.formControlArea}>
+                            <FormField error={errors.nickname}>
+                              <Input
+                                type="text"
+                                placeholder="닉네임을 입력해주세요"
+                                maxLength={20}
+                                {...register("nickname")}
+                              />
+                            </FormField>
+                          </div>
+                        </div>
+  
+                        <div className={styles.formRow}>
+                          <span className={styles.formRowLabel}>생년월일</span>
+                          <div className={styles.formControlArea}>
+                            <FormField error={errors.birthday}>
+                              <Input type="date" max={todayDate} {...register("birthday")} />
+                            </FormField>
+                          </div>
+                        </div>
+  
+                        <div className={styles.formRow}>
+                          <span className={styles.formRowLabel}>성별</span>
+                          <div className={styles.formControlArea}>
+                            <FormField error={errors.gender}>
+                              <div className={styles.segmentGroup}>
+                                <label className={styles.segmentItem}><input type="radio" value="1" {...register("gender")} /><span>남성</span></label>
+                                <label className={styles.segmentItem}><input type="radio" value="2" {...register("gender")} /><span>여성</span></label>
+                              </div>
+                            </FormField>
+                          </div>
+                        </div>
+  
+                        <div className={styles.formRow}>
+                          <span className={styles.formRowLabel}>전화번호</span>
+                          <div className={styles.formControlArea}>
+                            <FormField error={errors.phone}>
+                              <Input
+                                type="tel"
+                                inputMode="numeric"
+                                placeholder="010-1234-5678"
+                                {...register("phone")}
+                                onChange={(e) => {
+                                  const formattedPhone = formatPhoneNumber(e.target.value);
+                                  setValue("phone", formattedPhone, { shouldValidate: true });
+                                }}
+                              />
+                            </FormField>
+                          </div>
+                        </div>
+  
+                        <div className={styles.formRow}>
+                          <span className={styles.formRowLabel}>주소</span>
+                          <div className={styles.formControlArea}>
+                            <FormField error={errors.postcode || errors.address || errors.detailAddress}>
+                              <div className={styles.addressStack}>
+                                <div className={styles.inputRow}>
+                                  <div className={styles.flex1}>
+                                    <Input type="text" placeholder="우편번호" readOnly {...register("postcode")} />
+                                  </div>
+                                  <Button type="button" variant="outline" size="sm" className={styles.inlineActionButton} onClick={() => setIsPostcodeOpen(true)}>검색</Button>
+                                </div>
+                                <Input type="text" placeholder="기본 주소" readOnly {...register("address")} />
+                                <Input type="text" placeholder="상세 주소를 입력해주세요" {...register("detailAddress")} />
+                              </div>
+                            </FormField>
+                          </div>
+                        </div>
+                      </div>
+  
+                      <label className={styles.photoUploadBox}>
+                        {googleData.profileImage ? (
+                          <span className={styles.photoPreviewFrame}>
+                            <img src={googleData.profileImage} alt="구글 프로필 미리보기" />
+                          </span>
+                        ) : (
+                          <span className={styles.photoIcon}>📷</span>
+                        )}
+                        <strong>구글 프로필 사용</strong>
+                        <span>소셜 계정의 프로필 이미지가 자동으로 연결됩니다.</span>
+                        <small>{googleData.email || "Google 계정"}</small>
+                      </label>
+                    </div>
+                  </section>
+                )}
+  
+                {step === 3 && (
+                  <section className={styles.flowSection}>
+                    <div className={styles.flowHeroCenter}>
+                      <h2 className={styles.flowTitle}>관심사를 선택해주세요</h2>
+                      <p className={styles.flowDescription}>관심사를 선택하면 더 잘 맞는 위트와 일정을 추천받을 수 있어요.</p>
+                    </div>
+  
+                    <div className={styles.interestGrid}>
+                      {isInterestsLoading && <p className={styles.emptyText}>관심사를 불러오는 중입니다...</p>}
+                      {isInterestsError && <p className={styles.errorText}>관심사 목록을 불러오지 못했습니다.</p>}
+                      {!isInterestsLoading && !isInterestsError && interestsData.length === 0 && <p className={styles.emptyText}>표시할 관심사가 없습니다.</p>}
+  
+                      {!isInterestsLoading && !isInterestsError && interestsData.map((interest) => {
+                        const isSelected = selectedInterests.includes(interest.id);
+                        const IconComponent = FaIcons[interest.iconName];
+  
+                        return (
+                          <button
+                            key={interest.id}
+                            type="button"
+                            className={`${styles.interestButton} ${isSelected ? styles.interestButtonActive : ""}`}
+                            onClick={() => handleToggleInterest(interest.id)}
+                          >
+                            {IconComponent && <IconComponent className={styles.interestIcon} />}
+                            <span>{interest.interestName}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+  
+                    <div className={styles.selectedInterestBox}>
+                      <div className={styles.selectedInterestHead}>
+                        <strong>선택한 관심사 {selectedInterests.length}개</strong>
+                        {selectedInterests.length > 0 && (
+                          <button type="button" onClick={() => setSelectedInterests([])}>모두 해제 ↻</button>
+                        )}
+                      </div>
+                      {selectedInterests.length > 0 ? (
+                        <div className={styles.selectedPills}>
+                          {selectedInterests.map((id) => {
+                            const interest = interestsData.find((item) => item.id === id);
+                            return (
+                              <button key={id} type="button" className={styles.selectedPill} onClick={() => handleToggleInterest(id)}>
+                                {interest?.interestName || id} <span>×</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className={styles.selectedEmpty}>관심사를 선택하지 않아도 가입할 수 있어요.</p>
+                      )}
+                    </div>
+                  </section>
+                )}
+  
+                {step === 4 && (
+                  <section className={`${styles.flowSection} ${styles.completeSection}`}>
+                    <div className={styles.flowHeroCenter}>
+                      <h2 className={styles.completeTitle}>가입이 완료되었어요!</h2>
+                      <p className={styles.flowDescription}>이제 WithDay에서 당신의 여행 메이트, 위트를 만나보세요.</p>
+                    </div>
+  
+                    <div className={styles.completeVisual}>
+                      <span className={styles.confettiMark}>◆</span>
+                      <span className={styles.confettiMark}>~</span>
+                      <div className={styles.completeCheck}>✓</div>
+                      <span className={styles.confettiMark}>◆</span>
+                      <span className={styles.confettiMark}>~</span>
+                    </div>
+  
+                    <div className={styles.completePanel}>
+                      <div className={styles.completePanelIcon}>👤</div>
+                      <div>
+                        <strong>프로필 설정이 완료되었습니다</strong>
+                        <p>당신만을 위한 여행 메이트 추천과 맞춤형 여행 경험을 시작할 준비가 되었어요.</p>
+                      </div>
+                    </div>
+  
+                    <div className={styles.completeActions}>
+                      <Button type="button" variant="primary" size="lg" fullWidth onClick={() => navigate("/login")}>WithDay 시작하기</Button>
+                      <Button type="button" variant="outline" size="lg" fullWidth onClick={() => navigate("/")}>홈으로 이동</Button>
+                    </div>
+                  </section>
+                )}
+  
+                {step < 4 && (
+                  <div className={styles.signupActions}>
+                    {step > 1 ? (
+                      <Button type="button" variant="outline" size="lg" className={styles.prevButton} onClick={() => setStep((prev) => prev - 1)}>
+                        ‹ 이전
+                      </Button>
+                    ) : (
+                      <button type="button" className={styles.backToLoginButton} onClick={() => navigate("/login")}>‹ 로그인으로 돌아가기</button>
+                    )}
+  
+                    {step < 3 ? (
+                      <Button type="button" variant="primary" size="lg" className={styles.nextButton} onClick={handleNextStep}>
+                        다음 ›
+                      </Button>
+                    ) : (
                       <Button
                         type="button"
-                        variant="outline"
-                        style={{ width: 'auto', fontSize: '13px' }}
-                        onClick={() => {
-                          setIsPostcodeOpen(true); // 주소 검색 버튼을 누르면 주소 검색 모달이 열리게 함.
-                        }}
+                        variant="primary"
+                        size="lg"
+                        className={styles.nextButton}
+                        disabled={mutation.isPending || isInterestsLoading || isInterestsError}
+                        onClick={handleSubmit(onSubmit)}
                       >
-                        주소 검색
+                        {mutation.isPending ? "가입하는 중..." : selectedInterests.length === 0 ? "건너뛰고 가입" : "가입 완료"} ›
                       </Button>
-                    </div>
-                    <div className={styles.marginBottom8}>
-                      <Input
-                        type="text"
-                        placeholder="기본 주소"
-                        readOnly // 주소 검색 버튼을 눌러서 주소가 자동으로 입력되게 함. 직접 타이핑을 막음.
-                        {...register("address")}
-                      />
-                    </div>
-                    <Input
-                      type="text"
-                      placeholder="상세 주소를 입력해주세요"
-                      {...register("detailAddress")}
-                      error={errors.detailAddress}
-                    />
-                  </FormField>
-                </div>
-              </div>
-            )}
-
-            {step === 3 && (
-              <div className={styles.flowSectionWide}>
-                <div className={styles.flowHero}>
-                  <p className={styles.flowEyebrow}>WITHDAY SOCIAL SIGN UP</p>
-                  <h2 className={styles.flowTitle}>관심사를 선택해주세요</h2>
-                </div>
-                <div className={styles.interestsContainer}>
-                  <p>여기에 DB에서 불러온 관심사 칩(Chip)들이 들어갈 예정입니다!</p>
-                </div>
-              </div>
-            )}
-
-            {step === 4 && (
-              <div className={styles.completeArea}>
-                <div className={styles.flowHero}>
-                  <p className={styles.flowEyebrow}>WITHDAY SOCIAL SIGN UP</p>
-                  <h2 className={styles.completeTitle}>가입이 완료되었습니다!</h2>
-                  <p className={styles.autoRedirectText}>
-                    잠시 후 로그인 페이지로 자동 이동합니다...
-                  </p>
-                </div>
-                <div className={styles.celebration}>
-                  <div className={`${styles.confetti} ${styles.c1}`} />
-                  <div className={`${styles.confetti} ${styles.c2}`} />
-                  <div className={`${styles.confetti} ${styles.c3}`} />
-                  <div className={`${styles.confetti} ${styles.c4} ${styles.confettiWarning}`} />
-                  <div className={styles.checkCircle}>
-                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
+                    )}
                   </div>
-                </div>
-              </div>
-            )}
-
-            {step < 4 && (
-              <div className={styles.signupActions}>
-                {step > 1 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="lg"
-                    onClick={() => setStep((prev) => prev - 1)}
-                  >
-                    이전
-                  </Button>
                 )}
-
-                {step < 3 ? (
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="lg"
-                    onClick={handleNextStep}
-                  >
-                    다음으로
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="lg"
-                    disabled={mutation.isPending}
-                  >
-                    {mutation.isPending ? "가입하는 중..." : "회원가입 완료"}
-                  </Button>
-                )}
-              </div>
-            )}
-          </form>
-
-          {step < 4 && (
-            <p className={styles.linkText} style={{ marginTop: '24px' }}>
-              다른 계정으로 로그인하시겠어요?{" "}
-              <span className={styles.linkClickable} onClick={() => navigate("/login")}>
-                로그인 화면으로
-              </span>
-            </p>
-          )}
-        </div>
+              </form>
+            </div>
+          </section>
+  
+          <aside className={styles.imageSection} aria-hidden="true">
+            <img src="/withday_signup_bg.jpg" alt="" className={styles.bgImage} />
+          </aside>
+        </main>
+  
+        <section className={styles.trustSection}>
+          <article className={styles.trustCard}><span>👥</span><div><strong>안심할 수 있는 여행 파트너 매칭</strong><p>검증된 회원들과 함께 즐거운 여행을</p></div></article>
+          <article className={styles.trustCard}><span>🛡️</span><div><strong>개인정보 보호 최우선</strong><p>안전한 데이터 관리로 안심하고 이용</p></div></article>
+          <article className={styles.trustCard}><span>🌐</span><div><strong>전 세계 어디든, WithDay</strong><p>국내부터 해외까지 함께 떠나요</p></div></article>
+        </section>
+  
+        <Snackbar open={toast.open} autoHideDuration={3000} onClose={handleCloseToast} anchorOrigin={{ vertical: "bottom", horizontal: "center" }} sx={{ bottom: "80px !important" }}>
+          <Alert onClose={handleCloseToast} severity={toast.severity} sx={{ width: "100%" }}>{toast.message}</Alert>
+        </Snackbar>
+  
+        <Dialog open={isPostcodeOpen} onClose={() => setIsPostcodeOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ m: 0, p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            주소 검색
+            <IconButton onClick={() => setIsPostcodeOpen(false)}><CloseIcon /></IconButton>
+          </DialogTitle>
+          <DialogContent dividers sx={{ p: 0 }}>
+            <DaumPostcode onComplete={handleCompletePostcode} style={{ width: "100%", height: "400px" }} />
+          </DialogContent>
+        </Dialog>
+  
+        <Dialog open={openTerms !== null} onClose={() => setOpenTerms(null)} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ m: 0, p: 2, display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: "bold" }}>
+            {openTerms ? getTermTitle(openTerms) : ""}
+            <IconButton onClick={() => setOpenTerms(null)}><CloseIcon /></IconButton>
+          </DialogTitle>
+          <DialogContent dividers>
+            <pre className={styles.termPre}>{openTerms ? getTermContent(openTerms) : ""}</pre>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      <div className={styles.imageSection}>
-        {/* public 폴더에 넣은 이미지를 img 태그로 직관적으로 불러옵니다! */}
-        <img 
-          src="/withday_signup_bg.jpg" 
-          alt="WithDay Background" 
-          className={styles.bgImage} 
-        />
-        
-        <div className={styles.imageOverlay}>
-          <p className={styles.overlayLogo}>WITHDAY</p>
-          <h1 className={styles.overlayTitle}>누군가와<br/>함께 떠나는 설렘</h1>
-          {/* 소제목 삭제 완료 */}
-        </div>
-      </div>
-
-      {/* MUI 알림창: toast 상태에 따라 화면 하단에 나타났다가 3초(autoHideDuration={3000ms}) 후 사라짐 */}
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={3000}
-        onClose={handleCloseToast}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        sx={{ bottom: "80px !important" }}
-      >
-        <Alert
-          onClose={handleCloseToast}
-          severity={toast.severity}
-          sx={{ width: "100%" }}
-        >
-          {toast.message}
-        </Alert>
-      </Snackbar>
-
-      {/* 주소 검색 모달: isPostcodeOpen state에 따라 열리고 닫힘. 
-          작은 화면에서는 꽉 찬 모달, 큰 화면에서는 적당한 크기의 모달이 됨. */}
-      <Dialog
-        open={isPostcodeOpen} // 주소 검색창 열릴지 말지 결정하는 state
-        onClose={() => setIsPostcodeOpen(false)} // 주소 검색창 닫는 함수
-        maxWidth="sm"
-        fullWidth 
-      >
-        {/* DialogTitle(제목)의 sx prop으로 스타일링 */}
-        <DialogTitle
-          sx={{
-            m: 0, // margin: 0
-            p: 2, // padding: 2 (MUI의 spacing 단위, 기본적으로 8px이므로 16px)
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          주소 검색
-          <IconButton onClick={() => setIsPostcodeOpen(false)}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        {/* DialogContent(내용)의 sx prop으로 스타일링, dividers는 구분선(가로줄)을 생성 */}
-        <DialogContent dividers sx={{ p: 0 }}>
-          {/* DaumPostcode 컴포넌트 */}
-          <DaumPostcode
-            onComplete={handleCompletePostcode} // 주소 선택 완료 시 실행되는 함수
-            style={{ width: "100%", height: "400px" }}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* 약관 모달: openTerms state에 따라 열리고 닫힘. 
-          (openTerms에는 "TOS", "PRIVACY", "MARKETING" 중 하나가 들어감.) */}
-      <Dialog
-        open={openTerms !== null} // openTerms가 null이 아니면 약관 모달이 열림.
-        onClose={() => setOpenTerms(null)}
-        maxWidth="sm"
-        fullWidth
-      >
-        {/* DialogTitle(제목)의 sx prop으로 스타일링, dividers는 구분선(가로줄)을 생성 */}
-        <DialogTitle
-          sx={{
-            m: 0, // margin: 0
-            p: 2, // padding: 2 (MUI의 spacing 단위, 기본적으로 8px이므로 16px)
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            fontWeight: "bold",
-          }}
-        >
-          {/* openTerms가 null이 아니면 getTermTitle(openTerms)로 약관 제목을 띄움. null이면 빈칸. */}
-          {openTerms ? getTermTitle(openTerms) : ""}
-          <IconButton onClick={() => setOpenTerms(null)}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        {/* DialogContent(내용)의 sx prop으로 스타일링 */}
-        <DialogContent dividers>
-          {/* pre 태그: 띄어쓰기나 줄바꿈(\n)을 무시하지 않고 있는 그대로 살려서 그려주는 HTML 태그 */}
-          <pre className={styles.termPre}>
-            {/* openTerms가 null이 아니면 getTermContent(openTerms)로 약관 내용을 띄움. null이면 빈칸. */}
-            {openTerms ? getTermContent(openTerms) : ""}
-          </pre>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
-
-export default SocialExtra;
+    );
+  };
+  
+  export default SocialExtra;
