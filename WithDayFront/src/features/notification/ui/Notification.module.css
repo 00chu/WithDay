@@ -3,6 +3,13 @@
   margin: 0;
 }
 
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
 .notificationList {
   display: flex;
   flex-direction: column;
