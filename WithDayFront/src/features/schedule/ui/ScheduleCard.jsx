@@ -2,13 +2,35 @@ import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
-import { dayjs } from "../../../shared/lib/dateUtile";
+import { dayjs, getDDay } from "../../../shared/lib/dateUtile";
 import styles from "./ScheduleCard.module.css";
 
 /*
  * ScheduleCard는 홈 탭과 탐색 탭이 공유하는 일정 카드 컴포넌트다.
  * 페이지별 레이아웃은 className/variant로만 조정하고, 카드 내부의 데이터 해석과 표시 규칙은 이 파일에 모아둔다.
  */
+const GENDER_LIMIT_LABELS = {
+  all: "남·녀",
+  male: "남",
+  female: "여",
+};
+
+const CATEGORY_LABELS = {
+  travel: "여행",
+  popup: "팝업",
+  food: "식사",
+  activity: "액티비티",
+  culture: "문화",
+  etc: "기타",
+};
+
+const COST_TYPE_LABELS = {
+  per_person: "총액 1/N",
+  host_covered: "호스트 부담",
+  free: "무료",
+  custom: "인당 고정",
+};
+
 const defaultThumbnail = "/hero.png";
 
 /*
@@ -23,7 +45,71 @@ const resolveThumbnail = (schedule) =>
 
 const isDefaultThumbnail = (src) => src === defaultThumbnail;
 
+// DB/API 값은 영문 코드이고, 카드에는 사용자가 읽기 쉬운 한글 라벨을 보여준다.
+const resolveGenderLimitLabel = (genderLimit) =>
+  GENDER_LIMIT_LABELS[
+    String(genderLimit ?? "")
+      .trim()
+      .toLowerCase()
+  ] ?? "전체";
+
+const resolveCategoryLabel = (category) =>
+  CATEGORY_LABELS[
+    String(category ?? "")
+      .trim()
+      .toLowerCase()
+  ] ?? "기타";
+
 const resolveRegionLabel = (region) => region?.trim() || "지역 미정";
+
+/*
+ * 모집 마감일을 카드 좌측 배지로 변환한다.
+ * getDDay는 날짜 차이를 D-n/D-Day/마감으로 계산하고, 여기서는 배지 색상에 필요한 boolean까지 함께 만든다.
+ */
+const resolveDeadline = (recruitEndDate) => {
+  const dDay = getDDay(recruitEndDate);
+
+  if (!dDay) {
+    return {
+      label: "일정 미정",
+      isToday: false,
+      isClosed: false,
+    };
+  }
+
+  if (dDay === "D-Day") {
+    return {
+      label: "D-day",
+      isToday: true,
+      isClosed: false,
+    };
+  }
+
+  if (dDay === "마감") {
+    return {
+      label: "마감",
+      isToday: false,
+      isClosed: true,
+    };
+  }
+
+  return {
+    label: dDay,
+    isToday: false,
+    isClosed: false,
+  };
+};
+
+/*
+ * 일정 리스트 응답은 recruitEndDate camelCase를 주지만, 일부 이전 응답이나 매퍼는 snake_case를 줄 수 있다.
+ * 카드가 두 형태를 모두 이해하면 백엔드 응답 전환 중에도 화면이 덜 깨진다.
+ */
+const resolveDeadlineDate = (schedule) =>
+  schedule?.recruitEndDate ??
+  schedule?.recruit_end_date ??
+  schedule?.startDate ??
+  schedule?.start_date ??
+  null;
 
 /*
  * 카드 상단 날짜는 요청된 카드 전용 형식 MM.DD(ddd)로 고정한다.
@@ -64,6 +150,36 @@ const resolveParticipantsLabel = (currentParticipants, maxParticipants) => {
   return `${current} / ${max}명`;
 };
 
+const resolveCostMeta = (costType, totalPrice) => {
+  const typeLabel =
+    COST_TYPE_LABELS[
+      String(costType ?? "")
+        .trim()
+        .toLowerCase()
+    ] ?? "비용 미정";
+
+  if (totalPrice === null || totalPrice === undefined || totalPrice === "") {
+    return {
+      typeLabel,
+      amountLabel: "금액 미정",
+    };
+  }
+
+  const parsedPrice = Number(totalPrice);
+
+  if (!Number.isFinite(parsedPrice)) {
+    return {
+      typeLabel,
+      amountLabel: "금액 미정",
+    };
+  }
+
+  return {
+    typeLabel,
+    amountLabel: `${parsedPrice.toLocaleString("ko-KR")}원`,
+  };
+};
+
 export default function ScheduleCard({
   schedule,
   className,
@@ -79,15 +195,19 @@ export default function ScheduleCard({
    */
   const thumbnailSrc = resolveThumbnail(schedule);
   const isFallbackThumbnail = isDefaultThumbnail(thumbnailSrc);
+  const deadline = resolveDeadline(resolveDeadlineDate(schedule));
   const isCompact = variant === "compact";
   const descriptionText =
     schedule?.description?.trim() || "일정 소개가 아직 등록되지 않았어요.";
+  const categoryLabel = resolveCategoryLabel(schedule?.category);
   const regionLabel = resolveRegionLabel(schedule?.region);
+  const genderLabel = resolveGenderLimitLabel(schedule?.genderLimit);
   const periodLines = resolvePeriodLines(schedule?.startDate, schedule?.endDate);
   const participantsLabel = resolveParticipantsLabel(
     schedule?.currentParticipants,
     schedule?.maxParticipants
   );
+  const costMeta = resolveCostMeta(schedule?.costType, schedule?.totalPrice);
   const isBookmarked = Boolean(schedule?.isBookmarked);
   const BookmarkIcon = isBookmarked
     ? FavoriteRoundedIcon
@@ -125,24 +245,26 @@ export default function ScheduleCard({
     >
       <div className={clsx(styles.cardTop, isCompact && styles.cardTopCompact)}>
         <div className={styles.headerSection}>
-          <div className={styles.infoRow}>
+          <div className={clsx(styles.infoRow, styles.topRow)}>
             <div className={styles.rowLeft}>
               <span
-                className={clsx(
-                  styles.regionPill,
-                  isCompact && styles.regionPillCompact
-                )}
+                className={clsx(styles.regionPill, isCompact && styles.regionPillCompact)}
               >
                 {regionLabel}
+              </span>
+              <span
+                className={clsx(styles.categoryPill, isCompact && styles.categoryPillCompact)}
+              >
+                {categoryLabel}
               </span>
             </div>
             <div className={styles.rowRight}>
               <span
-                className={clsx(
-                  styles.metaText,
-                  isCompact && styles.metaTextCompact
-                )}
+                className={clsx(styles.softPill, styles.genderPill, isCompact && styles.softPillCompact)}
               >
+                {genderLabel}
+              </span>
+              <span className={clsx(styles.metaText, isCompact && styles.metaTextCompact)}>
                 {participantsLabel}
               </span>
               {/*
@@ -152,7 +274,6 @@ export default function ScheduleCard({
               <span
                 className={clsx(
                   styles.bookmarkIndicator,
-                  styles.bookmarkDesktopOnly,
                   isBookmarked && styles.bookmarkIndicatorActive
                 )}
                 aria-label={isBookmarked ? "위시리스트에 저장된 일정" : "위시리스트에 저장되지 않은 일정"}
@@ -162,21 +283,19 @@ export default function ScheduleCard({
             </div>
           </div>
 
-          <div className={styles.infoRow}>
+          <div className={clsx(styles.infoRow, styles.middleRow)}>
             <div className={styles.rowLeft}>
-              <h3
+              <span
                 className={clsx(
-                  styles.cardTitle,
-                  isCompact && styles.cardTitleCompact
+                  styles.softPill,
+                  deadline.isToday && styles.deadlinePillToday,
+                  deadline.isClosed && styles.deadlinePillClosed,
+                  isCompact && styles.softPillCompact
                 )}
               >
-                {schedule?.title ?? "제목 없는 일정"}
-              </h3>
+                {deadline.label}
+              </span>
             </div>
-          </div>
-
-          <div className={styles.infoRow}>
-            <div className={styles.rowLeft} />
             <div className={clsx(styles.rowRight, styles.dateGroup)}>
               <span
                 className={clsx(
@@ -190,6 +309,25 @@ export default function ScheduleCard({
                     {line}
                   </span>
                 ))}
+              </span>
+            </div>
+          </div>
+
+          <div className={clsx(styles.infoRow, styles.contentRow)}>
+            <div className={styles.rowLeft}>
+              <h3
+                className={clsx(
+                  styles.cardTitle,
+                  isCompact && styles.cardTitleCompact
+                )}
+              >
+                {schedule?.title ?? "제목 없는 일정"}
+              </h3>
+            </div>
+            <div className={clsx(styles.rowRight, styles.costGroup)}>
+              <span className={clsx(styles.costText, isCompact && styles.costTextCompact)}>
+                <span className={styles.costTypeLine}>{costMeta.typeLabel}</span>
+                <span className={styles.costAmountLine}>{costMeta.amountLabel}</span>
               </span>
             </div>
           </div>

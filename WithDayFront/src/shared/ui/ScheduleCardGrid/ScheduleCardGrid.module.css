@@ -4,31 +4,67 @@
     minmax(0, 1fr)를 사용해 카드 내부 긴 텍스트가 grid column을 밀어내지 않게 한다.
   */
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(152px, 1fr));
   gap: 16px;
   width: 100%;
   margin: 0 auto;
   overflow: visible;
   align-items: stretch;
+  justify-items: center;
+}
+
+.grid > * {
+  width: 100%;
+  min-width: 152px;
+  max-width: 220px;
 }
 
 @media (min-width: 768px) {
   .grid {
     /* 태블릿부터는 3열로 늘려 한 화면에 더 많은 일정을 비교할 수 있게 한다. */
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(210px, 1fr));
+    gap: 18px;
+  }
+
+  .grid > * {
+    min-width: 210px;
+    max-width: 300px;
   }
 }
 
 @media (min-width: 1024px) and (max-width: 1439px) {
   .grid {
     /* 데스크탑에서는 4열 고정 계약을 사용해 Home/Explore 카드 폭이 예측 가능하게 유지된다. */
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(230px, 1fr));
+    gap: 20px;
+  }
+
+  .grid > * {
+    min-width: 230px;
+    max-width: 340px;
   }
 }
 
 @media (min-width: 1440px) {
   .grid {
     /* 넓은 데스크탑에서는 5열로 늘려 Explore 목록 밀도를 높인다. */
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(240px, 1fr));
+    gap: 22px;
+  }
+
+  .grid > * {
+    min-width: 240px;
+    max-width: 360px;
+  }
+}
+
+@media (max-width: 359px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .grid > * {
+    min-width: 0;
+    max-width: 100%;
   }
 }
