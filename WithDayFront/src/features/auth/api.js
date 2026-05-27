@@ -79,3 +79,10 @@ export const socialSignupUser = async (signupData) => {
   const response = await api.post(`/users/social-signup`, signupData);
   return response.data;
 };
+
+export const getNotificationCount = async (email) => {
+  const response = await api.get(
+    `/notifications/count/${encodeURIComponent(email)}`,
+  );
+  return response.data;
+};

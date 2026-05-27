@@ -2,6 +2,7 @@ import styles from "./MyPageMain.module.css";
 import EditCalendarOutlinedIcon from "@mui/icons-material/EditCalendarOutlined";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import Button from "../../shared/ui/Button/Button";
+import { useNavigate } from "react-router-dom";
 import {
   Coffee,
   Earth,
@@ -9,12 +10,14 @@ import {
   Heart,
   Store,
   Utensils,
+  MapPin,
+  Calendar,
+  User,
 } from "lucide-react";
 
 const MyPageMain = () => {
   const user = useAuthStore((state) => state.user);
-
-  console.log(user);
+  const navigate = useNavigate();
 
   return (
     <div>
@@ -28,7 +31,10 @@ const MyPageMain = () => {
                   alt="우리딥 고양이"
                   className={styles.danE}
                 ></img>
-                <div className={styles.retouch_btn}>
+                <div
+                  className={styles.retouch_btn}
+                  onClick={() => navigate(`/mypage/edit/${user.email}`)}
+                >
                   <EditCalendarOutlinedIcon />
                 </div>
               </div>
@@ -36,6 +42,14 @@ const MyPageMain = () => {
             <div className={styles.profile_text}>
               <span className={styles.dan}>단이</span>
               <span className={styles.email}>tiaqhfl@nate.com</span>
+              <Button
+                className={styles.logout}
+                size="sm"
+                variant="primary"
+                onClick={() => useAuthStore.getState().setLogout()}
+              >
+                로그아웃
+              </Button>
             </div>
             {/*오른쪽 데이터들*/}
             <div className={styles.profile_summary}>
@@ -55,6 +69,7 @@ const MyPageMain = () => {
           </div>
         </div>
       </section>
+
       <section>
         <div className={styles.Inter_container}>
           <div className={styles.Interest}>Interest | 나의 관심사</div>
@@ -75,6 +90,7 @@ const MyPageMain = () => {
               <FerrisWheel size={18} /> <span>액티비티</span>
             </div>
           </div>
+
           <div className={styles.intro_box}>
             <div className={styles.intro}>
               <span>소갯말</span>
@@ -88,102 +104,71 @@ const MyPageMain = () => {
               </span>
             </div>
           </div>
+
           <div className={styles.log_container}>
             <div className={styles.log_title}>
-              <div>My Wit Log | 나의 위트 로그</div>
+              <div className={styles.Interest}>My Wit Log | 나의 위트 로그</div>
             </div>
             <div className={styles.scroll_wrapper}>
               <div className={styles.log_box}>
-                <img
-                  src="/dog.jpg"
-                  alt="넘의집 강아디"
-                  className={styles.dog}
-                ></img>
-                <img
-                  src="/dog.jpg"
-                  alt="넘의집 강아디"
-                  className={styles.dog}
-                ></img>
-                <img
-                  src="/dog.jpg"
-                  alt="넘의집 강아디"
-                  className={styles.dog}
-                ></img>
-                <img
-                  src="/dog.jpg"
-                  alt="넘의집 강아디"
-                  className={styles.dog}
-                ></img>
+                <div className={styles.log_card}>
+                  <img
+                    src="/dog.jpg"
+                    alt="넘의집 강아디"
+                    className={styles.dog}
+                  ></img>
+
+                  {/* 이미지 하단 정보*/}
+                  <div className={styles.card_bottom}>
+                    <h3 className={styles.card_title}>
+                      우리 같이 강아지 산책 가실 분
+                    </h3>
+                    <div className={styles.card_info_row}>
+                      <div className={styles.card_info_item}>
+                        <MapPin size={13} /> <span>서울 특별시</span>
+                      </div>
+                      <div className={styles.card_divider}></div>
+                      <div className={styles.card_info_item}>
+                        <Calendar size={13} /> <span>2026년 4월</span>
+                      </div>
+                      <div className={styles.card_divider}></div>
+                      <div className={styles.card_info_item}>
+                        <User size={13} /> <span>위트 3명</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.log_card}>
+                  <img
+                    src="/dog.jpg"
+                    alt="넘의집 강아디"
+                    className={styles.dog}
+                  />
+                  <div className={styles.card_bottom}>
+                    <h3 className={styles.card_title}>강아지 카페 가실 분</h3>
+                    <div className={styles.card_info_row}>
+                      <div className={styles.card_info_item}>
+                        <MapPin size={13} /> <span>제주특별자치도</span>
+                      </div>
+                      <div className={styles.card_divider}></div>
+                      <div className={styles.card_info_item}>
+                        <Calendar size={13} /> <span>2026년 5월</span>
+                      </div>
+                      <div className={styles.card_divider}></div>
+                      <div className={styles.card_info_item}>
+                        <User size={13} /> <span>위트 2명</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
-      <Button
-        size="sm"
-        variant="primary"
-        onClick={() => useAuthStore.getState().setLogout()}
-      >
-        로그아웃
-      </Button>
     </div>
   );
 };
 
 export default MyPageMain;
-
-/*
-    <div
-      style={{
-        padding: "40px 20px",
-        fontFamily: "sans-serif",
-        maxWidth: "600px",
-        margin: "0 auto",
-      }}
-    >
-      <style>{`
-        @keyframes rainbow-move {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-      `}</style>
-
-      <h2 style={{ fontSize: "2rem", marginBottom: "10px" }}>
-        φ(゜▽゜*)♪ 마이페이지
-      </h2>
-      <p style={{ color: "#666", margin: "5px 0" }}>
-        빠른 시일 내에 완공 될 예정입니다.
-      </p>
-      <p style={{ color: "#999", marginBottom: "30px", fontSize: "0.9rem" }}>
-        양해해주셔서 감사합니다. - WithDay 일동
-      </p>
-
-      <div
-        style={{
-          background: "#f8fafc",
-          padding: "25px",
-          borderRadius: "16px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-          border: "1px solid #e2e8f0",
-        }}
-      >
-        <p style={{ fontSize: "1.1rem", margin: "12px 0", color: "#334155" }}>
-          어서오세요 닉네임:{" "}
-          <span style={rainbowTextStyle}>{user.nickname}</span>님
-        </p>
-        <p style={{ fontSize: "1.1rem", margin: "12px 0", color: "#334155" }}>
-          이메일: <span style={rainbowTextStyle}>{user.email}</span>
-        </p>
-        <Button
-          size="sm"
-          variant="primary"
-          onClick={() => {
-            OneSignal.logout();
-            useAuthStore.getState().setLogout();
-          }}
-        >
-          로그아웃
-        </Button>
-      </div>
-      </div>
-      */

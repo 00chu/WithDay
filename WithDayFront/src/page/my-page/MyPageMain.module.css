@@ -1,10 +1,14 @@
 /*로그아웃 버튼*/
 .logout {
   cursor: pointer;
-  background-color: var(--color-surface-soft);
-  padding: 5px 10px;
+  width: fit-content;
+  margin-top: 8px;
+  background-color: var(--color-primary);
+  padding: 6px 12px;
   border-radius: 5px;
-  color: #061024;
+  font-size: 13px;
+  border: none;
+  color: var(--color-text-inverse);
 }
 /*상단 컨테이너(화이트)*/
 .profile_Box {
@@ -16,7 +20,6 @@
   display: inline-block;
   width: 129px;
   height: 129px;
-  flex-shrink: 0;
 }
 /*사진 + 아이콘*/
 .profile {
@@ -52,24 +55,27 @@
 /*프로필 수정 버튼*/
 .retouch_btn {
   position: absolute;
-  right: 2px;
-  bottom: 6px;
-
+  right: 0px;
+  bottom: 0px;
+  z-index: 20;
   background-color: var(--color-primary);
   width: 30px;
   height: 30px;
   border-radius: 50%;
   cursor: pointer;
-  z-index: 10;
+  z-index: 20;
 
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
+  padding: 0;
+  border: none;
 }
 /*아이콘 사이즈 조절*/
 .retouch_btn svg {
-  font-size: 19px;
+  width: 18px;
+  height: 18px;
   display: block;
 }
 .summary {
@@ -156,10 +162,67 @@
   display: flex;
   gap: 20px;
 }
-.dog {
+
+.log_box {
+  display: flex;
+  gap: 20px;
+}
+
+/* 이미지 전체 카드 */
+.log_card {
+  display: flex;
+  flex-direction: column;
   width: 300px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background-color: var(--color-surface);
+  overflow: hidden; /* 사진이 모서리 뚫지 않게 */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.dog {
+  width: 100%;
   height: 200px;
   object-fit: cover;
-  border-radius: 12px;
-  flex-shrink: 0;
+}
+
+/* 카드 하단 정보 영역 */
+.card_bottom {
+  padding: 18px;
+}
+
+/* 카드 제목 */
+.card_title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+/* 가로 정렬 컨테이너 */
+.card_info_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--color-text-muted, #6b7280);
+}
+
+/* 아이콘 + 텍스트 */
+.card_info_item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.card_info_item svg {
+  color: var(--color-primary);
+}
+
+/* 세로 구분선(|) */
+.card_divider {
+  width: 1px;
+  height: 12px;
+  background-color: var(--color-border, #e5e7eb);
 }

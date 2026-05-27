@@ -1,0 +1,286 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px;
+}
+.headerTitle {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+.content {
+  display: flex;
+  gap: 60px;
+}
+/*프로필 이미지 수정 버튼*/
+.retouch_btn {
+  position: absolute;
+  right: 58px;
+  bottom: 120px;
+  z-index: 20;
+  background-color: var(--color-primary);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 20;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+.retouch_btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+.profile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 200px;
+  padding: 40px 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  height: 200px;
+}
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin-bottom: 15px;
+  object-fit: cover;
+}
+.name {
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+.email {
+  color: var(--color-text-primary);
+  font-size: 14px;
+}
+
+.formSide {
+  flex: 1;
+}
+.group {
+  margin-bottom: 30px;
+}
+.groupTitle {
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 20px;
+  border-top: 1px solid var(--color-border-light);
+  padding-top: 20px;
+  color: var(--color-text-primary);
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.fieldLabel {
+  width: 140px;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  font-size: 15px;
+}
+.inputWrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  padding: 14px 45px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+.input_name {
+  width: 100%;
+  padding: 14px 15px; /* 왼쪽 패딩을 15px로 줄여 앞쪽으로 정렬 */
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+.iconStart {
+  position: absolute;
+  left: 15px;
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-primary);
+}
+.iconEnd {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: var(--color-text-primary);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.messageWrapper {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 140px;
+  margin-top: -10px;
+  margin-bottom: 20px;
+  min-height: 18px;
+}
+
+.charCount {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.notiRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  padding-right: 10px;
+}
+.footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 40px;
+  border-top: 1px solid var(--color-border-light);
+  padding-top: 30px;
+}
+.btn {
+  padding: 12px 30px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btnSave {
+  background-color: var(--color-primary);
+  color: white;
+}
+.btnCancel {
+  background-color: white;
+  border: 1px solid #ddd;
+}
+
+.pw_text {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-left: auto;
+}
+.notiRow span {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.errorMsg {
+  font-size: 12px;
+  color: red;
+  font-weight: 500;
+}
+
+.notiRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.notificationSwitch {
+  width: 58px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background-color: #d1d5db;
+  cursor: pointer;
+  position: relative;
+  padding: 4px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.notificationSwitchOn {
+  background-color: #071224;
+}
+
+.notificationSwitchThumb {
+  width: 24px;
+  height: 24px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.notificationSwitchOn .notificationSwitchThumb {
+  transform: translateX(26px);
+}
+
+.notificationSwitchIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.iconOff {
+  color: #6b7280;
+}
+.iconOn {
+  color: #071224;
+}
+
+/* 스위치 ON */
+.notificationSwitchPing {
+  position: absolute;
+  right: -8px;
+  width: 2px;
+  height: 10px;
+  background-color: #071224;
+  opacity: 0.5;
+  border-radius: 1px;
+}
+/*인사말 수정 구간*/
+.textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  padding-bottom: 30px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  resize: none;
+  font-family: inherit;
+  font-size: 14px;
+}
+/*인사말 영역*/
+.textareaContainer {
+  position: relative;
+  width: 100%;
+}
+.charCountInside {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  font-size: 12px;
+  color: #a0a0a0;
+  pointer-events: none;
+}
