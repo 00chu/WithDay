@@ -114,6 +114,7 @@ export const insertSchema = yup.object({
       .number()
       .typeError("숫자를 입력해주세요.")
       .min(0, "금액은 0 이상이어야 합니다.")
+      .max(10000000, "금액은 10,000,000 이하이어야 합니다.")
       .nullable(),
 
     costType: yup
