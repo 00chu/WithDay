@@ -19,6 +19,10 @@
         SELECT * FROM user WHERE email = #{email}
     </select>
 
+    <select id="findUserIdByEmail" parameterType="String" resultType="long">
+        SELECT id FROM user WHERE email = #{email}
+    </select>
+
     <insert id="insertUserTerms" parameterType="UserTerms">
         INSERT INTO user_terms (user_id, terms_id, agreed, agreed_at)
         VALUES (#{userId}, #{termsId}, #{agreed}, NOW())
