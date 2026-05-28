@@ -13,6 +13,7 @@ import com.test.withdayback.schedule.enums.ScheduleStatus;
 import com.test.withdayback.schedule.vo.Schedule;
 import com.test.withdayback.schedule.vo.ScheduleDetail;
 import com.test.withdayback.schedule.vo.ScheduleImage;
+import com.test.withdayback.user.dao.UserDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +38,15 @@ public class ScheduleService {
 
     private final ScheduleDao scheduleDao;
     private final ParticipationDao participationDao;
+    private final UserDao userDao;
 
     @Autowired
     private Cloudinary cloudinary;
 
-    public ScheduleService(ScheduleDao scheduleDao, ParticipationDao participationDao) {
+    public ScheduleService(ScheduleDao scheduleDao, ParticipationDao participationDao, UserDao userDao) {
         this.scheduleDao = scheduleDao;
         this.participationDao = participationDao;
+        this.userDao = userDao;
     }
 
     /*
@@ -292,7 +295,7 @@ public class ScheduleService {
         Schedule schedule = dto.getSchedule();
 
         // email로 userId get
-        Long userId = scheduleDao.findUserIdByEmail(dto.getEmail());
+        Long userId = userDao.findUserIdByEmail(dto.getEmail());
         schedule.setUserId(userId);
 
         // schedule insert
@@ -342,7 +345,7 @@ public class ScheduleService {
         Schedule schedule = dto.getSchedule();
 
         // email로 userId get
-        Long userId = scheduleDao.findUserIdByEmail(dto.getEmail());
+        Long userId = userDao.findUserIdByEmail(dto.getEmail());
 
         schedule.setUserId(userId);
         schedule.setId(scheduleId);

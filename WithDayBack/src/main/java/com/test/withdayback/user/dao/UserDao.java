@@ -19,6 +19,9 @@ public interface UserDao {
     // 이메일로 유저찾기
     User findByEmail(String email);
 
+    // 이메일로 유저 ID 찾기
+    Long findUserIdByEmail(String email);
+
     // 약관 동의 내역 저장
     void insertUserTerms(UserTerms userTerms);
 

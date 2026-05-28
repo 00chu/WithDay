@@ -247,12 +247,6 @@
         ORDER BY s.id DESC
     </select>
 
-    <select id="findUserIdByEmail" resultType="long">
-        select id
-        from `user`
-        where email = #{email}
-    </select>
-
     <insert id="insertSchedule"
             parameterType="Schedule"
             useGeneratedKeys="true"
