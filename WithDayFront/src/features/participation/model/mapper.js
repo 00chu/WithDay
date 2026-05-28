@@ -153,6 +153,13 @@ export const normalizeMyScheduleItem = (item) => ({
 });
 
 /*
+ * 탭별 query는 배열 하나만 응답으로 다루므로,
+ * 단일 리스트도 같은 규칙으로 정규화할 수 있는 helper를 함께 제공한다.
+ */
+export const normalizeMyScheduleList = (items = []) =>
+  items.map(normalizeMyScheduleItem);
+
+/*
  * 호스트 신청자 관리 카드용 데이터 정규화다.
  * applicant 목록은 사용자의 닉네임/이메일/신청 시각을 그대로 보여줘야 하므로,
  * 불필요한 가공은 줄이고 status 정규화 정도만 수행한다.
@@ -176,9 +183,9 @@ export const normalizeMySchedulesResponse = ({
   pending = [],
   hosting = [],
 } = {}) => ({
-  participating: participating.map(normalizeMyScheduleItem),
-  pending: pending.map(normalizeMyScheduleItem),
-  hosting: hosting.map(normalizeMyScheduleItem),
+  participating: normalizeMyScheduleList(participating),
+  pending: normalizeMyScheduleList(pending),
+  hosting: normalizeMyScheduleList(hosting),
 });
 
 /*

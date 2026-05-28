@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import styles from "./MySchedulePage.module.css";
 
 import { useAuthStore } from "../../features/auth/store/authStore";
@@ -8,19 +9,19 @@ import Pagination from "../../shared/ui/Pagination/Pagination";
 
 import { PARTICIPATION_TABS } from "../../features/participation/model/constants";
 import {
+  participationQueryKeys,
   useMySchedulesQuery,
   useParticipationMutation,
 } from "../../features/participation/model/queries";
+import {
+  fetchHostingSchedules,
+  fetchParticipatingSchedules,
+  fetchPendingSchedules,
+} from "../../features/participation/api";
 import { SCHEDULE_STATUS } from "../../features/schedule/model/constants";
 import ParticipationFeedback from "../../features/participation/ui/ParticipationFeedback/ParticipationFeedback";
 import ParticipationList from "../../features/participation/ui/ParticipationList/ParticipationList";
 import ParticipationTabs from "../../features/participation/ui/ParticipationTabs/ParticipationTabs";
-
-const DEFAULT_SCHEDULES = {
-  participating: [],
-  pending: [],
-  hosting: [],
-};
 
 const CLOSED_HOSTING_PAGE_SIZE = 4;
 const CLOSED_HOSTING_NAV_SIZE = 5;
@@ -95,6 +96,7 @@ const compareHostingDeadlineDesc = (left, right) =>
 const MySchedulePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   /*
    * 내 일정 페이지는 참여중/신청중/호스팅 탭을 같은 화면에서 전환한다.
@@ -114,24 +116,46 @@ const MySchedulePage = () => {
   const email = useAuthStore((state) => state.user.email);
 
   const {
-    data: schedules = DEFAULT_SCHEDULES,
+    data: currentItems = [],
     isPending,
     error,
-  } = useMySchedulesQuery(email);
+  } = useMySchedulesQuery(email, activeTab);
   const {
-    cancelParticipation,
     deleteParticipation,
     isPending: isMutationPending,
   } = useParticipationMutation(email);
 
-  // activeTab에 해당하는 목록만 ParticipationList에 내려준다.
-  const currentItems = useMemo(
-    () => schedules[activeTab] ?? [],
-    [activeTab, schedules],
-  );
+  useEffect(() => {
+    const normalizedEmail = email?.trim();
+    if (!normalizedEmail) {
+      return;
+    }
+
+    const tabFetchers = {
+      participating: fetchParticipatingSchedules,
+      pending: fetchPendingSchedules,
+      hosting: fetchHostingSchedules,
+    };
+
+    PARTICIPATION_TABS.filter((tab) => tab.value !== activeTab).forEach((tab) => {
+      const fetcher = tabFetchers[tab.value];
+      if (!fetcher) {
+        return;
+      }
+
+      queryClient.prefetchQuery({
+        queryKey: participationQueryKeys.mySchedulesByTab(
+          normalizedEmail,
+          tab.value,
+        ),
+        queryFn: () => fetcher({ email: normalizedEmail }),
+        staleTime: 1000 * 60,
+      });
+    });
+  }, [activeTab, email, queryClient]);
 
   const hostingSections = useMemo(() => {
-    const hostingItems = Array.isArray(schedules.hosting) ? schedules.hosting : [];
+    const hostingItems = Array.isArray(currentItems) ? currentItems : [];
     const activeHostingItems = hostingItems
       .filter((item) => !isClosedHostingSchedule(item))
       .sort(compareHostingDeadlineAsc);
@@ -143,7 +167,7 @@ const MySchedulePage = () => {
       activeHostingItems,
       closedHostingItems,
     };
-  }, [schedules.hosting]);
+  }, [currentItems]);
 
   const closedHostingTotalPage = useMemo(
     () =>
@@ -212,8 +236,8 @@ const MySchedulePage = () => {
 
   /*
    * 카드 클릭/버튼 액션 분기다.
-   * host, APPROVED, CANCELED 상태는 상세 페이지에서 확인하는 흐름이고,
-   * PENDING은 신청 취소, REJECTED/KICKED는 내역 삭제를 제공한다.
+   * host, PENDING, APPROVED, CANCELED 상태는 상세 페이지에서 확인하는 흐름이고,
+   * REJECTED/KICKED만 리스트에서 내역 삭제를 제공한다.
    */
   const handleScheduleAction = useCallback(
     async (item) => {
@@ -224,25 +248,11 @@ const MySchedulePage = () => {
 
       if (
         item.myRole === "host" ||
+        item.dbStatus === "PENDING" ||
         item.dbStatus === "APPROVED" ||
         item.dbStatus === "CANCELED"
       ) {
         navigate(`/schedule/${item.scheduleId}`);
-        return;
-      }
-
-      if (item.dbStatus === "PENDING") {
-        await runScheduleMutation({
-          confirmMessage: "신청을 취소하시겠습니까?",
-          successMessage: "신청이 취소되었습니다.",
-          failureMessage:
-            "신청 취소에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-          request: () =>
-            cancelParticipation({
-              participationId: item.participationId,
-              email,
-            }),
-        });
         return;
       }
 
@@ -260,7 +270,6 @@ const MySchedulePage = () => {
       }
     },
     [
-      cancelParticipation,
       deleteParticipation,
       email,
       navigate,
@@ -312,6 +321,7 @@ const MySchedulePage = () => {
               emptyMessage="진행 중인 일정이 없습니다."
               onItemAction={handleScheduleAction}
               isActionLoading={isMutationPending}
+              itemKeyPrefix="hosting-active"
             />
           </section>
 
@@ -347,6 +357,7 @@ const MySchedulePage = () => {
                     emptyMessage="마감된 일정이 없습니다."
                     onItemAction={handleScheduleAction}
                     isActionLoading={isMutationPending}
+                    itemKeyPrefix="hosting-closed"
                   />
 
                   {closedHostingTotalPage > 1 ? (
@@ -366,12 +377,14 @@ const MySchedulePage = () => {
         </div>
       ) : (
         <ParticipationList
+          key={activeTab}
           items={currentItems}
           loading={isPendingState}
           errorMessage={error ? errorMessage : ""}
           emptyMessage={emptyMessage}
           onItemAction={handleScheduleAction}
           isActionLoading={isMutationPending}
+          itemKeyPrefix={activeTab}
         />
       )}
     </div>

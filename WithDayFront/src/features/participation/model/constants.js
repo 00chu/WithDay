@@ -92,9 +92,9 @@ export const PARTICIPATION_STATUS_META = {
   PENDING: {
     badgeText: "신청중",
     badgeClass: "badgePending",
-    buttonText: "신청 취소",
+    buttonText: "상세보기",
     buttonVariant: "accent",
-    actionType: "cancel",
+    actionType: "view",
     cardDisabled: false,
     isDisabled: false,
   },

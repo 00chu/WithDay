@@ -16,6 +16,8 @@
   --color-surface-soft: #daf1f1; /* 연한 민트 배경 */
   --color-surface-hover: #edfefe;
   --color-surface-highlight: rgba(29, 154, 153, 0.08);
+  --color-overlay-glass: rgb(from var(--color-primary-dark) r g b / 0.68);
+  --color-overlay-shadow: rgb(from var(--color-primary-dark) r g b / 0.16);
   --color-mask-solid: #000000;
 
   /* ===== Text ===== */

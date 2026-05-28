@@ -42,7 +42,7 @@ function ParticipationCard({ item, onAction, isActionLoading = false }) {
    * meta는 "현재 이 카드가 사용자에게 어떤 의미인가"를 요약한 객체다.
    *
    * 예:
-   * - PENDING이면 버튼은 "신청 취소"
+   * - PENDING이면 버튼은 "상세보기"
    * - APPROVED면 버튼은 "상세보기"
    * - REJECTED/KICKED면 버튼은 "삭제"
    * - host면 status보다 역할이 우선이라 "일정 관리"
@@ -115,7 +115,7 @@ function ParticipationCard({ item, onAction, isActionLoading = false }) {
          * 클릭 이후의 도메인 흐름도 상태에 따라 달라진다.
          *
          * 예:
-         * - PENDING -> 취소 확인창 -> cancelParticipation mutation
+         * - PENDING -> 상세 페이지 이동 -> ApplyScheduleButton에서 신청 취소
          * - REJECTED/KICKED -> 삭제 확인창 -> deleteParticipation mutation
          * - APPROVED/host/CANCELED -> 상세 페이지 이동
          *

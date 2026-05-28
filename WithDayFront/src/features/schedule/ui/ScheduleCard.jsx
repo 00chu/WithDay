@@ -105,13 +105,13 @@ const resolveDeadlineDate = (schedule) =>
   null;
 
 /*
- * 카드 상단 날짜는 요청된 카드 전용 형식 MM.DD(ddd)로 고정한다.
- * 하루 일정은 한 줄, 여러 날 일정은 두 줄을 유지해 우측 정렬 레이아웃에서 줄바꿈을 예측 가능하게 만든다.
+ * 카드 날짜는 숫자 중심 YYYY.MM.DD 형식으로 고정한다.
+ * 여러 날 일정은 모바일에서 `startDate` / `~ endDate` 두 줄로, 넓은 화면에서는 한 줄 요약으로 재조합한다.
  */
 const resolvePeriodLines = (startDate, endDate) => {
   const start = dayjs(startDate);
   const end = dayjs(endDate);
-  const formatCardDate = (value) => value.format("MM.DD(ddd)");
+  const formatCardDate = (value) => value.format("YYYY.MM.DD");
 
   if (!start.isValid() && !end.isValid()) {
     return ["일정 미정"];
@@ -155,6 +155,8 @@ export default function ScheduleCard({
   const regionLabel = resolveRegionLabel(schedule?.region);
   const genderLabel = resolveGenderLimitLabel(schedule?.genderLimit);
   const periodLines = resolvePeriodLines(schedule?.startDate, schedule?.endDate);
+  const periodSummary =
+    periodLines.length > 1 ? `${periodLines[0]} ${periodLines[1]}` : periodLines[0];
   const isBookmarked = Boolean(schedule?.isBookmarked);
   const BookmarkIcon = isBookmarked
     ? FavoriteRoundedIcon
@@ -197,6 +199,7 @@ export default function ScheduleCard({
               <span
                 className={clsx(
                   styles.softPill,
+                  styles.deadlinePillBase,
                   styles.deadlinePill,
                   deadline.isToday && styles.deadlinePillToday,
                   deadline.isClosed && styles.deadlinePillClosed,
@@ -230,7 +233,7 @@ export default function ScheduleCard({
             </span>
           </div>
 
-          <div className={clsx(styles.infoRow, styles.middleRow)}>
+          <div className={clsx(styles.infoRow, styles.titleRow)}>
             <div className={styles.titleGroup}>
               <h3
                 className={clsx(
@@ -240,21 +243,6 @@ export default function ScheduleCard({
               >
                 {schedule?.title ?? "제목 없는 일정"}
               </h3>
-            </div>
-            <div className={styles.dateGroup}>
-              <span
-                className={clsx(
-                  styles.dateText,
-                  periodLines.length > 1 && styles.dateTextMultiline,
-                  isCompact && styles.dateTextCompact
-                )}
-              >
-                {periodLines.map((line) => (
-                  <span key={line} className={styles.periodLine}>
-                    {line}
-                  </span>
-                ))}
-              </span>
             </div>
           </div>
 
@@ -267,6 +255,35 @@ export default function ScheduleCard({
             >
               {descriptionText}
             </p>
+          </div>
+
+          <div className={clsx(styles.infoRow, styles.dateRow)}>
+            <div className={styles.dateGroup}>
+              <span
+                className={clsx(
+                  styles.dateText,
+                  periodLines.length > 1 && styles.dateTextMultiline,
+                  isCompact && styles.dateTextCompact
+                )}
+              >
+                {periodLines.length > 1 && (
+                  <span className={styles.periodInline}>{periodSummary}</span>
+                )}
+                {periodLines.map((line, index) => (
+                  <span
+                    key={`${line}-${index}`}
+                    className={clsx(
+                      styles.periodLine,
+                      index === 0 &&
+                        periodLines.length > 1 &&
+                        styles.periodLinePrimary
+                    )}
+                  >
+                    {line}
+                  </span>
+                ))}
+              </span>
+            </div>
           </div>
         </div>
       </div>

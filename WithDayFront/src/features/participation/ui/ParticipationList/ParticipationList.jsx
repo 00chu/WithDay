@@ -20,6 +20,7 @@ function ParticipationList({
   emptyMessage,
   onItemAction,
   isActionLoading = false,
+  itemKeyPrefix = "default",
 }) {
   /*
    * 탭 전환이나 첫 진입 직후에는 query가 pending 상태가 될 수 있다.
@@ -85,7 +86,7 @@ function ParticipationList({
          * 리스트는 반복 렌더링만 담당하고, 신청 취소/삭제 같은 도메인 액션은 상위 페이지가 처리한다.
          */
         <ParticipationCard
-          key={item.id}
+          key={`${itemKeyPrefix}-${item.id}`}
           item={item}
           onAction={onItemAction}
           isActionLoading={isActionLoading}

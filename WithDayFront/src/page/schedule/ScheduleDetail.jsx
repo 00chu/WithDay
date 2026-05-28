@@ -1300,7 +1300,8 @@ export default function ScheduleDetail() {
 
         {/*
          * 신청 버튼은 schedule.status와 recruitEndDate로 마감 여부를 먼저 판단하고,
-         * viewerParticipationStatus로 이미 신청한 사용자인지 확인한다.
+         * viewerParticipationStatus로 현재 사용자가 신청중/참여중/취소됨 중 어디에 있는지 확인한다.
+         * 내 일정의 신청중/참여중 탭 모두 실제 액션은 이 상세 하단 버튼에서 수행한다.
          * completed 상태일 때는 "일정 진행 중"으로 고정되어 신청/취소가 모두 막힌다.
          * 최종 신청 가능 여부는 백엔드가 다시 검증하므로 프론트 판단은 UX 보조 역할이다.
          */}

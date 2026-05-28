@@ -3,6 +3,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   height: 100%;
   background: transparent;
   filter: var(--shadow-card-ticket);
@@ -47,7 +49,7 @@
 .headerSection {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
   min-width: 0;
 }
 
@@ -57,6 +59,7 @@
   align-items: center;
   gap: 12px;
   min-width: 0;
+  width: 100%;
 }
 
 .topMetaGroup {
@@ -66,6 +69,7 @@
   min-width: 0;
   flex-wrap: wrap;
   flex: 1 1 auto;
+  max-width: 100%;
 }
 
 .softPill {
@@ -94,8 +98,18 @@
   font-size: 0.72rem;
 }
 
-.genderPill {
-  min-width: 52px;
+.deadlinePillBase {
+  justify-content: flex-start;
+  min-width: 0;
+  margin-left: -16px;
+  padding-left: 8px;
+  padding-right: 12px;
+  border-radius: 0 999px 999px 0;
+  flex-shrink: 0;
+}
+
+.cardCompact .deadlinePillBase {
+  margin-left: -13px;
 }
 
 .deadlinePill {
@@ -116,7 +130,7 @@
 .dateText {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 2px;
   max-width: 100%;
   color: var(--color-text-secondary);
@@ -137,6 +151,19 @@
 .periodLine {
   display: block;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.periodInline {
+  display: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.periodLinePrimary {
+  display: block;
 }
 
 .bookmarkIndicator {
@@ -164,7 +191,8 @@
 
 .titleGroup,
 .dateGroup,
-.descriptionRow {
+.descriptionRow,
+.dateRow {
   min-width: 0;
 }
 
@@ -174,11 +202,12 @@
 
 .dateGroup {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: flex-start;
-  flex: 0 1 auto;
-  min-width: fit-content;
-  text-align: right;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  text-align: left;
 }
 
 .cardTitle {
@@ -188,20 +217,21 @@
   font-weight: 800;
   line-height: 1.28;
   letter-spacing: -0.02em;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: calc(1.28em * 2);
-  max-height: calc(1.28em * 2);
+  white-space: nowrap;
+  min-width: 0;
+  width: 100%;
+  min-height: 1.28em;
+  max-height: 1.28em;
   word-break: keep-all;
 }
 
 .cardTitleCompact {
   font-size: 1.06rem;
-  min-height: calc(1.28em * 2);
-  max-height: calc(1.28em * 2);
+  min-height: 1.28em;
+  max-height: 1.28em;
 }
 
 .cardDescription {
@@ -210,20 +240,21 @@
   font-size: 0.84rem;
   line-height: 1.45;
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 1.45em;
-  max-height: 1.45em;
-  word-break: keep-all;
+  min-height: calc(1.45em * 2);
+  max-height: calc(1.45em * 2);
+  word-break: break-word;
+  overflow-wrap: anywhere;
   width: 100%;
 }
 
 .cardDescriptionCompact {
   font-size: 0.78rem;
-  min-height: 1.45em;
-  max-height: 1.45em;
+  min-height: calc(1.45em * 2);
+  max-height: calc(1.45em * 2);
 }
 
 .ticketDivider {
@@ -270,7 +301,7 @@
 }
 
 .cardBottom {
-  padding: 0 16px 16px;
+  padding: 14px 16px 16px;
 }
 
 .cardBottomCompact {
@@ -284,7 +315,7 @@
   */
   position: relative;
   width: 100%;
-  aspect-ratio: 2 / 1;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   background: linear-gradient(
     180deg,
@@ -321,13 +352,15 @@
   min-height: 26px;
   padding: 0 10px;
   border-radius: 999px;
-  background: var(--color-primary);
+  background: var(--color-overlay-glass);
   color: var(--color-text-inverse);
   font-size: 0.76rem;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
+  box-shadow: 0 1px 4px var(--color-overlay-shadow);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .overlayPillCompact {
@@ -363,7 +396,7 @@
   }
 
   .dateGroup {
-    min-width: 112px;
+    max-width: 100%;
   }
 
   .dateText {
@@ -390,7 +423,7 @@
     gap: 10px;
   }
 
-  .middleRow,
+  .titleRow,
   .descriptionRow {
     flex-direction: column;
     align-items: flex-start;
@@ -404,7 +437,8 @@
   .topMetaGroup,
   .titleGroup,
   .dateGroup,
-  .descriptionRow {
+  .descriptionRow,
+  .dateRow {
     width: 100%;
   }
 
@@ -416,12 +450,19 @@
   .dateGroup {
     align-items: flex-start;
     text-align: left;
+    max-width: 100%;
   }
 
   .softPill {
     min-height: 26px;
     padding: 0 9px;
     font-size: 0.74rem;
+  }
+
+  .deadlinePillBase {
+    margin-left: -14px;
+    padding-left: 7px;
+    padding-right: 10px;
   }
 
   .dateText {
@@ -439,8 +480,8 @@
   .cardDescription,
   .cardDescriptionCompact {
     font-size: 0.78rem;
-    min-height: 1.45em;
-    max-height: 1.45em;
+    min-height: calc(1.45em * 2);
+    max-height: calc(1.45em * 2);
   }
 
   .thumbnailOverlay {
@@ -467,6 +508,12 @@
     font-size: 0.7rem;
   }
 
+  .deadlinePillBase {
+    margin-left: -12px;
+    padding-left: 6px;
+    padding-right: 9px;
+  }
+
   .dateText {
     font-size: 0.76rem;
   }
@@ -483,5 +530,15 @@
   .bookmarkIndicator {
     width: 20px;
     height: 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .dateTextMultiline .periodInline {
+    display: block;
+  }
+
+  .dateTextMultiline .periodLine {
+    display: none;
   }
 }
