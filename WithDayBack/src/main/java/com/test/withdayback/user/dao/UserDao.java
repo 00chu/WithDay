@@ -1,11 +1,13 @@
 package com.test.withdayback.user.dao;
 
+import com.test.withdayback.user.dto.MypageEditRequestDTO;
 import com.test.withdayback.user.vo.Interest;
 import com.test.withdayback.user.vo.Terms;
 import com.test.withdayback.user.vo.User;
 import com.test.withdayback.user.vo.UserInterest;
 import com.test.withdayback.user.vo.UserTerms;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -36,4 +38,23 @@ public interface UserDao {
 
     // 유저의 관심사 선택 내역 저장
     void insertUserInterest(UserInterest userInterest);
+
+    // 약관
+    List<UserTerms> findUserTermById(Long id);
+    //관심사
+    List<UserInterest> getAllUserInterests(Long id);
+
+    // 마이페이지 유저 기본 정보 수정
+    int updateMypageUser(MypageEditRequestDTO dto);
+
+    // 유저 관심사 전체 삭제
+    int deleteUserInterests(Long userId);
+
+    // 유저 관심사 추가
+    int insertUserInterestById(@Param("userId") Long userId,
+                               @Param("interestId") Long interestId);
+
+    // 알림 동의 여부 수정
+    int updateNotificationAgreed(@Param("userId") Long userId,
+                                 @Param("agreed") Boolean agreed);
 }

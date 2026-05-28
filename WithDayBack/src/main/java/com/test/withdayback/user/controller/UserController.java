@@ -5,6 +5,7 @@
     import com.test.withdayback.user.service.UserService;
     import com.test.withdayback.user.vo.Interest;
     import com.test.withdayback.user.vo.Terms;
+    import com.test.withdayback.user.dto.MypageEditRequestDTO;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.http.HttpStatus;
     import org.springframework.http.ResponseEntity;
@@ -138,14 +139,11 @@
             // 떰 테이블 - user_terms 에 terms_id 가 4(알림) 에 agreed가 1(활성화)
 
             MypageRequestDTO mypageRequestDTO = userService.getUserData(email);
-            return ResponseEntity.ok("호출");
+            return ResponseEntity.ok(mypageRequestDTO);
         }
         @PostMapping("/mypage/edit")
-        public ResponseEntity<?> postUserData(){
-            // 이메일, 닉네임, 이미지 연락처, 주소, 소개(intro),
-            // 관심사 interests 랑 user_interests join해서 mapper에 추가
-            // user_terms 에 terms_id 가 4(알림) 에 agreed가 1(활성화)
-
-            return ResponseEntity.ok("호출");
+        public ResponseEntity<?> postUserData(@RequestBody MypageEditRequestDTO requestDTO) {
+            userService.updateUserData(requestDTO);
+            return ResponseEntity.ok("마이페이지 정보가 수정되었습니다.");
         }
     }
