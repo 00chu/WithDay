@@ -7,6 +7,7 @@ import ExplorePage from "./page/explore/ExplorePage";
 import Signup from "./page/login/Signup";
 import Login from "./page/login/Login";
 import SocialExtra from "./page/login/SocialExtra";
+import { useAuthStore } from "./features/auth/store/authStore";
 
 import ScheduleDetail from "./page/schedule/ScheduleDetail";
 import WriteSchedule from "./page/schedule/WriteSchedule";
@@ -25,6 +26,33 @@ import LayoutContainer from "./shared/ui/LayoutContainer/LayoutContainer";
 import PrivateRoute from "./features/ui/PrivateRoute";
 
 function App() {
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const setLogout = useAuthStore((state) => state.setLogout);
+  const getTokenRemainingTime = useAuthStore(
+    (state) => state.getTokenRemainingTime,
+  );
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      return;
+    }
+
+    const remainingTime = getTokenRemainingTime();
+
+    if (remainingTime <= 0) {
+      setLogout();
+      window.location.reload();
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setLogout();
+      window.location.reload();
+    }, remainingTime);
+
+    return () => window.clearTimeout(timer);
+  }, [isLoggedIn, getTokenRemainingTime, setLogout]);
+
   useEffect(() => {
     const init = async () => {
       // OneSingal은 https 환경에서만 동작. 배포 운영 시 https 도메인 필요.

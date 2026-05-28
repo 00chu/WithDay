@@ -7,20 +7,37 @@ import Alert from "@mui/material/Alert";
 
 const PrivateRoute = ({ children }) => {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const setLogout = useAuthStore((state) => state.setLogout);
+  const isTokenExpired = useAuthStore((state) => state.isTokenExpired);
+
   const navigate = useNavigate();
 
+  const isExpired = isLoggedIn && isTokenExpired();
+  const shouldBlock = !isLoggedIn || isExpired;
+
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (isExpired) {
+      setLogout();
+    }
+
+    if (shouldBlock) {
       const timer = setTimeout(() => {
-        navigate("/login", { replace: true });
+        navigate("/login", {
+          replace: true,
+          state: {
+            toastMessage: isExpired
+              ? "로그인 시간이 만료되었습니다. 다시 로그인해주세요."
+              : "로그인이 필요한 기능입니다.",
+            toastSeverity: "warning",
+          },
+        });
       }, 500);
 
       return () => clearTimeout(timer);
     }
-  }, [isLoggedIn, navigate]);
+  }, [isExpired, shouldBlock, setLogout, navigate]);
 
-  // 로그인 안 된 경우 - 알림, 리다이렉트 대기
-  if (!isLoggedIn) {
+  if (shouldBlock) {
     return (
       <Snackbar
         open={true}
@@ -35,7 +52,9 @@ const PrivateRoute = ({ children }) => {
         }}
       >
         <Alert severity="warning" variant="filled">
-          로그인이 필요한 기능입니다
+          {isExpired
+            ? "로그인 시간이 만료되었습니다"
+            : "로그인이 필요한 기능입니다"}
         </Alert>
       </Snackbar>
     );
