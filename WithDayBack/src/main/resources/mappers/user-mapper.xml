@@ -38,12 +38,21 @@
     </select>
 
     <select id="selectAllMember" resultType="User">
-        SELECT *
+        SELECT nickname, email, provider, gender, birthday, status, create_at
         FROM user
 
         <where>
+            <!-- 성별 조건 있을 때 성별 조건 -->
             <if test="gender != null and gender != ''">
                 gender = #{gender}
+            </if>
+            <!-- 가입경로 provider -->
+            <if test="provider != null">
+                provider = #{provider}
+            </if>
+            <!-- 회원 상태 status -->
+            <if test="status != null">
+                status = #{status}
             </if>
         </where>
 
