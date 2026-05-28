@@ -74,7 +74,6 @@
             </otherwise>
         </choose>
     </select>
-</mapper>
     
     <select id="getAllInterests" resultType="Interest">
         SELECT

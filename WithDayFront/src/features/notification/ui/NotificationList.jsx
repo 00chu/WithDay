@@ -18,11 +18,12 @@ export default function NotificationList({ onClose }) {
   const queryClient = useQueryClient();
 
   const { data: notifications = [], isLoading } = useQuery({
-    // 쿼리 키를 로그인 유저 별로 분리해서 유저 변경 시
-    // 이전 사용자의 데이터를 보지 않고 새로 불러올 수 있도록 함.
-    queryKey: ["notifications", loginUser?.email],
+    // 쿼리 키를 로그인 유저 별로 분리, 캐시를 사용자 별로 분리
+    // 유저 변경 시 이전 사용자의 데이터를 보지 않고 새로 불러올 수 있도록 함.
+    // 로그인 유저의 이메일이 변경되면 다른 쿼리로 인식됨.
+    queryKey: ["notifications", loginUser?.email], // 복합키로 사용
     queryFn: getNotifications,
-    enabled: !!loginUser?.email,
+    enabled: !!loginUser?.email, // 이메일 값이 있을 때만 요청 보내도록
   });
 
   if (isLoading) {
