@@ -63,9 +63,23 @@ export const getNotificationTerm = async (token) => {
   return response.data;
 };
 
-// 알림 삭제
+// 알림 한 개 삭제
 export const deleteNotification = async (notificationId) => {
   const response = await api.delete(`/notifications/${notificationId}`);
+
+  return response.data;
+};
+
+// 읽은 알림 전체 삭제
+export const deleteReadNotifications = async () => {
+  const response = await api.delete("/notifications/read");
+
+  return response.data;
+};
+
+// 알림 전체 삭제
+export const deleteAllNotifications = async () => {
+  const response = await api.delete("/notifications");
 
   return response.data;
 };

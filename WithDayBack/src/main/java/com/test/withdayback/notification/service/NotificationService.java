@@ -3,7 +3,6 @@ package com.test.withdayback.notification.service;
 import com.test.withdayback.notification.dao.NotificationDao;
 import com.test.withdayback.notification.enums.NotificationType;
 import com.test.withdayback.notification.vo.Notification;
-import com.test.withdayback.schedule.vo.Schedule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,7 +37,7 @@ public class NotificationService {
         Notification notification = new Notification();
 
         notification.setReceiverId(receiverId);
-        notification.setTargetUrl("/schedule/"+scheduleId);
+        notification.setTargetUrl("/schedule/" + scheduleId);
         notification.setType(NotificationType.APPLY);
         notification.setTitle(title);
         notification.setMessage(message);
@@ -156,9 +155,18 @@ public class NotificationService {
     }
 
     public int getNotificationTerm(Long id) {
-        return  notificationDao.getNotificationTerm(id);
+        return notificationDao.getNotificationTerm(id);
     }
 
-    public void deleteNotification(Long notificationId) {notificationDao.deleteNotification(notificationId);
+    public void deleteNotification(Long notificationId) {
+        notificationDao.deleteNotification(notificationId);
+    }
+
+    public void deleteReadNotifications(Long id) {
+        notificationDao.deleteReadNotifications(id);
+    }
+
+    public void deleteAllNotifications(Long id) {
+        notificationDao.deleteAllNotifications(id);
     }
 }
