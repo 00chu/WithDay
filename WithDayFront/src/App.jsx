@@ -1,5 +1,5 @@
 import styles from "./App.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Home from "./page/home/Home";
@@ -19,7 +19,6 @@ import MyPageEdit from "./page/my-page/MyPageEdit";
 import WishlistPage from "./page/wishlist/WishlistPage";
 
 import OneSignal from "./shared/lib/oneSignal";
-import { useEffect } from "react";
 import Header from "./widgets/Header/Header";
 import BottomNav from "./widgets/BottomNav/BottomeNav";
 import LayoutContainer from "./shared/ui/LayoutContainer/LayoutContainer";
@@ -46,6 +45,7 @@ function App() {
     // 남은 시간이 0 이하이면 이미 토큰이 만료된 상태이므로, 바로 로그아웃 처리하고 페이지 새로고침
     if (remainingTime <= 0) {
       setLogout();
+      // 토큰이 만료되어 로그아웃 처리된 후, 로그인 페이지로 리다이렉트될 때 새로고침이 필요한 경우가 있어서, 새로고침도 함께 수행
       window.location.reload();
       return;
     }
