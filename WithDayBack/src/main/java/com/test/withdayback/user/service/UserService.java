@@ -5,6 +5,7 @@ import com.cloudinary.utils.ObjectUtils;
 import com.test.withdayback.common.util.EmailSender;
 import com.test.withdayback.common.util.JwtUtil;
 import com.test.withdayback.user.dao.UserDao;
+import com.test.withdayback.user.dto.MypageRequestDTO;
 import com.test.withdayback.user.dto.SignupRequestDTO;
 import com.test.withdayback.user.vo.Interest;
 import com.test.withdayback.user.vo.Terms;
@@ -377,5 +378,28 @@ public class UserService {
 
     public User findByEmail(String email) {
         return userDao.findByEmail(email);
+    }
+
+    public MypageRequestDTO getUserData(String email) {
+        // user data
+        User user = userDao.findByEmail(email);
+
+        // user terms
+        List<UserTerms> userTerms = userDao.findUserTermById(id);
+
+        // interest
+        List<Interest> interests = userDao.getAllInterests();
+
+        // user interest
+        List<UserInterest> userInterests = userDao.getAllUserInterests(id);
+
+        MypageRequestDTO mypageRequestDTO = new MypageRequestDTO();
+        mypageRequestDTO.setUser(user);
+        mypageRequestDTO.setUserTerms(userTerms);
+        mypageRequestDTO.setInterests(interests);
+        mypageRequestDTO.setUserInterests(userInterests);
+
+
+        return mypageRequestDTO;
     }
 }

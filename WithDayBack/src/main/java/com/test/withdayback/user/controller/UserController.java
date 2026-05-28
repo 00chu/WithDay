@@ -1,5 +1,6 @@
     package com.test.withdayback.user.controller;
 
+    import com.test.withdayback.user.dto.MypageRequestDTO;
     import com.test.withdayback.user.dto.SignupRequestDTO;
     import com.test.withdayback.user.service.UserService;
     import com.test.withdayback.user.vo.Interest;
@@ -131,17 +132,20 @@
             }
         }
         @GetMapping("/mypage")
-        public ResponseEntity<?> getUserData(){
+        public ResponseEntity<?> getUserData(@RequestParam String email){
             // 유저 테이블 - 이메일, 닉네임, 이미지, 생년월일, 성별, 연락처, 주소, 소개(intro)
             // 인터레스트 테이블 - 관심사 interests 랑 user_interests join해서 mapper에 추가
             // 떰 테이블 - user_terms 에 terms_id 가 4(알림) 에 agreed가 1(활성화)
 
+            MypageRequestDTO mypageRequestDTO = userService.getUserData(email);
+            return ResponseEntity.ok("호출");
         }
         @PostMapping("/mypage/edit")
-        public ResponseEntity<?> getUserData(){
+        public ResponseEntity<?> postUserData(){
             // 이메일, 닉네임, 이미지 연락처, 주소, 소개(intro),
             // 관심사 interests 랑 user_interests join해서 mapper에 추가
             // user_terms 에 terms_id 가 4(알림) 에 agreed가 1(활성화)
 
+            return ResponseEntity.ok("호출");
         }
     }
