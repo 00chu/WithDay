@@ -101,7 +101,7 @@
             }
         }
 
-        // 약관 정보 불러오기 (/users/terms)
+        // 약관 정보 전체 불러오기 (/users/terms)
         @GetMapping("/terms")
         public ResponseEntity<List<Terms>> getTerms() {
             List<Terms> result = userService.getAllTerms();
