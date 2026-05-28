@@ -121,4 +121,18 @@
                 return ResponseEntity.badRequest().body(e.getMessage());
             }
         }
+        @GetMapping("/mypage")
+        public ResponseEntity<?> getUserData(){
+            // 유저 테이블 - 이메일, 닉네임, 이미지, 생년월일, 성별, 연락처, 주소, 소개(intro)
+            // 인터레스트 테이블 - 관심사 interests 랑 user_interests join해서 mapper에 추가
+            // 떰 테이블 - user_terms 에 terms_id 가 4(알림) 에 agreed가 1(활성화)
+
+        }
+        @PostMapping("/mypage/edit")
+        public ResponseEntity<?> getUserData(){
+            // 이메일, 닉네임, 이미지 연락처, 주소, 소개(intro),
+            // 관심사 interests 랑 user_interests join해서 mapper에 추가
+            // user_terms 에 terms_id 가 4(알림) 에 agreed가 1(활성화)
+
+        }
     }
