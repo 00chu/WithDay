@@ -24,13 +24,6 @@ const CATEGORY_LABELS = {
   etc: "기타",
 };
 
-const COST_TYPE_LABELS = {
-  per_person: "총액 1/N",
-  host_covered: "호스트 부담",
-  free: "무료",
-  custom: "인당 고정",
-};
-
 const defaultThumbnail = "/hero.png";
 
 /*
@@ -139,47 +132,6 @@ const resolvePeriodLines = (startDate, endDate) => {
   return [formatCardDate(start), `~ ${formatCardDate(end)}`];
 };
 
-const resolveParticipantsLabel = (currentParticipants, maxParticipants) => {
-  const current = Number.isFinite(Number(currentParticipants))
-    ? Number(currentParticipants)
-    : 0;
-  const max = Number.isFinite(Number(maxParticipants))
-    ? Number(maxParticipants)
-    : 0;
-
-  return `${current} / ${max}명`;
-};
-
-const resolveCostMeta = (costType, totalPrice) => {
-  const typeLabel =
-    COST_TYPE_LABELS[
-      String(costType ?? "")
-        .trim()
-        .toLowerCase()
-    ] ?? "비용 미정";
-
-  if (totalPrice === null || totalPrice === undefined || totalPrice === "") {
-    return {
-      typeLabel,
-      amountLabel: "금액 미정",
-    };
-  }
-
-  const parsedPrice = Number(totalPrice);
-
-  if (!Number.isFinite(parsedPrice)) {
-    return {
-      typeLabel,
-      amountLabel: "금액 미정",
-    };
-  }
-
-  return {
-    typeLabel,
-    amountLabel: `${parsedPrice.toLocaleString("ko-KR")}원`,
-  };
-};
-
 export default function ScheduleCard({
   schedule,
   className,
@@ -203,11 +155,6 @@ export default function ScheduleCard({
   const regionLabel = resolveRegionLabel(schedule?.region);
   const genderLabel = resolveGenderLimitLabel(schedule?.genderLimit);
   const periodLines = resolvePeriodLines(schedule?.startDate, schedule?.endDate);
-  const participantsLabel = resolveParticipantsLabel(
-    schedule?.currentParticipants,
-    schedule?.maxParticipants
-  );
-  const costMeta = resolveCostMeta(schedule?.costType, schedule?.totalPrice);
   const isBookmarked = Boolean(schedule?.isBookmarked);
   const BookmarkIcon = isBookmarked
     ? FavoriteRoundedIcon
@@ -246,48 +193,11 @@ export default function ScheduleCard({
       <div className={clsx(styles.cardTop, isCompact && styles.cardTopCompact)}>
         <div className={styles.headerSection}>
           <div className={clsx(styles.infoRow, styles.topRow)}>
-            <div className={styles.rowLeft}>
-              <span
-                className={clsx(styles.regionPill, isCompact && styles.regionPillCompact)}
-              >
-                {regionLabel}
-              </span>
-              <span
-                className={clsx(styles.categoryPill, isCompact && styles.categoryPillCompact)}
-              >
-                {categoryLabel}
-              </span>
-            </div>
-            <div className={styles.rowRight}>
-              <span
-                className={clsx(styles.softPill, styles.genderPill, isCompact && styles.softPillCompact)}
-              >
-                {genderLabel}
-              </span>
-              <span className={clsx(styles.metaText, isCompact && styles.metaTextCompact)}>
-                {participantsLabel}
-              </span>
-              {/*
-               * 카드의 하트는 액션 버튼이 아니라 "현재 저장 상태를 읽는 시각 신호"다.
-               * 상세 화면에서만 토글하므로 여기서는 pointer-events를 끄고 아이콘 전환만 반영한다.
-               */}
-              <span
-                className={clsx(
-                  styles.bookmarkIndicator,
-                  isBookmarked && styles.bookmarkIndicatorActive
-                )}
-                aria-label={isBookmarked ? "위시리스트에 저장된 일정" : "위시리스트에 저장되지 않은 일정"}
-              >
-                <BookmarkIcon className={styles.bookmarkIcon} />
-              </span>
-            </div>
-          </div>
-
-          <div className={clsx(styles.infoRow, styles.middleRow)}>
-            <div className={styles.rowLeft}>
+            <div className={styles.topMetaGroup}>
               <span
                 className={clsx(
                   styles.softPill,
+                  styles.deadlinePill,
                   deadline.isToday && styles.deadlinePillToday,
                   deadline.isClosed && styles.deadlinePillClosed,
                   isCompact && styles.softPillCompact
@@ -295,8 +205,43 @@ export default function ScheduleCard({
               >
                 {deadline.label}
               </span>
+              <span
+                className={clsx(
+                  styles.softPill,
+                  styles.genderPill,
+                  isCompact && styles.softPillCompact
+                )}
+              >
+                {genderLabel}
+              </span>
             </div>
-            <div className={clsx(styles.rowRight, styles.dateGroup)}>
+            {/*
+             * 카드의 하트는 액션 버튼이 아니라 "현재 저장 상태를 읽는 시각 신호"다.
+             * 상세 화면에서만 토글하므로 여기서는 pointer-events를 끄고 아이콘 전환만 반영한다.
+             */}
+            <span
+              className={clsx(
+                styles.bookmarkIndicator,
+                isBookmarked && styles.bookmarkIndicatorActive
+              )}
+              aria-label={isBookmarked ? "위시리스트에 저장된 일정" : "위시리스트에 저장되지 않은 일정"}
+            >
+              <BookmarkIcon className={styles.bookmarkIcon} />
+            </span>
+          </div>
+
+          <div className={clsx(styles.infoRow, styles.middleRow)}>
+            <div className={styles.titleGroup}>
+              <h3
+                className={clsx(
+                  styles.cardTitle,
+                  isCompact && styles.cardTitleCompact
+                )}
+              >
+                {schedule?.title ?? "제목 없는 일정"}
+              </h3>
+            </div>
+            <div className={styles.dateGroup}>
               <span
                 className={clsx(
                   styles.dateText,
@@ -313,34 +258,17 @@ export default function ScheduleCard({
             </div>
           </div>
 
-          <div className={clsx(styles.infoRow, styles.contentRow)}>
-            <div className={styles.rowLeft}>
-              <h3
-                className={clsx(
-                  styles.cardTitle,
-                  isCompact && styles.cardTitleCompact
-                )}
-              >
-                {schedule?.title ?? "제목 없는 일정"}
-              </h3>
-            </div>
-            <div className={clsx(styles.rowRight, styles.costGroup)}>
-              <span className={clsx(styles.costText, isCompact && styles.costTextCompact)}>
-                <span className={styles.costTypeLine}>{costMeta.typeLabel}</span>
-                <span className={styles.costAmountLine}>{costMeta.amountLabel}</span>
-              </span>
-            </div>
+          <div className={clsx(styles.infoRow, styles.descriptionRow)}>
+            <p
+              className={clsx(
+                styles.cardDescription,
+                isCompact && styles.cardDescriptionCompact
+              )}
+            >
+              {descriptionText}
+            </p>
           </div>
         </div>
-
-        <p
-          className={clsx(
-            styles.cardDescription,
-            isCompact && styles.cardDescriptionCompact
-          )}
-        >
-          {descriptionText}
-        </p>
       </div>
 
       <div className={styles.ticketDivider} aria-hidden="true" />
@@ -370,6 +298,18 @@ export default function ScheduleCard({
             )}
             onError={handleImageError}
           />
+          <div className={styles.thumbnailOverlay}>
+            <span
+              className={clsx(styles.overlayPill, isCompact && styles.overlayPillCompact)}
+            >
+              {regionLabel}
+            </span>
+            <span
+              className={clsx(styles.overlayPill, isCompact && styles.overlayPillCompact)}
+            >
+              {categoryLabel}
+            </span>
+          </div>
         </div>
       </div>
     </article>

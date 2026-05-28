@@ -54,32 +54,20 @@
 .infoRow {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   min-width: 0;
 }
 
-.rowLeft,
-.rowRight {
+.topMetaGroup {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   min-width: 0;
   flex-wrap: wrap;
-}
-
-.rowLeft {
   flex: 1 1 auto;
 }
 
-.rowRight {
-  justify-content: flex-end;
-  flex: 0 1 48%;
-  text-align: right;
-}
-
-.regionPill,
-.categoryPill,
 .softPill {
   display: inline-flex;
   align-items: center;
@@ -95,32 +83,24 @@
   white-space: nowrap;
 }
 
-.regionPill {
-  border: 1px solid var(--color-border-light);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-}
-
-.categoryPill {
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
-}
-
 .softPill {
   background: var(--color-accent-light);
   color: var(--color-accent-dark);
 }
 
-.genderPill {
-  min-width: 54px;
-}
-
-.regionPillCompact,
-.categoryPillCompact,
 .softPillCompact {
   min-height: 24px;
   padding: 0 9px;
   font-size: 0.72rem;
+}
+
+.genderPill {
+  min-width: 52px;
+}
+
+.deadlinePill {
+  background: var(--color-surface-highlight);
+  color: var(--color-primary);
 }
 
 .deadlinePillToday {
@@ -133,26 +113,6 @@
   color: var(--color-status-closed);
 }
 
-.metaText,
-.dateText,
-.costText {
-  color: var(--color-text-primary);
-  font-size: 0.84rem;
-  font-weight: 700;
-  line-height: 1.28;
-}
-
-.metaTextCompact,
-.dateTextCompact,
-.costTextCompact {
-  font-size: 0.76rem;
-}
-
-.dateGroup,
-.costGroup {
-  min-width: 0;
-}
-
 .dateText {
   display: flex;
   flex-direction: column;
@@ -160,7 +120,14 @@
   gap: 2px;
   max-width: 100%;
   color: var(--color-text-secondary);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.28;
   white-space: normal;
+}
+
+.dateTextCompact {
+  font-size: 0.76rem;
 }
 
 .dateTextMultiline {
@@ -169,30 +136,6 @@
 
 .periodLine {
   display: block;
-  white-space: nowrap;
-}
-
-.costText {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  max-width: 100%;
-}
-
-.costTypeLine {
-  color: var(--color-text-muted);
-  font-size: 0.76em;
-  font-weight: 700;
-  line-height: 1.15;
-  white-space: nowrap;
-}
-
-.costAmountLine {
-  color: var(--color-text-primary);
-  font-size: 1em;
-  font-weight: 800;
-  line-height: 1.1;
   white-space: nowrap;
 }
 
@@ -217,6 +160,25 @@
 
 .bookmarkIcon {
   font-size: 1.05rem;
+}
+
+.titleGroup,
+.dateGroup,
+.descriptionRow {
+  min-width: 0;
+}
+
+.titleGroup {
+  flex: 1 1 auto;
+}
+
+.dateGroup {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  flex: 0 1 auto;
+  min-width: fit-content;
+  text-align: right;
 }
 
 .cardTitle {
@@ -246,22 +208,22 @@
   margin: 0;
   color: var(--color-text-secondary);
   font-size: 0.84rem;
-  line-height: 1.48;
+  line-height: 1.45;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: calc(1.48em * 2);
-  max-height: calc(1.48em * 2);
+  min-height: 1.45em;
+  max-height: 1.45em;
   word-break: keep-all;
-  padding-top: 4px;
+  width: 100%;
 }
 
 .cardDescriptionCompact {
   font-size: 0.78rem;
-  min-height: calc(1.48em * 2);
-  max-height: calc(1.48em * 2);
+  min-height: 1.45em;
+  max-height: 1.45em;
 }
 
 .ticketDivider {
@@ -343,6 +305,37 @@
   object-position: center;
 }
 
+.thumbnailOverlay {
+  position: absolute;
+  left: 5px;
+  bottom: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: calc(100% - 24px);
+}
+
+.overlayPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+}
+
+.overlayPillCompact {
+  min-height: 24px;
+  padding: 0 9px;
+  font-size: 0.72rem;
+}
+
 .thumbnailFallback {
   object-fit: fill;
   object-position: center center;
@@ -369,13 +362,11 @@
     gap: 10px;
   }
 
-  .rowRight {
-    flex-basis: 52%;
+  .dateGroup {
+    min-width: 112px;
   }
 
-  .metaText,
-  .dateText,
-  .costText {
+  .dateText {
     font-size: 0.8rem;
   }
 }
@@ -399,40 +390,41 @@
     gap: 10px;
   }
 
-  .topRow,
   .middleRow,
-  .contentRow {
+  .descriptionRow {
     flex-direction: column;
-  }
-
-  .rowLeft,
-  .rowRight {
-    width: 100%;
-    justify-content: flex-start;
-    text-align: left;
-  }
-
-  .dateGroup,
-  .costGroup {
-    width: 100%;
-  }
-
-  .dateText,
-  .costText {
     align-items: flex-start;
   }
 
-  .regionPill,
-  .categoryPill,
+  .topRow {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .topMetaGroup,
+  .titleGroup,
+  .dateGroup,
+  .descriptionRow {
+    width: 100%;
+  }
+
+  .topMetaGroup {
+    justify-content: flex-start;
+  }
+
+  .dateText,
+  .dateGroup {
+    align-items: flex-start;
+    text-align: left;
+  }
+
   .softPill {
     min-height: 26px;
     padding: 0 9px;
     font-size: 0.74rem;
   }
 
-  .metaText,
-  .dateText,
-  .costText {
+  .dateText {
     font-size: 0.8rem;
   }
 
@@ -447,25 +439,35 @@
   .cardDescription,
   .cardDescriptionCompact {
     font-size: 0.78rem;
-    min-height: calc(1.48em * 2);
-    max-height: calc(1.48em * 2);
+    min-height: 1.45em;
+    max-height: 1.45em;
+  }
+
+  .thumbnailOverlay {
+    left: 5px;
+    right: 3px;
+    bottom: 5px;
+    max-width: none;
+  }
+
+  .overlayPill {
+    min-height: 24px;
+    padding: 0 9px;
+    font-size: 0.72rem;
   }
 }
 
 @media (max-width: 420px) {
-  .rowRight {
+  .topMetaGroup,
+  .thumbnailOverlay {
     gap: 6px;
   }
 
-  .regionPill,
-  .categoryPill,
   .softPill {
     font-size: 0.7rem;
   }
 
-  .metaText,
-  .dateText,
-  .costText {
+  .dateText {
     font-size: 0.76rem;
   }
 
@@ -477,10 +479,9 @@
   .cardDescriptionCompact {
     font-size: 0.74rem;
   }
-}
 
-@media (min-width: 1024px) and (max-width: 1279px) {
-  .rowRight {
-    flex-basis: 42%;
+  .bookmarkIndicator {
+    width: 20px;
+    height: 20px;
   }
 }
