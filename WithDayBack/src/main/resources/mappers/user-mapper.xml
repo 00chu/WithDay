@@ -12,11 +12,15 @@
             #{email}, #{password}, #{provider}, #{providerId}, #{nickname},
             #{profileImage}, #{birthday}, #{gender}, #{phone},
             'active', #{postcode}, #{address}, #{detailAddress}, NOW()
-                 )
+        )
     </insert>
 
     <select id="findByEmail" parameterType="String" resultType="User">
         SELECT * FROM user WHERE email = #{email}
+    </select>
+
+    <select id="findUserIdByEmail" parameterType="String" resultType="long">
+        SELECT id FROM user WHERE email = #{email}
     </select>
 
     <insert id="insertUserTerms" parameterType="UserTerms">
@@ -70,4 +74,19 @@
             </otherwise>
         </choose>
     </select>
+</mapper>
+    
+    <select id="getAllInterests" resultType="Interest">
+        SELECT
+            id AS id,
+            name AS interestName,
+            icon_name AS iconName
+        FROM interests
+    </select>
+
+    <insert id="insertUserInterest" parameterType="UserInterest">
+        INSERT INTO user_interests (user_id, interest_id)
+        VALUES (#{userId}, #{interestId})
+    </insert>
+
 </mapper>

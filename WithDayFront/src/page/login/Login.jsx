@@ -95,6 +95,7 @@ const Login = () => {
           if (notificationTerm === 1) {
             const permission = await OneSignal.Notifications.permissionNative;
 
+            // 브라우저가 이미 구독 상태라면 알림 허용 창 뜨지 않음
             if (permission === "default") {
               await OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
             }
@@ -109,31 +110,6 @@ const Login = () => {
           navigate("/");
         }
       })();
-
-      // 백그라운드에서 실행
-      /*(async () => {
-        try {
-          // 로그인 후 진행해야 되는 부분으로 기존 방식 채택
-          // useQuery는 컴포넌트 최상단에서만 사용 가능.
-          const notificationTerm = await getNotificationTerm(token);
-
-          // 동의한 사용자만 OneSignal 연결
-          if (notificationTerm === 1) {
-            await window.OneSignal.login(user.email.toString()); // OneSignal 유저 연결
-
-            await window.OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
-
-            await window.OneSignal.User.PushSubscription.optIn(); // 브라우저 알림 구독을 강제 활성화
-
-            console.log(
-              "구독 여부:",
-              window.OneSignal.User.PushSubscription.optedIn,
-            );
-          }
-        } catch (error) {
-          console.error("OneSignal 연결 실패:", error);
-        }
-      })();*/
     },
     // 통신 실패시
     onError: (error) => {
@@ -179,6 +155,7 @@ const Login = () => {
             if (notificationTerm === 1) {
               const permission = await OneSignal.Notifications.permissionNative;
 
+              // 브라우저가 이미 구독 상태라면 알림 허용 창 뜨지 않음
               if (permission === "default") {
                 await OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
               }
@@ -283,6 +260,13 @@ const Login = () => {
               <input type="checkbox" {...register("autoLogin")} />
               <span className={styles.checkboxText}>자동 로그인</span>
             </label>
+          </div>
+
+          {/* 아이디 / 비밀번호 찾기 링크 */}
+          <div className={styles.findLinks}>
+            <span onClick={() => navigate("/find-id")}>아이디 찾기</span>
+            <span className={styles.findDivider}>|</span>
+            <span onClick={() => navigate("/find-pw")}>비밀번호 찾기</span>
           </div>
 
           {/* 버튼: 서버와 통신 중(isPending)일 때는 버튼을 비활성화(disabled) 시켜서 유저가 여러 번 누르는 걸 막음 */}

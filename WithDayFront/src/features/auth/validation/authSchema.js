@@ -28,7 +28,11 @@ export const signupSchema = yup.object().shape({
     .oneOf([yup.ref("password"), null], "비밀번호가 일치하지 않습니다.")
     .required("비밀번호 확인을 입력해주세요."),
 
-  nickname: yup.string().required("닉네임을 입력해주세요."),
+  nickname: yup
+    .string()
+    .required("닉네임을 입력해주세요.")
+    .min(2, "닉네임은 최소 2자 이상이어야 합니다.")
+    .max(20, "닉네임은 최대 20자까지 입력할 수 있습니다."),
 
   // 기본 제공 함수가 없을 때는 .test() 함수를 써서 직접 검사 규칙을 만듬.
   // 형태: .test('규칙이름', '실패시 에러메시지', (현재입력값) => { 검사로직(참/거짓 반환) })
@@ -87,7 +91,14 @@ export const signupSchema = yup.object().shape({
 
   gender: yup.string().required("성별을 선택해주세요."),
 
-  phone: yup.string().required("전화번호를 입력해주세요."),
+  // matches(정규식, '~~'): 입력한 값이 정규식 패턴과 일치해야 함. '~~'는 검사 실패 시 보여줄 에러 메시지. (yup이 제공하는 편리한 메서드)
+  phone: yup
+    .string()
+    .required("전화번호를 입력해주세요.")
+    .matches(
+      /^010-\d{4}-\d{4}$/,
+      "전화번호는 010-1234-5678 형식으로 입력해주세요.",
+    ),
 
   postcode: yup.string().required("우편번호를 검색해주세요."),
 
@@ -132,6 +143,12 @@ export const loginSchema = yup.object().shape({
 // signupSchema를 재사용하지 않고 따로 만든 이유: 소셜 가입 화면에는 email, password 입력창이 없는데, signupSchema를 쓰면
 // 화면에 없는 필드들을 .required()로 찾으려 하므로 폼 제출이 막히는 버그가 발생함.
 export const socialExtraSchema = yup.object().shape({
+  nickname: yup
+    .string()
+    .required("닉네임을 입력해주세요.")
+    .min(2, "닉네임은 최소 2자 이상이어야 합니다.")
+    .max(20, "닉네임은 최대 20자까지 입력할 수 있습니다."),
+
   // 기본 제공 함수가 없을 때는 .test() 함수를 써서 직접 검사 규칙을 만듬.
   // 형태: .test('규칙이름', '실패시 에러메시지', (현재입력값) => { 검사로직(참/거짓 반환) })
   birthday: yup
@@ -188,7 +205,14 @@ export const socialExtraSchema = yup.object().shape({
 
   gender: yup.string().required("성별을 선택해주세요."),
 
-  phone: yup.string().required("전화번호를 입력해주세요."),
+  // matches(정규식, '~~'): 입력한 값이 정규식 패턴과 일치해야 함. '~~'는 검사 실패 시 보여줄 에러 메시지. (yup이 제공하는 편리한 메서드)
+  phone: yup
+    .string()
+    .required("전화번호를 입력해주세요.")
+    .matches(
+      /^010-\d{4}-\d{4}$/,
+      "전화번호는 010-1234-5678 형식으로 입력해주세요.",
+    ),
 
   postcode: yup.string().required("우편번호를 검색해주세요."),
 
@@ -215,4 +239,61 @@ export const socialExtraSchema = yup.object().shape({
 
   // 선택 항목(알림 동의)은 필수(required)가 아니므로, 체크를 안 했을 때의 기본값(default)만 false로 설정(체크 안 하면 false, 체크하면 true)
   agreeNotification: yup.boolean().default(false),
+});
+
+// 아이디 찾기용 검사 규칙 (Schema), yup.object().shape({ ... }) 형태로 객체 안에 각 필드별 검사 규칙을 작성
+// -> yup 라이브러리의 공식 문법이고 object()는 객체 타입을 의미, shape() 안에 각 필드별로 검사 규칙을 작성
+export const findIdSchema = yup.object().shape({
+  nickname: yup
+    .string()
+    .required("닉네임을 입력해주세요.")
+    .min(2, "닉네임은 최소 2자 이상이어야 합니다.")
+    .max(20, "닉네임은 최대 20자까지 입력할 수 있습니다."),
+
+  // matches(정규식, '~~'): 입력한 값이 정규식 패턴과 일치해야 함. '~~'는 검사 실패 시 보여줄 에러 메시지. (yup이 제공하는 편리한 메서드)
+  phone: yup
+    .string()
+    .required("전화번호를 입력해주세요.")
+    .matches(
+      /^010-\d{4}-\d{4}$/,
+      "전화번호는 010-1234-5678 형식으로 입력해주세요.",
+    ),
+});
+
+// 비밀번호 찾기 - 이메일 입력 단계 검증 규칙 (Schema), yup.object().shape({ ... }) 형태로 객체 안에 각 필드별 검사 규칙을 작성
+// -> yup 라이브러리의 공식 문법이고 object()는 객체 타입을 의미, shape() 안에 각 필드별로 검사 규칙을 작성
+export const findPwEmailSchema = yup.object().shape({
+  email: yup
+    .string()
+    .required("이메일을 입력해주세요.")
+    .email("올바른 이메일 형식이 아닙니다."),
+});
+
+// 비밀번호 찾기 - 인증번호 입력 단계 검증 규칙 (Schema), yup.object().shape({ ... }) 형태로 객체 안에 각 필드별 검사 규칙을 작성
+// -> yup 라이브러리의 공식 문법이고 object()는 객체 타입을 의미, shape() 안에 각 필드별로 검사 규칙을 작성
+// 회원가입의 이메일 인증번호는 mailAuthInput/mailAuthCode state로 직접 비교했지만,
+// 비밀번호 찾기에서는 단계별 폼 검증 흐름을 연습하기 위해 인증번호 입력 형식도 yup schema로 분리함.
+// 단, 실제 인증번호가 맞는지 여부는 백엔드 응답값 또는 컴포넌트 state와 비교해서 최종 확인해야 함.
+export const findPwCodeSchema = yup.object().shape({
+  // matches(정규식, '~~'): 입력한 값이 정규식 패턴과 일치해야 함. '~~'는 검사 실패 시 보여줄 에러 메시지. (yup이 제공하는 편리한 메서드)
+  authCode: yup
+    .string()
+    .required("인증번호를 입력해주세요.")
+    .matches(/^\d{6}$/, "인증번호 6자리를 입력해주세요."),
+});
+
+// 비밀번호 찾기 - 비밀번호 재설정 단계 검증 규칙 (Schema), yup.object().shape({ ... }) 형태로 객체 안에 각 필드별 검사 규칙을 작성
+// -> yup 라이브러리의 공식 문법이고 object()는 객체 타입을 의미, shape() 안에 각 필드별로 검사 규칙을 작성
+export const findPwResetSchema = yup.object().shape({
+  newPassword: yup
+    .string()
+    .required("새 비밀번호를 입력해주세요.")
+    .min(8, "비밀번호는 8자 이상 입력해주세요."),
+
+  // oneOf([yup.ref('newPassword')], '~~'): 입력한 값이 newPassword 필드의 값과 일치해야 함. '~~'는 검사 실패 시 보여줄 에러 메시지. (yup이 제공하는 편리한 메서드)
+  // null은 빈칸일 때 엉뚱한 에러("일치하지 않습니다")가 먼저 뜨는 걸 막아주기 위해, null 덕분에 빈칸으로 넘어가면 뒤에 있는 required의 "입력해주세요" 에러가 먼저 나옴.
+  newPasswordConfirm: yup
+    .string()
+    .oneOf([yup.ref("newPassword"), null], "비밀번호가 일치하지 않습니다.")
+    .required("새 비밀번호 확인을 입력해주세요."),
 });

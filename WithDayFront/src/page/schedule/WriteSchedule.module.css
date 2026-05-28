@@ -342,6 +342,11 @@
   background: #10b8b4 !important;
 }
 
+/* datepicker 팝업 최상단 */
+:global(.react-datepicker-popper) {
+  z-index: 5 !important;
+}
+
 /* 날짜 출력 */
 .dateWrap {
   margin-top: 26px;
@@ -428,7 +433,7 @@
 
   border-radius: 14px;
 
-  background: linear-gradient(180deg, #effbfb 0%, #dff7f6 100%);
+  background: var(--color-accent-light);
 
   display: flex;
   flex-direction: column;
@@ -993,8 +998,6 @@
 
   .cost {
     width: 100%;
-
-    padding: 0 16px;
 
     box-sizing: border-box;
   }

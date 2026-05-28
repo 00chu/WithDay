@@ -30,10 +30,10 @@ export default function Header({ selectedRegion, onRegionChange }) {
   });
 
   const { data: notificationCount = 0 } = useQuery({
-    queryKey: ["notification-count"],
-    queryFn: getNotificationCount,
-    enabled: isLoggedIn,
-    refetchInterval: 30000, // 30초마다 자동 갱신 (선택)
+    queryKey: ["notification-count", loginUser?.email],
+    queryFn: () => getNotificationCount(loginUser.email),
+    enabled: !!(isLoggedIn && loginUser?.email),
+    refetchInterval: 30000,
   });
 
   const regionOptions = useMemo(() => {

@@ -65,6 +65,11 @@ export const fetchTerms = async () => {
   return response.data;
 };
 
+export const fetchInterests = async () => {
+  const response = await api.get(`/users/interests`);
+  return response.data;
+};
+
 export const loginUser = async (loginData) => {
   const response = await api.post(`/users/login`, loginData);
   return response.data;
@@ -77,5 +82,41 @@ export const googleLoginUser = async (googleData) => {
 
 export const socialSignupUser = async (signupData) => {
   const response = await api.post(`/users/social-signup`, signupData);
+  return response.data;
+};
+
+export const getNotificationCount = async (email) => {
+  const response = await api.get(
+    `/notifications/count/${encodeURIComponent(email)}`,
+  );
+  return response.data;
+};
+
+// 아이디 찾기
+export const findIdUser = async (findIdData) => {
+  const response = await api.post(`/users/find-id`, findIdData);
+  return response.data;
+};
+
+// 비밀번호 찾기 - 인증번호 전송
+export const sendPasswordResetCode = async (email) => {
+  const response = await api.post(`/users/find-password/email-verification`, {
+    email,
+  });
+  return response.data;
+};
+
+// 비밀번호 찾기 - 인증번호 확인
+export const verifyPasswordResetCode = async (verifyData) => {
+  const response = await api.post(
+    `/users/find-password/verify-code`,
+    verifyData,
+  );
+  return response.data;
+};
+
+// 비밀번호 재설정
+export const resetPassword = async (resetData) => {
+  const response = await api.post(`/users/reset-password`, resetData);
   return response.data;
 };
