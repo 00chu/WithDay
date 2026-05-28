@@ -2,12 +2,10 @@ import { Input, TextArea } from "../../shared/ui/Form/Form";
 import styles from "./WriteSchedule.module.css";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { ko } from "date-fns/locale";
-
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
@@ -15,7 +13,8 @@ import Button from "../../shared/ui/Button/Button";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getDetailRegion, getRegion } from "../../features/region/api";
 import { insertSchedule } from "../../features/schedule/api";
-
+import CloseIcon from "@mui/icons-material/Close";
+import IconButton from "@mui/material/IconButton";
 import { insertSchema } from "../../features/schedule/validation/insertSchema";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -176,6 +175,12 @@ const WriteSchedule = () => {
       detailScheduleData: formValues.detailSchedule,
     });
   };
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  useEffect(() => {
+    setOpenSnackbar(hasError);
+  }, [hasError]);
 
   return (
     <>
@@ -638,7 +643,24 @@ const WriteSchedule = () => {
         </div>
       </main>
 
-      <Snackbar open={hasError} autoHideDuration={3000}>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        action={
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={() => setOpenSnackbar(false)}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      >
         <Alert
           severity="warning"
           variant="filled"
