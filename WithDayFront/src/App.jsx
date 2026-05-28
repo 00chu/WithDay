@@ -4,10 +4,12 @@ import { Routes, Route } from "react-router-dom";
 
 import Home from "./page/home/Home";
 import ExplorePage from "./page/explore/ExplorePage";
+import { useAuthStore } from "./features/auth/store/authStore";
 import Signup from "./page/login/Signup";
 import Login from "./page/login/Login";
 import SocialExtra from "./page/login/SocialExtra";
-import { useAuthStore } from "./features/auth/store/authStore";
+import FindId from "./page/login/FindId";
+import FindPw from "./page/login/FindPw";
 
 import ScheduleDetail from "./page/schedule/ScheduleDetail";
 import WriteSchedule from "./page/schedule/WriteSchedule";
@@ -98,6 +100,8 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup/extra" element={<SocialExtra />} />
+            <Route path="/find-id" element={<FindId />} />
+            <Route path="/find-pw" element={<FindPw />} />
 
             <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
 

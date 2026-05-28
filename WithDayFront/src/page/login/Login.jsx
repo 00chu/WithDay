@@ -285,6 +285,13 @@ const Login = () => {
             </label>
           </div>
 
+          {/* 아이디 / 비밀번호 찾기 링크 */}
+          <div className={styles.findLinks}>
+            <span onClick={() => navigate("/find-id")}>아이디 찾기</span>
+            <span className={styles.findDivider}>|</span>
+            <span onClick={() => navigate("/find-pw")}>비밀번호 찾기</span>
+          </div>
+
           {/* 버튼: 서버와 통신 중(isPending)일 때는 버튼을 비활성화(disabled) 시켜서 유저가 여러 번 누르는 걸 막음 */}
           <Button
             type="submit"

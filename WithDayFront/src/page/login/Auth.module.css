@@ -7,7 +7,9 @@
   justify-content: center;
   align-items: center;
   background-color: var(--color-bg, #f8fafb);
-  padding: 20px;
+  padding: 24px 20px;
+  min-height: calc(100vh - 180px);
+  box-sizing: border-box;
 }
 
 .card {
@@ -17,6 +19,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
+  transform: translateY(16px);
 }
 
 .header {
@@ -149,6 +152,41 @@
   font-size: 14px;
   color: #495057;
   font-weight: 500;
+}
+
+.findLinks {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 9px;
+  margin-top: -10px;
+  margin-bottom: 2px;
+  color: #7b8494;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.findLinks span {
+  cursor: pointer;
+  transition:
+    color 0.18s ease,
+    text-decoration-color 0.18s ease;
+}
+
+.findLinks span:hover {
+  color: #149e97;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.findDivider {
+  color: #c7ced8;
+  cursor: default !important;
+}
+
+.findDivider:hover {
+  color: #c7ced8 !important;
+  text-decoration: none !important;
 }
 
 .googleLoginWrap {
