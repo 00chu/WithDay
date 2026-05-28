@@ -9,15 +9,20 @@ import {
 } from "../api";
 import styles from "./Notification.module.css";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { useAuthStore } from "../../auth/store/authStore";
 
 export default function NotificationList({ onClose }) {
   const navigate = useNavigate();
+  const { user: loginUser } = useAuthStore();
 
   const queryClient = useQueryClient();
 
   const { data: notifications = [], isLoading } = useQuery({
-    queryKey: ["notifications"],
+    // 쿼리 키를 로그인 유저 별로 분리해서 유저 변경 시
+    // 이전 사용자의 데이터를 보지 않고 새로 불러올 수 있도록 함.
+    queryKey: ["notifications", loginUser?.email],
     queryFn: getNotifications,
+    enabled: !!loginUser?.email,
   });
 
   if (isLoading) {
@@ -34,12 +39,12 @@ export default function NotificationList({ onClose }) {
 
     // 알림 목록 재요청
     await queryClient.invalidateQueries({
-      queryKey: ["notifications"],
+      queryKey: ["notifications", loginUser?.email],
     });
 
     // 알림 개수 재요청
     await queryClient.invalidateQueries({
-      queryKey: ["notification-count"],
+      queryKey: ["notification-count", loginUser?.email],
     });
 
     onClose();
@@ -70,45 +75,33 @@ export default function NotificationList({ onClose }) {
     navigate(notification.targetUrl);
   };
 
+  // 전체 알림 삭제
   const handleDeleteAll = async () => {
     await deleteAllNotifications();
 
+    // 목록 다시 조회
     await queryClient.invalidateQueries({
-      queryKey: ["notifications"],
+      queryKey: ["notifications", loginUser?.email],
     });
 
+    // 빨간 점 갱신
     await queryClient.invalidateQueries({
-      queryKey: ["notification-count"],
+      queryKey: ["notification-count", loginUser?.email],
     });
   };
 
+  // 읽은 알림 삭제
   const handleDeleteRead = async () => {
     await deleteReadNotifications();
 
     // 목록 다시 조회
     await queryClient.invalidateQueries({
-      queryKey: ["notifications"],
+      queryKey: ["notifications", loginUser?.email],
     });
 
     // 빨간 점 갱신
     await queryClient.invalidateQueries({
-      queryKey: ["notification-count"],
-    });
-  };
-
-  const handleDeleteNotification = async () => {
-    e.stopPropagation();
-
-    await deleteAllNotifications();
-
-    // 목록 다시 조회
-    await queryClient.invalidateQueries({
-      queryKey: ["notifications"],
-    });
-
-    // 빨간 점 갱신
-    await queryClient.invalidateQueries({
-      queryKey: ["notification-count"],
+      queryKey: ["notification-count", loginUser?.email],
     });
   };
 

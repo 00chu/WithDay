@@ -2,12 +2,10 @@ import { Input, TextArea } from "../../shared/ui/Form/Form";
 import styles from "./WriteSchedule.module.css";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { ko } from "date-fns/locale";
-
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
@@ -15,7 +13,8 @@ import Button from "../../shared/ui/Button/Button";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getDetailRegion, getRegion } from "../../features/region/api";
 import { insertSchedule } from "../../features/schedule/api";
-
+import CloseIcon from "@mui/icons-material/Close";
+import IconButton from "@mui/material/IconButton";
 import { insertSchema } from "../../features/schedule/validation/insertSchema";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -152,7 +151,8 @@ const WriteSchedule = () => {
     return Number(value).toLocaleString();
   };
 
-  const { mutateAsync: submitSchedule } = useMutation({
+  // 사진 업로드 시 시간 오래 걸릴 때 등록/수정 버튼 막음
+  const { mutateAsync: submitSchedule, isPending } = useMutation({
     mutationFn: ({ postData, filesData, detailScheduleData }) => {
       return insertSchedule(postData, filesData, detailScheduleData);
     },
@@ -166,12 +166,21 @@ const WriteSchedule = () => {
   });
 
   const onSubmit = async (formValues) => {
+    // 등록 2차 방어
+    if (isPending) return;
+
     await submitSchedule({
       postData: formValues.post,
       filesData: files,
       detailScheduleData: formValues.detailSchedule,
     });
   };
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  useEffect(() => {
+    setOpenSnackbar(hasError);
+  }, [hasError]);
 
   return (
     <>
@@ -538,16 +547,21 @@ const WriteSchedule = () => {
                     <input
                       type="text"
                       className={styles.costInput}
-                      value={formatNumber(totalPrice)}
+                      value={formatNumber(totalPrice ?? "")}
                       onChange={(e) => {
-                        const onlyNumber = e.target.value.replace(
-                          /[^0-9]/g,
-                          "",
-                        );
+                        // 숫자만 추출
+                        let value = e.target.value.replace(/[^0-9]/g, "");
+
+                        // 1000만원까지만 허용
+                        value = value.slice(0, 8);
+
+                        if (Number(value) > 10000000) {
+                          value = "10000000";
+                        }
 
                         setValue(
                           "post.totalPrice",
-                          onlyNumber === "" ? null : Number(onlyNumber),
+                          value === "" ? null : Number(value),
                         );
                       }}
                     />
@@ -614,7 +628,9 @@ const WriteSchedule = () => {
               />
             </div>
             <div className={styles.registButtonWrap}>
-              <Button type="submit">등록</Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "등록 중" : "등록"}
+              </Button>
               <Button
                 type="button"
                 variant="outline"
@@ -627,7 +643,24 @@ const WriteSchedule = () => {
         </div>
       </main>
 
-      <Snackbar open={hasError} autoHideDuration={3000}>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        action={
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={() => setOpenSnackbar(false)}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      >
         <Alert
           severity="warning"
           variant="filled"
