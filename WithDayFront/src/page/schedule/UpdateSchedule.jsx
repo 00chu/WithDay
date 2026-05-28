@@ -214,7 +214,8 @@ const UpdateSchedule = () => {
 
   const queryClient = useQueryClient();
 
-  const { mutateAsync: submitSchedule } = useMutation({
+  // 사진 업로드 시 시간 오래 걸릴 때 등록/수정 버튼 막음
+  const { mutateAsync: submitSchedule, isPending } = useMutation({
     mutationFn: ({
       scheduleId,
       postData,
@@ -251,6 +252,8 @@ const UpdateSchedule = () => {
   });
 
   const onSubmit = async (formValues) => {
+    if (isPending) return;
+
     await submitSchedule({
       scheduleId,
       postData: formValues.post,
@@ -625,16 +628,21 @@ const UpdateSchedule = () => {
                     <input
                       type="text"
                       className={styles.costInput}
-                      value={formatNumber(totalPrice)}
+                      value={formatNumber(totalPrice ?? "")}
                       onChange={(e) => {
-                        const onlyNumber = e.target.value.replace(
-                          /[^0-9]/g,
-                          "",
-                        );
+                        // 숫자만 추출
+                        let value = e.target.value.replace(/[^0-9]/g, "");
+
+                        // 1000만원까지만 허용
+                        value = value.slice(0, 8);
+
+                        if (Number(value) > 10000000) {
+                          value = "10000000";
+                        }
 
                         setValue(
                           "post.totalPrice",
-                          onlyNumber === "" ? null : Number(onlyNumber),
+                          value === "" ? null : Number(value),
                         );
                       }}
                     />
@@ -702,7 +710,9 @@ const UpdateSchedule = () => {
               />
             </div>
             <div className={styles.registButtonWrap}>
-              <Button type="submit">등록</Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "수정 중" : "수정"}
+              </Button>
               <Button
                 type="button"
                 variant="outline"
