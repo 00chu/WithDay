@@ -28,7 +28,11 @@ export const signupSchema = yup.object().shape({
     .oneOf([yup.ref("password"), null], "비밀번호가 일치하지 않습니다.")
     .required("비밀번호 확인을 입력해주세요."),
 
-  nickname: yup.string().required("닉네임을 입력해주세요."),
+  nickname: yup
+    .string()
+    .required("닉네임을 입력해주세요.")
+    .min(2, "닉네임은 최소 2자 이상이어야 합니다.")
+    .max(20, "닉네임은 최대 20자까지 입력할 수 있습니다."),
 
   // 기본 제공 함수가 없을 때는 .test() 함수를 써서 직접 검사 규칙을 만듬.
   // 형태: .test('규칙이름', '실패시 에러메시지', (현재입력값) => { 검사로직(참/거짓 반환) })
@@ -87,7 +91,13 @@ export const signupSchema = yup.object().shape({
 
   gender: yup.string().required("성별을 선택해주세요."),
 
-  phone: yup.string().required("전화번호를 입력해주세요."),
+  phone: yup
+    .string()
+    .required("전화번호를 입력해주세요.")
+    .matches(
+      /^010-\d{4}-\d{4}$/,
+      "전화번호는 010-1234-5678 형식으로 입력해주세요."
+    ),
 
   postcode: yup.string().required("우편번호를 검색해주세요."),
 
@@ -132,6 +142,12 @@ export const loginSchema = yup.object().shape({
 // signupSchema를 재사용하지 않고 따로 만든 이유: 소셜 가입 화면에는 email, password 입력창이 없는데, signupSchema를 쓰면
 // 화면에 없는 필드들을 .required()로 찾으려 하므로 폼 제출이 막히는 버그가 발생함.
 export const socialExtraSchema = yup.object().shape({
+  nickname: yup
+    .string()
+    .required("닉네임을 입력해주세요.")
+    .min(2, "닉네임은 최소 2자 이상이어야 합니다.")
+    .max(20, "닉네임은 최대 20자까지 입력할 수 있습니다."),
+
   // 기본 제공 함수가 없을 때는 .test() 함수를 써서 직접 검사 규칙을 만듬.
   // 형태: .test('규칙이름', '실패시 에러메시지', (현재입력값) => { 검사로직(참/거짓 반환) })
   birthday: yup
@@ -188,7 +204,13 @@ export const socialExtraSchema = yup.object().shape({
 
   gender: yup.string().required("성별을 선택해주세요."),
 
-  phone: yup.string().required("전화번호를 입력해주세요."),
+  phone: yup
+    .string()
+    .required("전화번호를 입력해주세요.")
+    .matches(
+      /^010-\d{4}-\d{4}$/,
+      "전화번호는 010-1234-5678 형식으로 입력해주세요."
+    ),
 
   postcode: yup.string().required("우편번호를 검색해주세요."),
 

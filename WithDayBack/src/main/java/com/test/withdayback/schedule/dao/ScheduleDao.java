@@ -70,9 +70,6 @@ public interface ScheduleDao {
             @Param("region") String region,
             @Param("email") String email);
             
-    // 일정 생성/수정에서 로그인 email을 schedule.user_id로 변환할 때 사용한다.
-    Long findUserIdByEmail(String email);
-
     void insertSchedule(Schedule schedule);
 
     void insertScheduleDetail(ScheduleDetail detail);

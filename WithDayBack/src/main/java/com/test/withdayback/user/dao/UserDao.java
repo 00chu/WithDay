@@ -1,7 +1,9 @@
 package com.test.withdayback.user.dao;
 
+import com.test.withdayback.user.vo.Interest;
 import com.test.withdayback.user.vo.Terms;
 import com.test.withdayback.user.vo.User;
+import com.test.withdayback.user.vo.UserInterest;
 import com.test.withdayback.user.vo.UserTerms;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -17,6 +19,9 @@ public interface UserDao {
     // 이메일로 유저찾기
     User findByEmail(String email);
 
+    // 이메일로 유저 ID 찾기
+    Long findUserIdByEmail(String email);
+
     // 약관 동의 내역 저장
     void insertUserTerms(UserTerms userTerms);
 
@@ -25,4 +30,10 @@ public interface UserDao {
 
     // 아이디로 유저찾기
     User findById(Long userId);
+    
+    // 관심사 리스트 전체 가져오기
+    List<Interest> getAllInterests();
+
+    // 유저의 관심사 선택 내역 저장
+    void insertUserInterest(UserInterest userInterest);
 }

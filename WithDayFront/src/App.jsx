@@ -14,6 +14,7 @@ import UpdateSchedule from "./page/schedule/UpdateSchedule";
 
 import MySchedulePage from "./page/my-schedule/MySchedulePage";
 import MyPageMain from "./page/my-page/MyPageMain";
+import MyPageEdit from "./page/my-page/MyPageEdit";
 import WishlistPage from "./page/wishlist/WishlistPage";
 
 import OneSignal from "./shared/lib/oneSignal";
@@ -65,10 +66,18 @@ function App() {
             <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
 
             <Route
-              path="/mypage/:userId"
+              path="/mypage/:email"
               element={
                 <PrivateRoute>
                   <MyPageMain />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/mypage/edit/:email"
+              element={
+                <PrivateRoute>
+                  <MyPageEdit />
                 </PrivateRoute>
               }
             />
