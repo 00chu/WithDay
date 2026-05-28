@@ -26,30 +26,38 @@ import LayoutContainer from "./shared/ui/LayoutContainer/LayoutContainer";
 import PrivateRoute from "./features/ui/PrivateRoute";
 
 function App() {
+  // 로그인 상태와 토큰 만료 여부를 Zustand에서 가져옴
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const setLogout = useAuthStore((state) => state.setLogout);
   const getTokenRemainingTime = useAuthStore(
     (state) => state.getTokenRemainingTime,
   );
 
+  // 로그인 상태가 변경될 때마다 토큰 만료 여부를 확인하여, 토큰이 만료됐으면 자동으로 로그아웃 처리하는 useEffect
   useEffect(() => {
+    // 로그인 상태가 아니면 토큰 만료 여부를 확인할 필요가 없으므로 바로 return
     if (!isLoggedIn) {
       return;
     }
 
+    // 토큰이 만료되기까지 남은 시간 계산
     const remainingTime = getTokenRemainingTime();
 
+    // 남은 시간이 0 이하이면 이미 토큰이 만료된 상태이므로, 바로 로그아웃 처리하고 페이지 새로고침
     if (remainingTime <= 0) {
       setLogout();
       window.location.reload();
       return;
     }
 
+    // 남은 시간이 양수이면, 해당 시간 후에 로그아웃 처리하는 타이머 설정
     const timer = window.setTimeout(() => {
       setLogout();
+      // 토큰이 만료되어 로그아웃 처리된 후, 로그인 페이지로 리다이렉트될 때 새로고침이 필요한 경우가 있어서, 새로고침도 함께 수행
       window.location.reload();
     }, remainingTime);
 
+    // 컴포넌트가 언마운트되거나 로그인 상태가 변경될 때 타이머 정리 (메모리 누수 방지)
     return () => window.clearTimeout(timer);
   }, [isLoggedIn, getTokenRemainingTime, setLogout]);
 
