@@ -95,6 +95,7 @@ const Login = () => {
           if (notificationTerm === 1) {
             const permission = await OneSignal.Notifications.permissionNative;
 
+            // 브라우저가 이미 구독 상태라면 알림 허용 창 뜨지 않음
             if (permission === "default") {
               await OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
             }
@@ -109,31 +110,6 @@ const Login = () => {
           navigate("/");
         }
       })();
-
-      // 백그라운드에서 실행
-      /*(async () => {
-        try {
-          // 로그인 후 진행해야 되는 부분으로 기존 방식 채택
-          // useQuery는 컴포넌트 최상단에서만 사용 가능.
-          const notificationTerm = await getNotificationTerm(token);
-
-          // 동의한 사용자만 OneSignal 연결
-          if (notificationTerm === 1) {
-            await window.OneSignal.login(user.email.toString()); // OneSignal 유저 연결
-
-            await window.OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
-
-            await window.OneSignal.User.PushSubscription.optIn(); // 브라우저 알림 구독을 강제 활성화
-
-            console.log(
-              "구독 여부:",
-              window.OneSignal.User.PushSubscription.optedIn,
-            );
-          }
-        } catch (error) {
-          console.error("OneSignal 연결 실패:", error);
-        }
-      })();*/
     },
     // 통신 실패시
     onError: (error) => {
@@ -179,6 +155,7 @@ const Login = () => {
             if (notificationTerm === 1) {
               const permission = await OneSignal.Notifications.permissionNative;
 
+              // 브라우저가 이미 구독 상태라면 알림 허용 창 뜨지 않음
               if (permission === "default") {
                 await OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
               }

@@ -104,5 +104,45 @@ public class NotificationController {
 
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping(value = "/read")
+    public ResponseEntity<?> deleteReadNotifications(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+
+            String email = jwtUtil.getEmail(token);
+
+            User user = userService.findByEmail(email);
+
+            notificationService.deleteReadNotifications(user.getId());
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return ResponseEntity.badRequest()
+                    .body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping(value = "")
+    public ResponseEntity<?> deleteAllNotifications(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+
+            String email = jwtUtil.getEmail(token);
+
+            User user = userService.findByEmail(email);
+
+            notificationService.deleteAllNotifications(user.getId());
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return ResponseEntity.badRequest()
+                    .body(e.getMessage());
+        }
+    }
 }
 

@@ -18,4 +18,8 @@ public interface NotificationDao {
     int getNotificationTerm(Long id);
 
     void deleteNotification(Long notificationId);
+
+    void deleteReadNotifications(Long id);
+
+    void deleteAllNotifications(Long id);
 }

@@ -1,6 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { getNotifications, readNotification, deleteNotification } from "../api";
+import {
+  getNotifications,
+  readNotification,
+  deleteNotification,
+  deleteReadNotifications,
+  deleteAllNotifications,
+} from "../api";
 import styles from "./Notification.module.css";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
@@ -64,10 +70,36 @@ export default function NotificationList({ onClose }) {
     navigate(notification.targetUrl);
   };
 
-  const handleDeleteNotification = async (e, notificationId) => {
+  const handleDeleteAll = async () => {
+    await deleteAllNotifications();
+
+    await queryClient.invalidateQueries({
+      queryKey: ["notifications"],
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["notification-count"],
+    });
+  };
+
+  const handleDeleteRead = async () => {
+    await deleteReadNotifications();
+
+    // 목록 다시 조회
+    await queryClient.invalidateQueries({
+      queryKey: ["notifications"],
+    });
+
+    // 빨간 점 갱신
+    await queryClient.invalidateQueries({
+      queryKey: ["notification-count"],
+    });
+  };
+
+  const handleDeleteNotification = async () => {
     e.stopPropagation();
 
-    await deleteNotification(notificationId);
+    await deleteAllNotifications();
 
     // 목록 다시 조회
     await queryClient.invalidateQueries({
@@ -93,37 +125,52 @@ export default function NotificationList({ onClose }) {
   };
 
   return (
-    <div>
-      {notifications.map((notification) => (
-        <div
-          key={notification.id}
-          onClick={() => handleClickNotification(notification)}
-          className={
-            notification.isRead ? styles.readNotification : styles.notification
-          }
-        >
-          <span className={styles.iconBox}>
-            <CalendarTodayIcon></CalendarTodayIcon>
-          </span>
-          <div className={styles.content}>
-            <p className={styles.message}>{notification.message}</p>
-            <p className={styles.title}>"{notification.title}"</p>
-          </div>
+    <div className={styles.wrapper}>
+      {/* 상단 고정 헤더 */}
+      <div className={styles.topBar}>
+        <button className={styles.topButton} onClick={handleDeleteAll}>
+          전체 삭제
+        </button>
 
-          <div className={styles.right}>
-            <span className={styles.date}>
-              {formatDate(notification.createdAt)}
+        <button className={styles.topButton} onClick={handleDeleteRead}>
+          읽은 알림 삭제
+        </button>
+      </div>
+
+      <div className={styles.listScroll}>
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            onClick={() => handleClickNotification(notification)}
+            className={
+              notification.isRead
+                ? styles.readNotification
+                : styles.notification
+            }
+          >
+            <span className={styles.iconBox}>
+              <CalendarTodayIcon></CalendarTodayIcon>
             </span>
+            <div className={styles.content}>
+              <p className={styles.message}>{notification.message}</p>
+              <p className={styles.title}>"{notification.title}"</p>
+            </div>
 
-            <button
-              className={styles.closeBtn}
-              onClick={(e) => handleDeleteNotification(e, notification.id)}
-            >
-              ✕
-            </button>
+            <div className={styles.right}>
+              <span className={styles.date}>
+                {formatDate(notification.createdAt)}
+              </span>
+
+              <button
+                className={styles.closeBtn}
+                onClick={(e) => handleDeleteNotification(e, notification.id)}
+              >
+                ✕
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
