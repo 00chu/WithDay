@@ -6,8 +6,10 @@ import com.test.withdayback.common.util.EmailSender;
 import com.test.withdayback.common.util.JwtUtil;
 import com.test.withdayback.user.dao.UserDao;
 import com.test.withdayback.user.dto.SignupRequestDTO;
+import com.test.withdayback.user.vo.Interest;
 import com.test.withdayback.user.vo.Terms;
 import com.test.withdayback.user.vo.User;
+import com.test.withdayback.user.vo.UserInterest;
 import com.test.withdayback.user.vo.UserTerms;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -138,6 +140,21 @@ public class UserService {
                     userDao.insertUserTerms(userTerms); // 약관별로 DB insert
                 }
             }
+
+            // 관심사 선택 내역 분리 저장
+            List<Long> interests = signupRequest.getInterests();
+            // interests 리스트가 null이 아니고 비어있지 않으며 유저가 고유번호(PK)를 가졌다면
+            if (interests != null && !interests.isEmpty() && user.getId() != null) {
+                for (Long interestId : interests) {
+                    UserInterest userInterest = new UserInterest();
+                    userInterest.setUserId(((Number) user.getId()).longValue());
+                    userInterest.setInterestId(interestId);
+
+                    // 반복문이 돌면서 프론트엔드에서 골라온 관심사 개수만큼 DB에 INSERT 실행
+                    userDao.insertUserInterest(userInterest); // 관심사별로 DB insert
+                }
+            }
+
             return "success";
 
         } catch (Exception e) {
@@ -256,6 +273,14 @@ public class UserService {
         return result;
     }
 
+    // 관심사 정보 전체 불러오기
+    public List<Interest> getAllInterests() {
+        // DB에서 모든 관심사 데이터를 가져와 List에 저장
+        List<Interest> result = userDao.getAllInterests();
+
+        return result;
+    }
+
     // 소셜 로그인 회원가입
     @Transactional
     public String socialSignup(SignupRequestDTO signupRequest) {
@@ -326,6 +351,21 @@ public class UserService {
                     userDao.insertUserTerms(userTerms); // 약관별로 DB insert
                 }
             }
+
+            // 관심사 선택 내역 분리 저장 (소셜 회원가입용)
+            List<Long> interests = signupRequest.getInterests();
+            // interests 리스트가 null이 아니고 비어있지 않으며 유저가 고유번호(PK)를 가졌다면
+            if (interests != null && !interests.isEmpty() && user.getId() != null) {
+                for (Long interestId : interests) {
+                    UserInterest userInterest = new UserInterest();
+                    userInterest.setUserId(((Number) user.getId()).longValue());
+                    userInterest.setInterestId(interestId);
+
+                    // 반복문이 돌면서 프론트엔드에서 골라온 관심사 개수만큼 DB에 INSERT 실행
+                    userDao.insertUserInterest(userInterest); // 관심사별로 DB insert
+                }
+            }
+
             return "success";
         } catch (Exception e) {
             // 서버 콘솔에서 정확한 에러 위치를 추적용 로그 출력

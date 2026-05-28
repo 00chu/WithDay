@@ -2,6 +2,7 @@
 
     import com.test.withdayback.user.dto.SignupRequestDTO;
     import com.test.withdayback.user.service.UserService;
+    import com.test.withdayback.user.vo.Interest;
     import com.test.withdayback.user.vo.Terms;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.http.HttpStatus;
@@ -104,6 +105,14 @@
         @GetMapping("/terms")
         public ResponseEntity<List<Terms>> getTerms() {
             List<Terms> result = userService.getAllTerms();
+
+            return ResponseEntity.ok(result);
+        }
+
+        // 관심사 정보 전체 불러오기 (/users/interests)
+        @GetMapping("/interests")
+        public ResponseEntity<List<Interest>> getInterests() {
+            List<Interest> result = userService.getAllInterests();
 
             return ResponseEntity.ok(result);
         }

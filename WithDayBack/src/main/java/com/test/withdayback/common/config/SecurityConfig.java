@@ -35,6 +35,7 @@ public class SecurityConfig {
                                 "/users/signup",
                                 "/users/login",
                                 "/users/terms",
+                                "/users/interests",
                                 "/users/google-login",
                                 "/users/social-signup",
                                 "/users/email-verification",
