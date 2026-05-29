@@ -221,18 +221,7 @@
   --wd-card: var(--color-surface);
 
   min-height: calc(100vh - 120px);
-  background:
-    radial-gradient(
-      circle at 78% 18%,
-      var(--color-surface-highlight),
-      transparent 26%
-    ),
-    linear-gradient(
-      180deg,
-      var(--color-bg) 0%,
-      var(--color-surface) 42%,
-      var(--color-accent-light) 100%
-    );
+  background: var(--color-bg);
   color: var(--wd-text);
   padding: 56px 22px 34px;
   box-sizing: border-box;
@@ -1000,62 +989,6 @@
   filter: var(--shadow-card-ticket-hover);
 }
 
-/* 하단 신뢰 카드 */
-.trustSection {
-  width: min(1180px, 100%);
-  margin: 28px auto 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-light);
-  border-radius: 18px;
-  box-shadow: var(--shadow-panel);
-  overflow: hidden;
-}
-
-.trustCard {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 28px 34px;
-  position: relative;
-}
-
-.trustCard:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: 28%;
-  width: 1px;
-  height: 44%;
-  background: var(--color-border);
-}
-
-.trustCard span {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: var(--wd-main-light);
-  display: grid;
-  place-items: center;
-  color: var(--wd-main);
-  font-size: 25px;
-  flex-shrink: 0;
-}
-
-.trustCard strong {
-  color: var(--wd-navy);
-  font-size: 16px;
-  font-weight: 900;
-}
-
-.trustCard p {
-  margin: 7px 0 0;
-  color: var(--color-text-muted);
-  font-size: 13px;
-  font-weight: 650;
-}
-
 /* 반응형 */
 @media (max-width: 1100px) {
   .signupMain {
@@ -1070,19 +1003,6 @@
 
   .formSection {
     order: 1;
-  }
-
-  .trustSection {
-    grid-template-columns: 1fr;
-  }
-
-  .trustCard:not(:last-child)::after {
-    top: auto;
-    bottom: 0;
-    left: 34px;
-    right: 34px;
-    width: calc(100% - 68px);
-    height: 1px;
   }
 }
 
@@ -1240,10 +1160,6 @@
 
   .imageSection {
     min-height: 220px;
-  }
-
-  .trustCard {
-    padding: 24px 22px;
   }
 }
 

@@ -265,6 +265,9 @@ public class UserService {
         // 조립된 6자리 인증번호 추출 (예: 3Bf8a1)
         String authCode = sb.toString();
 
+        // 개발 단계 확인용 로그. 배포 전에는 삭제해야 함. - 물론 실제 프로젝트가 아닌 학원 프로젝트이니 배포할때도 남겨놓음.
+        System.out.println("[이메일 인증번호] " + receiverEmail + " : " + authCode);
+
         // 메일 수신 시 적용될 HTML 양식 작성
         String emailTitle = "[WithDay] 회원가입 이메일 인증번호입니다.";
         String emailContent = "<h1>안녕하세요. WithDay 입니다.</h1>"
