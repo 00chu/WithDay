@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import PlaceIcon from "@mui/icons-material/Place";
@@ -243,6 +243,7 @@ export default function ScheduleDetail() {
   const [feedback, setFeedback] = useState(null);
   const [currentImg, setCurrentImg] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const chatLinkSectionRef = useRef(null);
   const [viewCountReadyScheduleId, setViewCountReadyScheduleId] =
     useState(null);
   const [open, setOpen] = useState(false);
@@ -367,6 +368,18 @@ export default function ScheduleDetail() {
       message,
     });
   }, []);
+
+  useEffect(() => {
+    if (location.state?.focusSection !== "chat-link") {
+      return;
+    }
+
+    chatLinkSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
 
   /*
    * 일정 실행/실행 취소, 참여 상태 변경, 삭제 같은 여러 API가 서로 다른 에러 shape를 줄 수 있어서
@@ -1181,7 +1194,11 @@ export default function ScheduleDetail() {
 
         <hr className={styles.divider} />
 
-        <section className={styles.chatLinkSection}>
+        <section
+          ref={chatLinkSectionRef}
+          className={styles.chatLinkSection}
+          id="chat-link-section"
+        >
           <h2 className={styles.subTitle}>오픈채팅방</h2>
           {viewerCanAccessChatLink && schedule.chatLink ? (
             <a

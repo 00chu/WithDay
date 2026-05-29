@@ -128,29 +128,65 @@ const resolveSchedulePhase = ({
  * 이 시점에서 상위 페이지는 더 이상 서버 원본 필드명을 알 필요가 없고,
  * ParticipationCard는 item.title, item.dDay 같은 화면 중심 필드만 사용한다.
  */
-export const normalizeMyScheduleItem = (item) => ({
-  id: item.participationId ?? item.scheduleId,
-  scheduleId: item.scheduleId,
-  participationId: item.participationId,
-  category: PARTICIPATION_CATEGORY_LABELS[item.category] ?? item.category ?? "기타",
-  dDay: formatDisplayDDay(item.startDate),
-  title: item.title ?? "-",
-  location: item.location ?? "-",
-  date: formatDisplayDateRange(item.startDate, item.endDate),
-  currentPeople: item.currentPeople ?? 0,
-  maxPeople: item.maxPeople ?? 0,
-  dbStatus: normalizeParticipationStatus(item.dbStatus),
-  scheduleStatus: item.scheduleStatus ?? "",
-  recruitEndDate: item.recruitEndDate ?? "",
-  schedulePhase: resolveSchedulePhase({
+export const normalizeMyScheduleItem = (item) => {
+  const normalizedStatus = normalizeParticipationStatus(item.dbStatus);
+  const schedulePhase = resolveSchedulePhase({
     endDate: item.endDate,
     recruitEndDate: item.recruitEndDate,
     scheduleStatus: item.scheduleStatus,
     startDate: item.startDate,
-  }),
-  myRole: item.host ? "host" : undefined,
-  thumbnail: item.thumbnail ?? "",
-});
+  });
+  const today = dayjs().startOf("day");
+  const start = item.startDate ? dayjs(item.startDate).startOf("day") : null;
+  const daysUntilStart =
+    start?.isValid() ? start.diff(today, "day") : Number.POSITIVE_INFINITY;
+
+  const resolvePhaseTone = (phase) => {
+    if (phase === "모집중") return "open";
+    if (phase === "모집종료") return "closed";
+    if (phase === "진행중") return "ongoing";
+    if (phase === "취소됨") return "canceled";
+    if (phase === "종료") return "ended";
+    return "neutral";
+  };
+
+  return {
+    id: item.participationId ?? item.scheduleId,
+    scheduleId: item.scheduleId,
+    participationId: item.participationId,
+    category:
+      PARTICIPATION_CATEGORY_LABELS[item.category] ?? item.category ?? "기타",
+    dDay: formatDisplayDDay(item.startDate),
+    title: item.title ?? "-",
+    location: item.location ?? "-",
+    date: formatDisplayDateRange(item.startDate, item.endDate),
+    currentPeople: item.currentPeople ?? 0,
+    maxPeople: item.maxPeople ?? 0,
+    dbStatus: normalizedStatus,
+    scheduleStatus: item.scheduleStatus ?? "",
+    recruitEndDate: item.recruitEndDate ?? "",
+    schedulePhase,
+    myRole: item.host ? "host" : undefined,
+    thumbnail: item.thumbnail ?? "",
+    thumbnailSrc: item.thumbnail?.trim() || "/hero.png",
+    hasThumbnail: Boolean(item.thumbnail?.trim()),
+    isUpcomingSoon:
+      Number.isFinite(daysUntilStart) &&
+      daysUntilStart >= 0 &&
+      daysUntilStart <= 7,
+    participationStatusTone:
+      normalizedStatus === "APPROVED"
+        ? "approved"
+        : normalizedStatus === "PENDING"
+          ? "pending"
+          : normalizedStatus === "CANCELED"
+            ? "canceled"
+            : normalizedStatus === "REJECTED" || normalizedStatus === "KICKED"
+              ? "error"
+              : "neutral",
+    schedulePhaseTone: resolvePhaseTone(schedulePhase),
+  };
+};
 
 /*
  * 탭별 query는 배열 하나만 응답으로 다루므로,

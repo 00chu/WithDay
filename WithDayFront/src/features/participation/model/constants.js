@@ -53,7 +53,7 @@ export const HOST_APPLICANT_STATUS_FILTERS = [
 export const PARTICIPATION_TABS = [
   { value: "participating", label: "참여중" },
   { value: "pending", label: "신청중" },
-  { value: "hosting", label: "내가 만든 일정" },
+  { value: "hosting", label: "호스팅" },
 ];
 
 /*
