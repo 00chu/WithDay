@@ -5,7 +5,6 @@ import com.cloudinary.utils.ObjectUtils;
 import com.test.withdayback.common.util.EmailSender;
 import com.test.withdayback.common.util.JwtUtil;
 import com.test.withdayback.user.dao.UserDao;
-import com.test.withdayback.user.dto.MypageEditRequestDTO;
 import com.test.withdayback.user.dto.MypageRequestDTO;
 import com.test.withdayback.user.dto.SignupRequestDTO;
 import com.test.withdayback.user.vo.Interest;
@@ -386,13 +385,13 @@ public class UserService {
         User user = userDao.findByEmail(email);
 
         // user terms
-        List<UserTerms> userTerms = userDao.findUserTermById(user.getId());
+        List<UserTerms> userTerms = userDao.findUserTermById(id);
 
         // interest
         List<Interest> interests = userDao.getAllInterests();
 
         // user interest
-        List<UserInterest> userInterests = userDao.getAllUserInterests(user.getId());
+        List<UserInterest> userInterests = userDao.getAllUserInterests(id);
 
         MypageRequestDTO mypageRequestDTO = new MypageRequestDTO();
         mypageRequestDTO.setUser(user);
@@ -402,28 +401,5 @@ public class UserService {
 
 
         return mypageRequestDTO;
-    }
-    @Transactional
-    public void updateUserData(MypageEditRequestDTO dto) {
-        // 1. 유저 기본 정보 수정
-        userDao.updateMypageUser(dto);
-
-        // 2. 기존 관심사 전체 삭제
-        userDao.deleteUserInterests(dto.getUserId());
-
-        // 3. 새 관심사 등록
-        if (dto.getInterestIds() != null && !dto.getInterestIds().isEmpty()) {
-            for (Long interestId : dto.getInterestIds()) {
-                userDao.insertUserInterestById(dto.getUserId(), interestId);
-            }
-        }
-
-        // 4. 알림 설정 수정
-        if (dto.getNotificationEnabled() != null) {
-            userDao.updateNotificationAgreed(
-                    dto.getUserId(),
-                    dto.getNotificationEnabled()
-            );
-        }
     }
 }
