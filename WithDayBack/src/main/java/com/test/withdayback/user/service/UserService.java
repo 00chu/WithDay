@@ -5,7 +5,8 @@ import com.cloudinary.utils.ObjectUtils;
 import com.test.withdayback.common.util.EmailSender;
 import com.test.withdayback.common.util.JwtUtil;
 import com.test.withdayback.user.dao.UserDao;
-import com.test.withdayback.user.dto.MypageRequestDTO;
+import com.test.withdayback.user.dto.MypageEditRequestDTO;
+import com.test.withdayback.user.dto.MypageEditResponseDTO;
 import com.test.withdayback.user.dto.SignupRequestDTO;
 import com.test.withdayback.user.vo.Interest;
 import com.test.withdayback.user.vo.Terms;
@@ -380,26 +381,156 @@ public class UserService {
         return userDao.findByEmail(email);
     }
 
-    public MypageRequestDTO getUserData(String email) {
-        // user data
+    //마이페이지 수정
+    // 마이페이지 수정 페이지 정보 불러오기
+    public MypageEditResponseDTO getMypageEdit(String email) {
+        // 이메일로 유저 정보 조회
         User user = userDao.findByEmail(email);
 
-        // user terms
-        List<UserTerms> userTerms = userDao.findUserTermById(id);
+        if (user == null) {
+            throw new RuntimeException("존재하지 않는 사용자입니다.");
+        }
 
-        // interest
-        List<Interest> interests = userDao.getAllInterests();
+        MypageEditResponseDTO response = new MypageEditResponseDTO();
 
-        // user interest
-        List<UserInterest> userInterests = userDao.getAllUserInterests(id);
+        // 유저 기본 정보 세팅
+        response.setUserId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setProvider(user.getProvider()); // local이면 비밀번호 변경 폼 노출, google이면 숨김
+        response.setNickname(user.getNickname());
+        response.setPhone(user.getPhone());
+        response.setGender(user.getGender());
+        response.setIntro(user.getIntro());
+        response.setProfileImage(user.getProfileImage());
 
-        MypageRequestDTO mypageRequestDTO = new MypageRequestDTO();
-        mypageRequestDTO.setUser(user);
-        mypageRequestDTO.setUserTerms(userTerms);
-        mypageRequestDTO.setInterests(interests);
-        mypageRequestDTO.setUserInterests(userInterests);
+        // 유저가 선택한 관심사 id 목록
+        response.setSelectedInterestIds(userDao.getUserInterestIds(user.getId()));
 
+        // 전체 관심사 목록
+        response.setAllInterests(userDao.getAllInterests());
 
-        return mypageRequestDTO;
+        // 알림 동의 여부 조회
+        Boolean notificationAgreed = userDao.getNotificationAgreed(user.getId());
+
+        // null이면 false 처리
+        response.setNotificationAgreed(Boolean.TRUE.equals(notificationAgreed));
+
+        return response;
     }
+
+    // 마이페이지 수정
+    @Transactional
+    public String updateMypage(MypageEditRequestDTO mypageEditRequest) {
+        try {
+            // 이메일로 기존 유저 조회
+            User dbUser = userDao.findByEmail(mypageEditRequest.getEmail());
+
+            if (dbUser == null) {
+                throw new RuntimeException("존재하지 않는 사용자입니다.");
+            }
+
+            // 수정할 유저 정보 객체 생성
+            User updateUser = new User();
+            updateUser.setId(dbUser.getId());
+            updateUser.setNickname(mypageEditRequest.getNickname());
+            updateUser.setPhone(mypageEditRequest.getPhone());
+            updateUser.setGender(mypageEditRequest.getGender());
+            updateUser.setIntro(mypageEditRequest.getIntro());
+            updateUser.setProfileImage(mypageEditRequest.getProfileImage());
+
+            // 비밀번호 변경 처리
+            handleMypagePasswordChange(mypageEditRequest, dbUser, updateUser);
+
+            // user 테이블 수정
+            userDao.updateMypageUser(updateUser);
+
+            // 기존 관심사 삭제 후 새 관심사 다시 저장
+            userDao.deleteUserInterests(dbUser.getId());
+
+            if (mypageEditRequest.getInterestIds() != null && !mypageEditRequest.getInterestIds().isEmpty()) {
+                for (Long interestId : mypageEditRequest.getInterestIds()) {
+                    UserInterest userInterest = new UserInterest();
+                    userInterest.setUserId(dbUser.getId());
+                    userInterest.setInterestId(interestId);
+
+                    userDao.insertUserInterest(userInterest);
+                }
+            }
+
+            // 알림 설정 수정
+            // 현재 DB 기준 NOTIFICATION 약관 id가 4번이므로 4L 사용
+            Long notificationTermsId = 4L;
+
+            UserTerms userTerms = new UserTerms();
+            userTerms.setUserId(dbUser.getId());
+            userTerms.setTermsId(notificationTermsId);
+            userTerms.setAgreed(Boolean.TRUE.equals(mypageEditRequest.getNotificationAgreed()));
+
+            // user_terms에 알림 약관 데이터가 이미 있는지 확인
+            int userTermsCount = userDao.countUserTerms(dbUser.getId(), notificationTermsId);
+
+            if (userTermsCount > 0) {
+                // 있으면 동의 여부만 수정
+                userDao.updateUserTermsAgreed(userTerms);
+            } else {
+                // 없으면 새로 추가
+                userDao.insertUserTerms(userTerms);
+            }
+
+            return "success";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    // 마이페이지 비밀번호 변경 처리
+    private void handleMypagePasswordChange(MypageEditRequestDTO mypageEditRequest, User dbUser, User updateUser) {
+        boolean hasCurrentPassword =
+                mypageEditRequest.getCurrentPassword() != null &&
+                        !mypageEditRequest.getCurrentPassword().isBlank();
+
+        boolean hasNewPassword =
+                mypageEditRequest.getNewPassword() != null &&
+                        !mypageEditRequest.getNewPassword().isBlank();
+
+        boolean hasNewPasswordConfirm =
+                mypageEditRequest.getNewPasswordConfirm() != null &&
+                        !mypageEditRequest.getNewPasswordConfirm().isBlank();
+
+        // 비밀번호 칸 중 하나라도 입력했는지 확인
+        boolean wantsToChangePassword =
+                hasCurrentPassword || hasNewPassword || hasNewPasswordConfirm;
+
+        // 비밀번호 칸을 전부 비워두면 비밀번호 변경 안 함
+        if (!wantsToChangePassword) {
+            return;
+        }
+
+        // 구글 로그인 유저는 프론트에서 비밀번호 변경 폼을 숨기지만,
+        // 개발자도구 등으로 요청할 수 있으므로 백엔드에서도 차단
+        if (!"local".equals(dbUser.getProvider())) {
+            throw new RuntimeException("소셜 로그인 계정은 비밀번호를 변경할 수 없습니다.");
+        }
+
+        // 하나라도 입력했으면 기존 비밀번호, 새 비밀번호, 새 비밀번호 확인 모두 입력해야 함
+        if (!hasCurrentPassword || !hasNewPassword || !hasNewPasswordConfirm) {
+            throw new RuntimeException("비밀번호 변경 정보를 모두 입력해주세요.");
+        }
+
+        // 기존 비밀번호 검증
+        if (!passwordEncoder.matches(mypageEditRequest.getCurrentPassword(), dbUser.getPassword())) {
+            throw new RuntimeException("기존 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 새 비밀번호와 새 비밀번호 확인 일치 여부 검증
+        if (!mypageEditRequest.getNewPassword().equals(mypageEditRequest.getNewPasswordConfirm())) {
+            throw new RuntimeException("새 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 새 비밀번호 암호화 후 updateUser에 세팅
+        updateUser.setPassword(passwordEncoder.encode(mypageEditRequest.getNewPassword()));
+    }
+
 }

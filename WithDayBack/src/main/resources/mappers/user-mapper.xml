@@ -16,7 +16,25 @@
     </insert>
 
     <select id="findByEmail" parameterType="String" resultType="User">
-        SELECT * FROM user WHERE email = #{email}
+        SELECT
+            id,
+            email,
+            password,
+            provider,
+            provider_id AS providerId,
+            nickname,
+            profile_image AS profileImage,
+            birthday,
+            gender,
+            intro,
+            phone,
+            status,
+            postcode,
+            address,
+            detail_address AS detailAddress,
+            created_at AS createdAt
+        FROM user
+        WHERE email = #{email}
     </select>
 
     <select id="findUserIdByEmail" parameterType="String" resultType="long">
@@ -39,15 +57,78 @@
     
     <select id="getAllInterests" resultType="Interest">
         SELECT
-            id AS id,
+            id,
             name AS interestName,
             icon_name AS iconName
         FROM interests
+        ORDER BY id ASC
     </select>
 
     <insert id="insertUserInterest" parameterType="UserInterest">
-        INSERT INTO user_interests (user_id, interest_id)
-        VALUES (#{userId}, #{interestId})
+        INSERT INTO user_interests (
+            user_id,
+            interest_id,
+            created_at
+        )
+        VALUES (
+                   #{userId},
+                   #{interestId},
+                   NOW()
+               )
     </insert>
+    <!-- 유저가 선택한 관심사 id 목록 가져오기 -->
+    <select id="getUserInterestIds" resultType="long">
+        SELECT interest_id
+        FROM user_interests
+        WHERE user_id = #{userId}
+        ORDER BY interest_id ASC
+    </select>
 
+    <!-- 유저의 알림 동의 여부 가져오기 -->
+    <select id="getNotificationAgreed" parameterType = "long" resultType="boolean">
+        SELECT agreed
+        FROM user_terms
+        WHERE user_id = #{userId}
+          AND terms_id = 4
+            LIMIT 1
+    </select>
+
+    <!-- 마이페이지 유저 기본 정보 수정 -->
+    <update id="updateMypageUser" parameterType="User">
+        UPDATE user
+        SET
+        nickname = #{nickname},
+        phone = #{phone},
+        gender = #{gender},
+        intro = #{intro},
+        profile_image = #{profileImage}
+        <if test="password != null and password != ''">
+            , password = #{password}
+        </if>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 유저의 기존 관심사 전체 삭제 -->
+    <delete id="deleteUserInterests" parameterType = "long">
+        DELETE FROM user_interests
+        WHERE user_id = #{userId}
+    </delete>
+
+    <!-- 특정 유저가 특정 약관에 대한 동의 내역을 가지고 있는지 확인 -->
+    <select id="countUserTerms" resultType="int">
+        SELECT COUNT(*)
+        FROM user_terms
+        WHERE user_id = #{userId}
+          AND terms_id = #{termsId}
+    </select>
+
+    <!-- 유저의 특정 약관 동의 여부 수정 -->
+    <update id="updateUserTermsAgreed" parameterType = "UserTerms">
+        UPDATE user_terms
+        SET
+            agreed = #{agreed},
+            agreed_at = NOW()
+        WHERE user_id = #{userId}
+          AND terms_id = #{termsId}
+    </update>
 </mapper>

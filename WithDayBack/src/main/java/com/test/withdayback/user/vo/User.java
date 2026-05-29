@@ -19,6 +19,7 @@ public class User {
     private String profileImage;
     private String birthday;
     private Integer gender;
+    private String intro;
     private String phone;
     private String status;
     private String postcode;

@@ -1,6 +1,8 @@
     package com.test.withdayback.user.controller;
 
-    import com.test.withdayback.user.dto.MypageRequestDTO;
+    import com.test.withdayback.common.util.JwtUtil;
+    import com.test.withdayback.user.dto.MypageEditRequestDTO;
+    import com.test.withdayback.user.dto.MypageEditResponseDTO;
     import com.test.withdayback.user.dto.SignupRequestDTO;
     import com.test.withdayback.user.service.UserService;
     import com.test.withdayback.user.vo.Interest;
@@ -10,6 +12,7 @@
     import org.springframework.http.ResponseEntity;
     import org.springframework.web.bind.annotation.*;
     import org.springframework.web.multipart.MultipartFile;
+    import org.springframework.web.bind.annotation.RequestHeader;
 
     import java.util.List;
     import java.util.Map;
@@ -131,21 +134,52 @@
                 return ResponseEntity.badRequest().body(e.getMessage());
             }
         }
-        @GetMapping("/mypage")
-        public ResponseEntity<?> getUserData(@RequestParam String email){
-            // 유저 테이블 - 이메일, 닉네임, 이미지, 생년월일, 성별, 연락처, 주소, 소개(intro)
-            // 인터레스트 테이블 - 관심사 interests 랑 user_interests join해서 mapper에 추가
-            // 떰 테이블 - user_terms 에 terms_id 가 4(알림) 에 agreed가 1(활성화)
 
-            MypageRequestDTO mypageRequestDTO = userService.getUserData(email);
-            return ResponseEntity.ok("호출");
+        // 마이페이지 수정 페이지 정보 불러오기
+        @GetMapping("/mypage/edit")
+        public ResponseEntity<?> getMypageEdit(
+                @RequestHeader(value = "Authorization", required = false) String authorization
+        ) {
+            try {
+                String email = getEmailFromAuthorizationHeader(authorization);
+
+                MypageEditResponseDTO result = userService.getMypageEdit(email);
+                return ResponseEntity.ok(result);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(401).body(e.getMessage());
+            }
         }
+
+        // 마이페이지 수정
         @PostMapping("/mypage/edit")
-        public ResponseEntity<?> postUserData(){
-            // 이메일, 닉네임, 이미지 연락처, 주소, 소개(intro),
-            // 관심사 interests 랑 user_interests join해서 mapper에 추가
-            // user_terms 에 terms_id 가 4(알림) 에 agreed가 1(활성화)
+        public ResponseEntity<?> updateMypage(
+                @RequestBody MypageEditRequestDTO mypageEditRequest,
+                @RequestHeader(value = "Authorization", required = false) String authorization
+        ) {
+            try {
+                String email = getEmailFromAuthorizationHeader(authorization);
 
-            return ResponseEntity.ok("호출");
+                // 프론트에서 보낸 email은 믿지 않고, 토큰 email로 강제 세팅
+                mypageEditRequest.setEmail(email);
+
+                String result = userService.updateMypage(mypageEditRequest);
+                return ResponseEntity.ok(result);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(401).body(e.getMessage());
+            }
         }
+        // Authorization 헤더에서 JWT 토큰을 꺼내 이메일 추출
+        private String getEmailFromAuthorizationHeader(String authorization) {
+            if (authorization == null || !authorization.startsWith("Bearer ")) {
+                throw new RuntimeException("인증 토큰이 없습니다.");
+            }
+
+            String token = authorization.substring(7);
+
+            return jwtUtil.getEmail(token);
+        }
+        @Autowired
+        private JwtUtil jwtUtil;
     }
