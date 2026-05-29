@@ -10,6 +10,7 @@ import Login from "./page/login/Login";
 import SocialExtra from "./page/login/SocialExtra";
 import FindId from "./page/login/FindId";
 import FindPw from "./page/login/FindPw";
+import RecommendedSchedulePage from "./page/recommended-schedule/RecommendedSchedulePage";
 
 import ScheduleDetail from "./page/schedule/ScheduleDetail";
 import WriteSchedule from "./page/schedule/WriteSchedule";
@@ -102,6 +103,14 @@ function App() {
             <Route path="/signup/extra" element={<SocialExtra />} />
             <Route path="/find-id" element={<FindId />} />
             <Route path="/find-pw" element={<FindPw />} />
+            <Route
+              path="/recommended-schedules"
+              element={
+                <PrivateRoute>
+                  <RecommendedSchedulePage />
+                </PrivateRoute>
+              }
+            />
 
             <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
 
