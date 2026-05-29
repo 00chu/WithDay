@@ -333,7 +333,6 @@ const Signup = () => {
         severity: "success",
       });
       setMailAuthCode(String(res)); // 백엔드가 보내준 인증번호를 문자로 바꿔서 state에 저장
-      console.log("백엔드에서 온 인증번호:", res); // 콘솔에 백엔드에서 온 인증번호 찍어보기 (개발자용, 유저는 못봄)
       setMailAuth(2); // 인증번호 발송 완료 및 타이머 작동 상태
 
       // 1초(1000ms)마다 1씩 값을 내리는 타이머 작동
@@ -1129,30 +1128,6 @@ const Signup = () => {
           <img src="/withday_signup_bg.jpg" alt="" className={styles.bgImage} />
         </aside>
       </main>
-
-      <section className={styles.trustSection}>
-        <article className={styles.trustCard}>
-          <span>👥</span>
-          <div>
-            <strong>안심할 수 있는 여행 파트너 매칭</strong>
-            <p>검증된 회원들과 함께 즐거운 여행을</p>
-          </div>
-        </article>
-        <article className={styles.trustCard}>
-          <span>🛡️</span>
-          <div>
-            <strong>개인정보 보호 최우선</strong>
-            <p>안전한 데이터 관리로 안심하고 이용</p>
-          </div>
-        </article>
-        <article className={styles.trustCard}>
-          <span>🌐</span>
-          <div>
-            <strong>전 세계 어디든, WithDay</strong>
-            <p>국내부터 해외까지 함께 떠나요</p>
-          </div>
-        </article>
-      </section>
 
       <Snackbar
         open={toast.open}

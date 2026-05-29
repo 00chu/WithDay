@@ -1,22 +1,26 @@
 /* =========================================
    [공통 & 로그인 전용]
    - Login.jsx에서 기존에 사용하던 클래스는 유지
+   - 색상은 App.module.css의 :root 팔레트 변수 기준으로 통일
    ========================================= */
 .container {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--color-bg, #f8fafb);
-  padding: 20px;
+  background-color: var(--color-bg);
+  padding: 24px 20px;
+  min-height: calc(100vh - 180px);
+  box-sizing: border-box;
 }
 
 .card {
-  background: white;
+  background: var(--color-surface);
   padding: 40px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   width: 100%;
   max-width: 400px;
+  transform: translateY(16px);
 }
 
 .header {
@@ -27,13 +31,13 @@
 .title {
   font-size: 24px;
   font-weight: bold;
-  color: #333;
+  color: var(--color-text-primary);
   margin-bottom: 8px;
 }
 
 .subtitle {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .form {
@@ -46,14 +50,18 @@
   text-align: center;
   margin-top: 24px;
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .linkClickable {
   cursor: pointer;
   text-decoration: underline;
-  color: #007bff;
+  color: var(--color-accent);
   font-weight: bold;
+}
+
+.linkClickable:hover {
+  color: var(--color-accent-dark);
 }
 
 .inputRow {
@@ -91,7 +99,7 @@
 }
 
 .errorText {
-  color: #ff4d4f;
+  color: var(--color-error);
   font-size: 12.5px;
   margin-top: 5px;
   font-weight: bold;
@@ -99,7 +107,7 @@
 }
 
 .successText {
-  color: #149e97;
+  color: var(--color-success);
   font-size: 13px;
   margin-top: 8px;
   font-weight: 700;
@@ -116,15 +124,15 @@
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  color: #7b8494;
+  color: var(--color-text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s ease;
+  transition: color var(--transition-default);
 }
 
 .pwIcon:hover {
-  color: #071224;
+  color: var(--color-text-primary);
 }
 
 .termPre {
@@ -134,7 +142,7 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.7;
-  color: #344054;
+  color: var(--color-text-secondary);
   padding: 10px;
 }
 
@@ -147,8 +155,43 @@
 
 .checkboxText {
   font-size: 14px;
-  color: #495057;
+  color: var(--color-text-secondary);
   font-weight: 500;
+}
+
+.findLinks {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 9px;
+  margin-top: -10px;
+  margin-bottom: 2px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.findLinks span {
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    text-decoration-color var(--transition-fast);
+}
+
+.findLinks span:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.findDivider {
+  color: var(--color-border-dark);
+  cursor: default !important;
+}
+
+.findDivider:hover {
+  color: var(--color-border-dark) !important;
+  text-decoration: none !important;
 }
 
 .googleLoginWrap {
@@ -156,33 +199,29 @@
   justify-content: center;
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid var(--color-border-light, #e9ecef);
+  border-top: 1px solid var(--color-border-light);
 }
 
 /* =========================================
    [회원가입 & 소셜 가입 공용] 피그마 스타일
+   - 기존 디자인 유지
+   - 내부 색상 변수는 App.module.css 팔레트에 연결
    ========================================= */
 .signupPage {
-  --wd-navy: #071224;
-  --wd-navy-soft: #0b2037;
-  --wd-main: #149e97;
-  --wd-main-dark: #0b8d87;
-  --wd-main-light: #e8f8f7;
-  --wd-border: #dfe5ec;
-  --wd-border-strong: #cdd6e0;
-  --wd-muted: #7b8494;
-  --wd-text: #071224;
-  --wd-bg: #f8fafb;
-  --wd-card: #ffffff;
+  --wd-navy: var(--color-primary);
+  --wd-navy-soft: var(--color-primary-light);
+  --wd-main: var(--color-accent);
+  --wd-main-dark: var(--color-accent-dark);
+  --wd-main-light: var(--color-accent-light);
+  --wd-border: var(--color-border);
+  --wd-border-strong: var(--color-border-dark);
+  --wd-muted: var(--color-text-muted);
+  --wd-text: var(--color-text-primary);
+  --wd-bg: var(--color-bg);
+  --wd-card: var(--color-surface);
 
   min-height: calc(100vh - 120px);
-  background:
-    radial-gradient(
-      circle at 78% 18%,
-      rgba(20, 158, 151, 0.12),
-      transparent 26%
-    ),
-    linear-gradient(180deg, #f8fafb 0%, #ffffff 42%, #f3f8fa 100%);
+  background: var(--color-bg);
   color: var(--wd-text);
   padding: 56px 22px 34px;
   box-sizing: border-box;
@@ -204,10 +243,10 @@
 .formCard {
   width: 100%;
   min-height: 710px;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(223, 229, 236, 0.9);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
   border-radius: 22px;
-  box-shadow: 0 24px 70px rgba(7, 18, 36, 0.12);
+  box-shadow: var(--shadow-hero);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -232,7 +271,7 @@
 .signupStep {
   position: relative;
   text-align: center;
-  color: #8d96a6;
+  color: var(--color-text-muted);
   font-size: 13px;
   font-weight: 700;
 }
@@ -241,10 +280,10 @@
   content: "";
   position: absolute;
   top: 17px;
-  left: calc(50% + 28px);
+  left: calc(50% + 24px);
   width: calc(100% - 38px);
   height: 2px;
-  background: #e4e9ef;
+  background: var(--color-border-light);
   border-radius: 999px;
 }
 
@@ -261,12 +300,12 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  border: 1.5px solid #d8e0e8;
-  background: #fff;
-  color: #8d96a6;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
   font-size: 16px;
   font-weight: 800;
-  box-shadow: 0 2px 7px rgba(7, 18, 36, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .signupStepActive,
@@ -276,10 +315,10 @@
 
 .signupStepActive .signupStepNumber,
 .signupStepDone .signupStepNumber {
-  color: #fff;
+  color: var(--color-text-inverse);
   border-color: var(--wd-main);
-  background: linear-gradient(135deg, var(--wd-main), #08aaa2);
-  box-shadow: 0 8px 18px rgba(20, 158, 151, 0.25);
+  background: linear-gradient(135deg, var(--wd-main), var(--wd-main-dark));
+  box-shadow: var(--shadow-lg);
 }
 
 .signupStepDone .signupStepNumber span {
@@ -342,7 +381,7 @@
   align-items: center;
   gap: 16px;
   border: 1px solid var(--wd-border);
-  background: #fff;
+  background: var(--color-surface);
   cursor: pointer;
   box-sizing: border-box;
 }
@@ -356,8 +395,8 @@
 
 .termCard:hover,
 .termRow:hover {
-  border-color: rgba(20, 158, 151, 0.55);
-  background: #fbfefe;
+  border-color: var(--color-accent);
+  background: var(--color-surface-hover);
 }
 
 .checkBoxWrap {
@@ -386,7 +425,7 @@
 }
 
 .termDesc {
-  color: #7f8795;
+  color: var(--color-text-muted);
   font-size: 13px;
   font-weight: 600;
 }
@@ -395,7 +434,7 @@
   border: 1px solid var(--wd-border);
   border-radius: 12px;
   overflow: hidden;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .termRow {
@@ -429,7 +468,7 @@
   border: 0;
   background: transparent;
   cursor: pointer;
-  color: #7b8494;
+  color: var(--color-text-muted);
   font-size: 13px;
   font-weight: 900;
   white-space: nowrap;
@@ -443,7 +482,7 @@
 .termError {
   flex-basis: 100%;
   margin-left: 50px;
-  color: #ff4d4f;
+  color: var(--color-error);
   font-size: 11px;
   line-height: 1.35;
   font-weight: 800;
@@ -454,14 +493,14 @@
   align-items: center;
   gap: 8px;
   margin: 14px 2px 0;
-  color: #7b8494;
+  color: var(--color-text-muted);
   font-size: 13px;
   font-weight: 700;
 }
 
 .noticeText::before {
   content: "ⓘ";
-  color: #8a93a3;
+  color: var(--color-text-muted);
 }
 
 /* 폼 필드 */
@@ -523,10 +562,14 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #778195;
+  color: var(--color-text-muted);
   cursor: pointer;
   display: grid;
   place-items: center;
+}
+
+.passwordToggle:hover {
+  color: var(--color-text-primary);
 }
 
 .timerText {
@@ -555,7 +598,7 @@
 
 .hintLine {
   margin: 8px 0 0;
-  color: #7b8494;
+  color: var(--color-text-muted);
   font-size: 12.5px;
   font-weight: 700;
 }
@@ -574,12 +617,12 @@
   min-height: 44px;
   border: 1px solid var(--wd-border);
   border-radius: 10px;
-  background: #fff;
-  color: #667085;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all var(--transition-fast);
 }
 
 .segmentItem input {
@@ -592,7 +635,7 @@
   border-color: var(--wd-main);
   background: var(--wd-main-light);
   color: var(--wd-main-dark);
-  box-shadow: inset 0 0 0 1px rgba(20, 158, 151, 0.14);
+  box-shadow: inset 0 0 0 1px var(--color-surface-highlight);
 }
 
 .addressStack {
@@ -603,16 +646,16 @@
 
 .photoUploadBox {
   min-height: 276px;
-  border: 1.5px dashed #cbd5df;
+  border: 1.5px dashed var(--color-border);
   border-radius: 16px;
-  background: linear-gradient(180deg, #fff, #fbfdfe);
+  background: linear-gradient(180deg, var(--color-surface), var(--color-bg));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 10px;
   text-align: center;
-  color: #7b8494;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 20px;
   box-sizing: border-box;
@@ -620,7 +663,7 @@
 
 .photoUploadBox:hover {
   border-color: var(--wd-main);
-  background: #fbfffe;
+  background: var(--color-surface-hover);
 }
 
 .fileInputHidden {
@@ -634,7 +677,7 @@
   place-items: center;
   border-radius: 50%;
   border: 1px solid var(--wd-border);
-  background: #f8fafb;
+  background: var(--color-bg);
   font-size: 30px;
 }
 
@@ -644,9 +687,9 @@
   display: block;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid rgba(20, 158, 151, 0.22);
-  box-shadow: 0 12px 24px rgba(7, 18, 36, 0.12);
-  background: #f8fafb;
+  border: 3px solid var(--color-accent-light);
+  box-shadow: var(--shadow-lg);
+  background: var(--color-bg);
 }
 
 .photoPreviewFrame img {
@@ -670,7 +713,7 @@
 .photoUploadBox small {
   margin-top: 12px;
   font-size: 12px;
-  color: #98a2b3;
+  color: var(--color-text-muted);
 }
 
 .photoUploadBox em {
@@ -679,7 +722,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #bdc7d3;
+  border: 1px solid var(--color-border-dark);
   border-radius: 8px;
   color: var(--wd-navy);
   font-style: normal;
@@ -698,8 +741,8 @@
   min-height: 58px;
   border: 1.5px solid var(--wd-border);
   border-radius: 10px;
-  background: #fff;
-  color: #536074;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -707,23 +750,19 @@
   gap: 12px;
   font-size: 16px;
   font-weight: 900;
-  transition: all 0.18s ease;
+  transition: all var(--transition-fast);
 }
 
 .interestButton:hover {
-  border-color: rgba(20, 158, 151, 0.55);
+  border-color: var(--wd-main);
   transform: translateY(-1px);
 }
 
 .interestButtonActive {
   border-color: var(--wd-main);
-  background: linear-gradient(
-    180deg,
-    rgba(20, 158, 151, 0.1),
-    rgba(20, 158, 151, 0.04)
-  );
+  background: var(--color-surface-highlight);
   color: var(--wd-main-dark);
-  box-shadow: inset 0 0 0 1px rgba(20, 158, 151, 0.18);
+  box-shadow: inset 0 0 0 1px var(--color-surface-highlight);
 }
 
 .interestIcon {
@@ -736,7 +775,7 @@
   border: 1px solid var(--wd-border);
   border-radius: 12px;
   padding: 16px 18px;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .selectedInterestHead {
@@ -756,10 +795,14 @@
 .selectedInterestHead button {
   border: 0;
   background: transparent;
-  color: #7b8494;
+  color: var(--color-text-muted);
   cursor: pointer;
   font-size: 13px;
   font-weight: 800;
+}
+
+.selectedInterestHead button:hover {
+  color: var(--color-accent);
 }
 
 .selectedPills {
@@ -769,8 +812,8 @@
 }
 
 .selectedPill {
-  border: 1px solid rgba(20, 158, 151, 0.55);
-  background: #f0fbfa;
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent-light);
   color: var(--wd-main-dark);
   border-radius: 999px;
   padding: 7px 12px;
@@ -785,7 +828,7 @@
 
 .selectedEmpty,
 .emptyText {
-  color: #7b8494;
+  color: var(--color-text-muted);
   font-size: 14px;
   font-weight: 700;
 }
@@ -805,29 +848,30 @@
   align-items: center;
   justify-content: center;
   gap: 22px;
-  color: #ffc46b;
+  color: var(--color-warning);
+  margin-bottom: 28px;
 }
 
 .completeCheck {
   width: 138px;
   height: 138px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #28c5bd, #079992);
-  color: #fff;
+  background: linear-gradient(135deg, var(--wd-main), var(--wd-main-dark));
+  color: var(--color-text-inverse);
   display: grid;
   place-items: center;
   font-size: 76px;
   font-weight: 900;
-  box-shadow: 0 20px 40px rgba(20, 158, 151, 0.26);
+  box-shadow: var(--shadow-hero);
 }
 
 .confettiMark {
   font-size: 28px;
-  color: #61c9c3;
+  color: var(--color-accent);
 }
 
 .completePanel {
-  width: min(620px, 100%);
+  width: min(560px, calc(100% - 48px));
   margin: 0 auto;
   border: 1px solid var(--wd-border);
   border-radius: 16px;
@@ -835,13 +879,14 @@
   display: flex;
   gap: 18px;
   align-items: center;
-  background: #fff;
+  background: var(--color-surface);
+  box-sizing: border-box;
 }
 
 .autoRedirectText {
   width: min(620px, 100%);
   margin: 18px auto 0;
-  color: #7b8494;
+  color: var(--color-text-muted);
   font-size: 14px;
   line-height: 1.6;
   font-weight: 800;
@@ -879,7 +924,7 @@
 
 .completePanel p {
   margin: 8px 0 0;
-  color: #697386;
+  color: var(--color-text-secondary);
   line-height: 1.55;
   font-weight: 650;
 }
@@ -894,7 +939,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
   align-items: center;
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--color-surface);
 }
 
 .prevButton,
@@ -915,11 +960,15 @@
 .backToLoginButton {
   border: 0;
   background: transparent;
-  color: #7b8494;
+  color: var(--color-text-muted);
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
   text-align: left;
+}
+
+.backToLoginButton:hover {
+  color: var(--color-accent);
 }
 
 /* 우측 이미지 */
@@ -937,63 +986,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 18px 28px rgba(7, 18, 36, 0.08));
-}
-
-/* 하단 신뢰 카드 */
-.trustSection {
-  width: min(1180px, 100%);
-  margin: 28px auto 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  background: rgba(255, 255, 255, 0.86);
-  border: 1px solid rgba(223, 229, 236, 0.8);
-  border-radius: 18px;
-  box-shadow: 0 12px 34px rgba(7, 18, 36, 0.06);
-  overflow: hidden;
-}
-
-.trustCard {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 28px 34px;
-  position: relative;
-}
-
-.trustCard:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: 28%;
-  width: 1px;
-  height: 44%;
-  background: #d8e0e8;
-}
-
-.trustCard span {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: var(--wd-main-light);
-  display: grid;
-  place-items: center;
-  color: var(--wd-main);
-  font-size: 25px;
-  flex-shrink: 0;
-}
-
-.trustCard strong {
-  color: var(--wd-navy);
-  font-size: 16px;
-  font-weight: 900;
-}
-
-.trustCard p {
-  margin: 7px 0 0;
-  color: #7b8494;
-  font-size: 13px;
-  font-weight: 650;
+  filter: var(--shadow-card-ticket-hover);
 }
 
 /* 반응형 */
@@ -1010,19 +1003,6 @@
 
   .formSection {
     order: 1;
-  }
-
-  .trustSection {
-    grid-template-columns: 1fr;
-  }
-
-  .trustCard:not(:last-child)::after {
-    top: auto;
-    bottom: 0;
-    left: 34px;
-    right: 34px;
-    width: calc(100% - 68px);
-    height: 1px;
   }
 }
 
@@ -1181,10 +1161,6 @@
   .imageSection {
     min-height: 220px;
   }
-
-  .trustCard {
-    padding: 24px 22px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -1272,6 +1248,8 @@
   }
 
   .completePanel {
+    width: 100%;
+    padding: 20px;
     align-items: flex-start;
   }
 }

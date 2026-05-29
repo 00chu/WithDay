@@ -40,11 +40,16 @@ public class SecurityConfig {
                                 "/users/social-signup",
                                 "/users/email-verification",
                                 "/users/mypage/**",
+                                "/users/find-id",
+                                "/users/find-password/email-verification",
+                                "/users/find-password/verify-code",
+                                "/users/reset-password",
                                 "/schedules/**",
                                 "/bookmarks/**",
                                 "/participations/**",
                                 "/region/**",
                                 "/notifications/**"
+
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

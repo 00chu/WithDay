@@ -5,6 +5,8 @@ import com.test.withdayback.user.vo.Terms;
 import com.test.withdayback.user.vo.User;
 import com.test.withdayback.user.vo.UserInterest;
 import com.test.withdayback.user.vo.UserTerms;
+import com.test.withdayback.user.dto.FindAccountDTO;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,6 +24,17 @@ public interface UserDao {
 
     // 이메일로 유저 ID 찾기
     Long findUserIdByEmail(String email);
+    
+    // 닉네임과 전화번호로 유저찾기
+    User findByNicknameAndPhone(FindAccountDTO findAccountDTO);
+
+    // 비밀번호 변경
+    // email과 password처럼 값을 2개 이상 따로 넘길 때는 MyBatis가 이름을 헷갈리지 않도록 @Param으로 이름표를 붙여줌.
+    // 여기서 password는 유저가 입력한 원본 비밀번호가 아니라, Service에서 암호화가 끝난 비밀번호임.
+    void updatePassword(
+            @Param("email") String email,
+            @Param("password") String password
+    );
 
     // 약관 동의 내역 저장
     void insertUserTerms(UserTerms userTerms);

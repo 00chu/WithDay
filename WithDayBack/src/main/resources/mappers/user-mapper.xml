@@ -39,6 +39,14 @@
 
     <select id="findUserIdByEmail" parameterType="String" resultType="long">
         SELECT id FROM user WHERE email = #{email}
+    </select>        
+
+    <!-- 현재 nickname + phone에 DB unique 제약조건이 없으므로, 혹시 중복 데이터가 있더라도 한 명만 조회되도록 LIMIT 1 사용 -->
+    <select id="findByNicknameAndPhone" parameterType="FindAccountDTO" resultType="User">
+        SELECT *
+        FROM user
+        WHERE nickname = #{nickname} AND phone = #{phone} AND status = 'active'
+        LIMIT 1
     </select>
 
     <insert id="insertUserTerms" parameterType="UserTerms">
@@ -131,4 +139,10 @@
         WHERE user_id = #{userId}
           AND terms_id = #{termsId}
     </update>
+    <update id="updatePassword">
+        UPDATE user
+        SET password = #{password}
+        WHERE email = #{email} AND status = 'active'
+    </update>
+
 </mapper>
