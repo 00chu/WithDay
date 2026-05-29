@@ -1,5 +1,8 @@
 import clsx from "clsx";
 import styles from "./MyPageEdit.module.css";
+import Cropper from "react-easy-crop";
+import { uploadMypageProfileImage } from "../../features/user/mypage/api";
+import { getCroppedImg } from "../../features/user/mypage/getCroppedImg";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -13,6 +16,9 @@ import {
   LockIcon,
   BellIcon,
   BellOffIcon,
+  UserRoundIcon,
+  MessageCircleIcon,
+  TagsIcon,
 } from "lucide-react";
 
 const MyPageEdit = () => {
@@ -21,9 +27,19 @@ const MyPageEdit = () => {
   const email = user?.email;
   const navigate = useNavigate();
   const { editQuery, updateMutation } = useMypageEdit();
+  console.log("editQuery.data", editQuery.data);
   const [nickname, setNickname] = useState("단이");
   const [showPw, setShowPw] = useState([false, false, false]);
   const [isNotiOn, setIsNotiOn] = useState(true);
+
+  //사진 편집
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [profilePreview, setProfilePreview] = useState("");
+
   const [intro, setIntro] = useState(
     "안녕하세요 단이입니다. 평소 여행을 다니면서 여행기록을 남기는 걸 좋아해요.",
   );
@@ -96,7 +112,7 @@ const MyPageEdit = () => {
     },
   });
 
-  // 백엔드에서 가져온 데이터로 form 초기값 세팅
+  // 백엔드에서 가져온 데이터로 초기값 세팅
   useEffect(() => {
     if (!editQuery.data) return;
 
@@ -115,6 +131,7 @@ const MyPageEdit = () => {
     setNickname(editQuery.data.nickname ?? "");
     setIntro(editQuery.data.intro ?? "");
     setIsNotiOn(editQuery.data.notificationAgreed ?? false);
+    setProfilePreview(editQuery.data.profileImage ?? "");
   }, [editQuery.data, reset]);
 
   const selectedInterestIds = watch("interestIds") ?? [];
@@ -186,8 +203,41 @@ const MyPageEdit = () => {
         }
       }
     }
-
     return true;
+  };
+
+  // 이미지 편집
+  const handleProfileFileChange = (e) => {
+
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const imageUrl = URL.createObjectURL(file);
+    setSelectedImage(imageUrl);
+    setCropModalOpen(true);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    e.target.value = "";
+  };
+
+  const handleCropComplete = (_, croppedPixels) => {
+    setCroppedAreaPixels(croppedPixels);
+  };
+
+  const handleSaveCroppedImage = async () => {
+    try {
+      if (!selectedImage || !croppedAreaPixels) return;
+      const croppedFile = await getCroppedImg(selectedImage, croppedAreaPixels);
+      const result = await uploadMypageProfileImage(croppedFile);
+      const imageUrl = result.profileImage;
+      setProfilePreview(imageUrl);
+      setValue("profileImage", imageUrl, { shouldValidate: true });
+      setCropModalOpen(false);
+      setSelectedImage(null);
+      alert("프로필 이미지가 변경되었습니다.");
+    } catch (error) {
+      console.error(error);
+      alert("프로필 이미지 변경 중 오류가 발생했습니다.");
+    }
   };
 
   const onSubmit = () => {
@@ -254,18 +304,29 @@ const MyPageEdit = () => {
       <h1 className={styles.headerTitle}>회원 정보 수정</h1>
       <div className={styles.content}>
         <div className={styles.profile}>
-          <img src="/danE.jpg" alt="프로필" className={styles.avatar} />
-          <div className={styles.retouch_btn}>
+          <img
+            src={profilePreview || editQuery.data?.profileImage || "/danE.jpg"}
+            alt="프로필"
+            className={styles.avatar}
+          />
+          <label className={styles.retouch_btn}>
             <EditCalendarOutlinedIcon />
-          </div>
-          <div className={styles.name}>단이</div>
-          <div className={styles.email}>tiaqhfl@naver.com</div>
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handleProfileFileChange}
+            />
+          </label>
+          <div className={styles.name}>{editQuery.data?.nickname}</div>
+          <div className={styles.email}>{editQuery.data?.email}</div>
         </div>
 
         <div className={styles.formSide}>
           {/* 1. 닉네임 */}
           <div className={styles.group}>
-            <div className={styles.groupTitle}>1. 닉네임</div>
+            <div className={styles.groupTitle}>
+              <UserRoundIcon size={18} />닉네임</div>
             <div className={styles.inputRow}>
               <span className={styles.fieldLabel}>닉네임</span>
               <div className={styles.inputWrapper}>
@@ -282,49 +343,12 @@ const MyPageEdit = () => {
             </div>
           </div>
 
-          {/* 2. 비밀번호 */}
+          {/* 2. 인사말 */}
           <div className={styles.group}>
-            <div className={styles.groupTitle}>2. 비밀번호</div>
-            {passwordFields.map((field, i) => (
-              <div className={styles.inputRow} key={i}>
-                <span className={styles.fieldLabel}>{field.label}</span>
-                <div className={styles.inputWrapper}>
-                  <LockIcon className={styles.iconStart} size={20} />
-                  <input
-                    className={styles.input}
-                    type={showPw[i] ? "text" : "password"}
-                    placeholder={field.placeholder}
-                    value={pwState[field.key]}
-                    onChange={(e) => handlePwChange(e, field.key)}
-                  />
-                  <div
-                    className={styles.iconEnd}
-                    onClick={() => togglePassword(i)}
-                  >
-                    {showPw[i] ? (
-                      <EyeIcon size={20} />
-                    ) : (
-                      <EyeClosedIcon size={20} />
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-            <div className={styles.messageWrapper}>
-              {isError ? (
-                <span className={styles.errorMsg}>
-                  비밀번호가 일치하지 않습니다.
-                </span>
-              ) : (
-                <span />
-              )}
-              <span className={styles.pw_text}>영문, 숫자 포함 8자 이상</span>
+            <div className={styles.groupTitle}>
+              <MessageCircleIcon size={18} />
+              <span>인사말</span>
             </div>
-          </div>
-
-          {/* 3. 인사말 */}
-          <div className={styles.group}>
-            <div className={styles.groupTitle}>3. 인사말</div>
             <div className={styles.inputRow}>
               <span
                 className={styles.fieldLabel}
@@ -347,9 +371,75 @@ const MyPageEdit = () => {
             </div>
           </div>
 
+          <div className={styles.groupTitle}>
+            <TagsIcon size={18} />
+            <span>관심사</span>
+          </div>
+          <div className={styles.groupTitle}>
+            <span>주소</span>
+          </div>
+          <div className={styles.groupTitle}>
+            <span>연락처</span>
+          </div>
+
+          {/* 3. 비밀번호 */}
+          {isLocalUser && (
+            <div className={styles.group}>
+              <div className={styles.groupTitle}>
+                <LockIcon size={18} />
+                <span>비밀번호</span>
+              </div>
+
+              {passwordFields.map((field, i) => (
+                <div className={styles.inputRow} key={i}>
+                  <span className={styles.fieldLabel}>{field.label}</span>
+                  <div className={styles.inputWrapper}>
+                    <LockIcon className={styles.iconStart} size={20} />
+                    <input
+                      className={styles.input}
+                      type={showPw[i] ? "text" : "password"}
+                      placeholder={field.placeholder}
+                      value={pwState[field.key]}
+                      onChange={(e) => handlePwChange(e, field.key)}
+                    />
+                    <div
+                      className={styles.iconEnd}
+                      onClick={() => togglePassword(i)}
+                    >
+                      {showPw[i] ?
+                        <EyeIcon size={20} />
+                        :
+                        <EyeClosedIcon size={20} />}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className={styles.messageWrapper}>
+                {isError ? (
+                  <span className={styles.errorMsg}>
+                    비밀번호가 일치하지 않습니다.
+                  </span>
+                ) : (
+                  <span />
+                )}
+                <span className={styles.pw_text}>영문, 숫자 포함 8자 이상</span>
+              </div>
+            </div>
+          )}
+
+          {!isLocalUser && (
+            <div className={styles.group}>
+              <div className={styles.groupTitle}>비밀번호</div>
+              <span className={styles.pw_text}>
+                구글 로그인 계정은 비밀번호 변경을 지원하지 않습니다.
+              </span>
+            </div>
+          )}
           {/* 4. 알림 설정 */}
           <div className={styles.group}>
-            <div className={styles.groupTitle}>4. 알림 설정</div>
+            <div className={styles.groupTitle}>
+              <BellIcon size={18} />
+              <span>알림 설정</span></div>
             <div className={styles.inputRow}>
               <span className={styles.fieldLabel}>알림 수신 동의</span>
               <div className={styles.notiRow}>
@@ -379,18 +469,76 @@ const MyPageEdit = () => {
 
           <div className={styles.footer}>
             <button
+              type="button"
               className={`${styles.btn} ${styles.btnCancel}`}
               onClick={() => navigate(-1)}
             >
               취소
             </button>
-            <button className={`${styles.btn} ${styles.btnSave}`}
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnSave}`}
               onClick={handleSubmit(onSubmit)}
               disabled={updateMutation.isPending}
             >
               저장하기
             </button>
           </div>
+
+          {cropModalOpen && (
+            <div className={styles.cropOverlay}>
+              <div className={styles.cropModal}>
+                <h3 className={styles.cropTitle}>프로필 이미지 조정</h3>
+
+                <div className={styles.cropArea}>
+                  <Cropper
+                    image={selectedImage}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    cropShape="round"
+                    showGrid={false}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={handleCropComplete}
+                  />
+                </div>
+
+                <div className={styles.zoomBox}>
+                  <span>확대</span>
+                  <input
+                    type="range"
+                    min={1}
+                    max={3}
+                    step={0.1}
+                    value={zoom}
+                    onChange={(e) => setZoom(Number(e.target.value))}
+                  />
+                </div>
+
+                <div className={styles.cropButtons}>
+                  <button
+                    type="button"
+                    className={styles.btnCancel}
+                    onClick={() => {
+                      setCropModalOpen(false);
+                      setSelectedImage(null);
+                    }}
+                  >
+                    취소
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.btnSave}
+                    onClick={handleSaveCroppedImage}
+                  >
+                    적용하기
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -702,9 +702,42 @@ public class UserService {
         if (!mypageEditRequest.getNewPassword().equals(mypageEditRequest.getNewPasswordConfirm())) {
             throw new RuntimeException("새 비밀번호가 일치하지 않습니다.");
         }
-
+        if (!"local".equals(dbUser.getProvider())) {
+            throw new RuntimeException("소셜 로그인 계정은 비밀번호를 변경할 수 없습니다.");
+        }
         // 새 비밀번호 암호화 후 updateUser에 세팅
         updateUser.setPassword(passwordEncoder.encode(mypageEditRequest.getNewPassword()));
     }
+    @Transactional
+    public String updateProfileImage(String email, MultipartFile profileFile) {
+        try {
+            User user = userDao.findByEmail(email);
 
+            if (user == null) {
+                throw new RuntimeException("존재하지 않는 사용자입니다.");
+            }
+
+            if (profileFile == null || profileFile.isEmpty()) {
+                throw new RuntimeException("프로필 이미지 파일이 없습니다.");
+            }
+
+            Map uploadParams = ObjectUtils.asMap(
+                    "folder", "withday/profiles",
+                    "use_filename", true,
+                    "unique_filename", true
+            );
+
+            Map uploadResult = cloudinary.uploader().upload(profileFile.getBytes(), uploadParams);
+
+            String profileImage = (String) uploadResult.get("secure_url");
+
+            userDao.updateProfileImage(user.getId(), profileImage);
+
+            return profileImage;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
 }

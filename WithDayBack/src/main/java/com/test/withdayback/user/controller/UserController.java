@@ -1,5 +1,6 @@
     package com.test.withdayback.user.controller;
 
+    import com.cloudinary.utils.ObjectUtils;
     import com.test.withdayback.common.util.JwtUtil;
     import com.test.withdayback.user.dto.MypageEditRequestDTO;
     import com.test.withdayback.user.dto.MypageEditResponseDTO;
@@ -15,6 +16,7 @@
     import org.springframework.web.multipart.MultipartFile;
     import org.springframework.web.bind.annotation.RequestHeader;
 
+    import java.util.HashMap;
     import java.util.List;
     import java.util.Map;
 
@@ -234,5 +236,23 @@
                 return ResponseEntity.badRequest().body(e.getMessage());
             }
         }
+        @PostMapping("/mypage/profile-image")
+        public ResponseEntity<?> updateProfileImage(
+                @RequestParam("profileFile") MultipartFile profileFile,
+                @RequestHeader(value = "Authorization", required = false) String authorization
+        ) {
+            try {
+                String email = getEmailFromAuthorizationHeader(authorization);
 
+                String profileImage = userService.updateProfileImage(email, profileFile);
+
+                Map<String, Object> result = new HashMap<>();
+                result.put("profileImage", profileImage);
+
+                return ResponseEntity.ok(result);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(401).body(e.getMessage());
+            }
+        }
     }

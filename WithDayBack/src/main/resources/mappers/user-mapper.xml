@@ -144,5 +144,9 @@
         SET password = #{password}
         WHERE email = #{email} AND status = 'active'
     </update>
-
+    <update id="updateProfileImage">
+        UPDATE user
+        SET profile_image = #{profileImage}
+        WHERE id = #{userId}
+    </update>
 </mapper>

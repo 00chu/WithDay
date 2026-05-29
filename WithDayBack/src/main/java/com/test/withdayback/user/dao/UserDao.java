@@ -8,7 +8,6 @@ import com.test.withdayback.user.vo.UserTerms;
 import com.test.withdayback.user.dto.FindAccountDTO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -71,4 +70,11 @@ public interface UserDao {
 
     // 유저의 특정 약관 동의 여부 수정
     void updateUserTermsAgreed(UserTerms userTerms);
+
+    void updateProfileImage(
+            @Param("userId") Long userId,
+            @Param("profileImage") String profileImage
+    );
+
+
 }

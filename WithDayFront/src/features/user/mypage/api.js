@@ -11,3 +11,16 @@ export const updateMypageData = async (data) => {
 
     return response.data;
 };
+
+export const uploadMypageProfileImage = async (file) => {
+    const formData = new FormData();
+    formData.append("profileFile", file);
+
+    const response = await api.post("/users/mypage/profile-image", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
+
+    return response.data;
+};
