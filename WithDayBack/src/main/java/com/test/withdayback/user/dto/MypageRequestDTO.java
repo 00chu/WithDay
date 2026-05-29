@@ -17,5 +17,4 @@ public class MypageRequestDTO {
     private User user;
     private List<UserTerms> userTerms;
     private List<Interest> interests;
-    private List<UserInterest> userInterests;
 }
