@@ -279,7 +279,7 @@ export const findPwCodeSchema = yup.object().shape({
   authCode: yup
     .string()
     .required("인증번호를 입력해주세요.")
-    .matches(/^\d{6}$/, "인증번호 6자리를 입력해주세요."),
+    .matches(/^[A-Za-z0-9]{6}$/, "인증번호 6자리를 입력해주세요."),
 });
 
 // 비밀번호 찾기 - 비밀번호 재설정 단계 검증 규칙 (Schema), yup.object().shape({ ... }) 형태로 객체 안에 각 필드별 검사 규칙을 작성

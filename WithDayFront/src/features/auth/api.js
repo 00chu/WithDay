@@ -44,6 +44,7 @@ api.interceptors.request.use(
 // 3. return response.data: 백엔드가 준 데이터 리턴 (React Query의 onSuccess에서 이 데이터를 받아서 처리할 수 있게 함)
 
 // 갑자기 생각나서 적는 주석. export: 여기서 만든 함수들을 다른 파일에서 쓸수 있게 해줌.
+// 회원가입
 export const signupUser = async (formData) => {
   const response = await api.post(`/users/signup`, formData, {
     // 사진 파일(profileImage)이 포함되어 있으므로, 기본 설정(json)을 강제로 multipart/form-data로 덮어씌움. (파일 업로드할 때는 multipart/form-data로 보내야 백엔드에서 파일을 받을 수 있음)
@@ -55,31 +56,37 @@ export const signupUser = async (formData) => {
   return response.data;
 };
 
+// 이메일 인증 코드 보내기
 export const sendEmailVerification = async (email) => {
   const response = await api.post(`/users/email-verification`, { email });
   return response.data;
 };
 
+// 약관 정보 불러오기
 export const fetchTerms = async () => {
   const response = await api.get(`/users/terms`);
   return response.data;
 };
 
+// 관심사 정보 전체 불러오기
 export const fetchInterests = async () => {
   const response = await api.get(`/users/interests`);
   return response.data;
 };
 
+// 일반 로그인
 export const loginUser = async (loginData) => {
   const response = await api.post(`/users/login`, loginData);
   return response.data;
 };
 
+// 구글 로그인
 export const googleLoginUser = async (googleData) => {
   const response = await api.post(`/users/google-login`, googleData);
   return response.data;
 };
 
+// 소셜 로그인 회원가입
 export const socialSignupUser = async (signupData) => {
   const response = await api.post(`/users/social-signup`, signupData);
   return response.data;

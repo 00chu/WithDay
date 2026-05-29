@@ -656,6 +656,7 @@ const SocialExtra = () => {
                           <img
                             src={googleData.profileImage}
                             alt="구글 프로필 미리보기"
+                            referrerPolicy="no-referrer"
                           />
                         </span>
                       ) : (
@@ -866,30 +867,6 @@ const SocialExtra = () => {
           <img src="/withday_signup_bg.jpg" alt="" className={styles.bgImage} />
         </aside>
       </main>
-
-      <section className={styles.trustSection}>
-        <article className={styles.trustCard}>
-          <span>👥</span>
-          <div>
-            <strong>안심할 수 있는 여행 파트너 매칭</strong>
-            <p>검증된 회원들과 함께 즐거운 여행을</p>
-          </div>
-        </article>
-        <article className={styles.trustCard}>
-          <span>🛡️</span>
-          <div>
-            <strong>개인정보 보호 최우선</strong>
-            <p>안전한 데이터 관리로 안심하고 이용</p>
-          </div>
-        </article>
-        <article className={styles.trustCard}>
-          <span>🌐</span>
-          <div>
-            <strong>전 세계 어디든, WithDay</strong>
-            <p>국내부터 해외까지 함께 떠나요</p>
-          </div>
-        </article>
-      </section>
 
       <Snackbar
         open={toast.open}
