@@ -43,7 +43,8 @@ public class SecurityConfig {
                                 "/bookmarks/**",
                                 "/participations/**",
                                 "/region/**",
-                                "/notifications/**"
+                                "/notifications/**",
+                                "/admins/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

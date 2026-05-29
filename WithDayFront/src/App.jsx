@@ -25,6 +25,7 @@ import Header from "./widgets/Header/Header";
 import BottomNav from "./widgets/BottomNav/BottomeNav";
 import LayoutContainer from "./shared/ui/LayoutContainer/LayoutContainer";
 import PrivateRoute from "./features/ui/PrivateRoute";
+import MemberManagementPage from "./page/admin/MemberManagementPage";
 
 function App() {
   // 로그인 상태와 토큰 만료 여부를 Zustand에서 가져옴
@@ -163,6 +164,15 @@ function App() {
               element={
                 <PrivateRoute>
                   <UpdateSchedule />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/admin/member"
+              element={
+                <PrivateRoute>
+                  <MemberManagementPage />
                 </PrivateRoute>
               }
             />

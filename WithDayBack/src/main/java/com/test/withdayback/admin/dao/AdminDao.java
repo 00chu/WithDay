@@ -7,5 +7,5 @@ import java.util.List;
 
 @Mapper
 public interface AdminDao {
-    List<User> selectAllMember();
+    List<User> selectAllMember(String keyword, String gender, String provider, String status);
 }

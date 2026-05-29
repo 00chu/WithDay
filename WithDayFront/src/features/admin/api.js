@@ -6,7 +6,9 @@ export const api = axios.create({
   baseURL: `http://${BASE_URL}`,
 });
 
-export const selectAllMember = async () => {
-  const { data } = await api.get(`/admins/members`);
+export const selectAllMember = async (params) => {
+  const { data } = await api.get(`/admins/members`, {
+    params,
+  });
   return data;
 };

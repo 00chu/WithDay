@@ -159,6 +159,7 @@ const UpdateSchedule = () => {
   const totalPrice = watch("post.totalPrice");
 
   // 시/도 조회
+  // useQuery - get
   const { data: regions = [] } = useQuery({
     queryKey: ["region"],
     queryFn: getRegion,
@@ -214,6 +215,7 @@ const UpdateSchedule = () => {
   const queryClient = useQueryClient();
 
   // 사진 업로드 시 시간 오래 걸릴 때 등록/수정 버튼 막음
+  // useMutation - post/put/delete
   const { mutateAsync: submitSchedule, isPending } = useMutation({
     mutationFn: ({
       scheduleId,

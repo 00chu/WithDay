@@ -12,8 +12,8 @@ public class AdminService {
     @Autowired
     private AdminDao adminDao;
 
-    public List<User> selectAllMember() {
-        List<User> list = adminDao.selectAllMember();
+    public List<User> selectAllMember(String keyword, String gender, String provider, String status) {
+        List<User> list = adminDao.selectAllMember(keyword, gender, provider, status);
         return list;
     }
 }

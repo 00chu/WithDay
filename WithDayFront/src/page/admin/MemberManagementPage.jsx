@@ -1,3 +1,131 @@
-const MemberManagementPage = () => {};
+import styles from "./MemberManagementPage.module.css";
+import { useQuery } from "@tanstack/react-query";
+import { selectAllMember } from "../../features/admin/api";
+import { useEffect, useState } from "react";
+import MemberList from "../../features/admin/ui/MemberList";
+import { Input } from "../../shared/ui/Form/Form";
+import Button from "../../shared/ui/Button/Button";
+import CommonSelect from "../../shared/ui/Select/CommonSelect";
+import { Controller, useForm } from "react-hook-form";
+
+const MemberManagementPage = () => {
+  const [searchParams, setSearchParams] = useState({
+    keyword: "",
+    gender: "",
+    provider: "",
+    status: "",
+  });
+
+  const { data: memberList = [] } = useQuery({
+    // 값에 따라 서로 다른 요청으로 인식할 수 있게 복합키로 설정
+    queryKey: ["memberList", searchParams],
+    queryFn: () => selectAllMember(searchParams),
+  });
+
+  useEffect(() => {
+    console.log(memberList);
+  }, [memberList]);
+
+  // register - 일반 input을 form에 등록.
+  /* 
+  control - 외부 컴포넌트 (mui select ...)는 register로 제어 X
+  rhf(react-hook-form)가 따로 관리할 수 있도록 control을 전달.
+  */
+  // handleSubmit - 폼 제출 처리 함수
+  // watch - 현재 form 값을 실시간으로 감시
+  const { register, control, handleSubmit, watch } = useForm({
+    defaultValues: {
+      keyword: "",
+      gender: "",
+      provider: "",
+      status: "",
+    },
+  });
+
+  const genderOptions = [
+    { label: "남성", value: "1" },
+    { label: "여성", value: "2" },
+  ];
+
+  const providerOptions = [
+    { label: "Google", value: "google" },
+    { label: "Local", value: "local" },
+  ];
+
+  const statusOptions = [
+    { label: "active", value: "active" },
+    { label: "suspended", value: "suspended" },
+    { label: "admin", value: "admin" },
+  ];
+
+  const onSubmit = (formData) => {
+    setSearchParams(formData);
+  };
+
+  return (
+    <main className={styles.main}>
+      <form className={styles.searchForm} onSubmit={handleSubmit(onSubmit)}>
+        <Input
+          type="text"
+          placeholder="닉네임 또는 이메일 검색"
+          {...register("keyword")}
+        />
+
+        {/* 외부 컴포넌트를 rhf에 연결하는 브릿지 */}
+        <Controller
+          name="gender" // 폼 데이터 이름
+          control={control} // rhf 내부 상태 관리자 연결
+          render={(
+            // 실제 렌더링할 컴포넌트, field - rhf가 제공하는 값
+            // field = { value, onChange, onBlur, name, ref }
+            { field },
+          ) => (
+            <CommonSelect
+              label="성별"
+              value={field.value} // rhf 상태값 연결
+              onChange={field.onChange} // 값 변경 시 rhf에 전달
+              options={genderOptions}
+              size="small"
+            />
+          )}
+        />
+
+        <Controller
+          name="provider"
+          control={control}
+          render={({ field }) => (
+            <CommonSelect
+              label="가입 경로"
+              value={field.value}
+              onChange={field.onChange}
+              options={providerOptions}
+              size="small"
+            />
+          )}
+        />
+
+        <Controller
+          name="status"
+          control={control}
+          render={({ field }) => (
+            <CommonSelect
+              label="상태"
+              value={field.value}
+              onChange={field.onChange}
+              options={statusOptions}
+              size="small"
+            />
+          )}
+        />
+
+        <Button type="submit" variant="primary" size="md">
+          검색
+        </Button>
+      </form>
+
+      <MemberList memberList={memberList} />
+    </main>
+  );
+};
 
 export default MemberManagementPage;

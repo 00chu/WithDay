@@ -3,45 +3,34 @@
 
 <mapper namespace="com.test.withdayback.admin.dao.AdminDao">
     <select id="selectAllMember" resultType="User">
-        SELECT profile_image, nickname, email, provider, gender, birthday, status, create_at
+        SELECT profile_image, nickname, email, provider, gender, birthday, status, created_at
         FROM user
 
         <where>
+            <!-- 닉네임 / 이메일 검색 -->
+            <if test="keyword != null and keyword != ''">
+                <!-- 하나의 조건으로 막기 위해 괄호로 묶음 -->
+                (
+                <!-- MyBatis가 문자열 안 #{} 를 제대로 처리 못함 -->
+                nickname like concat('%', #{keyword}, '%')   <!-- => '%keyword%' -->
+                or email like concat('%', #{keyword}, '%')
+                )
+            </if>
             <!-- 성별 조건 있을 때 성별 조건 -->
             <if test="gender != null and gender != ''">
-                gender = #{gender}
+                and gender = #{gender}
             </if>
             <!-- 가입경로 provider -->
-            <if test="provider != null">
+            <if test="provider != null and provider != ''">
                 and provider = #{provider}
             </if>
             <!-- 회원 상태 status -->
-            <if test="status != null">
+            <if test="status != null and status != ''">
                 and status = #{status}
             </if>
         </where>
 
         <choose>
-            <!-- 닉네임 오름차순 -->
-            <when test="sort == 'nicknameAsc'">
-                ORDER BY nickname ASC
-            </when>
-
-            <!-- 닉네임 내림차순 -->
-            <when test="sort == 'nicknameDesc'">
-                ORDER BY nickname DESC
-            </when>
-
-            <!-- 이메일 오름차순 -->
-            <when test="sort == 'emailAsc'">
-                ORDER BY email ASC
-            </when>
-
-            <!-- 이메일 내림차순 -->
-            <when test="sort == 'emailDesc'">
-                ORDER BY email DESC
-            </when>
-
             <!-- 기본 정렬 -->
             <otherwise>
                 ORDER BY id DESC
