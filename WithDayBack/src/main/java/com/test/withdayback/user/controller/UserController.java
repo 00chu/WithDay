@@ -1,5 +1,6 @@
     package com.test.withdayback.user.controller;
 
+    import com.test.withdayback.user.dto.FindAccountDTO;
     import com.test.withdayback.user.dto.SignupRequestDTO;
     import com.test.withdayback.user.service.UserService;
     import com.test.withdayback.user.vo.Interest;
@@ -130,4 +131,57 @@
                 return ResponseEntity.badRequest().body(e.getMessage());
             }
         }
+
+        // 아이디 찾기 (/users/find-id)
+        @PostMapping("/find-id")
+        public ResponseEntity<?> findId(@RequestBody FindAccountDTO findAccountDTO) {
+            try {
+                Map<String, String> result = userService.findId(findAccountDTO);
+
+                return ResponseEntity.ok(result);
+            } catch (RuntimeException e) {
+                // Service에서 일치하는 회원이 없으면 에러 메시지를 400 Bad Request로 프론트에 전달
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+
+        // 비밀번호 찾기 - 인증번호 발송 (/users/find-password/email-verification)
+        @PostMapping("/find-password/email-verification")
+        public ResponseEntity<?> sendPasswordResetCode(@RequestBody FindAccountDTO findAccountDTO) {
+            try {
+                String result = userService.sendPasswordResetCode(findAccountDTO);
+
+                return ResponseEntity.ok(result);
+            } catch (RuntimeException e) {
+                // 가입된 이메일이 없거나 소셜 계정이면 에러 메시지를 프론트에 전달
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+
+        // 비밀번호 찾기 - 인증번호 확인 (/users/find-password/verify-code)
+        @PostMapping("/find-password/verify-code")
+        public ResponseEntity<?> verifyPasswordResetCode(@RequestBody FindAccountDTO findAccountDTO) {
+            try {
+                String result = userService.verifyPasswordResetCode(findAccountDTO);
+
+                return ResponseEntity.ok(result);
+            } catch (RuntimeException e) {
+                // 인증번호가 없거나 일치하지 않으면 에러 메시지를 프론트에 전달
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+
+        // 비밀번호 재설정 (/users/reset-password)
+        @PostMapping("/reset-password")
+        public ResponseEntity<?> resetPassword(@RequestBody FindAccountDTO findAccountDTO) {
+            try {
+                String result = userService.resetPassword(findAccountDTO);
+
+                return ResponseEntity.ok(result);
+            } catch (RuntimeException e) {
+                // 인증을 완료하지 않았거나 비밀번호 변경에 실패하면 에러 메시지를 프론트에 전달
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+
     }

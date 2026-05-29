@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useMutation } from "@tanstack/react-query";
+import { Snackbar, Alert } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
@@ -10,6 +12,12 @@ import {
   findPwCodeSchema,
   findPwResetSchema,
 } from "../../features/auth/validation/authSchema";
+
+import {
+  sendPasswordResetCode,
+  verifyPasswordResetCode,
+  resetPassword,
+} from "../../features/auth/api";
 
 import FormField from "../../shared/ui/Form/FormField";
 import { Input } from "../../shared/ui/Form/Form";
@@ -20,10 +28,15 @@ const FindPw = () => {
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
-  const [serverAuthCode, setServerAuthCode] = useState("");
   const [verifiedEmail, setVerifiedEmail] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [showPwConfirm, setShowPwConfirm] = useState(false);
+
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   // 1단계: 이메일 입력 폼
   const {
@@ -56,46 +69,121 @@ const FindPw = () => {
     mode: "onSubmit",
   });
 
-  // 인증번호 전송 버튼을 눌렀을 때 실행되는 함수
-  // handleSubmitEmail이 findPwEmailSchema 검사를 먼저 통과시킨 뒤 이 함수를 실행함.
-  const handleSendAuthCode = (data) => {
-    // data: { email }
-
-    // TODO: 백엔드 연결 시 이메일 인증번호 전송 API로 교체
-    // 예: sendPasswordResetCode(data.email)
-    const tempCode = "123456";
-
-    setVerifiedEmail(data.email);
-    setServerAuthCode(tempCode);
-
-    alert(`임시 인증번호는 ${tempCode} 입니다.`);
-    setStep(2);
-  };
-
-  // 인증번호 확인 버튼을 눌렀을 때 실행되는 함수
-  // findPwCodeSchema는 6자리 숫자 형식만 검사하고, 실제 일치 여부는 여기서 비교함.
-  const handleVerifyAuthCode = (data) => {
-    // data: { authCode }
-
-    if (data.authCode !== serverAuthCode) {
-      alert("인증번호가 일치하지 않습니다.");
+  const handleCloseToast = (event, reason) => {
+    if (reason === "clickaway") {
       return;
     }
 
-    setStep(3);
+    setToast((prev) => ({ ...prev, open: false }));
   };
 
-  // 비밀번호 재설정 버튼을 눌렀을 때 실행되는 함수
-  // handleSubmitReset이 findPwResetSchema 검사를 먼저 통과시킨 뒤 이 함수를 실행함.
+  // 비밀번호 찾기 인증번호 전송 mutation
+  const sendCodeMutation = useMutation({
+    mutationFn: sendPasswordResetCode,
+
+    onSuccess: (data, email) => {
+      setVerifiedEmail(email);
+      setStep(2);
+
+      setToast({
+        open: true,
+        message: "인증번호가 이메일로 발송되었습니다.",
+        severity: "success",
+      });
+    },
+
+    onError: (error) => {
+      const errMsg =
+        error.response?.data?.message ||
+        error.response?.data ||
+        "인증번호 발송에 실패했습니다.";
+
+      setToast({
+        open: true,
+        message: errMsg,
+        severity: "error",
+      });
+    },
+  });
+
+  // 비밀번호 찾기 인증번호 확인 mutation
+  const verifyCodeMutation = useMutation({
+    mutationFn: verifyPasswordResetCode,
+
+    onSuccess: () => {
+      setStep(3);
+
+      setToast({
+        open: true,
+        message: "인증번호 확인이 완료되었습니다.",
+        severity: "success",
+      });
+    },
+
+    onError: (error) => {
+      const errMsg =
+        error.response?.data?.message ||
+        error.response?.data ||
+        "인증번호가 일치하지 않습니다.";
+
+      setToast({
+        open: true,
+        message: errMsg,
+        severity: "error",
+      });
+    },
+  });
+
+  // 비밀번호 재설정 mutation
+  const resetPasswordMutation = useMutation({
+    mutationFn: resetPassword,
+
+    onSuccess: () => {
+      setStep(4);
+
+      setToast({
+        open: true,
+        message: "비밀번호가 변경되었습니다.",
+        severity: "success",
+      });
+    },
+
+    onError: (error) => {
+      const errMsg =
+        error.response?.data?.message ||
+        error.response?.data ||
+        "비밀번호 변경에 실패했습니다.";
+
+      setToast({
+        open: true,
+        message: errMsg,
+        severity: "error",
+      });
+    },
+  });
+
+  // 인증번호 전송 버튼을 눌렀을 때
+  const handleSendAuthCode = (data) => {
+    // data: { email }
+    sendCodeMutation.mutate(data.email);
+  };
+
+  // 인증번호 확인 버튼을 눌렀을 때
+  const handleVerifyAuthCode = (data) => {
+    // data: { authCode }
+    verifyCodeMutation.mutate({
+      email: verifiedEmail,
+      authCode: data.authCode,
+    });
+  };
+
+  // 비밀번호 재설정 버튼을 눌렀을 때
   const handleResetPassword = (data) => {
     // data: { newPassword, newPasswordConfirm }
-
-    console.log("비밀번호 재설정 이메일:", verifiedEmail);
-    console.log("새 비밀번호 입력값:", data);
-
-    // TODO: 백엔드 연결 시 비밀번호 재설정 API로 교체
-    // 예: resetPassword({ email: verifiedEmail, newPassword: data.newPassword })
-    setStep(4);
+    resetPasswordMutation.mutate({
+      email: verifiedEmail,
+      newPassword: data.newPassword,
+    });
   };
 
   return (
@@ -106,7 +194,7 @@ const FindPw = () => {
           className={styles.backButton}
           onClick={() => navigate("/login")}
         >
-          ‹ 로그인으로 돌아가기
+          {"<"} 로그인으로 돌아가기
         </button>
 
         <div className={styles.findHeader}>
@@ -149,8 +237,14 @@ const FindPw = () => {
               />
             </FormField>
 
-            <Button type="submit" variant="primary" size="lg" fullWidth>
-              인증번호 전송
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              disabled={sendCodeMutation.isPending}
+            >
+              {sendCodeMutation.isPending ? "전송 중..." : "인증번호 전송"}
             </Button>
           </form>
         )}
@@ -172,16 +266,26 @@ const FindPw = () => {
                 maxLength={6}
                 {...registerCode("authCode")}
                 onChange={(e) => {
-                  const onlyNumbers = e.target.value.replace(/\D/g, "");
-                  setCodeValue("authCode", onlyNumbers, {
+                  // 영문자 + 숫자만 입력되게 하고, 특수문자/한글/공백은 제거함.
+                  const authCodeValue = e.target.value.replace(
+                    /[^A-Za-z0-9]/g,
+                    "",
+                  );
+                  setCodeValue("authCode", authCodeValue, {
                     shouldValidate: true,
                   });
                 }}
               />
             </FormField>
 
-            <Button type="submit" variant="primary" size="lg" fullWidth>
-              인증번호 확인
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              disabled={verifyCodeMutation.isPending}
+            >
+              {verifyCodeMutation.isPending ? "확인 중..." : "인증번호 확인"}
             </Button>
 
             <button
@@ -189,7 +293,6 @@ const FindPw = () => {
               className={styles.textButton}
               onClick={() => {
                 setStep(1);
-                setServerAuthCode("");
                 setVerifiedEmail("");
                 setCodeValue("authCode", "");
               }}
@@ -251,8 +354,16 @@ const FindPw = () => {
               </div>
             </FormField>
 
-            <Button type="submit" variant="primary" size="lg" fullWidth>
-              비밀번호 재설정
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              disabled={resetPasswordMutation.isPending}
+            >
+              {resetPasswordMutation.isPending
+                ? "변경 중..."
+                : "비밀번호 재설정"}
             </Button>
           </form>
         )}
@@ -278,6 +389,22 @@ const FindPw = () => {
           </div>
         )}
       </div>
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={3000}
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        sx={{ bottom: "80px !important" }}
+      >
+        <Alert
+          onClose={handleCloseToast}
+          severity={toast.severity}
+          sx={{ width: "100%" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import com.test.withdayback.common.util.EmailSender;
 import com.test.withdayback.common.util.JwtUtil;
 import com.test.withdayback.user.dao.UserDao;
 import com.test.withdayback.user.dto.SignupRequestDTO;
+import com.test.withdayback.user.dto.FindAccountDTO;
 import com.test.withdayback.user.vo.Interest;
 import com.test.withdayback.user.vo.Terms;
 import com.test.withdayback.user.vo.User;
@@ -21,6 +22,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 // @Service: 데이터 가공, 검증 등을 처리하는 클래스라 명시, 스프링 컨테이너에 Bean으로 자동 등록되어 @Autowired로 주입받을 수 있게 함. (Controller에서 주입받음.)
 @Service
@@ -43,6 +45,17 @@ public class UserService {
     private EmailSender emailSender; // 이메일 발송용
 
     private static final int MIN_AGE = 18; // 최소 가입 연령 제한
+
+    // 회원가입 이메일 인증은 프론트에서 인증번호를 비교했지만,
+    // 비밀번호 재설정은 보안상 백엔드가 인증번호와 인증 완료 여부를 직접 검사함. (두가지 다 해보고 싶었던 것)
+
+    // 비밀번호 찾기 인증번호
+    // key: 이메일, value: 인증번호
+    private final Map<String, String> passwordResetCodeStore = new ConcurrentHashMap<>();
+
+    // 비밀번호 찾기 인증 완료 여부
+    // key: 이메일, value: 인증번호 확인 성공 여부
+    private final Map<String, Boolean> passwordResetVerifiedStore = new ConcurrentHashMap<>();
 
     // 회원가입
     // @Transactional: 로직이 에러없이 작동하면 자동으로 DB에 commit시키고 하나라도 에러가 있다면 rollback 시킴
@@ -373,6 +386,164 @@ public class UserService {
             // Controller의 catch 블록으로 에러 메시지를 주고 프론트에 400 에러로 응답하게 만듦.
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    // 아이디 찾기
+    public Map<String, String> findId(FindAccountDTO findAccountDTO) {
+        // 프론트에서 받은 닉네임, 전화번호로 유저를 찾음
+        User user = userDao.findByNicknameAndPhone(findAccountDTO);
+
+        // 일치하는 유저가 없다면
+        if (user == null) {
+            // Controller에서 catch하여 400 Bad Request로 프론트에 메시지 전달
+            throw new RuntimeException("일치하는 회원 정보를 찾을 수 없습니다.");
+        }
+
+        String email = user.getEmail();
+
+        // 이메일 개인정보 보호를 위해 앞 2글자만 보여주고 나머지는 마스킹 처리 (예: withday@gmail.com -> wi*****@gmail.com)
+        String maskedEmail = email;
+
+        // 이메일 형식이면 @ 기준으로 아이디 부분과 도메인 부분을 나눠서 마스킹 처리
+        if (email != null && email.contains("@")) {
+            String[] emailParts = email.split("@"); // @기준으로 나눔
+            String emailId = emailParts[0]; // @ 앞부분
+            String emailDomain = emailParts[1]; // @ 뒷부분
+
+            // 아이디가 2글자 이상이면 앞 2글자만 보여주고, 1글자면 1글자만 보여줌
+            if (emailId.length() >= 2) {
+                maskedEmail = emailId.substring(0, 2) + "*****@" + emailDomain;
+            } else {
+                maskedEmail = emailId + "*****@" + emailDomain;
+            }
+        }
+
+        // 프론트에서 data.email로 꺼내 쓸 수 있도록 Map 형태로 반환
+        Map<String, String> result = new HashMap<>();
+        result.put("email", maskedEmail);
+
+        return result;
+    }
+
+    // 비밀번호 찾기 인증번호 발송
+    public String sendPasswordResetCode(FindAccountDTO findAccountDTO) {
+        String email = findAccountDTO.getEmail();
+
+        // 입력한 이메일로 가입된 유저가 있는지 확인
+        User user = userDao.findByEmail(email);
+
+        // 가입된 이메일이 없다면 에러 발생
+        if (user == null) {
+            // Controller에서 catch하여 400 Bad Request로 프론트에 메시지 전달
+            throw new RuntimeException("가입된 이메일이 없습니다.");
+        }
+
+        // 소셜 로그인 계정은 사용자가 직접 아는 비밀번호가 없는 구조라서 비밀번호 재설정을 막음
+        // 현재 소셜 가입자는 provider가 google로 저장됨.
+        if (!"local".equals(user.getProvider())) {
+            throw new RuntimeException("소셜 로그인 계정은 비밀번호 재설정을 사용할 수 없습니다.");
+        }
+
+        Random r = new Random();
+        StringBuilder sb = new StringBuilder(); // 문자열을 효율적으로 이어 붙이기 위한 객체
+
+        // 영문자 + 숫자 혼합된 6자리 랜덤 난수(인증번호) 생성 알고리즘
+        for (int i = 0; i < 6; i++) {
+            int flag = r.nextInt(3); // 0(숫자), 1(대문자), 2(소문자) 결정
+
+            if (flag == 0) {
+                sb.append(r.nextInt(10)); // 0~9 랜덤 숫자 추가
+            } else if (flag == 1) {
+                sb.append((char) (r.nextInt(26) + 65)); // 아스키코드 65('A')를 기준으로 랜덤 대문자 변환 후 추가
+            } else {
+                sb.append((char) (r.nextInt(26) + 97)); // 아스키코드 97('a')를 기준으로 랜덤 소문자 변환 후 추가
+            }
+        }
+
+        // 조립된 6자리 인증번호 추출 (예: 3Bf8a1)
+        String authCode = sb.toString();
+
+        // 개발 단계 확인용 로그. 배포 전에는 삭제해야 함. - 물론 실제 프로젝트가 아닌 학원 프로젝트이니 배포할때도 남겨놓음.
+        System.out.println("[비밀번호 찾기 인증번호] " + email + " : " + authCode);
+
+        // 메일 수신 시 적용될 HTML 양식 작성
+        String emailTitle = "[WithDay] 비밀번호 재설정 인증번호입니다.";
+        String emailContent = "<h1>안녕하세요. WithDay 입니다.</h1>"
+                + "<h3>비밀번호 재설정 인증번호는 [ <b style='color:#007BFF;'>" + authCode + "</b> ] 입니다.</h3>"
+                + "<h3>화면으로 돌아가 인증번호를 입력해 주세요.</h3>";
+
+        // 실제 메일 발송
+        emailSender.sendMail(emailTitle, email, emailContent);
+
+        // 인증번호와 인증 완료 여부를 서버 메모리에 저장
+        passwordResetCodeStore.put(email, authCode);
+        passwordResetVerifiedStore.put(email, false);
+
+        return "success";
+    }
+
+    // 비밀번호 찾기 인증번호 확인
+    public String verifyPasswordResetCode(FindAccountDTO findAccountDTO) {
+        String email = findAccountDTO.getEmail();
+        String authCode = findAccountDTO.getAuthCode();
+
+        // 해당 이메일로 발급된 인증번호를 꺼냄
+        String savedCode = passwordResetCodeStore.get(email);
+
+        // 인증번호를 발송한 적이 없다면 에러 발생
+        if (savedCode == null) {
+            throw new RuntimeException("인증번호를 먼저 발송해주세요.");
+        }
+
+        // 프론트에서 입력한 인증번호와 서버에 저장된 인증번호가 다르면 에러 발생
+        if (!savedCode.equals(authCode)) {
+            throw new RuntimeException("인증번호가 일치하지 않습니다.");
+        }
+
+        // 인증번호가 일치하면 해당 이메일은 비밀번호 재설정 가능 상태로 변경
+        passwordResetVerifiedStore.put(email, true);
+
+        return "success";
+    }
+
+    // 비밀번호 재설정
+    @Transactional
+    public String resetPassword(FindAccountDTO findAccountDTO) {
+        String email = findAccountDTO.getEmail();
+        String newPassword = findAccountDTO.getNewPassword();
+
+        // 이메일로 유저 조회
+        User user = userDao.findByEmail(email);
+
+        // 가입된 이메일이 없다면 에러 발생
+        if (user == null) {
+            throw new RuntimeException("가입된 이메일이 없습니다.");
+        }
+
+        // 소셜 로그인 계정은 비밀번호 재설정을 막음
+        if (!"local".equals(user.getProvider())) {
+            throw new RuntimeException("소셜 로그인 계정은 비밀번호 재설정을 사용할 수 없습니다.");
+        }
+
+        // 인증번호 확인을 완료한 이메일인지 검사
+        Boolean isVerified = passwordResetVerifiedStore.get(email);
+
+        if (isVerified == null || !isVerified) {
+            throw new RuntimeException("이메일 인증을 먼저 완료해주세요.");
+        }
+
+        // 유저가 입력한 새 비밀번호를 암호화
+        String encodedPassword = passwordEncoder.encode(newPassword);
+
+        // 암호화된 비밀번호로 DB 업데이트
+        // email, encodedPassword 두 값을 따로 넘기므로 DAO에서 @Param을 사용함.
+        userDao.updatePassword(email, encodedPassword);
+
+        // 인증번호 재사용 방지를 위해 인증번호와 인증 성공 상태를 삭제
+        passwordResetCodeStore.remove(email);
+        passwordResetVerifiedStore.remove(email);
+
+        return "success";
     }
 
     public User findByEmail(String email) {
