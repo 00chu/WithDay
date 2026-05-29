@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import { dayjs, getDDay } from "../../../shared/lib/dateUtile";
@@ -72,7 +73,7 @@ const resolveDeadline = (recruitEndDate) => {
 
   if (dDay === "D-Day") {
     return {
-      label: "D-day",
+      label: "마감 D-day",
       isToday: true,
       isClosed: false,
     };
@@ -87,7 +88,7 @@ const resolveDeadline = (recruitEndDate) => {
   }
 
   return {
-    label: dDay,
+    label: "마감 " + dDay,
     isToday: false,
     isClosed: false,
   };
@@ -105,31 +106,31 @@ const resolveDeadlineDate = (schedule) =>
   null;
 
 /*
- * 카드 날짜는 숫자 중심 YYYY.MM.DD 형식으로 고정한다.
- * 여러 날 일정은 모바일에서 `startDate` / `~ endDate` 두 줄로, 넓은 화면에서는 한 줄 요약으로 재조합한다.
+ * 카드 날짜는 MM.DD(요일) 형식으로 고정한다.
+ * 여러 날 일정은 `시작일 → 종료일` 한 줄을 기본으로 하고, 폭이 좁으면 자연스럽게 다음 줄로 넘어가게 만든다.
  */
-const resolvePeriodLines = (startDate, endDate) => {
+const resolvePeriodLabel = (startDate, endDate) => {
   const start = dayjs(startDate);
   const end = dayjs(endDate);
-  const formatCardDate = (value) => value.format("YYYY.MM.DD");
+  const formatCardDate = (value) => value.format("MM.DD(ddd)");
 
   if (!start.isValid() && !end.isValid()) {
-    return ["일정 미정"];
+    return "일정 미정";
   }
 
   if (start.isValid() && !end.isValid()) {
-    return [formatCardDate(start)];
+    return formatCardDate(start);
   }
 
   if (!start.isValid() && end.isValid()) {
-    return [formatCardDate(end)];
+    return formatCardDate(end);
   }
 
   if (start.isSame(end, "day")) {
-    return [formatCardDate(start)];
+    return formatCardDate(start);
   }
 
-  return [formatCardDate(start), `~ ${formatCardDate(end)}`];
+  return `${formatCardDate(start)} → ${formatCardDate(end)}`;
 };
 
 export default function ScheduleCard({
@@ -154,9 +155,10 @@ export default function ScheduleCard({
   const categoryLabel = resolveCategoryLabel(schedule?.category);
   const regionLabel = resolveRegionLabel(schedule?.region);
   const genderLabel = resolveGenderLimitLabel(schedule?.genderLimit);
-  const periodLines = resolvePeriodLines(schedule?.startDate, schedule?.endDate);
-  const periodSummary =
-    periodLines.length > 1 ? `${periodLines[0]} ${periodLines[1]}` : periodLines[0];
+  const periodLabel = resolvePeriodLabel(
+    schedule?.startDate,
+    schedule?.endDate
+  );
   const isBookmarked = Boolean(schedule?.isBookmarked);
   const BookmarkIcon = isBookmarked
     ? FavoriteRoundedIcon
@@ -208,29 +210,57 @@ export default function ScheduleCard({
               >
                 {deadline.label}
               </span>
+            </div>
+            <div className={styles.topMetaActions}>
+              <div className={styles.metaActionGroup}>
+                <span
+                  className={clsx(
+                    styles.metaPill,
+                    styles.genderPill,
+                    isCompact && styles.metaPillCompact
+                  )}
+                >
+                  {genderLabel}
+                </span>
+                {/*
+                 * 카드의 하트는 액션 버튼이 아니라 "현재 저장 상태를 읽는 시각 신호"다.
+                 * 상세 화면에서만 토글하므로 여기서는 pointer-events를 끄고 아이콘 전환만 반영한다.
+                 */}
+                <span
+                  className={clsx(
+                    styles.bookmarkIndicator,
+                    isBookmarked && styles.bookmarkIndicatorActive
+                  )}
+                  aria-label={
+                    isBookmarked
+                      ? "위시리스트에 저장된 일정"
+                      : "위시리스트에 저장되지 않은 일정"
+                  }
+                >
+                  <BookmarkIcon className={styles.bookmarkIcon} />
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className={clsx(styles.infoRow, styles.dateRow)}>
+            <div className={styles.dateRowContent}>
+              <span className={styles.dateIconWrap} aria-hidden="true">
+                <CalendarMonthIcon className={styles.dateIcon} />
+              </span>
               <span
                 className={clsx(
-                  styles.softPill,
-                  styles.genderPill,
-                  isCompact && styles.softPillCompact
+                  styles.dateText,
+                  isCompact && styles.dateTextCompact
                 )}
               >
-                {genderLabel}
+                {periodLabel}
               </span>
+              <span
+                className={styles.dateChevronWrap}
+                aria-hidden="true"
+              ></span>
             </div>
-            {/*
-             * 카드의 하트는 액션 버튼이 아니라 "현재 저장 상태를 읽는 시각 신호"다.
-             * 상세 화면에서만 토글하므로 여기서는 pointer-events를 끄고 아이콘 전환만 반영한다.
-             */}
-            <span
-              className={clsx(
-                styles.bookmarkIndicator,
-                isBookmarked && styles.bookmarkIndicatorActive
-              )}
-              aria-label={isBookmarked ? "위시리스트에 저장된 일정" : "위시리스트에 저장되지 않은 일정"}
-            >
-              <BookmarkIcon className={styles.bookmarkIcon} />
-            </span>
           </div>
 
           <div className={clsx(styles.infoRow, styles.titleRow)}>
@@ -255,35 +285,6 @@ export default function ScheduleCard({
             >
               {descriptionText}
             </p>
-          </div>
-
-          <div className={clsx(styles.infoRow, styles.dateRow)}>
-            <div className={styles.dateGroup}>
-              <span
-                className={clsx(
-                  styles.dateText,
-                  periodLines.length > 1 && styles.dateTextMultiline,
-                  isCompact && styles.dateTextCompact
-                )}
-              >
-                {periodLines.length > 1 && (
-                  <span className={styles.periodInline}>{periodSummary}</span>
-                )}
-                {periodLines.map((line, index) => (
-                  <span
-                    key={`${line}-${index}`}
-                    className={clsx(
-                      styles.periodLine,
-                      index === 0 &&
-                        periodLines.length > 1 &&
-                        styles.periodLinePrimary
-                    )}
-                  >
-                    {line}
-                  </span>
-                ))}
-              </span>
-            </div>
           </div>
         </div>
       </div>
@@ -317,12 +318,18 @@ export default function ScheduleCard({
           />
           <div className={styles.thumbnailOverlay}>
             <span
-              className={clsx(styles.overlayPill, isCompact && styles.overlayPillCompact)}
+              className={clsx(
+                styles.overlayPill,
+                isCompact && styles.overlayPillCompact
+              )}
             >
               {regionLabel}
             </span>
             <span
-              className={clsx(styles.overlayPill, isCompact && styles.overlayPillCompact)}
+              className={clsx(
+                styles.overlayPill,
+                isCompact && styles.overlayPillCompact
+              )}
             >
               {categoryLabel}
             </span>
