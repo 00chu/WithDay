@@ -1,0 +1,59 @@
+import { Routes, Route } from "react-router-dom";
+import { useState } from "react";
+
+import Drawer from "@mui/material/Drawer";
+import IconButton from "@mui/material/IconButton";
+
+import MenuIcon from "@mui/icons-material/Menu";
+
+import styles from "./AdminPage.module.css";
+
+import AdminSidebar from "../../features/admin/ui/AdminSidebar";
+import MemberManagementPage from "../../features/admin/ui/MemberManagementPage";
+
+const AdminPage = () => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  return (
+    <div className={styles.admin_wrap}>
+      {/* 모바일 헤더 */}
+      <header className={styles.mobile_header}>
+        <IconButton onClick={() => setDrawerOpen(true)} size="large">
+          <MenuIcon />
+        </IconButton>
+
+        <h2>WithDay Admin</h2>
+      </header>
+
+      {/* PC 사이드바 */}
+      <aside className={styles.sidebar}>
+        <AdminSidebar />
+      </aside>
+
+      {/* 모바일 Drawer */}
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{
+          sx: {
+            width: 240,
+            height: "100dvh",
+            overflow: "hidden",
+          },
+        }}
+      >
+        <AdminSidebar closeDrawer={() => setDrawerOpen(false)} />
+      </Drawer>
+
+      {/* 컨텐츠 */}
+      <main className={styles.content}>
+        <Routes>
+          <Route path="member" element={<MemberManagementPage />} />
+        </Routes>
+      </main>
+    </div>
+  );
+};
+
+export default AdminPage;

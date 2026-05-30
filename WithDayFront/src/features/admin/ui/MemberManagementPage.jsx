@@ -1,11 +1,11 @@
 import styles from "./MemberManagementPage.module.css";
 import { useQuery } from "@tanstack/react-query";
-import { selectAllMember } from "../../features/admin/api";
+import { selectAllMember } from "../api";
 import { useEffect, useState } from "react";
-import MemberList from "../../features/admin/ui/MemberList";
-import { Input } from "../../shared/ui/Form/Form";
-import Button from "../../shared/ui/Button/Button";
-import CommonSelect from "../../shared/ui/Select/CommonSelect";
+import MemberList from "./MemberList";
+import { Input } from "../../../shared/ui/Form/Form";
+import Button from "../../../shared/ui/Button/Button";
+import CommonSelect from "../../../shared/ui/Select/CommonSelect";
 import { Controller, useForm } from "react-hook-form";
 
 const MemberManagementPage = () => {

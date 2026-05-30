@@ -79,3 +79,67 @@
   width: 12%;
   text-align: center;
 }
+
+.mobileCard {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .member_item_title {
+    display: none;
+  }
+
+  .member_item {
+    display: block;
+
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  /* 기존 테이블 컬럼 숨김 */
+  .member_item > li {
+    display: none;
+  }
+
+  /* 카드 노출 */
+  .mobileCard {
+    display: block;
+
+    background: white;
+
+    padding: 16px;
+
+    border-radius: 12px;
+
+    border: 1px solid var(--color-border-light);
+
+    margin-bottom: 12px;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .mobileHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 12px;
+  }
+
+  .mobileHeader p {
+    margin: 4px 0 0;
+    color: var(--color-text-muted);
+    font-size: 13px;
+  }
+
+  .mobileInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mobileInfo span {
+    font-size: 14px;
+  }
+}
