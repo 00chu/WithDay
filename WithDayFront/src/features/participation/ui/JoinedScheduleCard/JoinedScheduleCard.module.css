@@ -3,12 +3,10 @@
   grid-template-columns: minmax(0, 1fr);
   overflow: hidden;
   border: 1px solid var(--color-border-light);
-  border-radius: 24px;
+  border-radius: var(--radius-md);
   background: var(--color-surface);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition:
-    box-shadow 0.24s ease,
-    border-color 0.24s ease;
+  transition: box-shadow 0.24s ease, border-color 0.24s ease;
   cursor: default;
 }
 
@@ -47,8 +45,11 @@
   justify-content: center;
   width: 100%;
   min-height: 180px;
-  background:
-    linear-gradient(135deg, rgba(218, 241, 241, 1) 0%, rgba(248, 250, 251, 1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(218, 241, 241, 1) 0%,
+    rgba(248, 250, 251, 1) 100%
+  );
   color: var(--color-accent);
   font-size: 1.5rem;
   font-weight: 800;
@@ -59,26 +60,24 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 18px;
+  padding: 10px;
 }
 
 .topRow {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 5px;
 }
 
 .badgeGroup {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 5px;
 }
 
 .categoryBadge,
 .dDayBadge,
 .phaseBadge,
-.statusBadge,
 .locationPill {
   display: inline-flex;
   align-items: center;
@@ -128,30 +127,8 @@
   color: var(--color-text-muted);
 }
 
-.statusBadge {
-  background: var(--color-accent-light);
-  color: var(--color-accent);
-}
-
-.status-pending {
-  background: rgba(246, 110, 23, 0.14);
-  color: var(--color-warning);
-}
-
-.status-canceled,
-.status-neutral {
-  background: var(--color-border-light);
-  color: var(--color-text-muted);
-}
-
-.status-error {
-  background: rgba(236, 74, 154, 0.14);
-  color: var(--color-error);
-}
-
 .locationPill {
   align-self: flex-start;
-  gap: 6px;
   background: rgba(10, 22, 45, 0.06);
   color: var(--color-text-secondary);
 }
@@ -174,7 +151,6 @@
 
 .infoList {
   display: grid;
-  gap: 10px;
   margin: 0;
 }
 
@@ -204,7 +180,7 @@
 .actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 5px;
 }
 
 .actionButton {
@@ -213,12 +189,8 @@
   justify-content: center;
   gap: 8px;
   min-width: 0;
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease,
+    background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .actionButton:hover:not(:disabled) {
@@ -252,24 +224,60 @@
 
 @media (min-width: 768px) {
   .card {
-    grid-template-columns: minmax(132px, 0.42fr) minmax(0, 1.58fr);
+    grid-template-columns: minmax(188px, 0.72fr) minmax(0, 1.28fr);
+    align-items: stretch;
+    height: 196px;
+  }
+
+  .thumbnailWrap {
+    height: 100%;
+    min-height: 0;
   }
 
   .thumbnail,
-  .thumbnailWrap,
   .thumbnailPlaceholder {
     height: 100%;
-    min-height: 100%;
+    min-height: 0;
   }
 
   .content {
-    padding: 20px;
+    box-sizing: border-box;
+    height: 100%;
+    min-height: 0;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 16px 18px;
   }
 
   .topRow {
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-start;
+  }
+
+  .categoryBadge,
+  .dDayBadge,
+  .phaseBadge,
+  .locationPill {
+    min-height: 24px;
+    padding: 0 10px;
+    font-size: 0.72rem;
+  }
+
+  .title {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .infoValue {
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  .actionButton {
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 0.84rem;
   }
 
   .actions > :only-child {
@@ -279,7 +287,12 @@
 
 @media (min-width: 1200px) {
   .card {
-    grid-template-columns: minmax(148px, 0.4fr) minmax(0, 1.6fr);
+    grid-template-columns: minmax(208px, 0.76fr) minmax(0, 1.24fr);
+    height: 208px;
+  }
+
+  .content {
+    padding: 18px 20px;
   }
 }
 

@@ -174,16 +174,6 @@ export const normalizeMyScheduleItem = (item) => {
       Number.isFinite(daysUntilStart) &&
       daysUntilStart >= 0 &&
       daysUntilStart <= 7,
-    participationStatusTone:
-      normalizedStatus === "APPROVED"
-        ? "approved"
-        : normalizedStatus === "PENDING"
-          ? "pending"
-          : normalizedStatus === "CANCELED"
-            ? "canceled"
-            : normalizedStatus === "REJECTED" || normalizedStatus === "KICKED"
-              ? "error"
-              : "neutral",
     schedulePhaseTone: resolvePhaseTone(schedulePhase),
   };
 };

@@ -74,16 +74,6 @@ const resolveSecondaryAction = (item) => {
   return null;
 };
 
-const resolveStatusLabel = (item) => {
-  if (item.myRole === "host") return "호스트";
-  if (item.dbStatus === "APPROVED") return "참여 확정";
-  if (item.dbStatus === "PENDING") return "승인 대기";
-  if (item.dbStatus === "CANCELED") return "참여 취소";
-  if (item.dbStatus === "REJECTED") return "거절됨";
-  if (item.dbStatus === "KICKED") return "강퇴됨";
-  return "상태 없음";
-};
-
 function JoinedScheduleCard({ item, onAction, isActionLoading = false }) {
   const primaryAction = useMemo(() => resolvePrimaryAction(item), [item]);
   const secondaryAction = useMemo(() => resolveSecondaryAction(item), [item]);
@@ -156,14 +146,6 @@ function JoinedScheduleCard({ item, onAction, isActionLoading = false }) {
               )}
             >
               {item.schedulePhase}
-            </span>
-            <span
-              className={clsx(
-                styles.statusBadge,
-                styles[`status-${item.participationStatusTone}`]
-              )}
-            >
-              {resolveStatusLabel(item)}
             </span>
           </div>
 
