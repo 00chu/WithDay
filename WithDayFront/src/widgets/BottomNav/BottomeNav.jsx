@@ -5,6 +5,7 @@ import {
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
+  Tooltip,
 } from "@mui/material";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
@@ -189,9 +190,11 @@ export default function BottomNav() {
         }}
       >
         <SpeedDialAction
-          icon={<EditNoteRoundedIcon />}
-          tooltipTitle="직접 글쓰기"
-          tooltipPlacement="left"
+          icon={
+            <Tooltip title="직접 글쓰기" placement="left" arrow>
+              <EditNoteRoundedIcon />
+            </Tooltip>
+          }
           onClick={handleDirectWrite}
           FabProps={{
             className: styles.speedDialActionFab,
@@ -199,9 +202,11 @@ export default function BottomNav() {
         />
 
         <SpeedDialAction
-          icon={<AutoAwesomeRoundedIcon />}
-          tooltipTitle="추천 일정"
-          tooltipPlacement="left"
+          icon={
+            <Tooltip title="추천 일정" placement="left" arrow>
+              <AutoAwesomeRoundedIcon />
+            </Tooltip>
+          }
           onClick={handleRecommendedSchedule}
           FabProps={{
             className: styles.speedDialActionFab,

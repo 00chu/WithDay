@@ -1,0 +1,224 @@
+package com.test.withdayback.recommended.service;
+
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.test.withdayback.recommended.dao.RecommendedScheduleDao;
+import com.test.withdayback.recommended.dto.RecommendedScheduleRequestDTO;
+import com.test.withdayback.recommended.dto.RecommendedScheduleResponseDTO;
+import com.test.withdayback.recommended.vo.RecommendedSchedule;
+import com.test.withdayback.recommended.vo.RecommendedScheduleDetail;
+import com.test.withdayback.recommended.vo.RecommendedScheduleImage;
+import com.test.withdayback.user.dao.UserDao;
+import com.test.withdayback.user.vo.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+// @Service: 추천 일정 관련 데이터 가공, 검증, 저장 로직을 처리하는 클래스.
+// Controller는 요청/응답만 담당하고, 실제 로직은 Service에서 처리함.
+@Service
+public class RecommendedScheduleService {
+
+    @Autowired
+    private RecommendedScheduleDao recommendedScheduleDao;
+
+    @Autowired
+    private UserDao userDao;
+
+    @Autowired
+    private Cloudinary cloudinary;
+
+    // 추천 일정 목록 조회
+    public List<RecommendedScheduleResponseDTO> getRecommendedScheduleList() {
+        // 추천 일정 기본 정보 목록 조회
+        List<RecommendedSchedule> recommendedSchedules =
+                recommendedScheduleDao.getRecommendedScheduleList();
+
+        List<RecommendedScheduleResponseDTO> result = new ArrayList<>();
+
+        // 목록 화면에서도 상세 일정/이미지를 같이 쓸 수 있도록 DTO 형태로 묶어서 반환
+        for (RecommendedSchedule recommendedSchedule : recommendedSchedules) {
+            Long recommendedScheduleId = recommendedSchedule.getId();
+
+            List<RecommendedScheduleDetail> detailSchedule =
+                    recommendedScheduleDao.getRecommendedScheduleDetailList(recommendedScheduleId);
+
+            List<RecommendedScheduleImage> images =
+                    recommendedScheduleDao.getRecommendedScheduleImageList(recommendedScheduleId);
+
+            RecommendedScheduleResponseDTO responseDTO =
+                    new RecommendedScheduleResponseDTO(recommendedSchedule, detailSchedule, images);
+
+            result.add(responseDTO);
+        }
+
+        return result;
+    }
+
+    // 추천 일정 상세 조회
+    public RecommendedScheduleResponseDTO getRecommendedScheduleById(Long id) {
+        // 추천 일정 기본 정보 조회
+        RecommendedSchedule recommendedSchedule =
+                recommendedScheduleDao.getRecommendedScheduleById(id);
+
+        // 조회된 추천 일정이 없다면 에러 발생
+        if (recommendedSchedule == null) {
+            throw new RuntimeException("추천 일정을 찾을 수 없습니다.");
+        }
+
+        // 추천 일정 상세 일정 조회
+        List<RecommendedScheduleDetail> detailSchedule =
+                recommendedScheduleDao.getRecommendedScheduleDetailList(id);
+
+        // 추천 일정 이미지 조회
+        List<RecommendedScheduleImage> images =
+                recommendedScheduleDao.getRecommendedScheduleImageList(id);
+
+        return new RecommendedScheduleResponseDTO(
+                recommendedSchedule,
+                detailSchedule,
+                images
+        );
+    }
+
+    // 추천 일정 생성
+    // 추천 일정 기본 정보, 상세 일정, 이미지 저장 중 하나라도 실패하면 전체 rollback
+    @Transactional
+    public String insertRecommendedSchedule(
+            RecommendedScheduleRequestDTO recommendedRequest,
+            List<MultipartFile> images,
+            String adminEmail
+    ) {
+        // 요청 데이터에서 추천 일정 기본 정보 추출
+        RecommendedSchedule recommendedSchedule = recommendedRequest.getRecommendedSchedule();
+
+        // 요청 데이터에서 추천 일정 상세 일정 리스트 추출
+        List<RecommendedScheduleDetail> detailSchedule = recommendedRequest.getDetailSchedule();
+
+        // 로그인한 이메일로 관리자 유저 정보 조회
+        User adminUser = userDao.findByEmail(adminEmail);
+
+        // 로그인한 유저가 없으면 에러 발생
+        if (adminUser == null) {
+            throw new RuntimeException("관리자 정보를 찾을 수 없습니다.");
+        }
+
+        // status가 admin인 유저만 추천 일정을 생성할 수 있음.
+        if (!"admin".equals(adminUser.getStatus())) {
+            throw new RuntimeException("추천 일정 생성 권한이 없습니다.");
+        }
+
+        // 추천 일정 기본값 방어
+        if (recommendedSchedule.getDurationDays() == null) {
+            recommendedSchedule.setDurationDays(1);
+        }
+
+        if (recommendedSchedule.getGenderLimit() == null || recommendedSchedule.getGenderLimit().isEmpty()) {
+            recommendedSchedule.setGenderLimit("all");
+        }
+
+        if (recommendedSchedule.getCostType() == null || recommendedSchedule.getCostType().isEmpty()) {
+            recommendedSchedule.setCostType("per_person");
+        }
+
+        // 추천 일정을 생성한 관리자 id 저장
+        recommendedSchedule.setAdminId(adminUser.getId());
+
+        try {
+            // 이미지가 있다면 Cloudinary에 업로드 후 첫 번째 이미지를 썸네일로 사용
+            if (images != null && !images.isEmpty()) {
+                MultipartFile thumbnailFile = images.get(0);
+
+                if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+                    Map uploadParams = ObjectUtils.asMap(
+                            "folder", "withday/recommended-schedules",
+                            "use_filename", true,
+                            "unique_filename", true
+                    );
+
+                    Map uploadResult = cloudinary.uploader().upload(
+                            thumbnailFile.getBytes(),
+                            uploadParams
+                    );
+
+                    String thumbnailUrl = (String) uploadResult.get("secure_url");
+
+                    // 추천 일정 기본 테이블의 썸네일 컬럼에 첫 번째 이미지 URL 저장
+                    recommendedSchedule.setThumbnailImage(thumbnailUrl);
+                }
+            }
+
+            // 추천 일정 기본 정보 저장
+            // insert 후 recommendedSchedule.id에 생성된 PK가 들어옴.
+            recommendedScheduleDao.insertRecommendedSchedule(recommendedSchedule);
+
+            Long recommendedScheduleId = recommendedSchedule.getId();
+
+            // 추천 일정 상세 일정 저장
+            if (detailSchedule != null && !detailSchedule.isEmpty()) {
+                int defaultSortOrder = 1;
+
+                for (RecommendedScheduleDetail detail : detailSchedule) {
+                    detail.setRecommendedScheduleId(recommendedScheduleId);
+
+                    // sortOrder가 없으면 반복 순서대로 기본값 부여
+                    if (detail.getSortOrder() == null) {
+                        detail.setSortOrder(defaultSortOrder);
+                    }
+
+                    recommendedScheduleDao.insertRecommendedScheduleDetail(detail);
+
+                    defaultSortOrder++;
+                }
+            }
+
+            // 추천 일정 이미지 저장
+            if (images != null && !images.isEmpty()) {
+                for (int i = 0; i < images.size(); i++) {
+                    MultipartFile imageFile = images.get(i);
+
+                    if (imageFile == null || imageFile.isEmpty()) {
+                        continue;
+                    }
+
+                    Map uploadParams = ObjectUtils.asMap(
+                            "folder", "withday/recommended-schedules",
+                            "use_filename", true,
+                            "unique_filename", true
+                    );
+
+                    Map uploadResult = cloudinary.uploader().upload(
+                            imageFile.getBytes(),
+                            uploadParams
+                    );
+
+                    String imageUrl = (String) uploadResult.get("secure_url");
+
+                    RecommendedScheduleImage recommendedScheduleImage =
+                            new RecommendedScheduleImage();
+
+                    recommendedScheduleImage.setRecommendedScheduleId(recommendedScheduleId);
+                    recommendedScheduleImage.setImageUrl(imageUrl);
+
+                    // 첫 번째 이미지를 썸네일 이미지로 저장
+                    recommendedScheduleImage.setIsThumbnail(i == 0);
+
+                    recommendedScheduleDao.insertRecommendedScheduleImage(recommendedScheduleImage);
+                }
+            }
+
+            return "success";
+        } catch (Exception e) {
+            // 정확한 에러 추적용 로그
+            e.printStackTrace();
+
+            // Controller의 catch로 넘김
+            throw new RuntimeException("추천 일정 생성 중 오류가 발생했습니다.");
+        }
+    }
+}
