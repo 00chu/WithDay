@@ -3,6 +3,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   height: 100%;
   background: transparent;
   filter: var(--shadow-card-ticket);
@@ -33,32 +35,131 @@
 .cardTop {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   gap: 12px;
-  padding: 14px 14px 10px;
+  padding: 16px 16px 14px;
   flex: 1 1 auto;
   min-height: 0;
 }
 
 .cardTopCompact {
   gap: 10px;
-  padding: 12px 12px 10px;
+  padding: 13px 13px 11px;
 }
 
-.headerRow {
+.headerSection {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.infoRow {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
 }
 
-.headerRight {
+.topMetaGroup {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.topMetaActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.metaActionGroup {
+  display: inline-flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
   min-width: 0;
-  flex: 1 1 0;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.softPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.softPillCompact,
+.metaPillCompact {
+  min-height: 24px;
+  padding: 0 9px;
+  font-size: 0.72rem;
+}
+
+.metaPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: var(--color-accent-light);
+  color: var(--color-accent-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.deadlinePillBase {
+  justify-content: center;
+  min-width: 0;
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-left: -16px;
+  border-radius: 0 999px 999px 0;
+  flex-shrink: 0;
+}
+
+.deadlinePill {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.deadlinePillToday {
+  background: var(--color-status-closed);
+  color: var(--color-text-inverse);
+}
+
+.dateText {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.28;
+  white-space: normal;
+  word-break: keep-all;
+}
+
+.dateTextCompact {
+  font-size: 0.84rem;
 }
 
 .bookmarkIndicator {
@@ -69,190 +170,117 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-surface) 72%, #fce7ef 28%);
-  color: #f08aa0;
+  width: 22px;
+  height: 22px;
+  color: var(--color-text-muted);
   pointer-events: none;
   flex-shrink: 0;
 }
 
 .bookmarkIndicatorActive {
-  background: #fdecef;
-  color: #e55d79;
-}
-
-.bookmarkIcon {
-  font-size: 1rem;
-}
-
-.deadlineBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: var(--color-status-available-bg);
-  color: var(--color-status-available);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  flex-shrink: 0;
-}
-
-.deadlineBadgeToday {
-  background: var(--color-status-urgent-bg);
-  color: var(--color-status-urgent);
-}
-
-.deadlineBadgeClosed {
-  background: var(--color-status-closed-bg);
   color: var(--color-status-closed);
 }
 
-.deadlineBadgeCompact {
-  min-height: 20px;
-  padding: 0 6px;
-  font-size: 0.68rem;
+.bookmarkIcon {
+  font-size: 1.05rem;
 }
 
-.infoStack {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  flex: 1 1 0;
-  gap: 4px;
+.titleGroup,
+.dateGroup,
+.dateRowContent,
+.descriptionRow,
+.dateRow {
   min-width: 0;
-  max-width: 100%;
-  text-align: right;
 }
 
-.infoLine {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  width: 100%;
-  min-width: 0;
-  color: var(--color-text-secondary);
-  font-size: 0.72rem;
-  font-weight: 600;
-  line-height: 1.15;
+.titleGroup {
+  flex: 1 1 auto;
 }
 
-.infoLineCompact {
-  font-size: 0.66rem;
+.dateRow {
+  align-items: stretch;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
-.infoText {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.periodText {
-  /*
-    카드 우측 날짜는 시작일/종료일을 세로로 쌓아 좁은 카드에서도 잘리지 않게 한다.
-    align-items: flex-end를 유지해 기존 우측 정렬 UI와 같은 축에 맞춘다.
-  */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-  white-space: normal;
-}
-
-.periodTextMultiline {
-  line-height: 1.1;
-}
-
-.periodLine {
-  display: block;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.bodySection {
-  display: grid;
-  grid-template-rows: auto auto auto;
-  align-content: start;
-  gap: 8px;
-  min-height: 0;
-}
-
-.metaRow {
+.dateRowContent {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 8px;
+  width: 100%;
   min-width: 0;
+  margin: 0px 0px 5px 5px;
 }
 
-.categoryTag {
+.dateIconWrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: var(--color-surface-highlight);
-  color: var(--color-accent-dark);
-  font-size: 0.68rem;
-  font-weight: 700;
+  min-width: 18px;
+  color: var(--color-text-secondary);
   flex-shrink: 0;
+}
+
+.dateIcon {
+  font-size: 0.88rem;
+}
+
+.dateChevronWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-disabled);
+  flex-shrink: 0;
+}
+
+.dateChevron {
+  font-size: 1.2rem;
 }
 
 .cardTitle {
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 1rem;
+  font-size: 1.22rem;
   font-weight: 800;
   line-height: 1.28;
   letter-spacing: -0.02em;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: calc(1.28em * 1);
-  max-height: calc(1.28em * 1);
+  white-space: nowrap;
+  min-width: 0;
+  width: 100%;
+  min-height: 1.28em;
+  max-height: 1.28em;
   word-break: keep-all;
 }
 
 .cardTitleCompact {
-  font-size: 0.96rem;
-  line-height: 1.28;
-  min-height: calc(1.28em * 1);
-  max-height: calc(1.28em * 1);
+  font-size: 1.06rem;
+  min-height: 1.28em;
+  max-height: 1.28em;
 }
 
 .cardDescription {
   margin: 0;
   color: var(--color-text-secondary);
-  font-size: 0.74rem;
+  font-size: 0.84rem;
   line-height: 1.45;
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: calc(1.45em * 1);
-  max-height: calc(1.45em * 1);
-  word-break: keep-all;
+  min-height: calc(1.45em * 2);
+  max-height: calc(1.45em * 2);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  width: 100%;
 }
 
 .cardDescriptionCompact {
-  font-size: 0.7rem;
-  -webkit-line-clamp: 1;
-  min-height: calc(1.45em * 1);
-  max-height: calc(1.45em * 1);
+  font-size: 0.78rem;
+  min-height: calc(1.45em * 2);
+  max-height: calc(1.45em * 2);
 }
 
 .ticketDivider {
@@ -299,11 +327,11 @@
 }
 
 .cardBottom {
-  padding: 0 14px 14px;
+  padding: 14px 16px 16px;
 }
 
 .cardBottomCompact {
-  padding: 0 12px 12px;
+  padding: 0 13px 13px;
 }
 
 .thumbnailWrap {
@@ -313,7 +341,7 @@
   */
   position: relative;
   width: 100%;
-  aspect-ratio: 2 / 1;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   background: linear-gradient(
     180deg,
@@ -332,6 +360,39 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
+}
+
+.thumbnailOverlay {
+  position: absolute;
+  left: 5px;
+  bottom: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: calc(100% - 24px);
+}
+
+.overlayPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--color-overlay-glass);
+  color: var(--color-text-inverse);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px var(--color-overlay-shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.overlayPillCompact {
+  min-height: 24px;
+  padding: 0 9px;
+  font-size: 0.72rem;
 }
 
 .thumbnailFallback {
@@ -355,50 +416,24 @@
   }
 }
 
-@media (max-width: 639px) {
-  .cardTop {
+@media (min-width: 640px) and (max-width: 1023px) {
+  .infoRow {
     gap: 10px;
-    padding: 13px 13px 10px;
   }
 
-  .cardTopCompact {
-    gap: 9px;
-    padding: 11px 11px 9px;
+  .dateRowContent {
+    gap: 7px;
   }
 
-  .headerRow {
-    gap: 8px;
-  }
-
-  .cardTitle {
-    font-size: 0.92rem;
-  }
-
-  .cardTitleCompact {
+  .dateText {
     font-size: 0.88rem;
   }
-
-  .cardDescription {
-    font-size: 0.68rem;
-  }
-
-  .cardDescriptionCompact {
-    font-size: 0.66rem;
-  }
-
-  .infoLine {
-    font-size: 0.66rem;
-  }
-
-  .infoLineCompact {
-    font-size: 0.62rem;
-  }
-
 }
 
-@media (max-width: 420px) {
-  .headerRow {
-    gap: 8px;
+@media (max-width: 639px) {
+  .cardTop {
+    gap: 11px;
+    padding: 14px 14px 12px;
   }
 
   .cardTopCompact {
@@ -406,7 +441,132 @@
     padding: 12px 12px 10px;
   }
 
-  .infoLineCompact {
-    font-size: 0.62rem;
+  .headerSection {
+    gap: 9px;
+  }
+
+  .infoRow {
+    gap: 10px;
+  }
+
+  .titleRow,
+  .descriptionRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .topRow {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .topMetaActions {
+    gap: 6px;
+  }
+
+  .dateRowContent {
+    gap: 6px;
+  }
+
+  .topMetaGroup,
+  .titleGroup,
+  .descriptionRow,
+  .dateRow {
+    width: 100%;
+  }
+
+  .topRow {
+    justify-content: space-between;
+  }
+
+  .softPill,
+  .metaPill {
+    min-height: 26px;
+    padding: 0 9px;
+    font-size: 0.74rem;
+  }
+
+  .deadlinePillBase {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .dateText {
+    font-size: 0.86rem;
+  }
+
+  .dateIcon {
+    font-size: 0.82rem;
+  }
+
+  .cardTitle {
+    font-size: 1.08rem;
+  }
+
+  .cardTitleCompact {
+    font-size: 0.98rem;
+  }
+
+  .cardDescription,
+  .cardDescriptionCompact {
+    font-size: 0.78rem;
+    min-height: calc(1.45em * 2);
+    max-height: calc(1.45em * 2);
+  }
+
+  .thumbnailOverlay {
+    left: 5px;
+    right: 3px;
+    bottom: 5px;
+    max-width: none;
+  }
+
+  .overlayPill {
+    min-height: 24px;
+    padding: 0 9px;
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .topMetaActions,
+  .thumbnailOverlay {
+    gap: 6px;
+  }
+
+  .softPill,
+  .metaPill {
+    font-size: 0.7rem;
+  }
+
+  .deadlinePillBase {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .dateText {
+    font-size: 0.82rem;
+  }
+
+  .dateRowContent {
+    gap: 5px;
+  }
+
+  .dateChevron {
+    font-size: 1.1rem;
+  }
+
+  .cardTitle {
+    font-size: 1rem;
+  }
+
+  .cardDescription,
+  .cardDescriptionCompact {
+    font-size: 0.74rem;
+  }
+
+  .bookmarkIndicator {
+    width: 20px;
+    height: 20px;
   }
 }

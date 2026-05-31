@@ -14,6 +14,7 @@ import com.test.withdayback.schedule.vo.Schedule;
 import com.test.withdayback.schedule.vo.ScheduleDetail;
 import com.test.withdayback.schedule.vo.ScheduleImage;
 import com.test.withdayback.user.dao.UserDao;
+import com.test.withdayback.user.vo.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +87,14 @@ public class ScheduleService {
         List<ScheduleImage> images = scheduleDao.selectImageByScheduleId(id);
 
         ScheduleResponseDTO response = new ScheduleResponseDTO(email, schedule, details, images);
+        User host = schedule.getUserId() == null ? null : userDao.findById(schedule.getUserId());
+        if (host != null) {
+            response.setHost(new ScheduleResponseDTO.HostSummary(
+                    host.getId(),
+                    host.getNickname(),
+                    host.getProfileImage()
+            ));
+        }
 
         /*
          * viewerEmail은 선택값이다.

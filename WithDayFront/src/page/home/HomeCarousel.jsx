@@ -6,12 +6,6 @@ const AUTO_PLAY_DELAY = 4500;
 
 const CAROUSEL_ITEMS = [
   {
-    id: "withday-coast",
-    image: "/hero.png",
-    title: "지도에는 없는 길, 우리라는 이름으로 걷다",
-    description: "지금 시작하면 함께할 사람이 더 빨리 보입니다.",
-  },
-  {
     id: "withday-night",
     image:
       "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1400&q=80",
@@ -24,6 +18,41 @@ const CAROUSEL_ITEMS = [
       "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=1400&q=80",
     title: "취향이 닿는 순간, 일정은 더 쉬워집니다",
     description: "탐색 탭으로 이어지는 일정들을 홈에서 먼저 추천합니다.",
+  },
+  {
+    id: "withday-travel",
+    image:
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
+    title: "이번 주말 같이 떠나는 근교 여행",
+    description: "양양과 강릉처럼 가볍게 다녀올 일정을 만나보세요.",
+  },
+  {
+    id: "withday-dining",
+    image:
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1400&q=80",
+    title: "퇴근 후 모이는 맛집 번개",
+    description: "한 끼 식사도 부담 없이 함께할 사람을 찾을 수 있어요.",
+  },
+  {
+    id: "withday-activity",
+    image:
+      "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=1400&q=80",
+    title: "몸을 움직이는 액티비티 모집",
+    description: "러닝, 서핑, 클라이밍처럼 활기 있는 일정을 둘러보세요.",
+  },
+  {
+    id: "withday-culture",
+    image:
+      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=80",
+    title: "전시와 공연으로 채우는 하루",
+    description: "취향 맞는 사람과 문화 일정을 더 편하게 계획해보세요.",
+  },
+  {
+    id: "withday-gathering",
+    image:
+      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=80",
+    title: "새로운 사람을 만나는 소규모 모임",
+    description: "카페 대화부터 동네 산책까지 자연스러운 만남을 준비했어요.",
   },
 ];
 

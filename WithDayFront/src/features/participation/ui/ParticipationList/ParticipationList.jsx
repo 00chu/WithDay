@@ -1,7 +1,8 @@
 import { memo } from "react";
 import clsx from "clsx";
-import ParticipationCard from "../ParticipationCard/ParticipationCard";
-import styles from "../Participation.module.css";
+import EmptyScheduleState from "../EmptyScheduleState/EmptyScheduleState";
+import JoinedScheduleCard from "../JoinedScheduleCard/JoinedScheduleCard";
+import styles from "./ParticipationList.module.css";
 
 /*
  * MySchedulePage 전용 리스트 렌더러다.
@@ -17,9 +18,14 @@ function ParticipationList({
   items,
   loading,
   errorMessage,
-  emptyMessage,
+  emptyTitle,
+  emptyDescription,
+  emptyActionLabel,
+  onEmptyAction,
   onItemAction,
   isActionLoading = false,
+  itemKeyPrefix = "default",
+  renderItem,
 }) {
   /*
    * 탭 전환이나 첫 진입 직후에는 query가 pending 상태가 될 수 있다.
@@ -69,7 +75,12 @@ function ParticipationList({
   if (!items || items.length === 0) {
     return (
       <div className={styles.listContainer}>
-        <div className={styles.stateBox}>{emptyMessage}</div>
+        <EmptyScheduleState
+          title={emptyTitle}
+          description={emptyDescription}
+          actionLabel={emptyActionLabel}
+          onAction={onEmptyAction}
+        />
       </div>
     );
   }
@@ -77,19 +88,17 @@ function ParticipationList({
   return (
     <div className={styles.listContainer}>
       {items.map((item) => (
-        /*
-         * 카드 자체는 액션을 직접 실행하지 않고,
-         * 클릭 이벤트만 올린다. 이렇게 해야 리스트/카드가 도메인 지식을 갖지 않고 재사용 가능하다.
-         *
-         * 각 카드의 버튼 클릭은 onItemAction으로 올린다.
-         * 리스트는 반복 렌더링만 담당하고, 신청 취소/삭제 같은 도메인 액션은 상위 페이지가 처리한다.
-         */
-        <ParticipationCard
-          key={item.id}
-          item={item}
-          onAction={onItemAction}
-          isActionLoading={isActionLoading}
-        />
+        <div key={`${itemKeyPrefix}-${item.id}`} className={styles.cardWrap}>
+          {renderItem ? (
+            renderItem(item)
+          ) : (
+            <JoinedScheduleCard
+              item={item}
+              onAction={onItemAction}
+              isActionLoading={isActionLoading}
+            />
+          )}
+        </div>
       ))}
     </div>
   );
