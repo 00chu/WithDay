@@ -196,6 +196,10 @@ export const normalizeParticipationApplicant = (item) => ({
   userId: item.userId,
   email: item.email ?? "",
   nickname: item.nickname ?? "-",
+  profileImage: item.profileImage ?? "",
+  phone: item.phone ?? "",
+  gender: item.gender ?? null,
+  fullAge: item.fullAge ?? null,
   status: normalizeParticipationStatus(item.status),
   createdAt: item.createdAt ?? "",
 });

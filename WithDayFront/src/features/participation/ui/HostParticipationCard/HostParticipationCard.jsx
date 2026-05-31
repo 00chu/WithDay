@@ -1,11 +1,91 @@
 import clsx from "clsx";
+import CakeOutlinedIcon from "@mui/icons-material/CakeOutlined";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
-import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import WcOutlinedIcon from "@mui/icons-material/WcOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import { PARTICIPATION_STATUS_META } from "../../model/constants";
 import ParticipationStatusActions from "../ParticipationStatusActions/ParticipationStatusActions";
 import styles from "../Participation.module.css";
 import hostStyles from "../HostParticipationList/HostParticipationList.module.css";
+
+const GENDER_LABELS = {
+  1: "남성",
+  2: "여성",
+};
+
+const resolveInitial = (nickname) => {
+  const trimmedNickname = String(nickname ?? "").trim();
+
+  return trimmedNickname ? trimmedNickname.slice(0, 1) : "?";
+};
+
+const formatPhoneNumber = (phone) => {
+  const normalizedPhone = String(phone ?? "").replace(/\D/g, "");
+
+  if (!normalizedPhone) {
+    return "미입력";
+  }
+
+  if (normalizedPhone.length === 11) {
+    return `${normalizedPhone.slice(0, 3)}-${normalizedPhone.slice(3, 7)}-${normalizedPhone.slice(7)}`;
+  }
+
+  if (normalizedPhone.length === 10) {
+    return `${normalizedPhone.slice(0, 3)}-${normalizedPhone.slice(3, 6)}-${normalizedPhone.slice(6)}`;
+  }
+
+  return phone?.trim() || "미입력";
+};
+
+const parseDateValue = (value) => {
+  const normalizedValue = String(value ?? "").trim();
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  const parsedDate = new Date(normalizedValue.replace(" ", "T"));
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  return parsedDate;
+};
+
+const formatCreatedAt = (value) => {
+  const parsedDate = parseDateValue(value);
+
+  if (!parsedDate) {
+    return "-";
+  }
+
+  const todayFormatter = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+  const timeFormatter = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const monthDayFormatter = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    month: "long",
+    day: "numeric",
+  });
+
+  const todayToken = todayFormatter.format(new Date());
+  const targetToken = todayFormatter.format(parsedDate);
+
+  return todayToken === targetToken
+    ? timeFormatter.format(parsedDate)
+    : monthDayFormatter.format(parsedDate);
+};
 
 /*
  * 호스트가 일정 상세 화면에서 신청자 한 명을 관리할 때 보는 카드다.
@@ -36,8 +116,18 @@ function HostParticipationCard({
    *
    * 신청자의 현재 상태에 맞는 배지 문구와 색상을 가져온다.
    * 알 수 없는 상태가 내려와도 default 메타를 사용해 화면이 깨지지 않게 한다.
-   */
+  */
   const meta = PARTICIPATION_STATUS_META[item.status] ?? PARTICIPATION_STATUS_META.default;
+  const genderLabel = GENDER_LABELS[Number(item.gender)] ?? "미입력";
+  const phoneLabel = formatPhoneNumber(item.phone);
+  const fullAgeLabel =
+    item.fullAge !== null &&
+    item.fullAge !== undefined &&
+    item.fullAge !== "" &&
+    Number.isFinite(Number(item.fullAge))
+      ? `만 ${item.fullAge}세`
+      : "확인 불가";
+  const createdAtLabel = formatCreatedAt(item.createdAt);
 
   return (
     <div className={styles.card}>
@@ -48,33 +138,69 @@ function HostParticipationCard({
             {meta.badgeText}
           </span>
         </div>
-
-        <span className={styles.location}>
-          <PersonOutlineOutlinedIcon fontSize="small" className={styles.inlineIcon} />
-          {item.nickname}
-        </span>
       </div>
 
       <div className={styles.cardBody}>
-        <h3 className={styles.cardTitle}>{item.nickname}</h3>
-        <div className={styles.cardDate}>
-          <EmailOutlinedIcon fontSize="small" className={styles.inlineIcon} />
-          {item.email}
+        <div className={hostStyles.profileHeader}>
+          <div className={hostStyles.avatar} aria-hidden="true">
+            {item.profileImage?.trim() ? (
+              <img src={item.profileImage} alt="" />
+            ) : (
+              <span>{resolveInitial(item.nickname)}</span>
+            )}
+          </div>
+
+          <div className={hostStyles.profileSummary}>
+            <h3 className={styles.cardTitle}>{item.nickname}</h3>
+          </div>
         </div>
-        <div className={hostStyles.meta}>
-          <AccessTimeOutlinedIcon fontSize="small" className={styles.inlineIcon} />
-          신청일 {item.createdAt || "-"}
-        </div>
+
+        <dl className={hostStyles.detailGrid}>
+          <div className={hostStyles.detailItem}>
+            <dt>
+              <EmailOutlinedIcon fontSize="small" className={styles.inlineIcon} />
+              이메일
+            </dt>
+            <dd>{item.email || "-"}</dd>
+          </div>
+
+          <div className={hostStyles.detailItem}>
+            <dt>
+              <PhoneOutlinedIcon fontSize="small" className={styles.inlineIcon} />
+              전화번호
+            </dt>
+            <dd>{phoneLabel}</dd>
+          </div>
+
+          <div className={hostStyles.detailItem}>
+            <dt>
+              <WcOutlinedIcon fontSize="small" className={styles.inlineIcon} />
+              성별
+            </dt>
+            <dd>{genderLabel}</dd>
+          </div>
+
+          <div className={hostStyles.detailItem}>
+            <dt>
+              <CakeOutlinedIcon fontSize="small" className={styles.inlineIcon} />
+              나이
+            </dt>
+            <dd>{fullAgeLabel}</dd>
+          </div>
+
+          <div className={hostStyles.detailItem}>
+            <dt>
+              <AccessTimeOutlinedIcon fontSize="small" className={styles.inlineIcon} />
+              신청일
+            </dt>
+            <dd>{createdAtLabel}</dd>
+          </div>
+        </dl>
       </div>
 
       <div className={styles.divider} />
 
       <div className={styles.cardFooter}>
-        <div className={hostStyles.actionNote}>
-          <AccessTimeOutlinedIcon fontSize="small" className={styles.inlineIcon} />
-          상태 변경은 호스트만 가능합니다.
-        </div>
-
         {/*
          * 이 하위 컴포넌트는 현재 상태에 따라 어떤 버튼을 보여줄지를 결정한다.
          * 예를 들어 PENDING이면 승인/거절, APPROVED면 강퇴 버튼이 나온다.

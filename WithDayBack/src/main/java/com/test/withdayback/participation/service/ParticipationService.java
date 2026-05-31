@@ -379,7 +379,15 @@ public class ParticipationService {
         }
 
         String normalizedStatus = normalizeStatusFilter(status);
-        return participationDao.getScheduleApplicants(scheduleId, normalizedStatus);
+        List<ParticipationApplicantDTO> applicants =
+                participationDao.getScheduleApplicants(scheduleId, normalizedStatus);
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        applicants.forEach(applicant ->
+                applicant.setFullAge(calculateFullAge(applicant.getBirthday(), today))
+        );
+
+        return applicants;
     }
 
     @Transactional
