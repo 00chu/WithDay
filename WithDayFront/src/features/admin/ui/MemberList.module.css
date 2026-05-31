@@ -84,7 +84,8 @@
   display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+  /* 900부터 카드로 보이게 설정 */
   .member_item_title {
     display: none;
   }

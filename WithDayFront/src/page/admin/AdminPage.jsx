@@ -1,11 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import { useState } from "react";
-
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
-
 import MenuIcon from "@mui/icons-material/Menu";
-
 import styles from "./AdminPage.module.css";
 
 import AdminSidebar from "../../features/admin/ui/AdminSidebar";
