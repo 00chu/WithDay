@@ -9,13 +9,15 @@ import styles from "./ParticipationTabs.module.css";
  *
  * 실제 데이터 전환은 여기서 하지 않는다.
  * 탭 값을 받은 MySchedulePage가 현재 배열(currentItems)과 emptyMessage를 다시 계산한다.
- * 내 일정 페이지의 참여 탭 버튼 묶음이다.
- * 탭 정의(PARTICIPATION_TABS)는 model/constants에 두고, 이 컴포넌트는 현재 탭 표시와 탭 변경 이벤트만 담당한다.
  */
 function ParticipationTabs({ tabs, counts = {}, activeTab, onTabChange }) {
   return (
     <div className={styles.tabList} role="tablist" aria-label="내 일정 탭">
       {tabs.map((tab) => (
+        /*
+         * 탭 버튼은 데이터 fetch를 직접 하지 않는다.
+         * 클릭 이벤트만 상위로 올리면 MySchedulePage가 activeTab을 바꾸고, 그 값이 query/select 및 목록 렌더링을 다시 결정한다.
+         */
         <button
           type="button"
           key={tab.value}

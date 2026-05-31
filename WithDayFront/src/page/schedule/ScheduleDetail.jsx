@@ -47,6 +47,10 @@ import {
   DialogActions,
 } from "@mui/material";
 
+/*
+ * 서버 category code를 상세 화면의 짧은 배지 문구로 바꾼다.
+ * API에 새 category가 먼저 추가되더라도 아래 렌더 단계에서 원본 값 fallback을 쓰므로 화면이 깨지지 않는다.
+ */
 const CATEGORY_LABELS = {
   all: "전체",
   travel: "여행",
@@ -57,6 +61,10 @@ const CATEGORY_LABELS = {
   etc: "기타",
 };
 
+/*
+ * 비용 정산 방식은 사용자 의사결정에 직접 영향을 주는 정보라 제목 영역의 핵심 정보 그리드에서 보여준다.
+ * 서버 enum과 화면 문구를 여기서만 연결해두면 이후 정산 정책 문구가 바뀌어도 JSX를 건드리지 않아도 된다.
+ */
 const COST_TYPE_LABELS = {
   per_person: "총액 1/N",
   host_covered: "호스트 부담",
@@ -64,9 +72,17 @@ const COST_TYPE_LABELS = {
   custom: "인당 고정 금액",
 };
 
+/*
+ * 이미지가 없는 일정도 hero 영역의 높이와 레이아웃이 무너지면 안 된다.
+ * 실제 API 이미지가 없을 때만 쓰는 마지막 fallback이며, 더미 참여자/더미 정보와 달리 레이아웃 안전장치 역할만 한다.
+ */
 const DEFAULT_IMAGE = "https://placehold.co/800x400?text=No+Image";
 const VIEWED_SCHEDULE_STORAGE_KEY_PREFIX = "viewed_schedule_";
 const MAX_VISIBLE_THUMBNAILS = 6;
+/*
+ * 신청자 필터의 상태값은 백엔드 ParticipationStatus enum과 같은 표준값을 쓴다.
+ * 화면 문구만 여기서 바꾸고 status 자체는 API 파라미터로 그대로 보내야 상태별 query cache가 정확히 분리된다.
+ */
 const HOST_STATUS_LABELS = {
   PENDING: "승인 대기",
   APPROVED: "승인 완료",
@@ -76,11 +92,19 @@ const HOST_STATUS_LABELS = {
 };
 
 const resolveInitial = (value) => {
+  /*
+   * 호스트/참여자 프로필 이미지가 없을 때 원형 아바타에 넣을 첫 글자를 만든다.
+   * 빈 값이면 "?"를 반환해 avatar 크기와 정렬이 유지되도록 한다.
+   */
   const normalizedValue = value?.trim?.() ?? "";
   return normalizedValue ? normalizedValue.charAt(0).toUpperCase() : "?";
 };
 
 const formatGenderLimit = (genderLimit) => {
+  /*
+   * schedule.genderLimit은 참여 가능 조건이므로 원본 enum을 그대로 노출하지 않는다.
+   * 모르는 값은 서버에서 새 정책이 내려온 상황일 수 있어 값 자체를 fallback으로 보여 디버깅 단서를 남긴다.
+   */
   if (genderLimit === "all") {
     return "성별 무관";
   }
@@ -97,6 +121,10 @@ const formatGenderLimit = (genderLimit) => {
 };
 
 const formatAgeRange = (ageMin, ageMax) => {
+  /*
+   * 연령 조건은 min/max가 각각 선택 입력일 수 있다.
+   * 둘 중 하나만 있어도 조건 의미가 달라지므로 "이상/이하/무관"을 명확히 분기한다.
+   */
   if (ageMin && ageMax) {
     return `${ageMin}세 ~ ${ageMax}세`;
   }
@@ -113,6 +141,10 @@ const formatAgeRange = (ageMin, ageMax) => {
 };
 
 const formatDDay = (dateValue) => {
+  /*
+   * 모집 마감 D-day는 hero badge와 하단 sticky CTA에서 함께 사용된다.
+   * 날짜가 비어 있거나 파싱 실패하면 확정된 마감처럼 보이지 않도록 "마감 미정"으로 통일한다.
+   */
   if (!dateValue) {
     return "마감 미정";
   }
@@ -141,6 +173,10 @@ const formatDDay = (dateValue) => {
 };
 
 const formatLocation = (schedule) => {
+  /*
+   * 지역과 상세 지역은 API에서 따로 오지만 화면에서는 하나의 장소 문장으로 읽힌다.
+   * 둘 중 하나만 있는 일정도 많으므로 공백만 남지 않도록 trim 후 조합한다.
+   */
   const region = schedule?.region?.trim() ?? "";
   const detailRegion = schedule?.detailRegion?.trim() ?? "";
 
@@ -326,6 +362,10 @@ export default function ScheduleDetail() {
    */
   const authEmail = authUser?.email?.trim() ?? "";
   const parsedScheduleId = Number(scheduleId);
+  /*
+   * 상세 query key에 email을 포함하는 이유는 같은 일정이라도 viewer별 응답이 다르기 때문이다.
+   * viewerIsHost, viewerParticipationStatus, viewerCanAccessChatLink가 모두 사용자 권한에 따라 달라진다.
+   */
   const detailQueryKey = ["schedule-detail", parsedScheduleId, authEmail || "guest"];
 
   useEffect(() => {
@@ -335,11 +375,19 @@ export default function ScheduleDetail() {
 
     let isMounted = true;
 
+    /*
+     * 예전 코드에서 email 없는 schedule-detail key를 사용했던 캐시가 남아 있으면
+     * 게스트/로그인 사용자 권한 정보가 섞일 수 있어 legacy key를 진입 시 정리한다.
+     */
     queryClient.removeQueries({
       queryKey: ["schedule-detail", parsedScheduleId],
       exact: true,
     });
 
+    /*
+     * 한 세션에서 같은 상세를 여러 번 열 때마다 조회수를 올리면 사용자의 뒤로가기/새로고침이 조회수로 과대 반영된다.
+     * sessionStorage는 브라우저 세션 단위의 UX 보정이며, 실제 조회수 증가는 서버 API가 담당한다.
+     */
     const viewedScheduleStorageKey = `${VIEWED_SCHEDULE_STORAGE_KEY_PREFIX}${parsedScheduleId}`;
     const hasViewedSchedule =
       typeof window !== "undefined" &&
@@ -347,6 +395,10 @@ export default function ScheduleDetail() {
 
     if (hasViewedSchedule) {
       queueMicrotask(() => {
+        /*
+         * 조회수 증가 실패가 상세 조회 자체를 막으면 사용자는 일정을 볼 수 없게 된다.
+         * 실패 여부와 무관하게 detail query를 열어, 조회수는 부가 기능으로만 취급한다.
+         */
         if (isMounted) {
           setViewCountReadyScheduleId(parsedScheduleId);
         }
@@ -405,6 +457,10 @@ export default function ScheduleDetail() {
     staleTime: 0,
   });
 
+  /*
+   * viewerIsHost는 사이드바 전체 구조를 바꾸는 핵심 권한 값이다.
+   * true이면 신청자 개인정보 조회/호스트 관리/승인 참여자 요약을 열고, false이면 공개 가능한 호스트 프로필만 보여준다.
+   */
   const viewerIsHost = Boolean(data?.viewerIsHost);
 
   /*
@@ -432,6 +488,11 @@ export default function ScheduleDetail() {
     status: "APPROVED",
     enabled: viewerIsHost,
   });
+  /*
+   * 위 query와 별도로 APPROVED를 한 번 더 조회하는 이유는,
+   * 현재 필터가 PENDING/REJECTED 등으로 바뀌어도 승인 참여자 아바타 요약은 항상 유지되어야 하기 때문이다.
+   * 별도 API를 만들지 않고 같은 applicants endpoint를 status만 바꿔 재사용한다.
+   */
 
   const { updateParticipationStatus, isPending: isStatusUpdating } =
     useUpdateParticipationStatusMutation();
@@ -735,6 +796,10 @@ export default function ScheduleDetail() {
   ]);
 
   const addToGoogleCalendar = () => {
+    /*
+     * 캘린더 추가는 외부 URL 조합만 담당한다.
+     * 서버 상태를 바꾸지 않으므로 mutation/cache invalidate 없이 현재 상세 응답 값을 그대로 사용한다.
+     */
     const schedule = data?.schedule;
 
     if (!schedule) {
@@ -927,6 +992,10 @@ export default function ScheduleDetail() {
   }
 
   const schedule = data.schedule;
+  /*
+   * viewerParticipationStatus는 ApplyScheduleButton의 버튼 문구와 취소 가능 여부를 결정한다.
+   * viewerCanAccessChatLink는 오픈채팅 링크 노출 권한만 담당하므로 참여 버튼 권한과 섞지 않는다.
+   */
   const viewerParticipationStatus = data.viewerParticipationStatus ?? "";
   const viewerCanAccessChatLink = Boolean(data.viewerCanAccessChatLink);
   const details = Array.isArray(data.details) ? data.details : [];
@@ -950,6 +1019,10 @@ export default function ScheduleDetail() {
     ? FavoriteRoundedIcon
     : FavoriteBorderRoundedIcon;
 
+  /*
+   * 이미지는 썸네일 플래그가 있는 항목을 앞에 세운 뒤 URL만 추린다.
+   * API 이미지가 없으면 schedule.thumbnailImage, 그것도 없으면 DEFAULT_IMAGE 순서로 fallback해 hero가 항상 렌더되게 한다.
+   */
   const imageUrls =
     rawImages.length > 0
       ? [...rawImages]
@@ -960,16 +1033,28 @@ export default function ScheduleDetail() {
         ? [schedule.thumbnailImage]
         : [DEFAULT_IMAGE];
 
+  /*
+   * 이미지 목록이 재조회로 줄어들면 currentImg가 배열 범위를 벗어날 수 있다.
+   * 렌더 직전에 안전 인덱스를 계산해 잘못된 src 접근과 lightbox index 오류를 막는다.
+   */
   const safeCurrentImg =
     currentImg >= imageUrls.length ? 0 : Math.max(currentImg, 0);
 
   const lightboxSlides = imageUrls.map((url) => ({ src: url }));
 
   const nextSlide = () => {
+    /*
+     * 버튼 disabled는 이미지 1장일 때 이동을 막지만,
+     * 함수 자체는 순환 로직으로 유지해 이미지가 여러 장인 경우 라이트박스/버튼 동작이 동일하게 돈다.
+     */
     setCurrentImg((prev) => (prev === imageUrls.length - 1 ? 0 : prev + 1));
   };
 
   const prevSlide = () => {
+    /*
+     * 이전 버튼도 마지막 이미지로 순환한다.
+     * 사용자가 썸네일을 직접 누른 경우에도 currentImg 기준으로 자연스럽게 이동한다.
+     */
     setCurrentImg((prev) => (prev === 0 ? imageUrls.length - 1 : prev - 1));
   };
 
@@ -988,6 +1073,10 @@ export default function ScheduleDetail() {
     return !isScheduleCompleted && end >= today;
   })();
 
+  /*
+   * 여기부터는 API 원본을 JSX가 바로 쓰기 좋은 표시 모델로 변환한다.
+   * 렌더 안에서 fallback을 반복하면 호스트/비호스트 분기마다 문구가 어긋나기 쉬워 한 곳에서 정리한다.
+   */
   const hostProfile = data.host ?? {};
   const hostName = hostProfile.nickname || "호스트";
   const deadlineLabel = formatDDay(schedule.recruitEndDate);
@@ -1007,6 +1096,10 @@ export default function ScheduleDetail() {
       <main className={styles.page}>
         <div className={styles.layout}>
           <div className={styles.mainColumn}>
+            {/*
+              대표 이미지 카드다.
+              실제 imageUrls만 사용하며, 이미지가 1장일 때 이전/다음 버튼은 disabled로 남겨 컨트롤 위치는 유지하되 불필요한 순환을 막는다.
+            */}
             <section className={`${styles.panel} ${styles.heroCard}`}>
               <div className={styles.heroImageWrap}>
                 <img
@@ -1047,6 +1140,10 @@ export default function ScheduleDetail() {
                 </div>
               </div>
 
+              {/*
+                썸네일 스트립은 최대 6장만 노출한다.
+                7장 이상부터는 마지막 썸네일 위에 "+N 더보기"를 얹어 전체 이미지가 더 있다는 신호만 준다.
+              */}
               <div className={styles.thumbStrip}>
                 {visibleThumbnails.map((imageUrl, index) => (
                   <button
@@ -1069,6 +1166,10 @@ export default function ScheduleDetail() {
               </div>
             </section>
 
+            {/*
+              제목/메타/핵심 조건 영역이다.
+              현재 API에 있는 정보만 사용하고, HTML 시안의 포함/불포함/출발 장소 같은 더미성 항목은 넣지 않는다.
+            */}
             <section className={`${styles.panel} ${styles.titleSection}`}>
               <div className={styles.titleRow}>
                 <div className={styles.titleContent}>
@@ -1099,6 +1200,10 @@ export default function ScheduleDetail() {
                 </Button>
               </div>
 
+              {/*
+                5개 정보 그리드는 신청 전 판단에 필요한 조건을 한눈에 보여준다.
+                각 값은 위 표시 모델에서 fallback이 끝난 문자열이므로 JSX는 레이아웃만 담당한다.
+              */}
               <div className={styles.infoGrid}>
                 <div className={styles.infoItem}>
                   <PeopleIcon className={styles.infoIcon} />
@@ -1135,6 +1240,10 @@ export default function ScheduleDetail() {
               </div>
             </section>
 
+            {/*
+              본문 영역은 상세 설명과 Day-by-Day만 유지한다.
+              현재 details에는 dayNumber/title/description만 있으므로 시간 pill이나 태그 리스트는 하드코딩하지 않는다.
+            */}
             <section className={`${styles.panel} ${styles.contentSection}`}>
               <div className={styles.contentBlock}>
                 <h2 className={styles.subTitle}>상세 설명</h2>
@@ -1166,8 +1275,16 @@ export default function ScheduleDetail() {
             </section>
           </div>
 
+          {/*
+            사이드바는 viewer 역할에 따라 완전히 다른 정보를 보여준다.
+            비호스트에게는 공개 가능한 호스트 요약, 호스트에게는 운영에 필요한 승인 참여자/신청자 관리 정보를 우선 배치한다.
+          */}
           <aside className={styles.sideColumn}>
             {!viewerIsHost ? (
+              /*
+               * 비호스트에게는 신청자 목록 API를 호출하지 않고, 상세 응답의 host 요약만 보여준다.
+               * 이 분기는 게스트와 일반 로그인 사용자가 모두 볼 수 있는 공개 정보 영역이다.
+               */
               <section className={`${styles.panel} ${styles.hostPanel}`}>
                 {hostProfile.profileImage ? (
                   <img
@@ -1187,6 +1304,10 @@ export default function ScheduleDetail() {
                 </div>
               </section>
             ) : (
+              /*
+               * 호스트는 자기 프로필을 보는 것보다 현재 승인된 참여자 규모를 먼저 확인해야 한다.
+               * approvedApplicants query는 현재 필터 목록과 분리되어 있어 신청자 관리 탭을 바꿔도 이 요약은 흔들리지 않는다.
+               */
               <section className={styles.panel}>
                 <div className={styles.panelHeader}>
                   <h2 className={styles.subTitle}>승인 참여자</h2>
@@ -1228,6 +1349,10 @@ export default function ScheduleDetail() {
               </section>
             )}
 
+            {/*
+              오픈채팅 링크는 host 또는 승인 참여자에게만 실링크를 보여준다.
+              권한이 없는 사용자는 링크 유무 자체보다 "승인 후 확인 가능"이라는 상태 안내를 보게 한다.
+            */}
             <section
               ref={chatLinkSectionRef}
               className={`${styles.panel} ${styles.noticePanel}`}
@@ -1255,6 +1380,10 @@ export default function ScheduleDetail() {
               </div>
             </section>
 
+            {/*
+              일정 요약은 사이드바에서 빠르게 재확인해야 하는 최소 정보만 담는다.
+              캘린더 추가는 외부 이동 액션이라 상세 데이터 mutation과 분리된다.
+            */}
             <section className={styles.panel}>
               <div className={styles.panelHeader}>
                 <h2 className={styles.subTitle}>일정 요약</h2>
@@ -1281,6 +1410,10 @@ export default function ScheduleDetail() {
             </section>
 
             {viewerIsHost ? (
+              /*
+               * 호스트 관리 버튼은 프론트에서 UX 차단을 먼저 하지만 서버가 최종 권한/상태를 재검증한다.
+               * completed 상태에서는 수정/삭제/상태 변경을 잠그고, 실행 취소만 별도 액션으로 제공한다.
+               */
               <section className={styles.panel}>
                 <div className={styles.panelHeader}>
                   <h2 className={styles.subTitle}>호스트 관리</h2>
@@ -1338,6 +1471,10 @@ export default function ScheduleDetail() {
             ) : null}
 
             {isLoggedIn && authEmail && viewerIsHost && !isApplicantsForbidden ? (
+              /*
+               * 신청자 관리 목록은 로그인한 호스트에게만 렌더링한다.
+               * 여기서 내려가는 applicants에는 전화번호/성별/나이 같은 개인정보가 포함될 수 있으므로 비호스트 분기와 절대 섞으면 안 된다.
+               */
               <HostParticipationList
                 items={applicants}
                 loading={isApplicantsLoading}
@@ -1355,6 +1492,10 @@ export default function ScheduleDetail() {
         </div>
       </main>
 
+      {/*
+        하단 sticky CTA는 모바일/태블릿에서도 항상 같은 참여 진입점을 제공한다.
+        실제 신청/취소 정책은 ApplyScheduleButton 내부와 백엔드가 담당하고, 이 영역은 요약 정보와 버튼 배치만 맡는다.
+      */}
       <footer className={styles.stickyFooter}>
         <div className={styles.stickyInner}>
           <div className={styles.footerInfo}>
@@ -1392,6 +1533,10 @@ export default function ScheduleDetail() {
         </div>
       </footer>
 
+      {/*
+        삭제 확인 Dialog다.
+        삭제는 복구 불가능한 호스트 액션이므로 버튼 클릭 즉시 API를 보내지 않고 한 번 더 확인한다.
+      */}
       <Dialog
         open={open}
         onClose={handleClose}
@@ -1422,6 +1567,10 @@ export default function ScheduleDetail() {
         </DialogActions>
       </Dialog>
 
+      {/*
+        비로그인 위시 클릭 시 사용하는 로그인 유도 Dialog다.
+        즉시 redirect하지 않고 사용자가 현재 상세 페이지 맥락을 유지한 상태에서 이동을 선택하게 한다.
+      */}
       <Dialog
         open={isLoginPromptOpen}
         onClose={handleCloseLoginPrompt}
@@ -1454,11 +1603,19 @@ export default function ScheduleDetail() {
         </DialogActions>
       </Dialog>
 
+      {/*
+        상세 페이지의 모든 mutation 결과는 하나의 feedback surface로 모은다.
+        참여/북마크/호스트 액션이 각자 Snackbar를 만들면 메시지 우선순위와 위치가 흔들린다.
+      */}
       <ParticipationFeedback
         feedback={feedback}
         onClose={handleCloseFeedback}
       />
 
+      {/*
+        hero 이미지를 클릭했을 때 열리는 확대 보기다.
+        slides는 imageUrls에서 만든 동일한 순서를 쓰므로 썸네일 선택 상태와 lightbox index가 맞춰진다.
+      */}
       <Lightbox
         open={isViewerOpen}
         close={() => setIsViewerOpen(false)}

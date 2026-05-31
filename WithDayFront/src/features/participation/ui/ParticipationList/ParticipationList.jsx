@@ -11,8 +11,6 @@ import styles from "./ParticipationList.module.css";
  *
  * 이렇게 분리하면 페이지 파일은 데이터 흐름에 집중하고,
  * UI 상태별 마크업 중복은 이 컴포넌트 한 곳에서 관리할 수 있다.
- * 내 일정 페이지의 리스트 상태를 담당하는 컴포넌트다.
- * loading/error/empty/data 상태를 한 곳에서 처리해서 MySchedulePage는 데이터 조회와 액션 분기에만 집중하게 한다.
  */
 function ParticipationList({
   items,
@@ -31,9 +29,6 @@ function ParticipationList({
    * 탭 전환이나 첫 진입 직후에는 query가 pending 상태가 될 수 있다.
    * 이때 이전 탭 카드가 잠깐 남아 있으면 사용자가 "탭이 바뀌지 않았다"고 느낄 수 있어,
    * 명시적인 로딩 박스로 상태 전환을 보여준다.
-   *
-   * react-query가 데이터를 불러오는 동안 보여주는 상태다.
-   * 기존 목록을 억지로 렌더링하지 않고 로딩 문구를 보여줘 사용자가 탭 변경/초기 진입 상태를 구분할 수 있게 한다.
    */
   if (loading) {
     return (
@@ -48,9 +43,6 @@ function ParticipationList({
   /*
    * 오류를 페이지 전체 레벨에서 막지 않고 리스트 영역 안에서 처리하는 이유는,
    * 상단 탭/피드백 UI는 유지한 채 문제 영역만 분리해서 보여주는 편이 사용성이 낫기 때문이다.
-   *
-   * API 오류는 리스트 내부에서 카드 대신 표시한다.
-   * 페이지 전체를 깨지 않게 하면 탭이나 다른 UI는 유지되고, 사용자는 실패 원인을 해당 영역에서 바로 볼 수 있다.
    */
   if (errorMessage) {
     return (
@@ -68,9 +60,6 @@ function ParticipationList({
    * - 참여중 탭: 아직 승인된 일정이 없음
    * - 신청중 탭: 아직 신청한 일정이 없음
    * - 호스팅 탭: 아직 만든 일정이 없음
-   *
-   * 조회는 성공했지만 현재 탭에 보여줄 일정이 없는 상태다.
-   * emptyMessage는 로그인 여부나 탭 종류에 따라 상위에서 결정한다.
    */
   if (!items || items.length === 0) {
     return (

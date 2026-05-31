@@ -15,8 +15,6 @@ import participationStyles from "../Participation.module.css";
  * - 상위의 applicantStatus state 변경
  * - useScheduleApplicantsQuery key 변경
  * - 해당 상태의 신청자 목록 재조회
- * 일정 상세 페이지에서 호스트에게만 보이는 신청자 관리 영역이다.
- * 목록 조회, 상태 필터, 신청자 카드 렌더링을 담당하고 실제 승인/거절 API 호출은 상위 ScheduleDetail로 위임한다.
  */
 function HostParticipationList({
   items,
@@ -84,9 +82,6 @@ function HostParticipationList({
            * 2. useScheduleApplicantsQuery 재실행
            * 3. 새 상태 목록 도착
            * 4. HostParticipationCard 목록 재렌더링
-           *
-           * 필터를 바꾸면 ScheduleDetail의 applicantStatus가 바뀌고,
-           * react-query key에 status가 포함되어 해당 상태의 신청자 목록을 다시 조회한다.
            */
           <Button
             key={filter.value}

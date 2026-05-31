@@ -37,6 +37,9 @@ export const PARTICIPATION_STATUS = {
  * 호스트 신청자 관리 영역의 상태 필터 버튼 정의다.
  * 이 값은 단순 UI 문구가 아니라,
  * 클릭 시 useScheduleApplicantsQuery의 status 파라미터로 그대로 전달되는 값이기도 하다.
+ *
+ * 순서는 운영 흐름 기준이다.
+ * 호스트는 먼저 승인된 참여자 규모를 확인하고, 그다음 새 신청(PENDING), 취소/강퇴/거절 같은 이력 상태를 확인한다.
  */
 export const HOST_APPLICANT_STATUS_FILTERS = [
   { value: "APPROVED", label: "승인 참여자" },
@@ -60,6 +63,9 @@ export const PARTICIPATION_TABS = [
  * 각 탭이 어떤 participation status를 보여줘야 하는지 정의한 매핑이다.
  * 예를 들어 "참여중"은 단순 APPROVED만이 아니라,
  * 과거에 참여했다가 호스트에게 내보내진 KICKED 내역도 같은 큰 맥락에서 함께 보여준다.
+ *
+ * 이 값은 fetchParticipationList의 statuses query param으로 그대로 전달된다.
+ * 백엔드가 콤마 문자열을 List<ParticipationStatus>로 해석하므로 프론트에서 배열로 임의 변경하면 API 계약이 깨진다.
  */
 export const PARTICIPATION_TAB_STATUS_PARAMS = {
   participating: "APPROVED,KICKED",
