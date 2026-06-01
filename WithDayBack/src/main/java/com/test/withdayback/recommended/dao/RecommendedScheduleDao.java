@@ -37,4 +37,16 @@ public interface RecommendedScheduleDao {
 
     // 추천 일정 이미지 저장
     void insertRecommendedScheduleImage(RecommendedScheduleImage recommendedScheduleImage);
+
+    // 추천 일정 이미지 삭제
+    // 추천 일정 삭제 전 연결된 이미지 데이터를 먼저 삭제함.
+    void deleteRecommendedScheduleImages(Long recommendedScheduleId);
+
+    // 추천 일정 상세 일정 삭제
+    // 추천 일정 삭제 전 연결된 일차별 상세 일정을 먼저 삭제함.
+    void deleteRecommendedScheduleDetails(Long recommendedScheduleId);
+
+    // 추천 일정 기본 정보 삭제
+    // 추천 일정 row 자체를 삭제하는 hard delete 방식.
+    void deleteRecommendedSchedule(Long id);
 }

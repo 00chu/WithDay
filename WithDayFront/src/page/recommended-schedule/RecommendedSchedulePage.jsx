@@ -90,8 +90,8 @@ const RecommendedSchedulePage = () => {
           </p>
           <h1 className={styles.title}>추천 일정에서 시작해보세요</h1>
           <p className={styles.description}>
-            WithDay가 준비한 추천 일정을 확인하고, 마음에 드는 코스를
-            내 일정 글쓰기에 템플릿처럼 사용할 수 있어요.
+            WithDay가 준비한 추천 일정을 확인하고, 마음에 드는 코스를 내 일정
+            글쓰기에 템플릿처럼 사용할 수 있어요.
           </p>
         </div>
 
@@ -167,8 +167,7 @@ const RecommendedSchedulePage = () => {
               images.find((image) => image.isThumbnail)?.imageUrl ||
               images[0]?.imageUrl;
 
-            const categoryLabel =
-              CATEGORY_LABELS[schedule?.category] || "추천";
+            const categoryLabel = CATEGORY_LABELS[schedule?.category] || "추천";
 
             const costTypeLabel =
               COST_TYPE_LABELS[schedule?.costType] || "추천 비용";

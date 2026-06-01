@@ -45,3 +45,10 @@ export const createRecommendedSchedule = async ({
 
   return response.data;
 };
+
+// 추천 일정 삭제
+export const deleteRecommendedSchedule = async (id) => {
+  const response = await api.delete(`/recommended-schedules/${id}`);
+
+  return response.data;
+};

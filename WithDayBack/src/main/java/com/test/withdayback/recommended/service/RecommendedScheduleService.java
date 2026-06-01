@@ -221,4 +221,48 @@ public class RecommendedScheduleService {
             throw new RuntimeException("추천 일정 생성 중 오류가 발생했습니다.");
         }
     }
+
+    // 추천 일정 삭제
+    // 현재 프로젝트의 기존 일정 삭제 흐름에 맞춰 hard delete로 처리함.
+    // 추천 일정 기본 정보, 상세 일정, 이미지 삭제 중 하나라도 실패하면 전체 rollback.
+    @Transactional
+    public String deleteRecommendedSchedule(Long id, String adminEmail) {
+        // 로그인한 이메일로 관리자 유저 정보 조회
+        User adminUser = userDao.findByEmail(adminEmail);
+
+        // 로그인한 유저가 없으면 에러 발생
+        if (adminUser == null) {
+            throw new RuntimeException("관리자 정보를 찾을 수 없습니다.");
+        }
+
+        // status가 admin인 유저만 추천 일정을 삭제할 수 있음.
+        if (!"admin".equals(adminUser.getStatus())) {
+            throw new RuntimeException("추천 일정 삭제 권한이 없습니다.");
+        }
+
+        // 삭제할 추천 일정이 실제로 존재하는지 확인
+        RecommendedSchedule recommendedSchedule =
+                recommendedScheduleDao.getRecommendedScheduleById(id);
+
+        if (recommendedSchedule == null) {
+            throw new RuntimeException("삭제할 추천 일정을 찾을 수 없습니다.");
+        }
+
+        try {
+            // FK 오류 방지를 위해 자식 테이블 데이터를 먼저 삭제
+            recommendedScheduleDao.deleteRecommendedScheduleImages(id);
+            recommendedScheduleDao.deleteRecommendedScheduleDetails(id);
+
+            // 추천 일정 기본 정보 삭제
+            recommendedScheduleDao.deleteRecommendedSchedule(id);
+
+            return "success";
+        } catch (Exception e) {
+            // 정확한 에러 추적용 로그
+            e.printStackTrace();
+
+            // Controller의 catch로 넘김
+            throw new RuntimeException("추천 일정 삭제 중 오류가 발생했습니다.");
+        }
+    }
 }

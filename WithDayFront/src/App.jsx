@@ -11,6 +11,8 @@ import SocialExtra from "./page/login/SocialExtra";
 import FindId from "./page/login/FindId";
 import FindPw from "./page/login/FindPw";
 import RecommendedSchedulePage from "./page/recommended-schedule/RecommendedSchedulePage";
+import RecommendedScheduleWrite from "./page/recommended-schedule/RecommendedScheduleWrite";
+import RecommendedScheduleDetail from "./page/recommended-schedule/RecommendedScheduleDetail";
 
 import ScheduleDetail from "./page/schedule/ScheduleDetail";
 import WriteSchedule from "./page/schedule/WriteSchedule";
@@ -108,6 +110,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <RecommendedSchedulePage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/recommended-schedules/write"
+              element={
+                <PrivateRoute>
+                  <RecommendedScheduleWrite />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/recommended-schedules/:id"
+              element={
+                <PrivateRoute>
+                  <RecommendedScheduleDetail />
                 </PrivateRoute>
               }
             />

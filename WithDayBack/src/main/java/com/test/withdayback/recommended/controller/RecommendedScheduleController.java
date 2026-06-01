@@ -82,4 +82,33 @@ public class RecommendedScheduleController {
             return ResponseEntity.badRequest().body("추천 일정 생성 중 오류가 발생했습니다.");
         }
     }
+
+    // 추천 일정 삭제
+// 관리자만 추천 일정을 삭제할 수 있음.
+// 현재 프로젝트의 기존 일정 삭제 흐름에 맞춰 hard delete로 처리함.
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteRecommendedSchedule(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id
+    ) {
+        try {
+            // Authorization 헤더에서 Bearer 토큰 추출
+            String token = authorizationHeader.replace("Bearer ", "");
+
+            // 토큰에서 로그인한 유저 이메일 추출
+            Claims claims = jwtUtil.parseClaims(token);
+            String adminEmail = claims.getSubject();
+
+            String result = recommendedScheduleService.deleteRecommendedSchedule(
+                    id,
+                    adminEmail
+            );
+
+            return ResponseEntity.ok(result);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("추천 일정 삭제 중 오류가 발생했습니다.");
+        }
+    }
 }

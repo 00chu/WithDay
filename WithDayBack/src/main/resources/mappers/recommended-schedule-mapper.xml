@@ -160,4 +160,25 @@
                  )
     </insert>
 
+    <!-- 추천 일정 이미지 삭제 -->
+    <!-- 추천 일정 기본 정보를 삭제하기 전 연결된 이미지 데이터를 먼저 삭제함 -->
+    <delete id="deleteRecommendedScheduleImages" parameterType="Long">
+        DELETE FROM recommended_schedule_image
+        WHERE recommended_schedule_id = #{recommendedScheduleId}
+    </delete>
+
+    <!-- 추천 일정 상세 일정 삭제 -->
+    <!-- 추천 일정 기본 정보를 삭제하기 전 연결된 상세 일정 데이터를 먼저 삭제함 -->
+    <delete id="deleteRecommendedScheduleDetails" parameterType="Long">
+        DELETE FROM recommended_schedule_detail
+        WHERE recommended_schedule_id = #{recommendedScheduleId}
+    </delete>
+
+    <!-- 추천 일정 기본 정보 삭제 -->
+    <!-- 현재 프로젝트의 기존 일정 삭제 흐름에 맞춰 hard delete로 처리함 -->
+    <delete id="deleteRecommendedSchedule" parameterType="Long">
+        DELETE FROM recommended_schedule
+        WHERE id = #{id}
+    </delete>
+
 </mapper>
