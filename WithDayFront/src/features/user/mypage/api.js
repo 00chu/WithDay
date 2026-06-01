@@ -1,5 +1,12 @@
 import { api } from "../../auth/api";
 
+// 마이페이지 조회용
+export const getMypageData = async () => {
+    const response = await api.get("/users/mypage/edit");
+
+    return response.data;
+};
+
 export const getMypageEditData = async () => {
     const response = await api.get("/users/mypage/edit");
 

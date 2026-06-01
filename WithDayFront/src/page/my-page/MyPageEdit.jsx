@@ -1,11 +1,9 @@
-import clsx from "clsx";
 import styles from "./MyPageEdit.module.css";
 import Cropper from "react-easy-crop";
 import { uploadMypageProfileImage } from "../../features/user/mypage/api";
 import { getCroppedImg } from "../../features/user/mypage/getCroppedImg";
 import { useAuthStore } from "../../features/auth/store/authStore";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useMypageEdit } from "../../features/user/mypage/useMypageEdit";
@@ -39,13 +37,36 @@ const MyPageEdit = () => {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [profilePreview, setProfilePreview] = useState("");
+  const [shineInterestId, setShineInterestId] = useState(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
+  const profileFileInputRef = useRef(null);
+  const profileMenuRef = useRef(null);
+
+  const DEFAULT_PROFILE_IMAGE = "/default-profile-240.png";
+  const formatPhoneNumber = (value = "") => {
+    const onlyNumber = String(value).replace(/\D/g, "").slice(0, 11);
+
+    if (onlyNumber.length <= 3) {
+      return onlyNumber;
+    }
+
+    if (onlyNumber.length <= 7) {
+      return `${onlyNumber.slice(0, 3)}-${onlyNumber.slice(3)}`;
+    }
+
+    return `${onlyNumber.slice(0, 3)}-${onlyNumber.slice(3, 7)}-${onlyNumber.slice(7)}`;
+  };
+
+  const removePhoneHyphen = (value = "") => {
+    return String(value).replace(/\D/g, "");
+  };
   const [intro, setIntro] = useState(
     "안녕하세요 단이입니다. 평소 여행을 다니면서 여행기록을 남기는 걸 좋아해요.",
   );
 
   const maxLength = 8;
-  const maxIntroLength = 50;
+  const maxIntroLength = 100;
 
   const passwordFields = [
     {
@@ -91,12 +112,10 @@ const MyPageEdit = () => {
     setPwState({ ...pwState, [field]: e.target.value });
 
   const {
-    register,
     handleSubmit,
     reset,
     watch,
     setValue,
-    formState: { errors },
   } = useForm({
     defaultValues: {
       nickname: "",
@@ -111,50 +130,98 @@ const MyPageEdit = () => {
       newPasswordConfirm: "",
     },
   });
+  const initializedRef = useRef(false);
+
+  const normalizeInterestIds = (value) => {
+    if (!Array.isArray(value)) return [];
+
+    return value
+      .map((item) => {
+        if (typeof item === "object" && item !== null) {
+          return item.interestId ?? item.id;
+        }
+
+        return item;
+      })
+      .map(Number)
+      .filter((id) => Number.isFinite(id));
+  };
 
   // 백엔드에서 가져온 데이터로 초기값 세팅
   useEffect(() => {
-    if (!editQuery.data) return;
+    if (!editQuery.data || initializedRef.current) return;
+
+    const data = editQuery.data;
+
+    const initialInterestIds = normalizeInterestIds(data.selectedInterestIds ?? []);
 
     reset({
-      nickname: editQuery.data.nickname ?? "",
-      phone: editQuery.data.phone ?? "",
-      gender: editQuery.data.gender ?? "",
-      intro: editQuery.data.intro ?? "",
-      profileImage: editQuery.data.profileImage ?? "",
-      interestIds: editQuery.data.selectedInterestIds ?? [],
-      notificationAgreed: editQuery.data.notificationAgreed ?? false,
+      nickname: data.nickname ?? "",
+      phone: formatPhoneNumber(data.phone ?? ""),
+      gender: data.gender ? String(data.gender) : "",
+      intro: data.intro ?? "",
+      profileImage: data.profileImage ?? "",
+      interestIds: initialInterestIds,
+      notificationAgreed: data.notificationAgreed ?? false,
       currentPassword: "",
       newPassword: "",
       newPasswordConfirm: "",
     });
-    setNickname(editQuery.data.nickname ?? "");
-    setIntro(editQuery.data.intro ?? "");
-    setIsNotiOn(editQuery.data.notificationAgreed ?? false);
-    setProfilePreview(editQuery.data.profileImage ?? "");
+
+    setNickname(data.nickname ?? "");
+    setIntro(data.intro ?? "");
+    setIsNotiOn(Boolean(data.notificationAgreed));
+    setProfilePreview(data.profileImage ?? "");
+
+    initializedRef.current = true;
   }, [editQuery.data, reset]);
 
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+
+    const handleClickOutside = (e) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(e.target)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [profileMenuOpen]);
+
   const selectedInterestIds = watch("interestIds") ?? [];
-  const notificationAgreed = watch("notificationAgreed");
-  const profileImage = watch("profileImage");
 
   const isLocalUser = editQuery.data?.provider === "local";
-
   const handleToggleInterest = (interestId) => {
-    const current = selectedInterestIds;
+    const id = Number(interestId);
+    const current = selectedInterestIds.map(Number);
 
-    if (current.includes(interestId)) {
+    const isAlreadySelected = current.includes(id);
+
+    if (isAlreadySelected) {
       setValue(
         "interestIds",
-        current.filter((id) => id !== interestId),
+        current.filter((item) => item !== id),
         { shouldValidate: true }
       );
       return;
     }
 
-    setValue("interestIds", [...current, interestId], {
+    setValue("interestIds", [...current, id], {
       shouldValidate: true,
     });
+
+    setShineInterestId(id);
+
+    setTimeout(() => {
+      setShineInterestId(null);
+    }, 550);
   };
 
   const validateForm = (formData) => {
@@ -211,11 +278,15 @@ const MyPageEdit = () => {
 
     const file = e.target.files?.[0];
     if (!file) return;
+
     const imageUrl = URL.createObjectURL(file);
+
     setSelectedImage(imageUrl);
     setCropModalOpen(true);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
+    setProfileMenuOpen(false);
+
     e.target.value = "";
   };
 
@@ -240,7 +311,17 @@ const MyPageEdit = () => {
       alert("프로필 이미지 변경 중 오류가 발생했습니다.");
     }
   };
+  const handleSetDefaultProfileImage = () => {
+    setProfilePreview(DEFAULT_PROFILE_IMAGE);
+    setValue("profileImage", DEFAULT_PROFILE_IMAGE, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
 
+    setSelectedImage(null);
+    setCropModalOpen(false);
+    setProfileMenuOpen(false);
+  };
   const onSubmit = () => {
     const formData = {
       nickname,
@@ -260,7 +341,7 @@ const MyPageEdit = () => {
 
     const payload = {
       nickname: formData.nickname,
-      phone: formData.phone,
+      phone: removePhoneHyphen(formData.phone),
       gender: Number(formData.gender),
       intro: formData.intro,
       profileImage: formData.profileImage,
@@ -275,7 +356,7 @@ const MyPageEdit = () => {
     updateMutation.mutate(payload, {
       onSuccess: () => {
         alert("프로필이 수정되었습니다.");
-        navigate("/mypage");
+        navigate("/mypage/:email");
       },
       onError: (error) => {
         const message =
@@ -300,42 +381,162 @@ const MyPageEdit = () => {
       </div>
     );
   }
+
+
   return (
     <div className={styles.container}>
       <h1 className={styles.headerTitle}>회원 정보 수정</h1>
+
       <div className={styles.content}>
         <div className={styles.profile}>
-          <img
-            src={profilePreview || editQuery.data?.profileImage || "/danE.jpg"}
-            alt="프로필"
-            className={styles.avatar}
-          />
-          <label className={styles.retouch_btn}>
-            <EditCalendarOutlinedIcon />
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={handleProfileFileChange}
-            />
-          </label>
-          <div className={styles.name}>{editQuery.data?.nickname}</div>
+          <div
+            className={`${styles.avatarEditBox} ${cropModalOpen ? styles.avatarEditBoxCropping : ""
+              }`}
+          >
+            {cropModalOpen && selectedImage ? (
+              <Cropper
+                image={selectedImage}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                cropShape="round"
+                showGrid={false}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={handleCropComplete}
+              />
+            ) : (
+              <>
+                <img
+                  src={
+                    profilePreview ||
+                    editQuery.data?.profileImage ||
+                    "/default-profile-240.png"
+                  }
+                  alt="프로필"
+                  className={styles.avatar}
+                />
+
+                <div
+                  ref={profileMenuRef}
+                  className={styles.profileActionWrapper}
+                >
+                  <button
+                    type="button"
+                    className={styles.retouch_btn}
+                    onClick={() => setProfileMenuOpen((prev) => !prev)}
+                  >
+                    <EditCalendarOutlinedIcon />
+                  </button>
+
+                  {profileMenuOpen && (
+                    <div className={styles.profileImageMenu}>
+                      <button
+                        type="button"
+                        className={styles.profileImageMenuItem}
+                        onClick={() => {
+                          setProfileMenuOpen(false);
+                          profileFileInputRef.current?.click();
+                        }}
+                      >
+                        사진 변경
+                      </button>
+
+                      <button
+                        type="button"
+                        className={styles.profileImageMenuItem}
+                        onClick={handleSetDefaultProfileImage}
+                      >
+                        기본 이미지로 변경
+                      </button>
+
+                      <button
+                        type="button"
+                        className={styles.profileImageMenuItem}
+                        onClick={() => setProfileMenuOpen(false)}
+                      >
+                        취소
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <input
+                  ref={profileFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={handleProfileFileChange}
+                />
+              </>
+            )}
+          </div>
+
+          {cropModalOpen && selectedImage && (
+            <div className={styles.inlineCropControls}>
+              <div className={styles.zoomBox}>
+                <span>확대</span>
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={zoom}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                />
+              </div>
+
+              <div className={styles.cropButtons}>
+                <button
+                  type="button"
+                  className={styles.cropCancelButton}
+                  onClick={() => {
+                    setCropModalOpen(false);
+                    setSelectedImage(null);
+                    setZoom(1);
+                    setCrop({ x: 0, y: 0 });
+                  }}
+                >
+                  취소
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.cropSaveButton}
+                  onClick={handleSaveCroppedImage}
+                >
+                  적용하기
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className={styles.name}>
+            {nickname || editQuery.data?.nickname}
+          </div>
           <div className={styles.email}>{editQuery.data?.email}</div>
+          <div className={styles.email}>
+            {formatPhoneNumber(editQuery.data?.phone)}
+          </div>
         </div>
 
         <div className={styles.formSide}>
           {/* 1. 닉네임 */}
           <div className={styles.group}>
             <div className={styles.groupTitle}>
-              <UserRoundIcon size={18} />닉네임</div>
+              <UserRoundIcon size={18} />
+              닉네임
+            </div>
+
             <div className={styles.inputRow}>
               <span className={styles.fieldLabel}>닉네임</span>
               <div className={styles.inputWrapper}>
                 <input
-                  className={styles.input_name}
+                  type="text"
                   value={nickname}
-                  maxLength={maxLength}
                   onChange={handleNicknameChange}
+                  maxLength={maxLength}
+                  className={styles.input_name}
                 />
                 <span className={styles.charCount}>
                   {nickname.length} / {maxLength}
@@ -344,26 +545,27 @@ const MyPageEdit = () => {
             </div>
           </div>
 
-          {/* 2. 인사말 */}
+          {/* 2. 소개글 */}
           <div className={styles.group}>
             <div className={styles.groupTitle}>
               <MessageCircleIcon size={18} />
-              <span>인사말</span>
+              <span>소개글</span>
             </div>
+
             <div className={styles.inputRow}>
               <span
                 className={styles.fieldLabel}
                 style={{ alignSelf: "flex-start", marginTop: "14px" }}
               >
-                소갯말
+                소개글
               </span>
+
               <div className={styles.textareaContainer}>
                 <textarea
-                  className={styles.textarea}
                   value={intro}
-                  maxLength={maxIntroLength}
                   onChange={handleIntroChange}
-                  placeholder="나를 소개하는 문구를 입력하세요."
+                  className={styles.textarea}
+                  maxLength={maxIntroLength}
                 />
                 <span className={styles.charCountInside}>
                   {intro.length} / {maxIntroLength}
@@ -372,18 +574,47 @@ const MyPageEdit = () => {
             </div>
           </div>
 
-          <div className={styles.groupTitle}>
-            <TagsIcon size={18} />
-            <span>관심사</span>
+          {/* 3. 관심사 */}
+          <div className={styles.group}>
+            <div className={styles.groupTitle}>
+              <TagsIcon size={18} />
+              <span>관심사</span>
+            </div>
+
+            <div className={styles.interestList}>
+              {(editQuery.data?.allInterests ?? []).map((interest) => {
+                const interestId = Number(interest.interestId ?? interest.id);
+                const isSelected = selectedInterestIds
+                  .map(Number)
+                  .includes(interestId);
+
+                return (
+                  <button
+                    key={interestId}
+                    type="button"
+                    className={`${styles.interestChip} ${isSelected ? styles.interestChipSelected : ""
+                      } ${shineInterestId === interestId
+                        ? styles.interestChipShine
+                        : ""
+                      }`}
+                    onClick={() => handleToggleInterest(interestId)}
+                  >
+                    {interest.interestName ?? interest.name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
           <div className={styles.groupTitle}>
             <span>주소</span>
           </div>
+
           <div className={styles.groupTitle}>
             <span>연락처</span>
           </div>
 
-          {/* 3. 비밀번호 */}
+          {/* 4. 비밀번호 */}
           {isLocalUser && (
             <div className={styles.group}>
               <div className={styles.groupTitle}>
@@ -392,8 +623,9 @@ const MyPageEdit = () => {
               </div>
 
               {passwordFields.map((field, i) => (
-                <div className={styles.inputRow} key={i}>
+                <div className={styles.inputRow} key={field.key}>
                   <span className={styles.fieldLabel}>{field.label}</span>
+
                   <div className={styles.inputWrapper}>
                     <LockIcon className={styles.iconStart} size={20} />
                     <input
@@ -403,18 +635,21 @@ const MyPageEdit = () => {
                       value={pwState[field.key]}
                       onChange={(e) => handlePwChange(e, field.key)}
                     />
+
                     <div
                       className={styles.iconEnd}
                       onClick={() => togglePassword(i)}
                     >
-                      {showPw[i] ?
+                      {showPw[i] ? (
                         <EyeIcon size={20} />
-                        :
-                        <EyeClosedIcon size={20} />}
+                      ) : (
+                        <EyeClosedIcon size={20} />
+                      )}
                     </div>
                   </div>
                 </div>
               ))}
+
               <div className={styles.messageWrapper}>
                 {isError ? (
                   <span className={styles.errorMsg}>
@@ -436,18 +671,24 @@ const MyPageEdit = () => {
               </span>
             </div>
           )}
-          {/* 4. 알림 설정 */}
+
+          {/* 5. 알림 설정 */}
           <div className={styles.group}>
             <div className={styles.groupTitle}>
               <BellIcon size={18} />
-              <span>알림 설정</span></div>
+              <span>알림 설정</span>
+            </div>
+
             <div className={styles.inputRow}>
               <span className={styles.fieldLabel}>알림 수신 동의</span>
+
               <div className={styles.notiRow}>
                 <span>위트 신청, 승인, 일정 관련 알림을 받아볼 수 있어요.</span>
+
                 <button
                   type="button"
-                  className={`${styles.notificationSwitch} ${isNotiOn ? styles.notificationSwitchOn : ""}`}
+                  className={`${styles.notificationSwitch} ${isNotiOn ? styles.notificationSwitchOn : ""
+                    }`}
                   onClick={() => setIsNotiOn(!isNotiOn)}
                   aria-checked={isNotiOn}
                   role="switch"
@@ -476,6 +717,7 @@ const MyPageEdit = () => {
             >
               취소
             </button>
+
             <button
               type="button"
               className={`${styles.btn} ${styles.btnSave}`}
@@ -485,65 +727,11 @@ const MyPageEdit = () => {
               저장하기
             </button>
           </div>
-
-          {cropModalOpen && (
-            <div className={styles.cropOverlay}>
-              <div className={styles.cropModal}>
-                <h3 className={styles.cropTitle}>프로필 이미지 조정</h3>
-
-                <div className={styles.cropArea}>
-                  <Cropper
-                    image={selectedImage}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={1}
-                    cropShape="round"
-                    showGrid={false}
-                    onCropChange={setCrop}
-                    onZoomChange={setZoom}
-                    onCropComplete={handleCropComplete}
-                  />
-                </div>
-
-                <div className={styles.zoomBox}>
-                  <span>확대</span>
-                  <input
-                    type="range"
-                    min={1}
-                    max={3}
-                    step={0.1}
-                    value={zoom}
-                    onChange={(e) => setZoom(Number(e.target.value))}
-                  />
-                </div>
-
-                <div className={styles.cropButtons}>
-                  <button
-                    type="button"
-                    className={styles.btnCancel}
-                    onClick={() => {
-                      setCropModalOpen(false);
-                      setSelectedImage(null);
-                    }}
-                  >
-                    취소
-                  </button>
-
-                  <button
-                    type="button"
-                    className={styles.btnSave}
-                    onClick={handleSaveCroppedImage}
-                  >
-                    적용하기
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
   );
+
 };
 
 export default MyPageEdit;

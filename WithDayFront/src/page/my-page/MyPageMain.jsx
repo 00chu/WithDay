@@ -3,6 +3,7 @@ import EditCalendarOutlinedIcon from "@mui/icons-material/EditCalendarOutlined";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import Button from "../../shared/ui/Button/Button";
 import { useNavigate } from "react-router-dom";
+import { useMypage } from "../../features/user/mypage/useMypage";
 import {
   Coffee,
   Earth,
@@ -15,9 +16,55 @@ import {
   User,
 } from "lucide-react";
 
+
 const MyPageMain = () => {
-  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const { mypageQuery } = useMypage();
+
+  console.log("mypageQuery 전체:", mypageQuery);
+
+  if (mypageQuery.isLoading) {
+    return <div>불러오는 중...</div>;
+  }
+
+
+  const mypage = mypageQuery.data;
+
+  const nickname = mypage?.nickname || "닉네임";
+  const email = mypage?.email || user?.email || "이메일 정보 없음";
+  const profileImage = mypage?.profileImage || "/default-profile-240.png";
+  const interests =
+    mypage?.interests ??
+    mypage?.interestNames ??
+    mypage?.allInterests ??
+    [];
+  const selectedInterestIds = mypage?.selectedInterestIds ?? [];
+  const allInterests = mypage?.allInterests ?? [];
+
+  const selectedInterests = allInterests.filter((interest) =>
+    selectedInterestIds.map(Number).includes(Number(interest.interestId ?? interest.id))
+  );
+  const intro =
+    mypage?.intro ||
+    "아직 등록된 소개글이 없습니다. 회원정보 수정에서 소개글을 작성해보세요.";
+  const getInterestIcon = (interestName) => {
+    switch (interestName) {
+      case "여행":
+        return <Earth size={18} />;
+      case "식사":
+        return <Utensils size={18} />;
+      case "카페":
+      case "문화":
+        return <Coffee size={18} />;
+      case "팝업":
+        return <Store size={18} />;
+      case "액티비티":
+        return <FerrisWheel size={18} />;
+      default:
+        return <Heart size={18} />;
+    }
+  };
 
   return (
     <div>
@@ -27,10 +74,10 @@ const MyPageMain = () => {
             <div className={styles.profile}>
               <div className={styles.image_wrapper}>
                 <img
-                  src="/danE.jpg"
-                  alt="우리딥 고양이"
-                  className={styles.danE}
-                ></img>
+                  src={profileImage}
+                  alt="프로필"
+                  className={styles.profile_img}
+                />
                 <div
                   className={styles.retouch_btn}
                   onClick={() => navigate(`/mypage/edit/${user.email}`)}
@@ -40,8 +87,8 @@ const MyPageMain = () => {
               </div>
             </div>
             <div className={styles.profile_text}>
-              <span className={styles.dan}>단이</span>
-              <span className={styles.email}>tiaqhfl@nate.com</span>
+              <span className={styles.my_nickname}>{nickname}</span>
+              <span className={styles.my_email}>{email}</span>
               <Button
                 className={styles.logout}
                 size="sm"
@@ -73,22 +120,25 @@ const MyPageMain = () => {
       <section>
         <div className={styles.Inter_container}>
           <div className={styles.Interest}>Interest | 나의 관심사</div>
+
           <div className={styles.int_boxs}>
-            <div className={styles.int_btn}>
-              <Earth size={18} /> <span>여행</span>
-            </div>
-            <div className={styles.int_btn}>
-              <Utensils size={18} /> <span>식사</span>
-            </div>
-            <div className={styles.int_btn}>
-              <Coffee size={18} /> <span>문화</span>
-            </div>
-            <div className={styles.int_btn}>
-              <Store size={18} /> <span>팝업</span>
-            </div>
-            <div className={styles.int_btn}>
-              <FerrisWheel size={18} /> <span>액티비티</span>
-            </div>
+            {selectedInterests.length > 0 ? (
+              selectedInterests.map((interest) => {
+                const interestId = Number(interest.interestId ?? interest.id);
+                const interestName = interest.interestName ?? interest.name;
+
+                return (
+                  <div className={styles.int_btn} key={interestId}>
+                    {getInterestIcon(interestName)}
+                    <span>{interestName}</span>
+                  </div>
+                );
+              })
+            ) : (
+              <div className={styles.emptyInterest}>
+                아직 선택한 관심사가 없습니다.
+              </div>
+            )}
           </div>
 
           <div className={styles.intro_box}>
@@ -97,10 +147,7 @@ const MyPageMain = () => {
             </div>
             <div className={styles.intro_text}>
               <span>
-                안녕하세요 단이입니다.평소 여행을 다니면서 여행기록을 남기는 걸
-                좋아해요.<br></br>
-                조용하고 힐링되는 그런 곳을 즐겨 다닙니다. 저와 비슷한 위트님이
-                계시다면 같이 여행 다니면 좋을 것 같아요♡
+                {intro}
               </span>
             </div>
           </div>
@@ -161,6 +208,29 @@ const MyPageMain = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+                <div className={styles.emptyLogCard}>
+                  <div className={styles.emptyLogIllustration}>
+                    <MapPin size={26} className={styles.emptyPinLeft} />
+                    <div className={styles.emptySuitcase}>▣</div>
+                    <MapPin size={22} className={styles.emptyPinRight} />
+                  </div>
+
+                  <div className={styles.emptyLogTitle}>
+                    아직 더 많은 위트 로그가 없어요.
+                  </div>
+
+                  <div className={styles.emptyLogDesc}>
+                    새로운 일정에 참여하면 이곳에 기록돼요.
+                  </div>
+
+                  <button
+                    type="button"
+                    className={styles.emptyLogButton}
+                    onClick={() => navigate("/explore")}
+                  >
+                    일정 보러가기
+                  </button>
                 </div>
               </div>
             </div>

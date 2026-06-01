@@ -7,6 +7,8 @@ export const useMypageEdit = () => {
     const editQuery = useQuery({
         queryKey: ["mypageEdit"],
         queryFn: getMypageEditData,
+        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: false,
     });
 
     const updateMutation = useMutation({

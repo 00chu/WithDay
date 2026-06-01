@@ -6,6 +6,7 @@ import PersonOutlineRoundedIcon from "@mui/icons-material/PersonOutlineRounded";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
+import { useMypage } from "../../features/user/mypage/useMypage";
 import { getRegion } from "../../features/region/api";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import LayoutContainer from "../../shared/ui/LayoutContainer/LayoutContainer";
@@ -15,6 +16,7 @@ import Badge from "@mui/material/Badge";
 import { getNotificationCount } from "../../features/notification/api";
 
 const DEFAULT_REGION_OPTION = { label: "전체", value: "" };
+const DEFAULT_PROFILE_IMAGE = "/default-profile-240.png";
 
 const normalizeRegionValue = (value) => value?.trim() ?? "";
 
@@ -22,6 +24,7 @@ export default function Header({ selectedRegion, onRegionChange }) {
   const navigate = useNavigate();
 
   const { user: loginUser, isLoggedIn } = useAuthStore();
+  const { mypageQuery } = useMypage(isLoggedIn);
 
   const { data: regions = [] } = useQuery({
     queryKey: ["header-region-options"],
@@ -48,6 +51,11 @@ export default function Header({ selectedRegion, onRegionChange }) {
 
   const selectedRegionValue = normalizeRegionValue(selectedRegion);
 
+  const headerProfileImage =
+    mypageQuery.data?.profileImage ||
+    loginUser?.profileImage ||
+    DEFAULT_PROFILE_IMAGE;
+
   const avatarFallback = (
     loginUser?.nickname?.trim()?.charAt(0) ||
     loginUser?.email?.trim()?.charAt(0) ||
@@ -65,15 +73,19 @@ export default function Header({ selectedRegion, onRegionChange }) {
 
   const [anchorEl, setAnchorEl] = useState(null);
 
-  // 알림 버튼 클릭
   const handleNotificationClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  // 팝오버 닫기
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  console.log("헤더 mypageQuery.data:", mypageQuery?.data);
+  console.log("헤더 mypageQuery profileImage:", mypageQuery?.data?.profileImage);
+  console.log("헤더 loginUser:", loginUser);
+  console.log("헤더 loginUser.profileImage:", loginUser?.profileImage);
+  console.log("헤더 최종 이미지:", headerProfileImage);
 
   return (
     <header className={styles.header}>
@@ -129,12 +141,13 @@ export default function Header({ selectedRegion, onRegionChange }) {
               />
             </>
           )}
+
           <IconButton
             className={styles.actionButton}
             aria-label="마이페이지"
             onClick={handleProfileClick}
           >
-            <Avatar className={styles.profileAvatar}>
+            <Avatar src={headerProfileImage} className={styles.profileAvatar}>
               {avatarFallback || <PersonOutlineRoundedIcon fontSize="small" />}
             </Avatar>
           </IconButton>
