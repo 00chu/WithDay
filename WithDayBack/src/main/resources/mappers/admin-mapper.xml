@@ -9,7 +9,7 @@
         <where>
             <!-- 닉네임 / 이메일 검색 -->
             <if test="keyword != null and keyword != ''">
-                <!-- 하나의 조건으로 막기 위해 괄호로 묶음 -->
+                <!-- 하나의 조건으로 묶기 위해 괄호로 묶음 -->
                 (
                 <!-- MyBatis가 문자열 안 #{} 를 제대로 처리 못함 -->
                 nickname like concat('%', #{keyword}, '%')   <!-- => '%keyword%' -->

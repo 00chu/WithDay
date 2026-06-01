@@ -32,8 +32,8 @@ const MemberManagementPage = () => {
   rhf(react-hook-form)가 따로 관리할 수 있도록 control을 전달.
   */
   // handleSubmit - 폼 제출 처리 함수
-  // watch - 현재 form 값을 실시간으로 감시
-  const { register, control, handleSubmit, watch } = useForm({
+  // watch - rhf이 관리하는 상태 전체를 초기화, 특정 값으로 변경할 때 사용
+  const { register, control, handleSubmit, reset } = useForm({
     defaultValues: {
       keyword: "",
       gender: "",
@@ -57,6 +57,18 @@ const MemberManagementPage = () => {
     { label: "suspended", value: "suspended" },
     { label: "admin", value: "admin" },
   ];
+
+  const handleReset = () => {
+    const initialValue = {
+      keyword: "",
+      gender: "",
+      provider: "",
+      status: "",
+    };
+
+    reset(initialValue);
+    setSearchParams(initialValue);
+  };
 
   const onSubmit = (formData) => {
     setSearchParams(formData);
@@ -118,6 +130,9 @@ const MemberManagementPage = () => {
           )}
         />
 
+        <Button type="button" variant="primary" size="md" onClick={handleReset}>
+          초기화
+        </Button>
         <Button type="submit" variant="primary" size="md">
           검색
         </Button>

@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
@@ -7,9 +7,23 @@ import styles from "./AdminPage.module.css";
 
 import AdminSidebar from "../../features/admin/ui/AdminSidebar";
 import MemberManagementPage from "../../features/admin/ui/MemberManagementPage";
+import { useAuthStore } from "../../features/auth/store/authStore";
 
 const AdminPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const user = useAuthStore((state) => state.user);
+
+  if (!user) {
+    return null;
+  }
+
+  /*
+  if (!user.admin) {
+    // replace - react-router-dom의 Navigate가 브라우저 히스토리를 교체할지 여부를 결정하는 속성
+    return <Navigate to="/" replace />;
+  }
+  */
 
   return (
     <div className={styles.admin_wrap}>
