@@ -223,6 +223,7 @@ const MyPageEdit = () => {
     setCroppedAreaPixels(croppedPixels);
   };
 
+  //프로필 이미지 변경
   const handleSaveCroppedImage = async () => {
     try {
       if (!selectedImage || !croppedAreaPixels) return;
