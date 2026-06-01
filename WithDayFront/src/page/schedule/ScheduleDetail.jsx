@@ -34,8 +34,8 @@ import { useScheduleApplicantsQuery } from "../../features/participation/model/q
 import { useUpdateParticipationStatusMutation } from "../../features/participation/model/mutations";
 import ParticipationFeedback from "../../features/participation/ui/ParticipationFeedback/ParticipationFeedback";
 import HostParticipationList from "../../features/participation/ui/HostParticipationList/HostParticipationList";
-import ApplyScheduleButton from "../../features/schedule/ui/ApplyScheduleButton";
 import { SCHEDULE_STATUS } from "../../features/schedule/model/constants";
+import { useScheduleApplyAction } from "../../features/schedule/model/useScheduleApplyAction";
 import Button from "../../shared/ui/Button/Button";
 import styles from "./ScheduleDetail.module.css";
 
@@ -78,7 +78,7 @@ const COST_TYPE_LABELS = {
  */
 const DEFAULT_IMAGE = "https://placehold.co/800x400?text=No+Image";
 const VIEWED_SCHEDULE_STORAGE_KEY_PREFIX = "viewed_schedule_";
-const MAX_VISIBLE_THUMBNAILS = 6;
+const MAX_VISIBLE_THUMBNAILS = 3;
 /*
  * 신청자 필터의 상태값은 백엔드 ParticipationStatus enum과 같은 표준값을 쓴다.
  * 화면 문구만 여기서 바꾸고 status 자체는 API 파라미터로 그대로 보내야 상태별 query cache가 정확히 분리된다.
@@ -599,7 +599,7 @@ export default function ScheduleDetail() {
     });
 
   /*
-   * ApplyScheduleButton은 버튼 클릭과 신청 API 호출만 담당하고, 토스트 표시는 상세 페이지에서 공통으로 처리한다.
+   * 참여 CTA 로직은 별도 hook에서 돌리고, 토스트 표시는 상세 페이지에서 공통으로 처리한다.
    * 이렇게 해야 신청 성공/실패와 호스트 승인/거절 피드백이 같은 Snackbar 위치와 스타일을 공유한다.
    */
   const handleApplyFeedback = useCallback(({ message, severity, id }) => {
@@ -967,6 +967,28 @@ export default function ScheduleDetail() {
         applicantsError?.response?.data ??
         "신청자 목록을 불러오지 못했습니다.")
       : "";
+  const schedule = data?.schedule ?? null;
+  const viewerParticipationStatus = data?.viewerParticipationStatus ?? "";
+  const applyActionSchedule = schedule ?? {};
+  const {
+    buttonLabel: applyButtonLabel,
+    buttonVariant: applyButtonVariant,
+    eligibilityMessages,
+    handleAction: handleApplyAction,
+    infoMessage: applyInfoMessage,
+    isButtonDisabled: isApplyButtonDisabled,
+  } = useScheduleApplyAction({
+    scheduleId: applyActionSchedule.id ?? parsedScheduleId,
+    status: applyActionSchedule.status,
+    recruitEndDate: applyActionSchedule.recruitEndDate,
+    genderLimit: applyActionSchedule.genderLimit,
+    ageMin: applyActionSchedule.ageMin,
+    ageMax: applyActionSchedule.ageMax,
+    viewerParticipationId: data?.viewerParticipationId,
+    viewerParticipationStatus,
+    isHost: Boolean(data?.viewerIsHost),
+    onFeedback: handleApplyFeedback,
+  });
 
   if (!Number.isFinite(parsedScheduleId) || parsedScheduleId <= 0) {
     return (
@@ -991,12 +1013,10 @@ export default function ScheduleDetail() {
     return <div className={styles.container}>일정 정보가 없습니다.</div>;
   }
 
-  const schedule = data.schedule;
   /*
-   * viewerParticipationStatus는 ApplyScheduleButton의 버튼 문구와 취소 가능 여부를 결정한다.
+   * viewerParticipationStatus는 참여 CTA의 버튼 문구와 취소 가능 여부를 결정한다.
    * viewerCanAccessChatLink는 오픈채팅 링크 노출 권한만 담당하므로 참여 버튼 권한과 섞지 않는다.
    */
-  const viewerParticipationStatus = data.viewerParticipationStatus ?? "";
   const viewerCanAccessChatLink = Boolean(data.viewerCanAccessChatLink);
   const details = Array.isArray(data.details) ? data.details : [];
   const rawImages = Array.isArray(data.images) ? data.images : [];
@@ -1081,7 +1101,6 @@ export default function ScheduleDetail() {
   const hostName = hostProfile.nickname || "호스트";
   const deadlineLabel = formatDDay(schedule.recruitEndDate);
   const visibleThumbnails = imageUrls.slice(0, MAX_VISIBLE_THUMBNAILS);
-  const hiddenImageCount = Math.max(imageUrls.length - MAX_VISIBLE_THUMBNAILS, 0);
   const participantCount = Number(schedule.currentParticipants ?? 0);
   const maxParticipants = Number(schedule.maxParticipants ?? 0);
   const minParticipants = Number(schedule.minParticipants ?? 0);
@@ -1140,10 +1159,7 @@ export default function ScheduleDetail() {
                 </div>
               </div>
 
-              {/*
-                썸네일 스트립은 최대 6장만 노출한다.
-                7장 이상부터는 마지막 썸네일 위에 "+N 더보기"를 얹어 전체 이미지가 더 있다는 신호만 준다.
-              */}
+              {/* 썸네일 스트립은 최대 3장까지만 노출한다. */}
               <div className={styles.thumbStrip}>
                 {visibleThumbnails.map((imageUrl, index) => (
                   <button
@@ -1156,11 +1172,6 @@ export default function ScheduleDetail() {
                     aria-label={`${index + 1}번째 이미지 보기`}
                   >
                     <img src={imageUrl} alt="" />
-                    {index === visibleThumbnails.length - 1 && hiddenImageCount > 0 ? (
-                      <span className={styles.thumbMore}>
-                        + {hiddenImageCount} 더보기
-                      </span>
-                    ) : null}
                   </button>
                 ))}
               </div>
@@ -1403,10 +1414,54 @@ export default function ScheduleDetail() {
                     {participantCount} / {maxParticipants}명
                   </strong>
                 </div>
+
+                <div className={styles.summaryRow}>
+                  <span>예상 비용</span>
+                  <strong>{costLabel}</strong>
+                </div>
+
+                <div className={styles.summaryRow}>
+                  <span>정산 방식</span>
+                  <strong>{costTypeLabel}</strong>
+                </div>
               </div>
-              <Button size="sm" variant="outline" onClick={addToGoogleCalendar}>
-                구글 캘린더에 추가
-              </Button>
+
+              <div className={styles.summaryActions}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={addToGoogleCalendar}
+                  className={styles.summaryButton}
+                >
+                  구글 캘린더에 추가
+                </Button>
+
+                <div className={styles.summaryApplyContainer}>
+                  <Button
+                    variant={applyButtonVariant}
+                    size="md"
+                    disabled={isApplyButtonDisabled}
+                    onClick={handleApplyAction}
+                    className={styles.summaryButton}
+                  >
+                    {applyButtonLabel}
+                  </Button>
+
+                  {eligibilityMessages.length > 0 ? (
+                    <div className={styles.summaryApplyMessages}>
+                      {eligibilityMessages.map((message) => (
+                        <p key={message} className={styles.summaryApplyMessage}>
+                          {message}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {applyInfoMessage ? (
+                    <p className={styles.summaryApplyMessage}>{applyInfoMessage}</p>
+                  ) : null}
+                </div>
+              </div>
             </section>
 
             {viewerIsHost ? (
@@ -1491,47 +1546,6 @@ export default function ScheduleDetail() {
           </aside>
         </div>
       </main>
-
-      {/*
-        하단 sticky CTA는 모바일/태블릿에서도 항상 같은 참여 진입점을 제공한다.
-        실제 신청/취소 정책은 ApplyScheduleButton 내부와 백엔드가 담당하고, 이 영역은 요약 정보와 버튼 배치만 맡는다.
-      */}
-      <footer className={styles.stickyFooter}>
-        <div className={styles.stickyInner}>
-          <div className={styles.footerInfo}>
-            <span className={styles.stickyLabel}>모집 마감</span>
-            <strong className={styles.stickyMain}>
-              {deadlineLabel} · {schedule.recruitEndDate || "미정"}
-            </strong>
-          </div>
-
-          <div className={styles.footerInfo}>
-            <span className={styles.stickyLabel}>참여 인원</span>
-            <strong className={styles.stickyMain}>
-              {participantCount} / {maxParticipants}명
-            </strong>
-          </div>
-
-          <div className={styles.footerInfo}>
-            <span className={styles.stickyLabel}>예상 비용</span>
-            <strong className={styles.stickyMain}>{costLabel}</strong>
-            <span className={styles.stickySub}>{costTypeLabel}</span>
-          </div>
-
-          <ApplyScheduleButton
-            scheduleId={schedule.id}
-            status={schedule.status}
-            recruitEndDate={schedule.recruitEndDate}
-            genderLimit={schedule.genderLimit}
-            ageMin={schedule.ageMin}
-            ageMax={schedule.ageMax}
-            viewerParticipationId={data.viewerParticipationId}
-            viewerParticipationStatus={viewerParticipationStatus}
-            isHost={viewerIsHost}
-            onFeedback={handleApplyFeedback}
-          />
-        </div>
-      </footer>
 
       {/*
         삭제 확인 Dialog다.
@@ -1622,6 +1636,12 @@ export default function ScheduleDetail() {
         slides={lightboxSlides}
         index={safeCurrentImg}
         plugins={[Zoom]}
+        carousel={{
+          finite: imageUrls.length <= 1,
+        }}
+        controller={{
+          disableSwipeNavigation: imageUrls.length <= 1,
+        }}
       />
     </div>
   );

@@ -16,7 +16,7 @@ import { participationQueryKeys } from "./queries";
 /*
  * 일정 상세 페이지의 참여 신청 mutation이다.
  * 호출 시점:
- * - ApplyScheduleButton에서 사용자가 "참여 신청하기" 클릭
+ * - ScheduleDetail의 참여 CTA에서 사용자가 "참여 신청하기" 클릭
  *
  * 성공 후 invalidate가 필요한 이유:
  * - schedule-detail: 상세 화면의 viewerParticipationStatus가 즉시 PENDING으로 바뀌어야 함
@@ -74,7 +74,7 @@ export const useCancelParticipationMutation = () => {
         queryClient.invalidateQueries({
           /*
            * 취소 후 상세 버튼은 "다시 신청" 또는 취소된 상태 안내로 바뀔 수 있다.
-           * 상세 응답의 viewerParticipationStatus를 다시 받아와야 ApplyScheduleButton 계약이 맞는다.
+           * 상세 응답의 viewerParticipationStatus를 다시 받아와야 참여 CTA의 라벨과 액션 가능 여부가 맞는다.
            */
           queryKey: ["schedule-detail", Number(variables.scheduleId)],
         }),

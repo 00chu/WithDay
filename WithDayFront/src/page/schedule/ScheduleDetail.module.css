@@ -3,7 +3,6 @@
   min-height: 100vh;
   background: var(--color-bg, #f8fafc);
   color: var(--color-text-primary, #1e293b);
-  padding-bottom: calc(var(--bottom-nav-total-height, 0px) + 1rem);
 }
 
 /* 본문 폭을 제한해 1440px 이상에서도 읽기 폭이 과도하게 넓어지지 않게 한다. */
@@ -40,13 +39,13 @@
   top: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 /* 모든 주요 상세 섹션이 공유하는 카드 surface다. */
 .panel {
   border: 1px solid var(--color-border-light, #e2e8f0);
-  border-radius: 24px;
+  border-radius: var(--radius-md);
   background: var(--color-surface, #ffffff);
   box-shadow: var(--shadow-panel, 0 18px 45px rgba(15, 23, 42, 0.08));
 }
@@ -71,6 +70,7 @@
   height: 100%;
   display: block;
   object-fit: cover;
+  object-position: center center;
   cursor: zoom-in;
 }
 
@@ -188,10 +188,10 @@
   font-weight: 700;
 }
 
-/* 썸네일 스트립은 최대 6개 이미지를 동일 폭으로 보여주는 보조 탐색 영역이다. */
+/* 썸네일 스트립은 최대 3개 이미지를 동일 폭으로 보여주는 보조 탐색 영역이다. */
 .thumbStrip {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   padding: 14px;
   background: var(--color-surface, #ffffff);
@@ -201,7 +201,7 @@
 .thumb {
   position: relative;
   border: 2px solid transparent;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 0;
   aspect-ratio: 4 / 3;
   overflow: hidden;
@@ -220,18 +220,6 @@
 /* 현재 선택된 썸네일은 primary border로 hero 이미지와 연결감을 준다. */
 .thumbActive {
   border-color: var(--color-primary, #2563eb);
-}
-
-/* 숨겨진 추가 이미지가 있을 때 마지막 썸네일 위에 겹치는 오버레이다. */
-.thumbMore {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(15, 23, 42, 0.66);
-  color: #ffffff;
-  font-weight: 800;
 }
 
 .titleSection,
@@ -292,7 +280,7 @@
   min-width: 0;
   padding: 16px;
   border: 1px solid var(--color-border-light, #e2e8f0);
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   background: var(--color-surface-highlight, #f8fafc);
 }
 
@@ -349,6 +337,8 @@
   color: var(--color-text-secondary, #475569);
   line-height: 1.82;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .dailyPlanList {
@@ -364,8 +354,12 @@
   gap: 18px;
   padding: 18px;
   border: 1px solid var(--color-border-light, #e2e8f0);
-  border-radius: 18px;
-  background: linear-gradient(135deg, #ffffff 0%, var(--color-surface-highlight, #f8fafc) 100%);
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    var(--color-surface-highlight, #f8fafc) 100%
+  );
 }
 
 .dayNumber {
@@ -388,6 +382,8 @@
   margin: 0;
   font-size: 1.05rem;
   color: var(--color-text-primary, #1e293b);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .planDesc {
@@ -395,6 +391,8 @@
   color: var(--color-text-secondary, #64748b);
   line-height: 1.7;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .panelHeader {
@@ -424,7 +422,11 @@
 .participantAvatar {
   flex: 0 0 auto;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--color-primary, #2563eb), var(--color-accent, #0f766e));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary, #2563eb),
+    var(--color-accent, #0f766e)
+  );
   color: #ffffff;
   object-fit: cover;
   display: inline-flex;
@@ -511,7 +513,7 @@
   align-items: center;
   width: fit-content;
   padding: 10px 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--color-accent-light, #dbeafe);
   color: var(--color-primary, #2563eb);
   font-weight: 900;
@@ -538,64 +540,42 @@
   text-align: right;
 }
 
+.summaryActions {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.summaryButton {
+  width: 100%;
+}
+
+.summaryApplyContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.summaryApplyMessages {
+  width: 100%;
+  max-width: 100%;
+  color: var(--color-text-secondary, #64748b);
+  text-align: left;
+}
+
+.summaryApplyMessage {
+  margin: 0;
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
 .hostActionGrid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
   margin-top: 16px;
-}
-
-.stickyFooter {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: var(--bottom-nav-total-height, 0px);
-  z-index: 90;
-  padding: 14px 24px 18px;
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0), rgba(248, 250, 252, 0.94) 22%);
-  pointer-events: none;
-}
-
-.stickyInner {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1.05fr 0.8fr 0.9fr minmax(220px, 280px);
-  gap: 14px;
-  align-items: center;
-  padding: 14px;
-  border: 1px solid var(--color-border-light, #e2e8f0);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: var(--shadow-md, 0 20px 55px rgba(15, 23, 42, 0.16));
-  backdrop-filter: blur(16px);
-  pointer-events: auto;
-}
-
-.footerInfo {
-  min-width: 0;
-  padding: 0 10px;
-}
-
-.stickyLabel {
-  display: block;
-  color: var(--color-text-muted, #94a3b8);
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-
-.stickyMain {
-  display: block;
-  margin-top: 3px;
-  color: var(--color-text-primary, #1e293b);
-  font-size: 0.95rem;
-}
-
-.stickySub {
-  display: block;
-  margin-top: 2px;
-  color: var(--color-text-secondary, #64748b);
-  font-size: 0.75rem;
 }
 
 @media screen and (max-width: 1180px) {
@@ -614,22 +594,9 @@
   .infoGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
-  .stickyInner {
-    width: min(100%, 920px);
-    grid-template-columns: 1fr 1fr minmax(220px, 280px);
-  }
-
-  .footerInfo:nth-child(3) {
-    display: none;
-  }
 }
 
 @media screen and (max-width: 768px) {
-  .container {
-    padding-bottom: calc(var(--bottom-nav-total-height, 0px) + 0.1rem);
-  }
-
   .page {
     width: min(100% - 24px, 100%);
     padding-top: 16px;
@@ -663,20 +630,6 @@
 
   .dayCard {
     grid-template-columns: 1fr;
-  }
-
-  .stickyFooter {
-    padding: 10px 12px 12px;
-  }
-
-  .stickyInner {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    border-radius: 18px;
-  }
-
-  .footerInfo {
-    display: none;
   }
 }
 

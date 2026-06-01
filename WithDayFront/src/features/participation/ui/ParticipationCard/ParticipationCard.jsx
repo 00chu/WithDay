@@ -105,7 +105,7 @@ function ParticipationCard({ item, onAction, isActionLoading = false }) {
          * 클릭 이후의 도메인 흐름도 상태에 따라 달라진다.
          *
          * 예:
-         * - PENDING -> 상세 페이지 이동 -> ApplyScheduleButton에서 신청 취소
+         * - PENDING -> 상세 페이지 이동 -> 참여 CTA에서 신청 취소
          * - REJECTED/KICKED -> 삭제 확인창 -> deleteParticipation mutation
          * - APPROVED/host/CANCELED -> 상세 페이지 이동
          *
