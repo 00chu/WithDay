@@ -62,12 +62,18 @@ public interface ScheduleDao {
 
     /*
      * 홈/탐색 탭의 일정 리스트 조회다.
-     * category, keyword, region은 모두 선택 필터라 null/빈 문자열일 때는 mapper에서 조건을 붙이지 않는다.
+     * 탐색 필터는 모두 선택 조건이라 null/빈 문자열일 때는 mapper에서 조건을 붙이지 않는다.
+     * sort는 Service에서 허용 값으로 normalize된 값만 들어온다.
      */
     List<Schedule> getAllSchedules(
             @Param("category") String category,
             @Param("keyword") String keyword,
             @Param("region") String region,
+            @Param("district") String district,
+            @Param("genderLimit") String genderLimit,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate,
+            @Param("sort") String sort,
             @Param("email") String email);
             
     void insertSchedule(Schedule schedule);

@@ -1,5 +1,5 @@
 import styles from "./App.module.css";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Home from "./page/home/Home";
@@ -75,27 +75,16 @@ function App() {
     init();
   }, []);
 
-  const [selectedRegion, setSelectedRegion] = useState("");
-
   return (
     <div className={styles.container}>
-      <Header
-        selectedRegion={selectedRegion}
-        onRegionChange={setSelectedRegion}
-      />
+      <Header />
 
       <main className={styles.mainContent}>
         <LayoutContainer>
           <Routes>
-            <Route
-              path="/"
-              element={<Home selectedRegion={selectedRegion} />}
-            />
+            <Route path="/" element={<Home />} />
 
-            <Route
-              path="/explore"
-              element={<ExplorePage selectedRegion={selectedRegion} />}
-            />
+            <Route path="/explore" element={<ExplorePage />} />
 
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
