@@ -39,11 +39,11 @@ export const PARTICIPATION_STATUS = {
  * 클릭 시 useScheduleApplicantsQuery의 status 파라미터로 그대로 전달되는 값이기도 하다.
  */
 export const HOST_APPLICANT_STATUS_FILTERS = [
-  { value: "PENDING", label: "대기" },
-  { value: "APPROVED", label: "승인" },
-  { value: "REJECTED", label: "거절" },
+  { value: "APPROVED", label: "승인 참여자" },
+  { value: "PENDING", label: "신청 사용자" },
   { value: "CANCELED", label: "취소" },
   { value: "KICKED", label: "강퇴" },
+  { value: "REJECTED", label: "거절" },
 ];
 
 /*
@@ -53,7 +53,7 @@ export const HOST_APPLICANT_STATUS_FILTERS = [
 export const PARTICIPATION_TABS = [
   { value: "participating", label: "참여중" },
   { value: "pending", label: "신청중" },
-  { value: "hosting", label: "내가 만든 일정" },
+  { value: "hosting", label: "호스팅" },
 ];
 
 /*
@@ -92,9 +92,9 @@ export const PARTICIPATION_STATUS_META = {
   PENDING: {
     badgeText: "신청중",
     badgeClass: "badgePending",
-    buttonText: "신청 취소",
+    buttonText: "상세보기",
     buttonVariant: "accent",
-    actionType: "cancel",
+    actionType: "view",
     cardDisabled: false,
     isDisabled: false,
   },

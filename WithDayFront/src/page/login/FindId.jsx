@@ -2,8 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useMutation } from "@tanstack/react-query";
+import { Snackbar, Alert } from "@mui/material";
 
 import { findIdSchema } from "../../features/auth/validation/authSchema";
+import { findIdUser } from "../../features/auth/api";
 
 import FormField from "../../shared/ui/Form/FormField";
 import { Input } from "../../shared/ui/Form/Form";
@@ -15,19 +18,30 @@ const FindId = () => {
 
   const [foundEmail, setFoundEmail] = useState(null);
 
-  // React Hook Form(useForm으로 사용) 초기화 및 설정.
-  // findIdSchema 규칙대로 닉네임, 전화번호를 검사함.
-  const {
-    register, // 아래 UI에서 nickname, phone 값을 가져올 명찰
-    handleSubmit, // findIdSchema 검사를 통과하면 onSubmit 함수를 실행시켜 줌
-    setValue, // 전화번호 자동 하이픈 적용 시 input 값을 코드로 직접 넣기 위해 사용
-    formState: { errors }, // findIdSchema 규칙 실패 시 에러 문구를 가져옴
-  } = useForm({
-    resolver: yupResolver(findIdSchema),
-    mode: "onSubmit", // 아이디 찾기 버튼을 눌렀을 때만 검사
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "success",
   });
 
-  // 전화번호 입력값에서 숫자만 남기고 010-1234-5678 형태로 바꿔주는 함수
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(findIdSchema),
+    mode: "onSubmit",
+  });
+
+  const handleCloseToast = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setToast((prev) => ({ ...prev, open: false }));
+  };
+
   const formatPhoneNumber = (value) => {
     const onlyNumbers = value.replace(/\D/g, "").slice(0, 11);
 
@@ -42,16 +56,35 @@ const FindId = () => {
     return `${onlyNumbers.slice(0, 3)}-${onlyNumbers.slice(3, 7)}-${onlyNumbers.slice(7)}`;
   };
 
-  // 아이디 찾기 버튼을 눌렀을 때 실행되는 함수
-  // handleSubmit이 findIdSchema 검사를 먼저 통과시킨 뒤 이 함수를 실행함.
+  const mutation = useMutation({
+    mutationFn: findIdUser,
+
+    onSuccess: (data) => {
+      setFoundEmail(data.email);
+
+      setToast({
+        open: true,
+        message: "가입된 아이디를 찾았습니다.",
+        severity: "success",
+      });
+    },
+
+    onError: (error) => {
+      const errMsg =
+        error.response?.data?.message ||
+        error.response?.data ||
+        "일치하는 회원 정보를 찾을 수 없습니다.";
+
+      setToast({
+        open: true,
+        message: errMsg,
+        severity: "error",
+      });
+    },
+  });
+
   const onSubmit = (data) => {
-    // data: react-hook-form이 UI에서 얻은 값 { nickname, phone }을 가진 객체
-
-    console.log("아이디 찾기 입력값:", data);
-
-    // TODO: 백엔드 연결 시 이 부분을 아이디 찾기 API 호출로 교체
-    // 예: findIdUser(data).then((res) => setFoundEmail(res.maskedEmail));
-    setFoundEmail("wi******@gmail.com");
+    mutation.mutate(data);
   };
 
   return (
@@ -62,7 +95,7 @@ const FindId = () => {
           className={styles.backButton}
           onClick={() => navigate("/login")}
         >
-          ‹ 로그인으로 돌아가기
+          {"<"} 로그인으로 돌아가기
         </button>
 
         <div className={styles.findHeader}>
@@ -99,8 +132,14 @@ const FindId = () => {
               />
             </FormField>
 
-            <Button type="submit" variant="primary" size="lg" fullWidth>
-              아이디 찾기
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? "찾는 중..." : "아이디 찾기"}
             </Button>
           </form>
         ) : (
@@ -138,6 +177,22 @@ const FindId = () => {
           </div>
         )}
       </div>
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={3000}
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        sx={{ bottom: "80px !important" }}
+      >
+        <Alert
+          onClose={handleCloseToast}
+          severity={toast.severity}
+          sx={{ width: "100%" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

@@ -59,6 +59,26 @@ export const fetchParticipationList = async ({ email, statuses }) => {
 };
 
 /*
+ * "참여중" 탭 전용 조회 helper다.
+ * 탭별 query가 서로 다른 cache entry를 갖도록, status 조합도 함수 레벨에서 고정한다.
+ */
+export const fetchParticipatingSchedules = ({ email }) =>
+  fetchParticipationList({
+    email,
+    statuses: PARTICIPATION_TAB_STATUS_PARAMS.participating,
+  });
+
+/*
+ * "신청중" 탭 전용 조회 helper다.
+ * MySchedulePage는 activeTab에 따라 이 함수를 선택해 호출한다.
+ */
+export const fetchPendingSchedules = ({ email }) =>
+  fetchParticipationList({
+    email,
+    statuses: PARTICIPATION_TAB_STATUS_PARAMS.pending,
+  });
+
+/*
  * "내가 만든 일정" 탭은 participation 테이블이 아니라 schedule의 host 기준으로 조회한다.
  * 그래서 같은 내 일정 페이지 안에서도 참여 목록 API와는 다른 endpoint를 호출해야 한다.
  *
@@ -101,14 +121,8 @@ export const fetchHostingSchedules = async ({ email }) => {
  */
 export const fetchMySchedules = async ({ email }) => {
   const [participating, pending, hosting] = await Promise.all([
-    fetchParticipationList({
-      email,
-      statuses: PARTICIPATION_TAB_STATUS_PARAMS.participating,
-    }),
-    fetchParticipationList({
-      email,
-      statuses: PARTICIPATION_TAB_STATUS_PARAMS.pending,
-    }),
+    fetchParticipatingSchedules({ email }),
+    fetchPendingSchedules({ email }),
     fetchHostingSchedules({ email }),
   ]);
 

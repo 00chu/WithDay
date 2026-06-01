@@ -1,20 +1,20 @@
 .container {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 0.35rem;
   width: 100%;
 }
 
 .button {
-  width: min(100%, 220px);
+  width: 100%;
 }
 
 .messages {
   width: 100%;
-  max-width: 16rem;
+  max-width: 100%;
   color: var(--color-text-secondary, #64748b);
-  text-align: right;
+  text-align: left;
 }
 
 .message {

@@ -126,20 +126,20 @@ export default function ApplyScheduleButton({
 
   /*
    * 버튼 라벨은 "현재 상태"가 아니라 "지금 사용자가 할 수 있는 다음 행동"을 기준으로 정한다.
-   * 그래서 APPROVED도 읽기 전용 문구가 아니라 "참여 취소"를 보여준다.
+   * PENDING은 신청을 완료한 상태이지만, 상세 안에서는 후속 액션이 "신청 취소"이므로 그 행동을 그대로 노출한다.
    * completed는 예외적으로 어떤 행동도 허용되지 않으므로, 액션 문구 대신 상태 문구 자체를 노출한다.
    */
   const buttonLabel = useMemo(() => {
     if (isHost) return "내가 만든 일정";
     if (isCompleted) return "일정 진행 중";
+    if (isActionPending) {
+      return canCancel ? "취소 처리 중..." : "신청 중...";
+    }
     if (effectiveParticipationStatus === "PENDING") return "신청 취소";
     if (effectiveParticipationStatus === "APPROVED") return "참여 취소";
     if (effectiveParticipationStatus === "REJECTED") return "거절됨";
     if (effectiveParticipationStatus === "KICKED") return "참여 불가";
     if (isClosed) return "모집 종료";
-    if (isActionPending) {
-      return canCancel ? "취소 처리 중..." : "신청 중...";
-    }
     return "참여 신청하기";
   }, [
     canCancel,
@@ -214,7 +214,7 @@ export default function ApplyScheduleButton({
    * 버튼 클릭 후 실제 흐름이다.
    * 1. 비로그인 사용자는 로그인으로 보낸다.
    * 2. completed면 즉시 안내 메시지를 보여주고 종료한다.
-   * 3. 현재 상태가 PENDING/APPROVED면 cancel API를 호출한다.
+   * 3. 현재 상태가 PENDING/APPROVED면 상세 안에서 cancel API를 호출한다.
    * 4. 그 외에는 apply API를 호출한다.
    * 5. 성공 시 로컬 상태를 먼저 바꿔 즉시 UI 반영
    * 6. mutation의 invalidate가 끝나면 서버 응답과 다시 동기화

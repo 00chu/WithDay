@@ -93,6 +93,10 @@
             u.id AS userId,
             u.email AS email,
             u.nickname AS nickname,
+            u.profile_image AS profileImage,
+            u.phone AS phone,
+            u.gender AS gender,
+            u.birthday AS birthday,
             <include refid="normalizedStatus" /> AS status,
             p.created_at AS createdAt
         FROM participation p

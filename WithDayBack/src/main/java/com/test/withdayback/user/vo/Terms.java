@@ -10,6 +10,7 @@ import org.apache.ibatis.type.Alias;
 @AllArgsConstructor
 @Alias("Terms")
 public class Terms {
+    private Long id;
     private String type;         // TOS, PRIVACY, MARKETING, NOTIFICATION
     private String version;      // 1.0 등
     private String content;      // 약관 내용

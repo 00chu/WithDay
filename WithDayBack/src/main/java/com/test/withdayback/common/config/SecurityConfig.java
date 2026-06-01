@@ -39,12 +39,18 @@ public class SecurityConfig {
                                 "/users/google-login",
                                 "/users/social-signup",
                                 "/users/email-verification",
+                                "/users/find-id",
+                                "/users/find-password/email-verification",
+                                "/users/find-password/verify-code",
+                                "/users/reset-password",
                                 "/schedules/**",
                                 "/bookmarks/**",
                                 "/participations/**",
                                 "/region/**",
                                 "/notifications/**",
                                 "/admins/**"
+                                "/notifications/**"
+
                         ).permitAll()
                         .anyRequest().authenticated()
                 );
