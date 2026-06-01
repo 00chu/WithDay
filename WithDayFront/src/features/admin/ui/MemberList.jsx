@@ -2,7 +2,7 @@ import Pagination from "../../../shared/ui/Pagination/Pagination";
 import styles from "./MemberList.module.css";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
-const MemberList = ({ memberList }) => {
+const MemberList = ({ memberList, page, setPage, totalPage }) => {
   return (
     <div className={styles.member_list}>
       <label className={styles.member_count}>총 {memberList.length}명</label>
@@ -22,7 +22,12 @@ const MemberList = ({ memberList }) => {
           );
         })}
         <div>
-          <Pagination></Pagination>
+          <Pagination
+            page={page}
+            setPage={setPage}
+            totalPage={totalPage ?? 0}
+            naviSize={5}
+          />
         </div>
       </ul>
     </div>

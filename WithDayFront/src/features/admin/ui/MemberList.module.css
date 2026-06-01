@@ -143,4 +143,8 @@
   .mobileInfo span {
     font-size: 14px;
   }
+
+  .mobileCard {
+    margin-top: 20px;
+  }
 }

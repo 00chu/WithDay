@@ -18,6 +18,7 @@ const AdminPage = () => {
     return null;
   }
 
+  // 관리자만 페이지에 진입할 수 있도록 설정
   /*
   if (!user.admin) {
     // replace - react-router-dom의 Navigate가 브라우저 히스토리를 교체할지 여부를 결정하는 속성

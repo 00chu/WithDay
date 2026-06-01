@@ -36,5 +36,37 @@
                 ORDER BY id DESC
             </otherwise>
         </choose>
+
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectMemberCount"
+            parameterType="com.test.withdayback.admin.dto.AdminMemberRequest"
+            resultType="int">
+
+        SELECT count(*)
+        FROM user
+
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (
+                nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR email LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <if test="gender != null and gender != ''">
+                AND gender = #{gender}
+            </if>
+
+            <if test="provider != null and provider != ''">
+                AND provider = #{provider}
+            </if>
+
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+
     </select>
 </mapper>

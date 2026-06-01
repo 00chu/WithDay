@@ -16,11 +16,16 @@ const MemberManagementPage = () => {
     status: "",
   });
 
-  const { data: memberList = [] } = useQuery({
-    // 값에 따라 서로 다른 요청으로 인식할 수 있게 복합키로 설정
-    queryKey: ["memberList", searchParams],
-    queryFn: () => selectAllMember(searchParams),
+  const [page, setPage] = useState(0);
+  const size = 10;
+
+  const { data } = useQuery({
+    queryKey: ["memberList", searchParams, page],
+    queryFn: () => selectAllMember({ ...searchParams, page, size }),
   });
+
+  const memberList = data?.memberList ?? [];
+  const totalPage = data?.totalPage ?? 0;
 
   useEffect(() => {
     console.log(memberList);
@@ -68,9 +73,11 @@ const MemberManagementPage = () => {
 
     reset(initialValue);
     setSearchParams(initialValue);
+    setPage(0); // 초기화 시 첫 페이지로
   };
 
   const onSubmit = (formData) => {
+    setPage(0); // 검색 완료 시 첫 페이지로
     setSearchParams(formData);
   };
 
@@ -138,7 +145,12 @@ const MemberManagementPage = () => {
         </Button>
       </form>
 
-      <MemberList memberList={memberList} />
+      <MemberList
+        memberList={memberList}
+        page={page}
+        setPage={setPage}
+        totalPage={totalPage}
+      />
     </main>
   );
 };

@@ -17,4 +17,6 @@ public class ScheduleCloseScheduler {
     public void closeExpiredSchedules(){
         scheduleDao.closeExpiredSchedules();
     }
+
+
 }

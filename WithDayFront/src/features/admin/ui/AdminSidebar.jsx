@@ -41,28 +41,6 @@ const AdminSidebar = ({ closeDrawer = () => {} }) => {
         </NavLink>
 
         <NavLink
-          to="/admin/report"
-          onClick={closeDrawer}
-          className={({ isActive }) =>
-            isActive ? `${styles.menuItem} ${styles.active}` : styles.menuItem
-          }
-        >
-          <AssignmentOutlinedIcon />
-          <span>문의 관리</span>
-        </NavLink>
-
-        <NavLink
-          to="/admin/blacklist"
-          onClick={closeDrawer}
-          className={({ isActive }) =>
-            isActive ? `${styles.menuItem} ${styles.active}` : styles.menuItem
-          }
-        >
-          <ReportProblemOutlinedIcon />
-          <span>신고 회원 관리</span>
-        </NavLink>
-
-        <NavLink
           to="/admin/setting"
           onClick={closeDrawer}
           className={({ isActive }) =>
