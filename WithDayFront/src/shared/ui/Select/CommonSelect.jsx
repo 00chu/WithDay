@@ -12,6 +12,7 @@ export default function CommonSelect({
   options = [],
   fullWidth = true,
   size = "medium",
+  borderColor = "var(--color-primary)",
 }) {
   const selectRef = useRef(null);
 
@@ -20,40 +21,33 @@ export default function CommonSelect({
       fullWidth={fullWidth}
       size={size}
       sx={{
-        // select 전체 박스 (div) 속성
         "& .MuiOutlinedInput-root": {
           borderRadius: "8px",
 
-          // mui outlined 스타일 테두리
           "& fieldset": {
-            borderColor: "var(--color-primary)",
+            borderColor,
           },
 
-          // mui outlined 스타일 테두리 - hover
           "&:hover fieldset": {
-            borderColor: "var(--color-primary)",
+            borderColor,
           },
 
-          // mui outlined 스타일 테두리 - focus
           "&.Mui-focused fieldset": {
-            borderColor: "var(--color-primary)",
+            borderColor,
             borderWidth: "2px",
           },
         },
 
-        // InputLabel 기본 글자색
         "& .MuiInputLabel-root": {
-          color: "var(--color-primary)",
+          color: borderColor,
         },
 
-        // InputLabel 글자색 - focus
         "& .MuiInputLabel-root.Mui-focused": {
-          color: "var(--color-primary)",
+          color: borderColor,
         },
 
-        // 드롭다운 화솔표 색
         "& .MuiSelect-icon": {
-          color: "var(--color-primary)",
+          color: borderColor,
         },
       }}
     >
