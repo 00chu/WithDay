@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import CakeOutlinedIcon from "@mui/icons-material/CakeOutlined";
+import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import PeopleIcon from "@mui/icons-material/People";
 import PaymentsIcon from "@mui/icons-material/Payments";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -12,6 +14,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import WcOutlinedIcon from "@mui/icons-material/WcOutlined";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
@@ -62,12 +66,78 @@ const COST_TYPE_LABELS = {
 
 const DEFAULT_IMAGE = "https://placehold.co/800x400?text=No+Image";
 const VIEWED_SCHEDULE_STORAGE_KEY_PREFIX = "viewed_schedule_";
+const MAX_VISIBLE_THUMBNAILS = 6;
 const HOST_STATUS_LABELS = {
   PENDING: "승인 대기",
   APPROVED: "승인 완료",
   REJECTED: "거절",
   CANCELED: "참여 취소",
   KICKED: "강퇴",
+};
+
+const resolveInitial = (value) => {
+  const normalizedValue = value?.trim?.() ?? "";
+  return normalizedValue ? normalizedValue.charAt(0).toUpperCase() : "?";
+};
+
+const formatGenderLimit = (genderLimit) => {
+  if (genderLimit === "all") {
+    return "성별 무관";
+  }
+
+  if (genderLimit === "male") {
+    return "남성";
+  }
+
+  if (genderLimit === "female") {
+    return "여성";
+  }
+
+  return genderLimit || "미정";
+};
+
+const formatAgeRange = (ageMin, ageMax) => {
+  if (ageMin && ageMax) {
+    return `${ageMin}세 ~ ${ageMax}세`;
+  }
+
+  if (ageMin) {
+    return `${ageMin}세 이상`;
+  }
+
+  if (ageMax) {
+    return `${ageMax}세 이하`;
+  }
+
+  return "연령 무관";
+};
+
+const formatDDay = (dateValue) => {
+  if (!dateValue) {
+    return "마감 미정";
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const targetDate = new Date(dateValue);
+  targetDate.setHours(0, 0, 0, 0);
+
+  if (Number.isNaN(targetDate.getTime())) {
+    return "마감 미정";
+  }
+
+  const diffDays = Math.ceil((targetDate.getTime() - today.getTime()) / 86400000);
+
+  if (diffDays < 0) {
+    return "마감";
+  }
+
+  if (diffDays === 0) {
+    return "D-Day";
+  }
+
+  return `D-${diffDays}`;
 };
 
 const formatLocation = (schedule) => {
@@ -243,10 +313,11 @@ export default function ScheduleDetail() {
   const [feedback, setFeedback] = useState(null);
   const [currentImg, setCurrentImg] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const chatLinkSectionRef = useRef(null);
   const [viewCountReadyScheduleId, setViewCountReadyScheduleId] =
     useState(null);
   const [open, setOpen] = useState(false);
-  const [applicantStatus, setApplicantStatus] = useState("PENDING");
+  const [applicantStatus, setApplicantStatus] = useState("APPROVED");
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
 
   /*
@@ -334,7 +405,6 @@ export default function ScheduleDetail() {
     staleTime: 0,
   });
 
-  const postHostEmail = data?.email;
   const viewerIsHost = Boolean(data?.viewerIsHost);
 
   /*
@@ -353,6 +423,16 @@ export default function ScheduleDetail() {
     enabled: viewerIsHost,
   });
 
+  const {
+    data: approvedApplicants = [],
+    isPending: isApprovedApplicantsLoading,
+  } = useScheduleApplicantsQuery({
+    scheduleId: parsedScheduleId,
+    email: authEmail,
+    status: "APPROVED",
+    enabled: viewerIsHost,
+  });
+
   const { updateParticipationStatus, isPending: isStatusUpdating } =
     useUpdateParticipationStatusMutation();
 
@@ -367,6 +447,18 @@ export default function ScheduleDetail() {
       message,
     });
   }, []);
+
+  useEffect(() => {
+    if (location.state?.focusSection !== "chat-link") {
+      return;
+    }
+
+    chatLinkSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
 
   /*
    * 일정 실행/실행 취소, 참여 상태 변경, 삭제 같은 여러 API가 서로 다른 에러 shape를 줄 수 있어서
@@ -896,427 +988,471 @@ export default function ScheduleDetail() {
     return !isScheduleCompleted && end >= today;
   })();
 
-  console.log("schedule detail render", {
-    schedule,
-    details,
-    imageUrls,
-  });
+  const hostProfile = data.host ?? {};
+  const hostName = hostProfile.nickname || "호스트";
+  const deadlineLabel = formatDDay(schedule.recruitEndDate);
+  const visibleThumbnails = imageUrls.slice(0, MAX_VISIBLE_THUMBNAILS);
+  const hiddenImageCount = Math.max(imageUrls.length - MAX_VISIBLE_THUMBNAILS, 0);
+  const participantCount = Number(schedule.currentParticipants ?? 0);
+  const maxParticipants = Number(schedule.maxParticipants ?? 0);
+  const minParticipants = Number(schedule.minParticipants ?? 0);
+  const costLabel = `${Number(schedule.totalPrice ?? 0).toLocaleString()}원`;
+  const costTypeLabel =
+    COST_TYPE_LABELS[schedule.costType] || schedule.costType || "정산 방식 미정";
+  const genderLimitLabel = formatGenderLimit(schedule.genderLimit);
+  const ageRangeLabel = formatAgeRange(schedule.ageMin, schedule.ageMax);
 
   return (
     <div className={styles.container}>
-      <section className={styles.imageSection}>
-        <div className={styles.slider}>
-          <img
-            src={imageUrls[safeCurrentImg]}
-            alt="일정 이미지"
-            className={styles.mainImage}
-            onClick={() => setIsViewerOpen(true)}
-            style={{ cursor: "pointer" }}
-          />
+      <main className={styles.page}>
+        <div className={styles.layout}>
+          <div className={styles.mainColumn}>
+            <section className={`${styles.panel} ${styles.heroCard}`}>
+              <div className={styles.heroImageWrap}>
+                <img
+                  src={imageUrls[safeCurrentImg]}
+                  alt="일정 이미지"
+                  className={styles.heroImage}
+                  onClick={() => setIsViewerOpen(true)}
+                />
 
-          {imageUrls.length > 1 && (
-            <>
-              <button
-                type="button"
-                className={styles.prevBtn}
-                onClick={prevSlide}
-              >
-                <ChevronLeftIcon />
-              </button>
+                <div className={styles.heroBadges}>
+                  <span className={styles.categoryBadge}>{categoryLabel}</span>
+                  <span className={schedulePhase.className}>{schedulePhase.label}</span>
+                  <span className={styles.ddayBadge}>{deadlineLabel}</span>
+                </div>
 
-              <button
-                type="button"
-                className={styles.nextBtn}
-                onClick={nextSlide}
-              >
-                <ChevronRightIcon />
-              </button>
+                <button
+                  type="button"
+                  className={`${styles.imageNav} ${styles.prevBtn}`}
+                  onClick={prevSlide}
+                  aria-label="이전 이미지"
+                  disabled={imageUrls.length <= 1}
+                >
+                  <ChevronLeftIcon />
+                </button>
 
-              <div className={styles.indicator}>
-                {safeCurrentImg + 1} / {imageUrls.length}
+                <button
+                  type="button"
+                  className={`${styles.imageNav} ${styles.nextBtn}`}
+                  onClick={nextSlide}
+                  aria-label="다음 이미지"
+                  disabled={imageUrls.length <= 1}
+                >
+                  <ChevronRightIcon />
+                </button>
+
+                <div className={styles.imageCount}>
+                  {safeCurrentImg + 1} / {imageUrls.length}
+                </div>
               </div>
-            </>
-          )}
-        </div>
-      </section>
 
-      <div className={styles.contentWrapper}>
-        <section className={styles.headerSection}>
-          <div className={styles.badgeWrapper}>
-            <span className={styles.categoryBadge}>{categoryLabel}</span>
-
-            <span
-              className={schedulePhase.className}
-            >
-              {schedulePhase.label}
-            </span>
-          </div>
-
-          <div className={styles.titleWrap}>
-            <h1 className={styles.title}>{schedule.title ?? "제목 없음"}</h1>
-
-            <div className={styles.buttonWrap}>
-              {/*
-               * 북마크 토글은 참여 CTA와 성격이 다르다.
-               * 사용자는 상세 상단에서 "이 일정이 저장된 상태인지"를 먼저 인지하고 바로 토글할 수 있어야 하므로
-               * sticky footer가 아니라 제목 우측 액션 묶음에 둔다.
-               */}
-              <Button
-                variant={isBookmarked ? "accent" : "outline"}
-                onClick={handleToggleBookmark}
-                disabled={isBookmarkPending}
-                className={styles.bookmarkButton}
-              >
-                <BookmarkIcon fontSize="small" />
-                {isBookmarked ? "위시 삭제" : "위시 추가"}
-              </Button>
-
-              {postHostEmail === authEmail ? (
-                <>
-                {/*
-                 * 실행 관리 버튼은 호스트에게만 보인다.
-                 * 일반 참여자에게 이 버튼이 보이면 권한이 없는 액션을 기대하게 되므로
-                 * 화면 단계에서 먼저 숨기고, 서버는 complete/rollback API에서 다시 권한을 검증한다.
-                 *
-                 * 버튼 동작:
-                 * - status !== completed: 일정 실행
-                 * - status === completed: 실행 취소
-                 */}
-                <Button
-                  variant={isScheduleCompleted ? "outline" : "accent"}
-                  disabled={
-                    isScheduleActionPending ||
-                    (!isScheduleCompleted && !canExecuteSchedule)
-                  }
-                  onClick={
-                    isScheduleCompleted
-                      ? handleRollbackScheduleExecution
-                      : handleExecuteSchedule
-                  }
-                >
-                  {isScheduleCompleted ? "실행 취소" : "일정 실행"}
-                </Button>
-
-                {isEditable ? (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      navigate(`/update/${scheduleId}`);
-                    }}
+              <div className={styles.thumbStrip}>
+                {visibleThumbnails.map((imageUrl, index) => (
+                  <button
+                    key={`${imageUrl}-${index}`}
+                    type="button"
+                    className={`${styles.thumb} ${
+                      safeCurrentImg === index ? styles.thumbActive : ""
+                    }`}
+                    onClick={() => setCurrentImg(index)}
+                    aria-label={`${index + 1}번째 이미지 보기`}
                   >
-                    수정
-                    <EditIcon fontSize="small" />
-                  </Button>
-                ) : null}
-
-                <Button
-                  variant="outline"
-                  onClick={handleOpen}
-                  disabled={isScheduleCompleted}
-                >
-                  삭제
-                  <DeleteIcon fontSize="small" />
-                </Button>
-                </>
-              ) : null}
-            </div>
-          </div>
-
-          <Dialog
-            open={open}
-            onClose={handleClose}
-            slotProps={{
-              paper: {
-                sx: {
-                  borderRadius: 3,
-                  p: 2,
-                  minWidth: 320,
-                },
-              },
-            }}
-          >
-            <DialogTitle sx={{ pb: 3 }}>일정 삭제</DialogTitle>
-
-            <DialogContent sx={{ px: 10, py: 2 }}>
-              <DialogContentText sx={{ fontSize: "15px", color: "#555" }}>
-                삭제 후에는 복구할 수 없습니다.
-              </DialogContentText>
-            </DialogContent>
-
-            <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
-              <Button onClick={handleDelete}>삭제하기</Button>
-
-              <Button onClick={handleClose} variant="outline">
-                취소
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          <Dialog
-            open={isLoginPromptOpen}
-            onClose={handleCloseLoginPrompt}
-            slotProps={{
-              paper: {
-                sx: {
-                  borderRadius: 3,
-                  p: 2,
-                  minWidth: 320,
-                },
-              },
-            }}
-          >
-            <DialogTitle sx={{ pb: 2 }}>로그인이 필요합니다</DialogTitle>
-
-            <DialogContent sx={{ px: 4, py: 2 }}>
-              <DialogContentText sx={{ fontSize: "15px", color: "#555", lineHeight: 1.7 }}>
-                위시리스트 기능은 로그인 후 이용할 수 있습니다. 로그인 페이지로 이동하시겠습니까?
-              </DialogContentText>
-            </DialogContent>
-
-            <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
-              <Button onClick={handleMoveToLogin} variant="accent">
-                로그인하기
-              </Button>
-
-              <Button onClick={handleCloseLoginPrompt} variant="outline">
-                취소
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          {viewerIsHost && !isScheduleCompleted && !canExecuteSchedule ? (
-            /*
-             * 최소 인원 미달은 단순 disabled만으로는 이유가 잘 전달되지 않으므로
-             * 바로 아래에 정책 문구를 같이 노출한다.
-             */
-            <p className={styles.executionNotice}>
-              최소 {schedule.minParticipants ?? 0}명이 모여야 일정 실행이 가능합니다.
-            </p>
-          ) : null}
-
-          {viewerIsHost && isScheduleCompleted ? (
-            /*
-             * completed 상태의 핵심 제약을 호스트에게 명시적으로 보여준다.
-             * 이 문구가 있어야 "왜 수정/삭제/승인 버튼이 안 되지?"를 빠르게 이해할 수 있다.
-             */
-            <p className={styles.executionNotice}>
-              진행 중인 일정입니다. 참여 상태 변경, 일정 수정, 삭제는 잠겨 있습니다.
-            </p>
-          ) : null}
-
-          <div className={styles.metaInfo}>
-            <span>
-              <VisibilityIcon fontSize="small" /> {schedule.viewCount ?? 0}
-            </span>
-
-            <span>
-              <PlaceIcon fontSize="small" /> {locationText}
-            </span>
-          </div>
-        </section>
-
-        <hr className={styles.divider} />
-
-        <section className={styles.infoGrid}>
-          <div className={styles.infoItem}>
-            <CalendarTodayIcon className={styles.icon} />
-
-            <div>
-              <p className={styles.label}>일정 기간</p>
-
-              <p className={styles.value}>
-                {schedule.startDate || "미정"} ~ {schedule.endDate || "미정"}
-                {" | "}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={addToGoogleCalendar}
-                >
-                  구글 캘린더에 추가
-                </Button>
-              </p>
-            </div>
-          </div>
-
-          <div className={styles.infoItem}>
-            <PeopleIcon className={styles.icon} />
-
-            <div>
-              <p className={styles.label}>모집 인원 / 조건</p>
-
-              <p className={styles.value}>
-                {schedule.currentParticipants ?? 0} /{" "}
-                {schedule.maxParticipants ?? 0}명 &#40;최소{" "}
-                {schedule.minParticipants ?? 0}명&#41;
-              </p>
-
-              <p className={styles.subValue}>
-                {schedule.genderLimit === "all"
-                  ? "성별 무관"
-                  : schedule.genderLimit || "성별 미정"}{" "}
-                | {schedule.ageMin ?? "-"}세 ~ {schedule.ageMax ?? "-"}세
-              </p>
-            </div>
-          </div>
-
-          <div className={styles.infoItem}>
-            <PaymentsIcon className={styles.icon} />
-
-            <div>
-              <p className={styles.label}>예상 비용</p>
-
-              <p className={styles.value}>
-                총 {(schedule.totalPrice ?? 0).toLocaleString()}원
-              </p>
-
-              <p className={styles.subValue}>
-                정산 방식:{" "}
-                {COST_TYPE_LABELS[schedule.costType] ||
-                  schedule.costType ||
-                  "-"}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <hr className={styles.divider} />
-
-        <section className={styles.chatLinkSection}>
-          <h2 className={styles.subTitle}>오픈채팅방</h2>
-          {viewerCanAccessChatLink && schedule.chatLink ? (
-            <a
-              href={schedule.chatLink}
-              target="_blank"
-              rel="noreferrer"
-              className={styles.chatLink}
-            >
-              오픈채팅방 바로가기
-            </a>
-          ) : (
-            <p className={styles.chatLinkNotice}>
-              {viewerIsHost || viewerParticipationStatus === "APPROVED"
-                ? "등록된 오픈채팅방 링크가 없습니다."
-                : "오픈채팅방 링크는 참여 승인 후 확인할 수 있습니다."}
-            </p>
-          )}
-        </section>
-
-        <hr className={styles.divider} />
-
-        <section className={styles.descriptionSection}>
-          <h2 className={styles.subTitle}>상세 설명</h2>
-
-          <p
-            className={styles.descriptionText}
-            style={{ whiteSpace: "pre-wrap" }}
-          >
-            {schedule.description || "상세 설명이 없습니다."}
-          </p>
-        </section>
-
-        {details.length > 0 && (
-          <>
-            <hr className={styles.divider} />
-
-            <section className={styles.descriptionSection}>
-              <h2 className={styles.subTitle}>세부 일정 &#40;Day-by-Day&#41;</h2>
-
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1rem",
-                  marginTop: "1rem",
-                }}
-              >
-                {details.map((detail) => (
-                  <div
-                    key={detail.id}
-                    style={{
-                      padding: "1rem",
-                      border: "1px solid #e0e0e0",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <h3
-                      style={{
-                        margin: "0 0 0.5rem 0",
-                        color: "#1976d2",
-                        fontSize: "1.1rem",
-                      }}
-                    >
-                      Day {detail.dayNumber}
-                    </h3>
-
-                    <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
-                      {detail.title || "제목 없음"}
-                    </h4>
-
-                    <p
-                      style={{
-                        margin: 0,
-                        color: "#555",
-                        fontSize: "0.95rem",
-                        whiteSpace: "pre-wrap",
-                      }}
-                    >
-                      {detail.description || "설명이 없습니다."}
-                    </p>
-                  </div>
+                    <img src={imageUrl} alt="" />
+                    {index === visibleThumbnails.length - 1 && hiddenImageCount > 0 ? (
+                      <span className={styles.thumbMore}>
+                        + {hiddenImageCount} 더보기
+                      </span>
+                    ) : null}
+                  </button>
                 ))}
               </div>
             </section>
-          </>
-        )}
-      </div>
 
-      {isLoggedIn && authEmail && viewerIsHost && !isApplicantsForbidden && (
-        <>
-          {/*
-           * 신청자 관리 영역은 호스트에게만 노출한다.
-           * 일반 사용자는 viewerIsHost가 false라서 목록 API와 UI가 모두 열리지 않는다.
-           */}
-          <HostParticipationList
-            items={applicants}
-            loading={isApplicantsLoading}
-            errorMessage={applicantsErrorMessage}
-            emptyMessage={`${HOST_STATUS_LABELS[applicantStatus] ?? "선택한 상태"} 신청자가 없습니다.`}
-            hostEmail={authEmail}
-            onItemAction={handleApplicantAction}
-            activeStatus={applicantStatus}
-            onStatusChange={setApplicantStatus}
-            isActionLoading={isStatusUpdating || isScheduleCompleted}
-            isReadOnly={isScheduleCompleted}
-          />
-        </>
-      )}
+            <section className={`${styles.panel} ${styles.titleSection}`}>
+              <div className={styles.titleRow}>
+                <div className={styles.titleContent}>
+                  <h1 className={styles.title}>{schedule.title ?? "제목 없음"}</h1>
+                  <div className={styles.metaLine}>
+                    <span>
+                      <PlaceIcon fontSize="small" /> {locationText}
+                    </span>
+                    <span>
+                      <CalendarTodayIcon fontSize="small" />{" "}
+                      {schedule.startDate || "미정"} ~ {schedule.endDate || "미정"}
+                    </span>
+                  </div>
+                  <div className={styles.socialInfo}>
+                    <VisibilityIcon fontSize="small" />
+                    조회 {schedule.viewCount ?? 0}
+                  </div>
+                </div>
+
+                <Button
+                  variant={isBookmarked ? "accent" : "outline"}
+                  onClick={handleToggleBookmark}
+                  disabled={isBookmarkPending}
+                  className={styles.bookmarkButton}
+                >
+                  <BookmarkIcon fontSize="small" />
+                  {isBookmarked ? "위시 삭제" : "위시 추가"}
+                </Button>
+              </div>
+
+              <div className={styles.infoGrid}>
+                <div className={styles.infoItem}>
+                  <PeopleIcon className={styles.infoIcon} />
+                  <p className={styles.label}>모집 인원</p>
+                  <p className={styles.value}>
+                    {participantCount} / {maxParticipants}명
+                  </p>
+                  <p className={styles.subValue}>최소 {minParticipants}명</p>
+                </div>
+
+                <div className={styles.infoItem}>
+                  <WcOutlinedIcon className={styles.infoIcon} />
+                  <p className={styles.label}>성별</p>
+                  <p className={styles.value}>{genderLimitLabel}</p>
+                </div>
+
+                <div className={styles.infoItem}>
+                  <CakeOutlinedIcon className={styles.infoIcon} />
+                  <p className={styles.label}>연령</p>
+                  <p className={styles.value}>{ageRangeLabel}</p>
+                </div>
+
+                <div className={styles.infoItem}>
+                  <PaymentsIcon className={styles.infoIcon} />
+                  <p className={styles.label}>예상 비용</p>
+                  <p className={styles.value}>{costLabel}</p>
+                </div>
+
+                <div className={styles.infoItem}>
+                  <ReceiptLongOutlinedIcon className={styles.infoIcon} />
+                  <p className={styles.label}>정산 방식</p>
+                  <p className={styles.value}>{costTypeLabel}</p>
+                </div>
+              </div>
+            </section>
+
+            <section className={`${styles.panel} ${styles.contentSection}`}>
+              <div className={styles.contentBlock}>
+                <h2 className={styles.subTitle}>상세 설명</h2>
+                <p className={styles.descriptionText}>
+                  {schedule.description || "상세 설명이 없습니다."}
+                </p>
+              </div>
+
+              {details.length > 0 ? (
+                <div className={styles.contentBlock}>
+                  <h2 className={styles.subTitle}>Day-by-Day</h2>
+                  <div className={styles.dailyPlanList}>
+                    {details.map((detail) => (
+                      <article key={detail.id} className={styles.dayCard}>
+                        <span className={styles.dayNumber}>Day {detail.dayNumber}</span>
+                        <div className={styles.dayContent}>
+                          <h3 className={styles.planTitle}>
+                            {detail.title || "제목 없음"}
+                          </h3>
+                          <p className={styles.planDesc}>
+                            {detail.description || "설명이 없습니다."}
+                          </p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </section>
+          </div>
+
+          <aside className={styles.sideColumn}>
+            {!viewerIsHost ? (
+              <section className={`${styles.panel} ${styles.hostPanel}`}>
+                {hostProfile.profileImage ? (
+                  <img
+                    src={hostProfile.profileImage}
+                    alt={`${hostName} 프로필`}
+                    className={styles.hostAvatar}
+                  />
+                ) : (
+                  <div className={styles.hostAvatar}>{resolveInitial(hostName)}</div>
+                )}
+                <div className={styles.hostText}>
+                  <span className={styles.hostBadge}>이 일정의 호스트</span>
+                  <strong className={styles.hostName}>{hostName}</strong>
+                  <p className={styles.hostMeta}>
+                    일정 참여 전 호스트가 제공한 모집 조건을 확인해 주세요.
+                  </p>
+                </div>
+              </section>
+            ) : (
+              <section className={styles.panel}>
+                <div className={styles.panelHeader}>
+                  <h2 className={styles.subTitle}>승인 참여자</h2>
+                  <span className={styles.panelCount}>
+                    {approvedApplicants.length} / {maxParticipants}
+                  </span>
+                </div>
+
+                {isApprovedApplicantsLoading ? (
+                  <p className={styles.sideNotice}>승인 참여자를 불러오는 중입니다.</p>
+                ) : approvedApplicants.length > 0 ? (
+                  <div className={styles.avatarList}>
+                    {approvedApplicants.slice(0, 8).map((applicant) =>
+                      applicant.profileImage ? (
+                        <img
+                          key={applicant.participationId}
+                          src={applicant.profileImage}
+                          alt={`${applicant.nickname || "참여자"} 프로필`}
+                          className={styles.participantAvatar}
+                        />
+                      ) : (
+                        <div
+                          key={applicant.participationId}
+                          className={styles.participantAvatar}
+                        >
+                          {resolveInitial(applicant.nickname || applicant.email)}
+                        </div>
+                      ),
+                    )}
+                    {approvedApplicants.length > 8 ? (
+                      <div className={`${styles.participantAvatar} ${styles.moreAvatar}`}>
+                        +{approvedApplicants.length - 8}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className={styles.sideNotice}>아직 승인된 참여자가 없습니다.</p>
+                )}
+              </section>
+            )}
+
+            <section
+              ref={chatLinkSectionRef}
+              className={`${styles.panel} ${styles.noticePanel}`}
+              id="chat-link-section"
+            >
+              <ChatBubbleOutlineOutlinedIcon className={styles.noticeIcon} />
+              <div>
+                <h2 className={styles.noticeTitle}>오픈채팅방</h2>
+                {viewerCanAccessChatLink && schedule.chatLink ? (
+                  <a
+                    href={schedule.chatLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={styles.chatLink}
+                  >
+                    오픈채팅방 바로가기
+                  </a>
+                ) : (
+                  <p className={styles.chatLinkNotice}>
+                    {viewerIsHost || viewerParticipationStatus === "APPROVED"
+                      ? "등록된 오픈채팅방 링크가 없습니다."
+                      : "오픈채팅방 링크는 참여 승인 후 확인할 수 있습니다."}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            <section className={styles.panel}>
+              <div className={styles.panelHeader}>
+                <h2 className={styles.subTitle}>일정 요약</h2>
+              </div>
+              <div className={styles.summaryList}>
+                <div className={styles.summaryRow}>
+                  <span>모집 마감</span>
+                  <strong>{schedule.recruitEndDate || "미정"}</strong>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span>지역</span>
+                  <strong>{locationText}</strong>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span>참여 인원</span>
+                  <strong>
+                    {participantCount} / {maxParticipants}명
+                  </strong>
+                </div>
+              </div>
+              <Button size="sm" variant="outline" onClick={addToGoogleCalendar}>
+                구글 캘린더에 추가
+              </Button>
+            </section>
+
+            {viewerIsHost ? (
+              <section className={styles.panel}>
+                <div className={styles.panelHeader}>
+                  <h2 className={styles.subTitle}>호스트 관리</h2>
+                </div>
+                <div className={styles.hostActionGrid}>
+                  <Button
+                    variant={isScheduleCompleted ? "outline" : "accent"}
+                    disabled={
+                      isScheduleActionPending ||
+                      (!isScheduleCompleted && !canExecuteSchedule)
+                    }
+                    onClick={
+                      isScheduleCompleted
+                        ? handleRollbackScheduleExecution
+                        : handleExecuteSchedule
+                    }
+                  >
+                    {isScheduleCompleted ? "실행 취소" : "일정 실행"}
+                  </Button>
+
+                  {isEditable ? (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        navigate(`/update/${scheduleId}`);
+                      }}
+                    >
+                      수정
+                      <EditIcon fontSize="small" />
+                    </Button>
+                  ) : null}
+
+                  <Button
+                    variant="outline"
+                    onClick={handleOpen}
+                    disabled={isScheduleCompleted}
+                  >
+                    삭제
+                    <DeleteIcon fontSize="small" />
+                  </Button>
+                </div>
+
+                {viewerIsHost && !isScheduleCompleted && !canExecuteSchedule ? (
+                  <p className={styles.executionNotice}>
+                    최소 {minParticipants}명이 모여야 일정 실행이 가능합니다.
+                  </p>
+                ) : null}
+
+                {viewerIsHost && isScheduleCompleted ? (
+                  <p className={styles.executionNotice}>
+                    진행 중인 일정입니다. 참여 상태 변경, 일정 수정, 삭제는 잠겨 있습니다.
+                  </p>
+                ) : null}
+              </section>
+            ) : null}
+
+            {isLoggedIn && authEmail && viewerIsHost && !isApplicantsForbidden ? (
+              <HostParticipationList
+                items={applicants}
+                loading={isApplicantsLoading}
+                errorMessage={applicantsErrorMessage}
+                emptyMessage={`${HOST_STATUS_LABELS[applicantStatus] ?? "선택한 상태"} 신청자가 없습니다.`}
+                hostEmail={authEmail}
+                onItemAction={handleApplicantAction}
+                activeStatus={applicantStatus}
+                onStatusChange={setApplicantStatus}
+                isActionLoading={isStatusUpdating || isScheduleCompleted}
+                isReadOnly={isScheduleCompleted}
+              />
+            ) : null}
+          </aside>
+        </div>
+      </main>
 
       <footer className={styles.stickyFooter}>
-        <div className={styles.footerInfo}>
-          <span className={styles.recruitDeadline}>
-            마감일: {schedule.recruitEndDate || "미정"}
-          </span>
-        </div>
+        <div className={styles.stickyInner}>
+          <div className={styles.footerInfo}>
+            <span className={styles.stickyLabel}>모집 마감</span>
+            <strong className={styles.stickyMain}>
+              {deadlineLabel} · {schedule.recruitEndDate || "미정"}
+            </strong>
+          </div>
 
-        {/*
-         * 신청 버튼은 schedule.status와 recruitEndDate로 마감 여부를 먼저 판단하고,
-         * viewerParticipationStatus로 이미 신청한 사용자인지 확인한다.
-         * completed 상태일 때는 "일정 진행 중"으로 고정되어 신청/취소가 모두 막힌다.
-         * 최종 신청 가능 여부는 백엔드가 다시 검증하므로 프론트 판단은 UX 보조 역할이다.
-         */}
-        <ApplyScheduleButton
-          scheduleId={schedule.id}
-          status={schedule.status}
-          recruitEndDate={schedule.recruitEndDate}
-          genderLimit={schedule.genderLimit}
-          ageMin={schedule.ageMin}
-          ageMax={schedule.ageMax}
-          viewerParticipationId={data.viewerParticipationId}
-          viewerParticipationStatus={viewerParticipationStatus}
-          isHost={viewerIsHost}
-          onFeedback={handleApplyFeedback}
-        />
+          <div className={styles.footerInfo}>
+            <span className={styles.stickyLabel}>참여 인원</span>
+            <strong className={styles.stickyMain}>
+              {participantCount} / {maxParticipants}명
+            </strong>
+          </div>
+
+          <div className={styles.footerInfo}>
+            <span className={styles.stickyLabel}>예상 비용</span>
+            <strong className={styles.stickyMain}>{costLabel}</strong>
+            <span className={styles.stickySub}>{costTypeLabel}</span>
+          </div>
+
+          <ApplyScheduleButton
+            scheduleId={schedule.id}
+            status={schedule.status}
+            recruitEndDate={schedule.recruitEndDate}
+            genderLimit={schedule.genderLimit}
+            ageMin={schedule.ageMin}
+            ageMax={schedule.ageMax}
+            viewerParticipationId={data.viewerParticipationId}
+            viewerParticipationStatus={viewerParticipationStatus}
+            isHost={viewerIsHost}
+            onFeedback={handleApplyFeedback}
+          />
+        </div>
       </footer>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 3,
+              p: 2,
+              minWidth: 320,
+            },
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 3 }}>일정 삭제</DialogTitle>
+
+        <DialogContent sx={{ px: 10, py: 2 }}>
+          <DialogContentText sx={{ fontSize: "15px", color: "#555" }}>
+            삭제 후에는 복구할 수 없습니다.
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+          <Button onClick={handleDelete}>삭제하기</Button>
+
+          <Button onClick={handleClose} variant="outline">
+            취소
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={isLoginPromptOpen}
+        onClose={handleCloseLoginPrompt}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 3,
+              p: 2,
+              minWidth: 320,
+            },
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 2 }}>로그인이 필요합니다</DialogTitle>
+
+        <DialogContent sx={{ px: 4, py: 2 }}>
+          <DialogContentText sx={{ fontSize: "15px", color: "#555", lineHeight: 1.7 }}>
+            위시리스트 기능은 로그인 후 이용할 수 있습니다. 로그인 페이지로 이동하시겠습니까?
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+          <Button onClick={handleMoveToLogin} variant="accent">
+            로그인하기
+          </Button>
+
+          <Button onClick={handleCloseLoginPrompt} variant="outline">
+            취소
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <ParticipationFeedback
         feedback={feedback}

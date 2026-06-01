@@ -1,4 +1,11 @@
 :root {
+  --font-family-base:
+    "Suit",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
   /* ===== Primary / Navy ===== */
   --color-primary: #0a162d; /* 소제목/하단, 메인 네이비 */
   --color-primary-light: #1f293e; /* 팔레트 1 */
@@ -16,6 +23,8 @@
   --color-surface-soft: #daf1f1; /* 연한 민트 배경 */
   --color-surface-hover: #edfefe;
   --color-surface-highlight: rgba(29, 154, 153, 0.08);
+  --color-overlay-glass: rgb(from var(--color-primary-dark) r g b / 0.68);
+  --color-overlay-shadow: rgb(from var(--color-primary-dark) r g b / 0.16);
   --color-mask-solid: #000000;
 
   /* ===== Text ===== */
@@ -73,7 +82,13 @@
   --toast-gap-from-chrome: 16px;
 }
 
-body {
+:global(html),
+:global(body),
+:global(#root) {
+  font-family: var(--font-family-base);
+}
+
+:global(body) {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -85,6 +100,7 @@ body {
   flex-direction: column;
   min-height: 100dvh;
   background-color: var(--color-bg);
+  font-family: var(--font-family-base);
   /* color: var(--color-text-primary); */
 }
 

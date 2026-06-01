@@ -30,8 +30,8 @@
 
 .title {
   font-size: 24px;
-  font-weight: bold;
   color: var(--color-text-primary);
+  font-weight: 700;
   margin-bottom: 8px;
 }
 
@@ -57,7 +57,7 @@
   cursor: pointer;
   text-decoration: underline;
   color: var(--color-accent);
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .linkClickable:hover {
@@ -102,7 +102,7 @@
   color: var(--color-error);
   font-size: 12.5px;
   margin-top: 5px;
-  font-weight: bold;
+  font-weight: 700;
   width: 100%;
 }
 
@@ -173,8 +173,7 @@
 
 .findLinks span {
   cursor: pointer;
-  transition:
-    color var(--transition-fast),
+  transition: color var(--transition-fast),
     text-decoration-color var(--transition-fast);
 }
 
@@ -926,7 +925,7 @@
   margin: 8px 0 0;
   color: var(--color-text-secondary);
   line-height: 1.55;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 /* 하단 액션 */
@@ -945,14 +944,6 @@
 .prevButton,
 .nextButton {
   height: 54px;
-}
-
-.nextButton {
-  justify-self: stretch;
-  width: 100%;
-}
-
-.prevButton {
   justify-self: stretch;
   width: 100%;
 }
@@ -987,6 +978,63 @@
   height: 100%;
   object-fit: contain;
   filter: var(--shadow-card-ticket-hover);
+  filter: drop-shadow(0 18px 28px rgba(7, 18, 36, 0.08));
+}
+
+/* 하단 신뢰 카드 */
+.trustSection {
+  width: min(1180px, 100%);
+  margin: 28px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(223, 229, 236, 0.8);
+  border-radius: 18px;
+  box-shadow: 0 12px 34px rgba(7, 18, 36, 0.06);
+  overflow: hidden;
+}
+
+.trustCard {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 28px 34px;
+  position: relative;
+}
+
+.trustCard:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 28%;
+  width: 1px;
+  height: 44%;
+  background: #d8e0e8;
+}
+
+.trustCard span {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--wd-main-light);
+  display: grid;
+  place-items: center;
+  color: var(--wd-main);
+  font-size: 25px;
+  flex-shrink: 0;
+}
+
+.trustCard strong {
+  color: var(--wd-navy);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.trustCard p {
+  margin: 7px 0 0;
+  color: #7b8494;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 /* 반응형 */

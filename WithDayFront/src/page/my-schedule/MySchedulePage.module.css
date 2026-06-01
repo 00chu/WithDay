@@ -1,24 +1,63 @@
-/* 전체 컨테이너: 헤더와 바텀네비 사이의 스크롤 영역에 맞게 패딩 설정 */
-/* (만약 최상위 Layout 컴포넌트에서 이미 padding을 주고 있다면 padding을 줄여도 됩니다) */
 .container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  background-color: #f8f9fa; /* 사진 속 옅은 배경색 느낌 */
-  padding: 20px 16px;
+  gap: 10px;
   overflow-y: auto;
 }
 
-/* 페이지 타이틀 */
+.contentShell {
+  width: min(100%, 980px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .pageHeader {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 22px;
+  border-radius: 28px;
+  background: linear-gradient(
+    135deg,
+    rgba(10, 22, 45, 0.96) 0%,
+    rgba(24, 52, 87, 0.94) 50%,
+    rgba(29, 154, 153, 0.78) 100%
+  );
+  color: var(--color-text-inverse);
+  box-shadow: 0 18px 48px rgba(10, 22, 45, 0.22);
+}
+
+.eyebrow {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #333;
   margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.description {
+  margin: 0;
+  max-width: 640px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.tabsSection,
+.summarySection,
+.listSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .hostingSections {
@@ -35,10 +74,10 @@
 }
 
 .closedSection {
-  padding: 16px;
-  border-radius: 16px;
+  padding: 18px;
+  border-radius: 24px;
   background: rgba(148, 163, 184, 0.08);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .sectionHeader {
@@ -56,254 +95,49 @@
 
 .sectionTitle {
   margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  color: #222;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-primary);
 }
 
 .sectionDescription {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.85rem;
   line-height: 1.5;
-  color: #64748b;
+  color: var(--color-text-secondary);
 }
 
 .closedToggleButton {
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  color: #334155;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-primary);
   border-radius: 999px;
   padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.closedToggleButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .paginationWrap {
   padding-top: 8px;
 }
 
-/* 탭 네비게이션 */
-.tabWrap {
-  display: flex;
-  border-bottom: 1px solid #eaeaea;
-  margin-bottom: 16px;
-}
+@media (min-width: 768px) {
+  .container {
+    padding: 28px 24px 96px;
+  }
 
-.tabBtn {
-  flex: 1;
-  padding: 12px 0;
-  background: none;
-  border: none;
-  font-size: 15px;
-  font-weight: 500;
-  color: #888;
-  cursor: pointer;
-  position: relative;
-  transition: color 0.2s ease;
-}
+  .pageHeader {
+    padding: 28px 28px 30px;
+  }
 
-.tabBtn.active {
-  color: #333;
-  font-weight: 700;
-}
-
-/* 활성화된 탭 하단 보라색 바 */
-.tabBtn.active::after {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: #8a5cf5; /* 스크린샷 보라색 테마 */
-}
-
-/* 리스트 영역 */
-.listContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding-bottom: 80px; /* 바텀 네비게이션 가림 방지 여백 */
-}
-
-.emptyState {
-  text-align: center;
-  padding: 50px 0;
-  color: #999;
-  font-size: 14px;
-}
-
-/* 일정 카드 (스크린샷 스타일 반영) */
-.card {
-  background-color: #ffffff;
-  border: 1px solid #eaeaea;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-}
-
-.cardHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.tags {
-  display: flex;
-  gap: 8px;
-}
-
-.categoryBadge {
-  background-color: #f0edff; /* 옅은 보라색 배경 */
-  color: #8a5cf5;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.dDayBadge {
-  background-color: #f0f4f8; /* 옅은 파란/회색 배경 */
-  color: #5c7cf5;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.location {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #666;
-}
-
-.cardBody {
-  margin-bottom: 16px;
-}
-
-.cardTitle {
-  font-size: 16px;
-  font-weight: 700;
-  color: #222;
-  margin: 0 0 8px 0;
-}
-
-.cardDate {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  color: #666;
-}
-
-/* 카드 내 구분선 */
-.divider {
-  height: 1px;
-  background-color: #f0f0f0;
-  margin: 0 -16px 12px -16px; /* 좌우 패딩을 무시하고 선 긋기 */
-}
-
-.cardFooter {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.peopleInfo {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  color: #666;
-}
-
-.inlineIcon {
-  flex-shrink: 0;
-}
-
-.highlight {
-  color: #8a5cf5;
-  font-weight: 700;
-}
-
-.actionBtn {
-  background-color: #8a5cf5;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.actionBtn:hover {
-  background-color: #7241eb;
-}
-
-/* 취소 버튼 스타일 (회색) */
-.pendingBtn {
-  background-color: #f1f3f5;
-  color: #495057;
-}
-
-.pendingBtn:hover {
-  background-color: #e9ecef;
-}
-
-/* 상태 뱃지 공통 스타일 */
-.statusBadge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* 상태별 뱃지 색상 */
-.badgeHost {
-  background-color: #333;
-  color: #fff;
-}
-
-.badgeApproved {
-  background-color: #e6fcf5; /* 민트 계열 */
-  color: #0ca678;
-}
-
-.badgePending {
-  background-color: #fff3bf; /* 노란 계열 */
-  color: #f08c00;
-}
-
-.badgeError {
-  background-color: #ffe3e3; /* 빨간 계열 (거절, 강퇴) */
-  color: #e03131;
-}
-
-.badgeGray {
-  background-color: #f1f3f5;
-  color: #adb5bd;
-}
-
-/* 카드 비활성화 스타일 (거절, 강퇴당했을 때 시각적 구분) */
-.cardDisabled {
-  opacity: 0.6;
-  background-color: #f8f9fa;
-}
-.cardDisabled .cardTitle {
-  color: #868e96;
-  text-decoration: line-through; /* 거절/강퇴일 경우 제목에 취소선 (선택사항) */
-}
-
-/* 버튼 비활성화 상태 */
-.btnDisabled {
-  background-color: #e9ecef !important;
-  color: #adb5bd !important;
-  cursor: not-allowed;
+  .title {
+    font-size: 1.85rem;
+  }
 }

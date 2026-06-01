@@ -39,7 +39,6 @@ function HostParticipationList({
       <section className={styles.section}>
         <div className={styles.header}>
           <h2 className={styles.title}>신청자 관리</h2>
-          <p className={styles.description}>신청자 목록을 불러오는 중입니다.</p>
         </div>
         <div className={participationStyles.stateBox}>
           신청자 목록을 불러오는 중입니다.
@@ -57,9 +56,6 @@ function HostParticipationList({
       <section className={styles.section}>
         <div className={styles.header}>
           <h2 className={styles.title}>신청자 관리</h2>
-          <p className={styles.description}>
-            호스트 전용 신청자 관리 영역입니다.
-          </p>
         </div>
         <div
           className={clsx(
@@ -77,11 +73,6 @@ function HostParticipationList({
     <section className={styles.section}>
       <div className={styles.header}>
         <h2 className={styles.title}>신청자 관리</h2>
-        <p className={styles.description}>
-          {isReadOnly
-            ? "진행 중인 일정은 신청자 상태를 변경할 수 없습니다."
-            : "현재 일정에 신청한 사용자를 확인하고 상태를 변경할 수 있습니다."}
-        </p>
       </div>
 
       <div className={styles.filterGroup}>

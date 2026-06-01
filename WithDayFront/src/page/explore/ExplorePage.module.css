@@ -2,6 +2,7 @@
 .main {
   padding: 0;
   background-color: var(--color-bg);
+  min-width: 0;
 }
 
 /* ─── 배너 ─────────────────────────────────────────────────── */
@@ -24,6 +25,7 @@
 .section {
   margin-bottom: 28px;
   overflow: visible;
+  min-width: 0;
 }
 .sectionHeader {
   display: flex;
