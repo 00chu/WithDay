@@ -3,8 +3,8 @@
 
 <mapper namespace="com.test.withdayback.admin.dao.AdminDao">
     <select id="selectAllMember" resultType="User">
-        SELECT profile_image, nickname, email, provider, gender, birthday, status, created_at
-        FROM user
+        select profile_image, nickname, email, provider, gender, birthday, status, created_at
+        from user
 
         <where>
             <!-- 닉네임 / 이메일 검색 -->
@@ -33,7 +33,7 @@
         <choose>
             <!-- 기본 정렬 -->
             <otherwise>
-                ORDER BY id DESC
+                order by id desc
             </otherwise>
         </choose>
 
@@ -43,30 +43,82 @@
     <select id="selectMemberCount"
             parameterType="com.test.withdayback.admin.dto.AdminMemberRequest"
             resultType="int">
-
-        SELECT count(*)
-        FROM user
+        select count(*)
+        from user
 
         <where>
             <if test="keyword != null and keyword != ''">
                 (
-                nickname LIKE CONCAT('%', #{keyword}, '%')
-                OR email LIKE CONCAT('%', #{keyword}, '%')
+                nickname like CONCAT('%', #{keyword}, '%')
+                or email like CONCAT('%', #{keyword}, '%')
                 )
             </if>
 
             <if test="gender != null and gender != ''">
-                AND gender = #{gender}
+                and gender = #{gender}
             </if>
 
             <if test="provider != null and provider != ''">
-                AND provider = #{provider}
+                and provider = #{provider}
             </if>
 
             <if test="status != null and status != ''">
-                AND status = #{status}
+                and status = #{status}
             </if>
         </where>
+    </select>
 
+    <select id="selectUserCount" resultType="int">
+        select count(*)
+        from user
+    </select>
+
+    <select id="selectScheduleCount" resultType="int">
+        select count(*)
+        from schedule
+    </select>
+
+    <insert id="insertDashboard">
+        insert into dashboard (stat_date, total_user_count, total_schedule_count)
+        values (#{statDate}, #{userCount}, #{scheduleCount})
+    </insert>
+
+    <select id="selectTotalUserCount" resultType="int">
+        <!-- coalesce - null 값이면 다른 값 coalesce(쿼리, n)값으로 대체 -->
+        <!-- coalesce(쿼리, 값1, 값2, ...) null이 아닌 첫 번쨰 값으로 대체 -->
+        select coalesce(
+                       (select total_user_count
+                        from dashboard
+                        order by stat_date desc
+                       limit 1 ),
+        0
+        )
+    </select>
+
+    <select id="selectTotalScheduleCount" resultType="int">
+        select coalesce(
+                       (select total_schedule_count
+                        from dashboard
+                        order by stat_date desc
+                       limit 1 ),
+        0
+        )
+    </select>
+
+    <select id="selectRecommendedScheduleCount" resultType="int">
+        select count(*)
+        from recommended_schedule
+    </select>
+
+    <select id="selectCompletedScheduleCount" resultType="int">
+        select count(*)
+        from schedule
+        where status = 'completed'
+    </select>
+
+    <select id="selectClosedScheduleCount" resultType="int">
+        select count(*)
+        from schedule
+        where status = 'closed'
     </select>
 </mapper>

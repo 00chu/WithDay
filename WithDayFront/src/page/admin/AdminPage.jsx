@@ -8,6 +8,7 @@ import styles from "./AdminPage.module.css";
 import AdminSidebar from "../../features/admin/ui/AdminSidebar";
 import MemberManagementPage from "../../features/admin/ui/MemberManagementPage";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import Dashboard from "../../features/admin/ui/Dashboard";
 
 const AdminPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -62,6 +63,9 @@ const AdminPage = () => {
       <main className={styles.content}>
         <Routes>
           <Route path="member" element={<MemberManagementPage />} />
+        </Routes>
+        <Routes>
+          <Route path="dashboard" element={<Dashboard />} />
         </Routes>
       </main>
     </div>

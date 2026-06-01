@@ -12,3 +12,8 @@ export const selectAllMember = async (params) => {
   });
   return data;
 };
+
+export const getDashboardData = async () => {
+  const { data } = await api.get(`/admins/dashboards`);
+  return data;
+};

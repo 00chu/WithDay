@@ -137,7 +137,7 @@ const MemberManagementPage = () => {
           )}
         />
 
-        <Button type="button" variant="primary" size="md" onClick={handleReset}>
+        <Button type="button" variant="outline" size="md" onClick={handleReset}>
           초기화
         </Button>
         <Button type="submit" variant="primary" size="md">

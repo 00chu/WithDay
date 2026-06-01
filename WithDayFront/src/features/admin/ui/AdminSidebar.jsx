@@ -18,7 +18,7 @@ const AdminSidebar = ({ closeDrawer = () => {} }) => {
 
       <nav className={styles.menu}>
         <NavLink
-          to="/admin"
+          to="/admin/dashboard"
           end
           onClick={closeDrawer}
           className={({ isActive }) =>

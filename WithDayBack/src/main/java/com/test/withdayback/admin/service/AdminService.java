@@ -1,6 +1,7 @@
 package com.test.withdayback.admin.service;
 
 import com.test.withdayback.admin.dao.AdminDao;
+import com.test.withdayback.admin.dto.AdminDashboardResponse;
 import com.test.withdayback.admin.dto.AdminMemberRequest;
 import com.test.withdayback.admin.dto.AdminMemberResponse;
 import com.test.withdayback.user.vo.User;
@@ -32,6 +33,31 @@ public class AdminService {
         response.setTotalPage(totalPage);
         response.setPage(dto.getPage());
         response.setSize(dto.getSize());
+
+        return response;
+    }
+
+    public AdminDashboardResponse getDashboardData() {
+        AdminDashboardResponse response = new AdminDashboardResponse();
+
+        Integer totalUserCount = adminDao.selectTotalUserCount();
+        response.setTotalUserCount(
+                totalUserCount == null ? 0 : totalUserCount);
+        response.setNowTotalUserCount(adminDao.selectUserCount());
+
+        Integer totalScheduleCount = adminDao.selectTotalScheduleCount();
+        response.setTotalScheduleCount(
+                totalScheduleCount == null ? 0 : totalScheduleCount);
+        response.setNowTotalScheduleCount(adminDao.selectScheduleCount());
+
+        response.setRecommendedScheduleCount(
+                adminDao.selectRecommendedScheduleCount());
+
+        response.setCompletedScheduleCount(
+                adminDao.selectCompletedScheduleCount());
+
+        response.setClosedScheduleCount(
+                adminDao.selectClosedScheduleCount());
 
         return response;
     }
