@@ -230,14 +230,11 @@
                 AND s.category = #{category}
             </if>
 
-            <!-- 검색어는 탐색 화면의 단일 입력값이므로 제목/설명/지역/상세지역/카테고리까지 넓게 찾는다. -->
+            <!-- 검색어는 탐색 화면의 일정명/내용 검색만 담당한다. -->
             <if test="keyword != null and keyword != ''">
                 AND (
                 UPPER(s.title) LIKE CONCAT('%', UPPER(#{keyword}), '%')
                 OR UPPER(s.description) LIKE CONCAT('%', UPPER(#{keyword}), '%')
-                OR UPPER(s.region) LIKE CONCAT('%', UPPER(#{keyword}), '%')
-                OR UPPER(s.detail_region) LIKE CONCAT('%', UPPER(#{keyword}), '%')
-                OR UPPER(s.category) LIKE CONCAT('%', UPPER(#{keyword}), '%')
                 )
             </if>
 

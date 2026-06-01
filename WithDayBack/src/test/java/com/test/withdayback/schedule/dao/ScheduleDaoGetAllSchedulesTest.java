@@ -153,18 +153,31 @@ class ScheduleDaoGetAllSchedulesTest {
     }
 
     @Test
-    void getAllSchedulesSearchesKeywordAcrossRegionDetailRegionAndCategory() {
-        jdbcTemplate.update("UPDATE schedule SET detail_region = ? WHERE id = ?", "GANGNAM", 1L);
+    void getAllSchedulesSearchesKeywordOnlyAcrossTitleAndDescription() {
+        jdbcTemplate.update(
+                "UPDATE schedule SET region = ?, detail_region = ?, category = ? WHERE id = ?",
+                "INCHEON",
+                "GANGNAM",
+                "culture",
+                1L
+        );
 
-        List<Schedule> regionMatches = scheduleDao.getAllSchedules(null, "seoul", null, null, null, null, null, "latest", null);
+        List<Schedule> titleMatches =
+                scheduleDao.getAllSchedules(null, "open", null, null, null, null, null, "latest", null);
+        List<Schedule> descriptionMatches =
+                scheduleDao.getAllSchedules(null, "dinner", null, null, null, null, null, "latest", null);
+        List<Schedule> regionMatches =
+                scheduleDao.getAllSchedules(null, "incheon", null, null, null, null, null, "latest", null);
         List<Schedule> detailRegionMatches =
                 scheduleDao.getAllSchedules(null, "gangnam", null, null, null, null, null, "latest", null);
         List<Schedule> categoryMatches =
-                scheduleDao.getAllSchedules(null, "food", null, null, null, null, null, "latest", null);
+                scheduleDao.getAllSchedules(null, "culture", null, null, null, null, null, "latest", null);
 
-        assertIterableEquals(List.of(8L, 1L), regionMatches.stream().map(Schedule::getId).toList());
-        assertIterableEquals(List.of(1L), detailRegionMatches.stream().map(Schedule::getId).toList());
-        assertIterableEquals(List.of(8L), categoryMatches.stream().map(Schedule::getId).toList());
+        assertIterableEquals(List.of(1L), titleMatches.stream().map(Schedule::getId).toList());
+        assertIterableEquals(List.of(8L), descriptionMatches.stream().map(Schedule::getId).toList());
+        assertIterableEquals(List.of(), regionMatches.stream().map(Schedule::getId).toList());
+        assertIterableEquals(List.of(), detailRegionMatches.stream().map(Schedule::getId).toList());
+        assertIterableEquals(List.of(), categoryMatches.stream().map(Schedule::getId).toList());
     }
 
     @Test
