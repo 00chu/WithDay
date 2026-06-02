@@ -21,7 +21,7 @@ export default function Header() {
     queryKey: ["notification-count", loginUser?.email],
     queryFn: () => getNotificationCount(loginUser.email),
     enabled: !!(isLoggedIn && loginUser?.email),
-    refetchInterval: 30000,
+    refetchOnWindowFocus: true, // 사용자가 앱/탭에 다시 들어왔을 때만 최신화되도록
   });
 
   const avatarFallback = (

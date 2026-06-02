@@ -12,7 +12,7 @@
             #{email}, #{password}, #{provider}, #{providerId}, #{nickname},
             #{profileImage}, #{birthday}, #{gender}, #{phone},
             'active', #{postcode}, #{address}, #{detailAddress}, NOW()
-                 )
+        )
     </insert>
 
     <select id="findByEmail" parameterType="String" resultType="User">

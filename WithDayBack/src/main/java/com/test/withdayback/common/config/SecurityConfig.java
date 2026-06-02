@@ -48,6 +48,8 @@ public class SecurityConfig {
                                 "/bookmarks/**",
                                 "/participations/**",
                                 "/region/**",
+                                "/notifications/**",
+                                "/admins/**",
                                 "/notifications/**"
 
                         ).permitAll()

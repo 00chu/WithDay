@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.test.withdayback.admin.dao.AdminDao">
+    <select id="selectAllMember" resultType="User">
+        select profile_image, nickname, email, provider, gender, birthday, status, created_at
+        from user
+
+        <where>
+            <!-- 닉네임 / 이메일 검색 -->
+            <if test="keyword != null and keyword != ''">
+                <!-- 하나의 조건으로 묶기 위해 괄호로 묶음 -->
+                (
+                <!-- MyBatis가 문자열 안 #{} 를 제대로 처리 못함 -->
+                nickname like concat('%', #{keyword}, '%')   <!-- => '%keyword%' -->
+                or email like concat('%', #{keyword}, '%')
+                )
+            </if>
+            <!-- 성별 조건 있을 때 성별 조건 -->
+            <if test="gender != null and gender != ''">
+                and gender = #{gender}
+            </if>
+            <!-- 가입경로 provider -->
+            <if test="provider != null and provider != ''">
+                and provider = #{provider}
+            </if>
+            <!-- 회원 상태 status -->
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+
+        <choose>
+            <!-- 기본 정렬 -->
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectMemberCount"
+            parameterType="com.test.withdayback.admin.dto.AdminMemberRequest"
+            resultType="int">
+        select count(*)
+        from user
+
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (
+                nickname like CONCAT('%', #{keyword}, '%')
+                or email like CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <if test="gender != null and gender != ''">
+                and gender = #{gender}
+            </if>
+
+            <if test="provider != null and provider != ''">
+                and provider = #{provider}
+            </if>
+
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectUserCount" resultType="int">
+        select count(*)
+        from user
+    </select>
+
+    <select id="selectScheduleCount" resultType="int">
+        select count(*)
+        from schedule
+    </select>
+
+    <insert id="insertDashboard">
+        insert into dashboard (stat_date, total_user_count, total_schedule_count)
+        values (#{statDate}, #{userCount}, #{scheduleCount})
+    </insert>
+
+    <select id="selectTotalUserCount" resultType="int">
+        <!-- coalesce - null 값이면 다른 값 coalesce(쿼리, n)값으로 대체 -->
+        <!-- coalesce(쿼리, 값1, 값2, ...) null이 아닌 첫 번쨰 값으로 대체 -->
+        select coalesce(
+                       (select total_user_count
+                        from dashboard
+                        order by stat_date desc
+                       limit 1 ),
+        0
+        )
+    </select>
+
+    <select id="selectTotalScheduleCount" resultType="int">
+        select coalesce(
+                       (select total_schedule_count
+                        from dashboard
+                        order by stat_date desc
+                       limit 1 ),
+        0
+        )
+    </select>
+
+    <select id="selectRecommendedScheduleCount" resultType="int">
+        select count(*)
+        from recommended_schedule
+    </select>
+
+    <select id="selectCompletedScheduleCount" resultType="int">
+        select count(*)
+        from schedule
+        where status = 'completed'
+    </select>
+
+    <select id="selectClosedScheduleCount" resultType="int">
+        select count(*)
+        from schedule
+        where status = 'closed'
+    </select>
+
+    <select id="selectDailyDashboard" resultType="Dashboard">
+        select
+            stat_date,
+            total_user_count,
+            total_schedule_count
+        from dashboard
+        order by stat_date
+        limit 14
+    </select>
+
+    <select id="selectWeeklyDashboard" resultType="Dashboard">
+        select
+            max(stat_date) as stat_date,
+            max(total_user_count) as total_user_count,
+            max(total_schedule_count) as total_schedule_count
+        from dashboard
+        group by year(stat_date), week(stat_date, 1)
+        order by stat_date
+    </select>
+
+    <select id="selectMonthlyDashboard" resultType="Dashboard">
+        select
+            max(stat_date) as stat_date,
+            max(total_user_count) as total_user_count,
+            max(total_schedule_count) as total_schedule_count
+        from dashboard
+        group by year(stat_date), month(stat_date)
+        order by stat_date
+    </select>
+</mapper>

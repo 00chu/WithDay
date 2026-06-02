@@ -29,6 +29,7 @@ import BottomNav from "./widgets/BottomNav/BottomeNav";
 import LayoutContainer from "./shared/ui/LayoutContainer/LayoutContainer";
 import PrivateRoute from "./features/ui/PrivateRoute";
 import RecommendedScheduleEdit from "./page/recommended-schedule/RecommendedScheduleEdit";
+import AdminPage from "./page/admin/AdminPage";
 
 function App() {
   // 로그인 상태와 토큰 만료 여부를 Zustand에서 가져옴
@@ -188,6 +189,15 @@ function App() {
               element={
                 <PrivateRoute>
                   <UpdateSchedule />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/admin/*"
+              element={
+                <PrivateRoute>
+                  <AdminPage />
                 </PrivateRoute>
               }
             />
