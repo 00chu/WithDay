@@ -101,16 +101,19 @@ const MyPageMain = () => {
             {/*오른쪽 데이터들*/}
             <div className={styles.profile_summary}>
               <div className={styles.summary}>
-                <span>MY Track</span>
-                <span>6회</span>
+                <span>함께한 일정</span>
+                <span>2회</span>
+                <span>참여가 완료된 일정 수</span>
               </div>
               <div className={styles.summary}>
-                <span>Like Wits</span>
+                <span>만난 위트 수</span>
                 <span>12명</span>
+                <span>함께 만난 위트 수</span>
               </div>
               <div className={styles.summary}>
-                <span>withDay 가입일</span>
-                <span>3년</span>
+                <span>가입일</span>
+                <span>2026.06.01</span>
+                <span>처음 가입한 날짜</span>
               </div>
             </div>
           </div>

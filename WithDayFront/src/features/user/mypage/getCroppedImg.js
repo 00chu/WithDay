@@ -1,15 +1,25 @@
+//프로필 이미지
+
 export const getCroppedImg = (imageSrc, cropPixels) => {
     return new Promise((resolve, reject) => {
         const image = new Image();
-        image.src = imageSrc;
+
         image.crossOrigin = "anonymous";
+        image.src = imageSrc;
 
         image.onload = () => {
             const canvas = document.createElement("canvas");
             const ctx = canvas.getContext("2d");
 
-            canvas.width = cropPixels.width;
-            canvas.height = cropPixels.height;
+            if (!ctx) {
+                reject(new Error("canvas context를 생성하지 못했습니다."));
+                return;
+            }
+
+            const outputSize = 400;
+
+            canvas.width = outputSize;
+            canvas.height = outputSize;
 
             ctx.drawImage(
                 image,
@@ -19,8 +29,8 @@ export const getCroppedImg = (imageSrc, cropPixels) => {
                 cropPixels.height,
                 0,
                 0,
-                cropPixels.width,
-                cropPixels.height
+                outputSize,
+                outputSize
             );
 
             canvas.toBlob(
@@ -37,7 +47,7 @@ export const getCroppedImg = (imageSrc, cropPixels) => {
                     resolve(file);
                 },
                 "image/jpeg",
-                0.92
+                0.82
             );
         };
 

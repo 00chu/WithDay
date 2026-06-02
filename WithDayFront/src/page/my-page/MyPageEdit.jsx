@@ -19,6 +19,8 @@ import {
   MessageCircleIcon,
   TagsIcon,
   PhoneIcon,
+  MapPinIcon,
+  VenusAndMarsIcon,
 } from "lucide-react";
 
 const MyPageEdit = () => {
@@ -44,6 +46,7 @@ const MyPageEdit = () => {
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
   const profileFileInputRef = useRef(null);
   const profileMenuRef = useRef(null);
+  const [isImageUploading, setIsImageUploading] = useState(false);
 
   const DEFAULT_PROFILE_IMAGE = "/default-profile-240.png";
   const formatPhoneNumber = (value = "") => {
@@ -311,19 +314,35 @@ const MyPageEdit = () => {
 
   //프로필 이미지 변경
   const handleSaveCroppedImage = async () => {
+    if (isImageUploading) return;
+
     try {
       if (!selectedImage || !croppedAreaPixels) return;
+
+      setIsImageUploading(true);
+
       const croppedFile = await getCroppedImg(selectedImage, croppedAreaPixels);
       const result = await uploadMypageProfileImage(croppedFile);
+
       const imageUrl = result.profileImage;
+
       setProfilePreview(imageUrl);
-      setValue("profileImage", imageUrl, { shouldValidate: true });
+      setValue("profileImage", imageUrl, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+
       setCropModalOpen(false);
       setSelectedImage(null);
+      setZoom(1);
+      setCrop({ x: 0, y: 0 });
+
       alert("프로필 이미지가 변경되었습니다.");
     } catch (error) {
       console.error(error);
       alert("프로필 이미지 변경 중 오류가 발생했습니다.");
+    } finally {
+      setIsImageUploading(false);
     }
   };
   const handleSetDefaultProfileImage = () => {
@@ -347,6 +366,10 @@ const MyPageEdit = () => {
       interestIds: selectedInterestIds,
       notificationAgreed: isNotiOn,
 
+      postcode: watch("postcode"),
+      address: watch("address"),
+      detailAddress: watch("detailAddress"),
+
       currentPassword: pwState.current,
       newPassword: pwState.newPw,
       newPasswordConfirm: pwState.confirm,
@@ -362,7 +385,9 @@ const MyPageEdit = () => {
       profileImage: formData.profileImage,
       interestIds: formData.interestIds,
       notificationAgreed: formData.notificationAgreed,
-
+      postcode: formData.postcode,
+      address: formData.address,
+      detailAddress: formData.detailAddress,
       currentPassword: isLocalUser ? formData.currentPassword : "",
       newPassword: isLocalUser ? formData.newPassword : "",
       newPasswordConfirm: isLocalUser ? formData.newPasswordConfirm : "",
@@ -552,8 +577,9 @@ const MyPageEdit = () => {
                   type="button"
                   className={styles.cropSaveButton}
                   onClick={handleSaveCroppedImage}
+                  disabled={isImageUploading}
                 >
-                  적용하기
+                  {isImageUploading ? "업로드 중..." : "적용하기"}
                 </button>
               </div>
             </div>
@@ -569,13 +595,13 @@ const MyPageEdit = () => {
         </div>
 
         <div className={styles.formSide}>
+
           {/* 1. 닉네임 */}
           <div className={styles.group}>
             <div className={styles.groupTitle}>
-              <UserRoundIcon size={18} />
+              <UserRoundIcon size={20} />
               닉네임
             </div>
-
             <div className={styles.inputRow}>
               <span className={styles.fieldLabel}>닉네임</span>
               <div className={styles.inputWrapper}>
@@ -596,10 +622,9 @@ const MyPageEdit = () => {
           {/* 2. 소개글 */}
           <div className={styles.group}>
             <div className={styles.groupTitle}>
-              <MessageCircleIcon size={18} />
+              <MessageCircleIcon size={16} />
               <span>소개글</span>
             </div>
-
             <div className={styles.inputRow}>
               <span
                 className={styles.fieldLabel}
@@ -607,7 +632,6 @@ const MyPageEdit = () => {
               >
                 소개글
               </span>
-
               <div className={styles.textareaContainer}>
                 <textarea
                   value={intro}
@@ -628,14 +652,12 @@ const MyPageEdit = () => {
               <TagsIcon size={18} />
               <span>관심사</span>
             </div>
-
             <div className={styles.interestList}>
               {(editQuery.data?.allInterests ?? []).map((interest) => {
                 const interestId = Number(interest.interestId ?? interest.id);
                 const isSelected = selectedInterestIds
                   .map(Number)
                   .includes(interestId);
-
                 return (
                   <button
                     key={interestId}
@@ -653,84 +675,43 @@ const MyPageEdit = () => {
               })}
             </div>
           </div>
-          {/* 주소 */}
+
+          {/* 4. 성별*/}
           <div className={styles.group}>
             <div className={styles.groupTitle}>
-              <span>주소</span>
+              <VenusAndMarsIcon size={21} />
+              <span>성별</span>
             </div>
-
             <div className={styles.inputRow}>
-              <span className={styles.fieldLabel}>우편번호</span>
-
-              <div className={styles.addressSearchRow}>
-                <input
-                  type="text"
-                  value={watch("postcode") ?? ""}
-                  className={styles.input_name}
-                  placeholder="우편번호"
-                  readOnly
-                />
+              <span className={styles.fieldLabel}>성별</span>
+              <div className={styles.genderSelectRow}>
+                <button
+                  type="button"
+                  className={`${styles.genderButton} ${watch("gender") === "1" ? styles.genderButtonSelected : ""
+                    }`}
+                  onClick={() =>
+                    setValue("gender", "1", {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
+                >
+                  남성
+                </button>
 
                 <button
                   type="button"
-                  className={styles.addressSearchButton}
-                  onClick={() => setIsPostcodeOpen(true)}
-                >
-                  주소 검색
-                </button>
-              </div>
-            </div>
-
-            {isPostcodeOpen && (
-              <div className={styles.postcodeLayer}>
-                <div className={styles.postcodeHeader}>
-                  <span>주소 검색</span>
-                  <button
-                    type="button"
-                    className={styles.postcodeCloseButton}
-                    onClick={() => setIsPostcodeOpen(false)}
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <DaumPostcode
-                  onComplete={handleCompletePostcode}
-                  style={{ width: "100%", height: "420px" }}
-                />
-              </div>
-            )}
-
-            <div className={styles.inputRow}>
-              <span className={styles.fieldLabel}>기본주소</span>
-
-              <div className={styles.inputWrapper}>
-                <input
-                  type="text"
-                  value={watch("address") ?? ""}
-                  className={styles.input_name}
-                  placeholder="주소 검색 버튼을 눌러주세요"
-                  readOnly
-                />
-              </div>
-            </div>
-
-            <div className={styles.inputRow}>
-              <span className={styles.fieldLabel}>상세주소</span>
-
-              <div className={styles.inputWrapper}>
-                <input
-                  type="text"
-                  value={watch("detailAddress") ?? ""}
-                  onChange={(e) => {
-                    setValue("detailAddress", e.target.value, {
+                  className={`${styles.genderButton} ${watch("gender") === "2" ? styles.genderButtonSelected : ""
+                    }`}
+                  onClick={() =>
+                    setValue("gender", "2", {
                       shouldValidate: true,
                       shouldDirty: true,
-                    });
-                  }}
-                  className={styles.input_name}
-                  placeholder="상세주소를 입력해주세요"
-                />
+                    })
+                  }
+                >
+                  여성
+                </button>
               </div>
             </div>
           </div>
@@ -741,10 +722,8 @@ const MyPageEdit = () => {
               <PhoneIcon size={18} />
               <span>연락처</span>
             </div>
-
             <div className={styles.inputRow}>
               <span className={styles.fieldLabel}>연락처</span>
-
               <div className={styles.inputWrapper}>
                 <input
                   type="text"
@@ -763,20 +742,91 @@ const MyPageEdit = () => {
             </div>
           </div>
 
-          {/* 4. 비밀번호 */}
+          {/* 6. 주소 */}
+          <div className={styles.group}>
+            <div className={styles.groupTitle}>
+              <MapPinIcon size={20} />
+              <span>주소</span>
+            </div>
+            <div className={styles.inputRow}>
+              <span className={styles.fieldLabel}>우편번호</span>
+              <div className={styles.addressSearchRow}>
+                <input
+                  type="text"
+                  value={watch("postcode") ?? ""}
+                  className={styles.input_name}
+                  placeholder="우편번호"
+                  readOnly
+                />
+                <button
+                  type="button"
+                  className={styles.addressSearchButton}
+                  onClick={() => setIsPostcodeOpen(true)}
+                >
+                  주소 검색
+                </button>
+              </div>
+            </div>
+            {isPostcodeOpen && (
+              <div className={styles.postcodeLayer}>
+                <div className={styles.postcodeHeader}>
+                  <span>주소 검색</span>
+                  <button
+                    type="button"
+                    className={styles.postcodeCloseButton}
+                    onClick={() => setIsPostcodeOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <DaumPostcode
+                  onComplete={handleCompletePostcode}
+                  style={{ width: "100%", height: "420px" }}
+                />
+              </div>
+            )}
+            <div className={styles.inputRow}>
+              <span className={styles.fieldLabel}>기본주소</span>
+              <div className={styles.inputWrapper}>
+                <input
+                  type="text"
+                  value={watch("address") ?? ""}
+                  className={styles.input_name}
+                  placeholder="주소 검색 버튼을 눌러주세요"
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className={styles.inputRow}>
+              <span className={styles.fieldLabel}>상세주소</span>
+              <div className={styles.inputWrapper}>
+                <input
+                  type="text"
+                  value={watch("detailAddress") ?? ""}
+                  onChange={(e) => {
+                    setValue("detailAddress", e.target.value, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                  }}
+                  className={styles.input_name}
+                  placeholder="상세주소를 입력해주세요"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 7. 비밀번호 */}
           {isLocalUser && (
             <div className={styles.group}>
               <div className={styles.groupTitle}>
                 <LockIcon size={18} />
                 <span>비밀번호</span>
               </div>
-
               {passwordFields.map((field, i) => (
                 <div className={styles.inputRow} key={field.key}>
                   <span className={styles.fieldLabel}>{field.label}</span>
-
                   <div className={styles.inputWrapper}>
-                    <LockIcon className={styles.iconStart} size={20} />
                     <input
                       className={styles.input}
                       type={showPw[i] ? "text" : "password"}
@@ -784,7 +834,6 @@ const MyPageEdit = () => {
                       value={pwState[field.key]}
                       onChange={(e) => handlePwChange(e, field.key)}
                     />
-
                     <div
                       className={styles.iconEnd}
                       onClick={() => togglePassword(i)}
@@ -798,7 +847,6 @@ const MyPageEdit = () => {
                   </div>
                 </div>
               ))}
-
               <div className={styles.messageWrapper}>
                 {isError ? (
                   <span className={styles.errorMsg}>
@@ -811,29 +859,28 @@ const MyPageEdit = () => {
               </div>
             </div>
           )}
-
           {!isLocalUser && (
             <div className={styles.group}>
-              <div className={styles.groupTitle}>비밀번호</div>
+              <div className={styles.groupTitle}>
+                <LockIcon size={18} />
+                <span>비밀번호</span>
+              </div>
               <span className={styles.pw_text}>
                 구글 로그인 계정은 비밀번호 변경을 지원하지 않습니다.
               </span>
             </div>
           )}
 
-          {/* 5. 알림 설정 */}
+          {/* 8. 알림 설정 */}
           <div className={styles.group}>
             <div className={styles.groupTitle}>
               <BellIcon size={18} />
               <span>알림 설정</span>
             </div>
-
             <div className={styles.inputRow}>
               <span className={styles.fieldLabel}>알림 수신 동의</span>
-
               <div className={styles.notiRow}>
                 <span>위트 신청, 승인, 일정 관련 알림을 받아볼 수 있어요.</span>
-
                 <button
                   type="button"
                   className={`${styles.notificationSwitch} ${isNotiOn ? styles.notificationSwitchOn : ""
@@ -857,7 +904,7 @@ const MyPageEdit = () => {
               </div>
             </div>
           </div>
-
+          {/*취소 버튼*/}
           <div className={styles.footer}>
             <button
               type="button"
@@ -867,6 +914,7 @@ const MyPageEdit = () => {
               취소
             </button>
 
+            {/*저장 버튼*/}
             <button
               type="button"
               className={`${styles.btn} ${styles.btnSave}`}
