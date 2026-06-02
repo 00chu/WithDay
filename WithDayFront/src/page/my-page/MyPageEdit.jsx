@@ -1,5 +1,6 @@
 import styles from "./MyPageEdit.module.css";
 import Cropper from "react-easy-crop";
+import DaumPostcode from "react-daum-postcode";
 import { uploadMypageProfileImage } from "../../features/user/mypage/api";
 import { getCroppedImg } from "../../features/user/mypage/getCroppedImg";
 import { useAuthStore } from "../../features/auth/store/authStore";
@@ -40,7 +41,7 @@ const MyPageEdit = () => {
   const [profilePreview, setProfilePreview] = useState("");
   const [shineInterestId, setShineInterestId] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-
+  const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
   const profileFileInputRef = useRef(null);
   const profileMenuRef = useRef(null);
 
@@ -130,7 +131,7 @@ const MyPageEdit = () => {
       //주소
       postcode: "",
       address: "",
-      addressDetail: "",
+      detailAddress: "",
       //패스워드
       currentPassword: "",
       newPassword: "",
@@ -174,7 +175,7 @@ const MyPageEdit = () => {
       //주소
       postcode: data.postcode ?? "",
       address: data.address ?? "",
-      addressDetail: data.addressDetail ?? data.address_detail ?? "",
+      detailAddress: data.detailAddress ?? "",
 
       //비밀번호
       currentPassword: "",
@@ -396,7 +397,40 @@ const MyPageEdit = () => {
     );
   }
 
+  const handleCompletePostcode = (data) => {
+    let fullAddress = data.address;
+    let extraAddress = "";
 
+    if (data.addressType === "R") {
+      if (data.bname !== "") {
+        extraAddress += data.bname;
+      }
+
+      if (data.buildingName !== "") {
+        extraAddress +=
+          extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
+      }
+
+      fullAddress += extraAddress !== "" ? ` (${extraAddress})` : "";
+    }
+
+    setValue("postcode", data.zonecode, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+
+    setValue("address", fullAddress, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+
+    setValue("detailAddress", "", {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+
+    setIsPostcodeOpen(false);
+  };
   return (
     <div className={styles.container}>
       <h1 className={styles.headerTitle}>회원 정보 수정</h1>
@@ -619,9 +653,86 @@ const MyPageEdit = () => {
               })}
             </div>
           </div>
+          {/* 주소 */}
+          <div className={styles.group}>
+            <div className={styles.groupTitle}>
+              <span>주소</span>
+            </div>
 
-          <div className={styles.groupTitle}>
-            <span>주소</span>
+            <div className={styles.inputRow}>
+              <span className={styles.fieldLabel}>우편번호</span>
+
+              <div className={styles.addressSearchRow}>
+                <input
+                  type="text"
+                  value={watch("postcode") ?? ""}
+                  className={styles.input_name}
+                  placeholder="우편번호"
+                  readOnly
+                />
+
+                <button
+                  type="button"
+                  className={styles.addressSearchButton}
+                  onClick={() => setIsPostcodeOpen(true)}
+                >
+                  주소 검색
+                </button>
+              </div>
+            </div>
+
+            {isPostcodeOpen && (
+              <div className={styles.postcodeLayer}>
+                <div className={styles.postcodeHeader}>
+                  <span>주소 검색</span>
+                  <button
+                    type="button"
+                    className={styles.postcodeCloseButton}
+                    onClick={() => setIsPostcodeOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <DaumPostcode
+                  onComplete={handleCompletePostcode}
+                  style={{ width: "100%", height: "420px" }}
+                />
+              </div>
+            )}
+
+            <div className={styles.inputRow}>
+              <span className={styles.fieldLabel}>기본주소</span>
+
+              <div className={styles.inputWrapper}>
+                <input
+                  type="text"
+                  value={watch("address") ?? ""}
+                  className={styles.input_name}
+                  placeholder="주소 검색 버튼을 눌러주세요"
+                  readOnly
+                />
+              </div>
+            </div>
+
+            <div className={styles.inputRow}>
+              <span className={styles.fieldLabel}>상세주소</span>
+
+              <div className={styles.inputWrapper}>
+                <input
+                  type="text"
+                  value={watch("detailAddress") ?? ""}
+                  onChange={(e) => {
+                    setValue("detailAddress", e.target.value, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                  }}
+                  className={styles.input_name}
+                  placeholder="상세주소를 입력해주세요"
+                />
+              </div>
+            </div>
           </div>
 
           {/* 5. 연락처 */}

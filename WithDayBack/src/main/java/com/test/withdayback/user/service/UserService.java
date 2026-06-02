@@ -576,7 +576,9 @@ public class UserService {
         response.setGender(user.getGender());
         response.setIntro(user.getIntro());
         response.setProfileImage(user.getProfileImage());
-
+        response.setPostcode(user.getPostcode());
+        response.setAddress(user.getAddress());
+        response.setDetailAddress(user.getDetailAddress());
         // 유저가 선택한 관심사 id 목록
         response.setSelectedInterestIds(userDao.getUserInterestIds(user.getId()));
 
@@ -611,6 +613,9 @@ public class UserService {
             updateUser.setGender(mypageEditRequest.getGender());
             updateUser.setIntro(mypageEditRequest.getIntro());
             updateUser.setProfileImage(mypageEditRequest.getProfileImage());
+            updateUser.setPostcode(mypageEditRequest.getPostcode());
+            updateUser.setAddress(mypageEditRequest.getAddress());
+            updateUser.setDetailAddress(mypageEditRequest.getDetailAddress());
 
             // 비밀번호 변경 처리
             handleMypagePasswordChange(mypageEditRequest, dbUser, updateUser);

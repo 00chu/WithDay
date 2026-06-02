@@ -27,5 +27,7 @@ public class MypageEditResponseDTO {
     private List<Interest> allInterests;
     // 알림 설정 여부
     private Boolean notificationAgreed;
-
+    private String postcode;
+    private String address;
+    private String detailAddress;
 }

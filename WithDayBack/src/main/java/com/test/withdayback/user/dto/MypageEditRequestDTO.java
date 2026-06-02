@@ -22,4 +22,8 @@ public class MypageEditRequestDTO {
     private String currentPassword;
     private String newPassword;
     private String newPasswordConfirm;
+    // 주소
+    private String postcode;
+    private String address;
+    private String detailAddress;
 }

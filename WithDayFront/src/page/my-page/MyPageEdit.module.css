@@ -571,3 +571,69 @@
   color: #a0a0a0;
   pointer-events: none;
 }
+
+/*주소*/
+.addressSearchRow {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+}
+
+.addressSearchRow input {
+  flex: 1;
+}
+
+.addressSearchButton {
+  width: 100px;
+  height: 45px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.addressSearchButton:hover {
+}
+
+.postcodeLayer {
+  margin-left: 140px;
+  margin-bottom: 18px;
+  width: calc(100% - 140px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 8px 24px rgba(7, 18, 36, 0.12);
+}
+
+.postcodeHeader {
+  height: 44px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.postcodeCloseButton {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.postcodeCloseButton:hover {
+  background-color: var(--color-surface-soft);
+  color: var(--color-text-primary);
+}

@@ -109,7 +109,10 @@
         phone = #{phone},
         gender = #{gender},
         intro = #{intro},
-        profile_image = #{profileImage}
+        profile_image = #{profileImage},
+        postcode = #{postcode},
+        address = #{address},
+        detail_address = #{detailAddress}
         <if test="password != null and password != ''">
             , password = #{password}
         </if>
