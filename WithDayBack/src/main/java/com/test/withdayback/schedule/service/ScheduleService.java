@@ -344,6 +344,25 @@ public class ScheduleService {
 
         Long scheduleId = schedule.getId();
 
+        /*
+         * 일정 생성자는 별도 신청 과정을 거치지 않지만, 도메인상 이미 해당 일정의 확정 참여자다.
+         * schedule.current_participants는 insert mapper에서 1로 시작하므로 여기서는 인원 수를 다시 늘리지 않고,
+         * participation row만 APPROVED 상태로 만들어 참여자 목록/내 일정 조회가 같은 기준을 사용할 수 있게 한다.
+         */
+        Participation existingHostParticipation =
+                participationDao.findByEmailAndScheduleId(dto.getEmail(), scheduleId);
+        if (existingHostParticipation == null) {
+            Participation hostParticipation = new Participation();
+            hostParticipation.setUserId(userId);
+            hostParticipation.setScheduleId(scheduleId);
+            hostParticipation.setStatus(ParticipationStatus.APPROVED);
+
+            int inserted = participationDao.insertParticipation(hostParticipation);
+            if (inserted <= 0 || hostParticipation.getId() == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "호스트 참여 정보 생성에 실패했습니다.");
+            }
+        }
+
         // detail insert
         if (dto.getDetailSchedule() != null) {
             for (ScheduleDetail detail : dto.getDetailSchedule()) {
