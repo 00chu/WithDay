@@ -1,64 +1,47 @@
-/* ---------------------------------------------------------
-   1. 페이지 전체 / 실제 Header, BottomNav 대응
---------------------------------------------------------- */
-
-.pageShell {
-  --detail-header-offset: 92px;
-  --detail-side-top: calc(var(--detail-header-offset) + 20px);
-  --detail-bottom-offset: var(--bottom-nav-total-height, 72px);
-
-  min-height: 100dvh;
-  padding-bottom: calc(var(--detail-bottom-offset) + 48px);
-  background:
-    radial-gradient(
-      circle at 14% 0%,
-      rgba(29, 154, 153, 0.075),
-      transparent 32%
-    ),
-    linear-gradient(180deg, #ffffff 0%, var(--color-bg) 48%, #f3f7f8 100%);
-  color: var(--color-text-primary);
+/* 상세 페이지 전체 배경과 하단 네비게이션 여백을 책임지는 최상위 컨테이너다. */
+.container {
+  min-height: 100vh;
+  padding-bottom: calc(var(--bottom-nav-total-height, 72px) + 40px);
+  background: var(--color-bg, #f8fafc);
+  color: var(--color-text-primary, #1e293b);
 }
 
+/* 본문 폭을 제한해 1440px 이상에서도 읽기 폭이 과도하게 넓어지지 않게 한다. */
 .page {
-  width: min(1240px, calc(100% - 48px));
-  margin: 28px auto 0;
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 28px 0 40px;
 }
 
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 0 0 16px;
-  color: var(--color-text-muted);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.breadcrumb span:last-child {
-  color: var(--color-primary);
-}
-
+/* 데스크톱 기본 레이아웃: 본문 1fr + 우측 360px sticky 사이드바 구조다. */
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 350px;
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 28px;
   align-items: start;
 }
 
+/* grid/flex 자식이 긴 텍스트 때문에 부모 폭을 밀어내지 않도록 공통 min-width를 제거한다. */
 .mainColumn,
 .sideColumn {
   min-width: 0;
 }
 
+/* 메인 컬럼은 hero, 제목/조건, 상세 설명을 카드 단위로 세로 배치한다. */
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 사이드바는 데스크톱에서 스크롤 중에도 핵심 CTA/관리 영역이 보이도록 sticky로 고정한다. */
 .sideColumn {
-  display: grid;
-  gap: 14px;
   position: sticky;
-  top: var(--detail-side-top);
-  align-self: start;
-  max-height: calc(
-    100dvh - var(--detail-side-top) - var(--detail-bottom-offset) - 24px
-  );
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: calc(100vh - 88px - var(--bottom-nav-total-height, 72px) - 24px);
   overflow-y: auto;
   padding-right: 2px;
   -ms-overflow-style: none;
@@ -69,590 +52,468 @@
   display: none;
 }
 
-.heroCard,
-.panel,
-.sideCtaPanel {
-  background: rgba(255, 255, 255, 0.97);
-  border: 1px solid rgba(10, 22, 45, 0.075);
-  border-radius: 22px;
-  box-shadow: 0 12px 30px rgba(10, 22, 45, 0.055);
+/* 모든 주요 상세 섹션이 공유하는 카드 surface다. */
+.panel {
+  border: 1px solid var(--color-border-light, #e2e8f0);
+  border-radius: var(--radius-md);
+  background: var(--color-surface, #ffffff);
+  box-shadow: var(--shadow-panel, 0 18px 45px rgba(15, 23, 42, 0.08));
 }
 
+/* hero 카드는 이미지가 radius 밖으로 삐져나오지 않게 overflow를 자른다. */
 .heroCard {
   overflow: hidden;
 }
 
-.panel {
-  padding: 20px;
-}
-
-/* ---------------------------------------------------------
-   2. 상태 화면
---------------------------------------------------------- */
-
-.statePage {
-  min-height: 60dvh;
-  display: grid;
-  place-items: center;
-  padding: 40px 20px;
-  color: var(--color-text-secondary);
-  font-size: 15px;
-  font-weight: 700;
-  background: var(--color-bg);
-}
-
-/* ---------------------------------------------------------
-   3. Hero 이미지
---------------------------------------------------------- */
-
+/* 대표 이미지 영역은 16:9 비율을 기본으로 하되 최소 높이를 둬 데스크톱 시안의 존재감을 유지한다. */
 .heroImageWrap {
   position: relative;
-  height: 380px;
+  aspect-ratio: 16 / 9;
+  min-height: 320px;
   overflow: hidden;
-  background: #e9f5f6;
+  background: var(--color-border-light, #f1f5f9);
 }
 
+/* 이미지는 업로드 비율이 달라도 hero frame을 꽉 채우는 것이 우선이다. */
 .heroImage {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   display: block;
-  cursor: pointer;
+  object-fit: cover;
+  object-position: center center;
+  cursor: zoom-in;
 }
 
+/* 카테고리/상태/D-day 배지를 이미지 위에 겹쳐 핵심 상태를 첫 화면에서 확인하게 한다. */
 .heroBadges {
   position: absolute;
-  top: 20px;
-  left: 20px;
+  top: 18px;
+  left: 18px;
+  right: 18px;
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
-  z-index: 2;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-.badge {
+/* hero 위 배지는 이미지 대비를 위해 공통 blur 배경과 pill radius를 사용한다. */
+.categoryBadge,
+.ddayBadge,
+.statusOpen {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 5px;
   min-height: 32px;
-  padding: 0 13px;
+  padding: 0 12px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
+  backdrop-filter: blur(10px);
 }
 
-.badgeCategory {
-  background: rgba(29, 154, 153, 0.94);
-  color: var(--color-text-inverse);
+/* 카테고리 배지는 이미지 위에서도 읽히도록 거의 흰색 surface를 사용한다. */
+.categoryBadge {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-text-primary, #1e293b);
 }
 
-.badgeRecommended {
-  background: var(--color-status-available);
-  color: var(--color-text-inverse);
+/* 추천 일정 배지는 기존 모집중 배지 위치/형태를 유지하면서 WithDay 포인트 컬러를 사용한다. */
+.statusOpen {
+  background: rgba(37, 99, 235, 0.92);
+  color: #ffffff;
 }
 
-.badgeDday {
-  background: rgba(10, 22, 45, 0.92);
-  color: var(--color-text-inverse);
+/* 추천 기간은 오른쪽 끝으로 밀어 이미지 위 상태 정보 중 시간성 값을 분리한다. */
+.ddayBadge {
+  margin-left: auto;
+  background: rgba(15, 23, 42, 0.78);
+  color: #ffffff;
 }
 
+/* 이미지 이전/다음 버튼은 hero 위에 고정된 원형 컨트롤로 유지한다. */
 .imageNav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
-  border: none;
+  width: 42px;
+  height: 42px;
+  border: 0;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--color-primary);
-  box-shadow: var(--shadow-md);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  z-index: 2;
-  transition:
-    background-color var(--transition-fast),
-    transform var(--transition-fast);
-}
-
-.imageNav:hover {
-  background: #ffffff;
-  transform: translateY(-50%) scale(1.04);
-}
-
-.imageNav svg {
-  font-size: 29px;
-}
-
-.prev {
-  left: 18px;
-}
-
-.next {
-  right: 18px;
-}
-
-.imageCount {
-  position: absolute;
-  right: 20px;
-  bottom: 92px;
-  min-width: 52px;
-  height: 30px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(10, 22, 45, 0.78);
+  background: rgba(15, 23, 42, 0.58);
   color: #ffffff;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 12px;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
+/* hover 가능한 이미지 컨트롤만 대비와 크기를 살짝 올린다. */
+.imageNav:hover {
+  background: rgba(15, 23, 42, 0.78);
+  transform: translateY(-50%) scale(1.04);
+}
+
+/* 이미지가 1장일 때 disabled 상태를 명확히 보여 불필요한 클릭 기대를 줄인다. */
+.imageNav:disabled {
+  background: rgba(15, 23, 42, 0.22);
+  color: rgba(255, 255, 255, 0.65);
+  cursor: not-allowed;
+  transform: translateY(-50%);
+}
+
+/* 이전 버튼 위치다. hero 좌측 여백과 배지 여백을 맞춘다. */
+.prevBtn {
+  left: 18px;
+}
+
+/* 다음 버튼 위치다. hero 우측 여백과 이미지 카운트 위치를 맞춘다. */
+.nextBtn {
+  right: 18px;
+}
+
+/* 현재 이미지 순서를 알려주는 카운터다. lightbox 진입 전 사용자가 이미지 개수를 알 수 있게 한다. */
+.imageCount {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.7);
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+/* 썸네일 스트립은 최대 3개 이미지를 동일 폭으로 보여주는 보조 탐색 영역이다. */
 .thumbStrip {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  padding: 12px;
-  background: #ffffff;
+  padding: 14px;
+  background: var(--color-surface, #ffffff);
 }
 
+/* 개별 썸네일 버튼이다. */
 .thumb {
   position: relative;
-  overflow: hidden;
-  height: 58px;
-  border-radius: 10px;
-  background: var(--color-accent-light);
   border: 2px solid transparent;
+  border-radius: var(--radius-md);
   padding: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--color-border-light, #f1f5f9);
   cursor: pointer;
-}
-
-.thumb.active {
-  border-color: var(--color-accent);
 }
 
 .thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   display: block;
+  object-fit: cover;
 }
 
-.thumbMore {
-  display: grid;
-  place-items: center;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 800;
+.thumbActive {
+  border-color: var(--color-primary, #2563eb);
 }
 
-.thumbMore::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(10, 22, 45, 0.58);
-  z-index: 1;
-}
-
-.thumbMore span {
-  position: absolute;
-  z-index: 2;
-}
-
-/* ---------------------------------------------------------
-   4. 타이틀 / 메타 / 정보 그리드
---------------------------------------------------------- */
-
-.titleSection {
-  padding: 26px 0 0;
+.titleSection,
+.contentSection {
+  padding: 28px;
 }
 
 .titleRow {
   display: flex;
+  gap: 18px;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 20px;
 }
 
-.titleMain {
+.titleContent {
   min-width: 0;
 }
 
-.scheduleTitle {
+.title {
   margin: 0;
-  font-size: clamp(27px, 2.35vw, 34px);
-  line-height: 1.24;
-  letter-spacing: -0.045em;
-  font-weight: 850;
-  color: var(--color-primary);
-  word-break: keep-all;
-}
-
-.socialInfo {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  font-weight: 800;
-  flex: 0 0 auto;
-  padding-top: 8px;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  line-height: 1.16;
+  letter-spacing: -0.04em;
+  color: var(--color-text-primary, #1e293b);
 }
 
 .metaLine {
-  margin-top: 15px;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 18px;
-  color: var(--color-text-secondary);
-  font-weight: 700;
-  font-size: 14px;
+  align-items: center;
+  gap: 10px 16px;
+  margin-top: 14px;
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.9375rem;
+}
+
+.metaLine span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .infoGrid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  margin-top: 24px;
-  border: 1px solid rgba(10, 22, 45, 0.08);
-  border-radius: 22px;
-  background: #ffffff;
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  gap: 12px;
+  margin-top: 28px;
 }
 
 .infoItem {
   min-width: 0;
-  padding: 22px 14px;
-  display: grid;
-  gap: 6px;
-  text-align: center;
-  border-right: 1px solid var(--color-border-light);
-}
-
-.infoItem:last-child {
-  border-right: none;
+  padding: 16px;
+  border: 1px solid var(--color-border-light, #e2e8f0);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-highlight, #f8fafc);
 }
 
 .infoIcon {
-  width: 35px;
-  height: 35px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  margin: 0 auto 2px;
-  background: var(--color-surface-highlight);
-  color: var(--color-accent-dark);
-  font-size: 18px;
+  color: var(--color-primary, #2563eb);
 }
 
-.infoLabel {
-  color: var(--color-text-muted);
-  font-size: 12px;
-  font-weight: 800;
+.label,
+.value,
+.subValue {
+  margin: 0;
 }
 
-.infoValue {
-  color: var(--color-primary);
-  font-size: clamp(15px, 1.35vw, 18px);
-  font-weight: 850;
-  letter-spacing: -0.035em;
-  word-break: keep-all;
-  line-height: 1.25;
-}
-
-.infoSub {
-  color: var(--color-text-muted);
-  font-size: 11px;
+.label {
+  margin-top: 10px;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #64748b);
   font-weight: 700;
-  line-height: 1.35;
-  word-break: keep-all;
 }
 
-/* ---------------------------------------------------------
-   5. 본문
---------------------------------------------------------- */
+.value {
+  margin-top: 4px;
+  color: var(--color-text-primary, #1e293b);
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.subValue {
+  margin-top: 3px;
+  color: var(--color-text-muted, #94a3b8);
+  font-size: 0.8125rem;
+}
 
 .contentSection {
-  margin-top: 32px;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 28px;
 }
 
-.sectionTitle {
-  margin: 0 0 14px;
-  font-size: 21px;
-  font-weight: 850;
-  letter-spacing: -0.035em;
-  color: var(--color-primary);
+.contentBlock {
+  min-width: 0;
 }
 
-.description {
+.subTitle {
   margin: 0;
-  color: var(--color-text-secondary);
-  font-size: 15px;
-  line-height: 1.75;
-  word-break: keep-all;
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary, #1e293b);
+}
+
+.descriptionText {
+  margin: 14px 0 0;
+  color: var(--color-text-secondary, #475569);
+  line-height: 1.82;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-.tagList {
-  margin-top: 18px;
+.dailyPlanList {
   display: flex;
-  flex-wrap: wrap;
-  gap: 9px;
-}
-
-.softTag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 11px;
-  border-radius: 999px;
-  background: var(--color-bg);
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.dayList {
-  display: grid;
-  gap: 12px;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
 }
 
 .dayCard {
   display: grid;
-  grid-template-columns: 86px minmax(0, 1fr);
-  gap: 17px;
-  padding: 17px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  background: #ffffff;
-  box-shadow: var(--shadow-sm);
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid var(--color-border-light, #e2e8f0);
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    var(--color-surface-highlight, #f8fafc) 100%
+  );
 }
 
-.dayChip {
+.dayNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   align-self: start;
-  min-height: 56px;
-  border-radius: 16px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(180deg, #21adab 0%, var(--color-accent) 100%);
-  color: #ffffff;
-  font-size: 13px;
+  min-height: 42px;
+  border-radius: 999px;
+  background: var(--color-accent-light, #dbeafe);
+  color: var(--color-primary, #2563eb);
   font-weight: 900;
-  letter-spacing: -0.02em;
 }
 
 .dayContent {
   min-width: 0;
-  display: grid;
-  gap: 8px;
 }
 
-.timePill {
+.planTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--color-text-primary, #1e293b);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.planDesc {
+  margin: 8px 0 0;
+  color: var(--color-text-secondary, #64748b);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sideColumn > .panel {
+  padding: 20px;
+}
+
+.hostPanel {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.recommendAvatar {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary, #2563eb),
+    var(--color-accent, #0f766e)
+  );
+  color: #ffffff;
   display: inline-flex;
   align-items: center;
-  width: fit-content;
-  gap: 6px;
-  padding: 5px 9px;
-  border-radius: 999px;
-  background: var(--color-surface-highlight);
-  color: var(--color-accent-dark);
-  font-size: 12px;
+  justify-content: center;
+}
+
+.recommendAvatar svg {
+  font-size: 30px;
+}
+
+.hostText {
+  min-width: 0;
+}
+
+.hostBadge {
+  display: block;
+  color: var(--color-text-muted, #94a3b8);
+  font-size: 0.8125rem;
   font-weight: 800;
 }
 
-.dayTitle {
-  margin: 0;
-  color: var(--color-primary);
-  font-size: 16px;
-  font-weight: 850;
-  word-break: keep-all;
+.hostName {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-text-primary, #1e293b);
+  font-size: 1.08rem;
 }
 
-.dayDesc {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  line-height: 1.65;
-  white-space: pre-wrap;
-  word-break: keep-all;
-}
-
-/* ---------------------------------------------------------
-   6. 우측 사이드 패널
---------------------------------------------------------- */
-
-.recommendPanel {
-  display: grid;
-  grid-template-columns: 54px minmax(0, 1fr);
-  gap: 15px;
-  align-items: center;
-  background: linear-gradient(180deg, #f5fbfb 0%, #ecf8f8 100%);
-  border-color: rgba(29, 154, 153, 0.18);
-}
-
-.recommendIcon,
-.noticeIcon {
-  width: 54px;
-  height: 54px;
-  display: grid;
-  place-items: center;
-  border-radius: 20px;
-  background: rgba(29, 154, 153, 0.12);
-  color: var(--color-accent-dark);
-  font-size: 26px;
-}
-
-.recommendIcon svg {
-  font-size: 28px;
+.hostMeta,
+.chatLinkNotice,
+.executionNotice {
+  margin: 8px 0 0;
+  color: var(--color-text-secondary, #64748b);
+  line-height: 1.55;
+  font-size: 0.875rem;
 }
 
 .noticePanel {
-  display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
-  gap: 15px;
-  align-items: center;
-  background: #ffffff;
+  display: flex;
+  gap: 14px;
+}
+
+.noticeIcon {
+  flex: 0 0 auto;
+  color: var(--color-primary, #2563eb);
 }
 
 .noticeTitle {
-  margin: 0 0 6px;
-  color: var(--color-accent-dark);
-  font-size: 17px;
-  font-weight: 850;
-  line-height: 1.35;
-  letter-spacing: -0.03em;
-}
-
-.noticeText {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  line-height: 1.6;
-  word-break: keep-all;
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 900;
 }
 
 .summaryList {
-  display: grid;
-  gap: 16px;
-  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
 }
 
 .summaryRow {
-  display: grid;
-  grid-template-columns: 24px 82px minmax(0, 1fr);
-  gap: 10px;
-  align-items: start;
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  line-height: 1.5;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.9rem;
 }
 
 .summaryRow strong {
-  color: var(--color-primary);
-  font-weight: 850;
+  color: var(--color-text-primary, #1e293b);
+  text-align: right;
 }
 
-.summaryIcon {
-  color: var(--color-accent-dark);
-  font-size: 17px;
-  text-align: center;
-}
-
-.sideCtaPanel {
-  padding: 16px;
+.summaryActions {
   display: grid;
   gap: 10px;
-  background: linear-gradient(
-    180deg,
-    rgba(218, 241, 241, 0.72) 0%,
-    rgba(255, 255, 255, 0.98) 100%
-  );
-  border-color: rgba(29, 154, 153, 0.2);
+  margin-top: 18px;
 }
 
-.sideUseButton {
-  min-height: 50px;
-  border-radius: var(--radius-md);
-  font-size: 15px;
-  font-weight: 850;
-  box-shadow: 0 10px 22px rgba(29, 154, 153, 0.18);
+.summaryButton {
+  width: 100%;
 }
 
-.sideCtaText {
+.summaryApplyMessage {
   margin: 0;
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.55;
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.8125rem;
+  line-height: 1.4;
   text-align: center;
-  word-break: keep-all;
-}
-
-.hostMeta {
-  margin: 2px 0 0;
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.hostActions {
-  display: grid;
-  gap: 12px;
 }
 
 .hostActionGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 10px;
+  margin-top: 16px;
 }
 
-.hostAction {
-  min-height: 68px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  background: #ffffff;
-  color: var(--color-text-secondary);
-  font-weight: 800;
-  font-size: 13px;
-  display: grid;
-  place-items: center;
-  gap: 4px;
-  cursor: pointer;
-  transition:
-    background-color var(--transition-fast),
-    border-color var(--transition-fast),
-    color var(--transition-fast);
-}
+@media screen and (max-width: 1180px) {
+  .page {
+    width: min(100% - 32px, 920px);
+  }
 
-.hostAction:hover {
-  background: var(--color-surface-hover);
-  border-color: var(--color-accent);
-  color: var(--color-accent-dark);
-}
-
-.hostAction:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.hostAction span {
-  font-size: 19px;
-  color: var(--color-primary-soft);
-}
-
-/* ---------------------------------------------------------
-   7. 반응형
---------------------------------------------------------- */
-
-@media (max-width: 1180px) {
   .layout {
     grid-template-columns: 1fr;
   }
@@ -661,151 +522,61 @@
     position: static;
     max-height: none;
     overflow: visible;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding-right: 0;
   }
 
   .infoGrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .infoItem:nth-child(3) {
-    border-right: none;
-  }
-
-  .sideCtaPanel {
-    align-content: center;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 768px) {
-  .pageShell {
-    --detail-header-offset: 74px;
-    padding-bottom: calc(var(--detail-bottom-offset) + 24px);
-  }
-
+@media screen and (max-width: 768px) {
   .page {
-    width: min(100% - 24px, 720px);
-    margin-top: 20px;
-  }
-
-  .breadcrumb {
-    font-size: 12px;
-    margin-bottom: 14px;
-  }
-
-  .heroCard,
-  .panel,
-  .sideCtaPanel {
-    border-radius: 18px;
+    width: min(100% - 24px, 100%);
+    padding-top: 16px;
   }
 
   .heroImageWrap {
-    height: 250px;
-  }
-
-  .heroBadges {
-    top: 14px;
-    left: 14px;
-    gap: 8px;
-  }
-
-  .badge {
-    min-height: 29px;
-    padding: 0 10px;
-    font-size: 12px;
-  }
-
-  .imageNav {
-    width: 38px;
-    height: 38px;
-  }
-
-  .prev {
-    left: 12px;
-  }
-
-  .next {
-    right: 12px;
-  }
-
-  .imageCount {
-    right: 14px;
-    bottom: 84px;
+    min-height: 220px;
   }
 
   .thumbStrip {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .titleSection,
+  .contentSection,
+  .sideColumn > .panel {
+    padding: 18px;
   }
 
   .titleRow {
-    display: grid;
-  }
-
-  .socialInfo {
-    justify-content: flex-start;
-    padding-top: 0;
-  }
-
-  .scheduleTitle {
-    font-size: 25px;
-  }
-
-  .metaLine {
-    font-size: 13px;
+    flex-direction: column;
   }
 
   .infoGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .infoItem {
-    border-right: none;
-    border-bottom: 1px solid var(--color-border-light);
-    padding: 18px 14px;
-  }
-
-  .infoItem:last-child {
-    border-bottom: none;
-  }
-
-  .sideColumn {
-    grid-template-columns: 1fr;
-  }
-
-  .recommendPanel,
-  .noticePanel {
-    grid-template-columns: 50px minmax(0, 1fr);
-  }
-
-  .recommendIcon,
-  .noticeIcon {
-    width: 48px;
-    height: 48px;
-    border-radius: 18px;
-  }
-
-  .summaryRow {
-    grid-template-columns: 24px 78px minmax(0, 1fr);
+    grid-template-columns: 1fr 1fr;
   }
 
   .dayCard {
     grid-template-columns: 1fr;
   }
-
-  .dayChip {
-    min-height: 46px;
-  }
-
-  .sideUseButton {
-    min-height: 50px;
-    font-size: 15px;
-  }
 }
 
-/* ---------------------------------------------------------
-   8. 외부 라이브러리 커스텀
---------------------------------------------------------- */
+@media screen and (max-width: 480px) {
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroBadges {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+  }
+
+  .ddayBadge {
+    margin-left: 0;
+  }
+}
 
 :global(.yarl__toolbar) {
   flex-direction: row-reverse;
