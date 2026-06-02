@@ -19,7 +19,7 @@
   right: 0;
   bottom: 0;
   z-index: 20;
-
+  border: none;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -372,10 +372,19 @@
 }
 .input_name {
   width: 100%;
-  padding: 14px 15px; /* 왼쪽 패딩을 15px로 줄여 앞쪽으로 정렬 */
+  padding: 14px 15px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   box-sizing: border-box;
+  letter-spacing: 0.5px;
+}
+.input_name,
+.input,
+.textarea {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-primary);
 }
 .iconStart {
   position: absolute;

@@ -17,6 +17,7 @@ import {
   UserRoundIcon,
   MessageCircleIcon,
   TagsIcon,
+  PhoneIcon,
 } from "lucide-react";
 
 const MyPageEdit = () => {
@@ -111,6 +112,7 @@ const MyPageEdit = () => {
   const handlePwChange = (e, field) =>
     setPwState({ ...pwState, [field]: e.target.value });
 
+  {/*초기 값*/ }
   const {
     handleSubmit,
     reset,
@@ -125,6 +127,11 @@ const MyPageEdit = () => {
       profileImage: "",
       interestIds: [],
       notificationAgreed: false,
+      //주소
+      postcode: "",
+      address: "",
+      addressDetail: "",
+      //패스워드
       currentPassword: "",
       newPassword: "",
       newPasswordConfirm: "",
@@ -147,7 +154,7 @@ const MyPageEdit = () => {
       .filter((id) => Number.isFinite(id));
   };
 
-  // 백엔드에서 가져온 데이터로 초기값 세팅
+  {/*백엔드에서 가져온 데이터로 초기값 세팅*/ }
   useEffect(() => {
     if (!editQuery.data || initializedRef.current) return;
 
@@ -163,6 +170,13 @@ const MyPageEdit = () => {
       profileImage: data.profileImage ?? "",
       interestIds: initialInterestIds,
       notificationAgreed: data.notificationAgreed ?? false,
+
+      //주소
+      postcode: data.postcode ?? "",
+      address: data.address ?? "",
+      addressDetail: data.addressDetail ?? data.address_detail ?? "",
+
+      //비밀번호
       currentPassword: "",
       newPassword: "",
       newPasswordConfirm: "",
@@ -610,8 +624,32 @@ const MyPageEdit = () => {
             <span>주소</span>
           </div>
 
-          <div className={styles.groupTitle}>
-            <span>연락처</span>
+          {/* 5. 연락처 */}
+          <div className={styles.group}>
+            <div className={styles.groupTitle}>
+              <PhoneIcon size={18} />
+              <span>연락처</span>
+            </div>
+
+            <div className={styles.inputRow}>
+              <span className={styles.fieldLabel}>연락처</span>
+
+              <div className={styles.inputWrapper}>
+                <input
+                  type="text"
+                  value={watch("phone") ?? ""}
+                  onChange={(e) => {
+                    setValue("phone", formatPhoneNumber(e.target.value), {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                  }}
+                  className={styles.input_name}
+                  placeholder="010-1234-5678"
+                  maxLength={13}
+                />
+              </div>
+            </div>
           </div>
 
           {/* 4. 비밀번호 */}
