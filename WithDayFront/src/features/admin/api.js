@@ -13,7 +13,11 @@ export const selectAllMember = async (params) => {
   return data;
 };
 
-export const getDashboardData = async () => {
-  const { data } = await api.get(`/admins/dashboards`);
+export const getDashboardData = async (period) => {
+  const { data } = await api.get(`/admins/dashboards`, {
+    params: {
+      period,
+    },
+  });
   return data;
 };

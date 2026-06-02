@@ -1,6 +1,8 @@
 package com.test.withdayback.admin.dao;
 
+import com.test.withdayback.admin.dto.AdminDashboardResponse;
 import com.test.withdayback.admin.dto.AdminMemberRequest;
+import com.test.withdayback.admin.vo.Dashboard;
 import com.test.withdayback.user.vo.User;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -29,4 +31,12 @@ public interface AdminDao {
     int selectCompletedScheduleCount();
 
     int selectClosedScheduleCount();
+
+    List<Dashboard> selectDashboardList();
+
+    List<Dashboard> selectDailyDashboard();
+
+    List<Dashboard> selectWeeklyDashboard();
+
+    List<Dashboard> selectMonthlyDashboard();
 }

@@ -22,7 +22,7 @@ public class AdminController {
     }
 
     @GetMapping(value = "/dashboards")
-    public ResponseEntity<?> getDashboardData (){
-        return ResponseEntity.ok(adminService.getDashboardData());
+    public ResponseEntity<?> getDashboardData (@RequestParam(defaultValue = "daily") String period){
+        return ResponseEntity.ok(adminService.getDashboardData(period));
     }
 }

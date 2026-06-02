@@ -4,6 +4,7 @@ import com.test.withdayback.admin.dao.AdminDao;
 import com.test.withdayback.admin.dto.AdminDashboardResponse;
 import com.test.withdayback.admin.dto.AdminMemberRequest;
 import com.test.withdayback.admin.dto.AdminMemberResponse;
+import com.test.withdayback.admin.vo.Dashboard;
 import com.test.withdayback.user.vo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,7 @@ public class AdminService {
         return response;
     }
 
-    public AdminDashboardResponse getDashboardData() {
+    public AdminDashboardResponse getDashboardData(String period) {
         AdminDashboardResponse response = new AdminDashboardResponse();
 
         Integer totalUserCount = adminDao.selectTotalUserCount();
@@ -58,6 +59,24 @@ public class AdminService {
 
         response.setClosedScheduleCount(
                 adminDao.selectClosedScheduleCount());
+
+        List<Dashboard> dashboardList;
+
+        switch (period) {
+            case "weekly":
+                dashboardList = adminDao.selectWeeklyDashboard();
+                break;
+
+            case "monthly":
+                dashboardList = adminDao.selectMonthlyDashboard();
+                break;
+
+            default:
+                dashboardList = adminDao.selectDailyDashboard();
+                break;
+        }
+
+        response.setDashboardList(dashboardList);
 
         return response;
     }

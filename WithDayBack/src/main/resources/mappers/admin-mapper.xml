@@ -121,4 +121,34 @@
         from schedule
         where status = 'closed'
     </select>
+
+    <select id="selectDailyDashboard" resultType="Dashboard">
+        select
+            stat_date,
+            total_user_count,
+            total_schedule_count
+        from dashboard
+        order by stat_date
+        limit 14
+    </select>
+
+    <select id="selectWeeklyDashboard" resultType="Dashboard">
+        select
+            max(stat_date) as stat_date,
+            max(total_user_count) as total_user_count,
+            max(total_schedule_count) as total_schedule_count
+        from dashboard
+        group by year(stat_date), week(stat_date, 1)
+        order by stat_date
+    </select>
+
+    <select id="selectMonthlyDashboard" resultType="Dashboard">
+        select
+            max(stat_date) as stat_date,
+            max(total_user_count) as total_user_count,
+            max(total_schedule_count) as total_schedule_count
+        from dashboard
+        group by year(stat_date), month(stat_date)
+        order by stat_date
+    </select>
 </mapper>
