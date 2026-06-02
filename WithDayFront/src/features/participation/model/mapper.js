@@ -128,34 +128,70 @@ const resolveSchedulePhase = ({
  * 이 시점에서 상위 페이지는 더 이상 서버 원본 필드명을 알 필요가 없고,
  * ParticipationCard는 item.title, item.dDay 같은 화면 중심 필드만 사용한다.
  */
-export const normalizeMyScheduleItem = (item) => ({
-  id: item.participationId ?? item.scheduleId,
-  scheduleId: item.scheduleId,
-  participationId: item.participationId,
-  category: PARTICIPATION_CATEGORY_LABELS[item.category] ?? item.category ?? "기타",
-  dDay: formatDisplayDDay(item.startDate),
-  title: item.title ?? "-",
-  location: item.location ?? "-",
-  date: formatDisplayDateRange(item.startDate, item.endDate),
-  currentPeople: item.currentPeople ?? 0,
-  maxPeople: item.maxPeople ?? 0,
-  dbStatus: normalizeParticipationStatus(item.dbStatus),
-  scheduleStatus: item.scheduleStatus ?? "",
-  recruitEndDate: item.recruitEndDate ?? "",
-  schedulePhase: resolveSchedulePhase({
+export const normalizeMyScheduleItem = (item) => {
+  const normalizedStatus = normalizeParticipationStatus(item.dbStatus);
+  const schedulePhase = resolveSchedulePhase({
     endDate: item.endDate,
     recruitEndDate: item.recruitEndDate,
     scheduleStatus: item.scheduleStatus,
     startDate: item.startDate,
-  }),
-  myRole: item.host ? "host" : undefined,
-  thumbnail: item.thumbnail ?? "",
-});
+  });
+  const today = dayjs().startOf("day");
+  const start = item.startDate ? dayjs(item.startDate).startOf("day") : null;
+  const daysUntilStart =
+    start?.isValid() ? start.diff(today, "day") : Number.POSITIVE_INFINITY;
+
+  const resolvePhaseTone = (phase) => {
+    if (phase === "모집중") return "open";
+    if (phase === "모집종료") return "closed";
+    if (phase === "진행중") return "ongoing";
+    if (phase === "취소됨") return "canceled";
+    if (phase === "종료") return "ended";
+    return "neutral";
+  };
+
+  return {
+    id: item.participationId ?? item.scheduleId,
+    scheduleId: item.scheduleId,
+    participationId: item.participationId,
+    category:
+      PARTICIPATION_CATEGORY_LABELS[item.category] ?? item.category ?? "기타",
+    dDay: formatDisplayDDay(item.startDate),
+    title: item.title ?? "-",
+    location: item.location ?? "-",
+    date: formatDisplayDateRange(item.startDate, item.endDate),
+    currentPeople: item.currentPeople ?? 0,
+    maxPeople: item.maxPeople ?? 0,
+    dbStatus: normalizedStatus,
+    scheduleStatus: item.scheduleStatus ?? "",
+    recruitEndDate: item.recruitEndDate ?? "",
+    schedulePhase,
+    myRole: item.host ? "host" : undefined,
+    thumbnail: item.thumbnail ?? "",
+    thumbnailSrc: item.thumbnail?.trim() || "/hero.png",
+    hasThumbnail: Boolean(item.thumbnail?.trim()),
+    isUpcomingSoon:
+      Number.isFinite(daysUntilStart) &&
+      daysUntilStart >= 0 &&
+      daysUntilStart <= 7,
+    schedulePhaseTone: resolvePhaseTone(schedulePhase),
+  };
+};
+
+/*
+ * 탭별 query는 배열 하나만 응답으로 다루므로,
+ * 단일 리스트도 같은 규칙으로 정규화할 수 있는 helper를 함께 제공한다.
+ */
+export const normalizeMyScheduleList = (items = []) =>
+  items.map(normalizeMyScheduleItem);
 
 /*
  * 호스트 신청자 관리 카드용 데이터 정규화다.
  * applicant 목록은 사용자의 닉네임/이메일/신청 시각을 그대로 보여줘야 하므로,
  * 불필요한 가공은 줄이고 status 정규화 정도만 수행한다.
+ *
+ * phone/gender/fullAge는 호스트 권한을 통과한 applicants API에서만 기대하는 값이다.
+ * birthday 원본은 백엔드 DTO에서 @JsonIgnore 처리되므로 이 mapper에 들어오면 안 되며, 화면은 fullAge만 사용한다.
  */
 export const normalizeParticipationApplicant = (item) => ({
   participationId: item.participationId,
@@ -163,6 +199,10 @@ export const normalizeParticipationApplicant = (item) => ({
   userId: item.userId,
   email: item.email ?? "",
   nickname: item.nickname ?? "-",
+  profileImage: item.profileImage ?? "",
+  phone: item.phone ?? "",
+  gender: item.gender ?? null,
+  fullAge: item.fullAge ?? null,
   status: normalizeParticipationStatus(item.status),
   createdAt: item.createdAt ?? "",
 });
@@ -176,9 +216,9 @@ export const normalizeMySchedulesResponse = ({
   pending = [],
   hosting = [],
 } = {}) => ({
-  participating: participating.map(normalizeMyScheduleItem),
-  pending: pending.map(normalizeMyScheduleItem),
-  hosting: hosting.map(normalizeMyScheduleItem),
+  participating: normalizeMyScheduleList(participating),
+  pending: normalizeMyScheduleList(pending),
+  hosting: normalizeMyScheduleList(hosting),
 });
 
 /*

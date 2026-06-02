@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
@@ -6,28 +6,16 @@ import PersonOutlineRoundedIcon from "@mui/icons-material/PersonOutlineRounded";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
-import { getRegion } from "../../features/region/api";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import LayoutContainer from "../../shared/ui/LayoutContainer/LayoutContainer";
-import RegionSelect from "../../shared/ui/RegionSelect/RegionSelect";
 import NotificationPopover from "../../features/notification/ui/NotificationPopover";
 import Badge from "@mui/material/Badge";
 import { getNotificationCount } from "../../features/notification/api";
 
-const DEFAULT_REGION_OPTION = { label: "전체", value: "" };
-
-const normalizeRegionValue = (value) => value?.trim() ?? "";
-
-export default function Header({ selectedRegion, onRegionChange }) {
+export default function Header() {
   const navigate = useNavigate();
 
   const { user: loginUser, isLoggedIn } = useAuthStore();
-
-  const { data: regions = [] } = useQuery({
-    queryKey: ["header-region-options"],
-    queryFn: getRegion,
-    staleTime: 1000 * 60 * 10,
-  });
 
   const { data: notificationCount = 0 } = useQuery({
     queryKey: ["notification-count", loginUser?.email],
@@ -35,18 +23,6 @@ export default function Header({ selectedRegion, onRegionChange }) {
     enabled: !!(isLoggedIn && loginUser?.email),
     refetchInterval: 30000,
   });
-
-  const regionOptions = useMemo(() => {
-    return [
-      DEFAULT_REGION_OPTION,
-      ...regions.map((region) => ({
-        label: region.regionName,
-        value: normalizeRegionValue(region.regionName),
-      })),
-    ];
-  }, [regions]);
-
-  const selectedRegionValue = normalizeRegionValue(selectedRegion);
 
   const avatarFallback = (
     loginUser?.nickname?.trim()?.charAt(0) ||
@@ -91,18 +67,6 @@ export default function Header({ selectedRegion, onRegionChange }) {
               className={styles.logoImage}
             />
           </button>
-        </div>
-
-        <div className={styles.centerGroup}>
-          <RegionSelect
-            value={selectedRegionValue}
-            options={regionOptions}
-            onSelect={(option) =>
-              onRegionChange?.(normalizeRegionValue(option.value))
-            }
-            theme="navy"
-            className={styles.regionSelect}
-          />
         </div>
 
         <div className={styles.rightGroup}>

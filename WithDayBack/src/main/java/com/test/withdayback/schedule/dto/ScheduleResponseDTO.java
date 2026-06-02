@@ -39,9 +39,19 @@ public class ScheduleResponseDTO {
     private Boolean viewerCanAccessChatLink;
 
     // 상세 화면의 핵심 데이터 묶음이다.
+    private HostSummary host;
     private Schedule schedule;
     private List<ScheduleDetail> details;
     private List<ScheduleImage> images;
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Data
+    public static class HostSummary {
+        private Long userId;
+        private String nickname;
+        private String profileImage;
+    }
 
     /*
      * Service에서 schedule/detail/image 조회 결과를 받아 상세 응답 기본형을 만든다.

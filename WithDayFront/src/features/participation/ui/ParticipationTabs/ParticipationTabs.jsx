@@ -1,7 +1,6 @@
 import { memo } from "react";
 import clsx from "clsx";
-import Button from "../../../../shared/ui/Button/Button";
-import styles from "../Participation.module.css";
+import styles from "./ParticipationTabs.module.css";
 
 /*
  * 내 일정 화면의 최상단 탭 네비게이션이다.
@@ -10,35 +9,28 @@ import styles from "../Participation.module.css";
  *
  * 실제 데이터 전환은 여기서 하지 않는다.
  * 탭 값을 받은 MySchedulePage가 현재 배열(currentItems)과 emptyMessage를 다시 계산한다.
- * 내 일정 페이지의 참여 탭 버튼 묶음이다.
- * 탭 정의(PARTICIPATION_TABS)는 model/constants에 두고, 이 컴포넌트는 현재 탭 표시와 탭 변경 이벤트만 담당한다.
  */
-function ParticipationTabs({ tabs, activeTab, onTabChange }) {
+function ParticipationTabs({ tabs, counts = {}, activeTab, onTabChange }) {
   return (
-    <div className={styles.tabWrap}>
+    <div className={styles.tabList} role="tablist" aria-label="내 일정 탭">
       {tabs.map((tab) => (
         /*
-         * 버튼 클릭 자체는 아주 단순하지만, 그 뒤의 화면 흐름은 상위에서 이어진다.
-         * 1. 사용자가 탭 버튼 클릭
-         * 2. onTabChange(tab.value) 호출
-         * 3. MySchedulePage의 activeTab state 변경
-         * 4. currentItems / emptyMessage 재계산
-         * 5. 같은 query 결과 안에서 다른 배열을 렌더링
-         *
-         * activeTab과 tab.value가 같으면 active 스타일을 붙인다.
-         * 실제 목록 필터링은 MySchedulePage가 activeTab으로 currentItems를 선택하면서 처리한다.
+         * 탭 버튼은 데이터 fetch를 직접 하지 않는다.
+         * 클릭 이벤트만 상위로 올리면 MySchedulePage가 activeTab을 바꾸고, 그 값이 query/select 및 목록 렌더링을 다시 결정한다.
          */
-        <Button
+        <button
+          type="button"
           key={tab.value}
-          variant="outline"
-          size="md"
-          className={clsx(styles.tabBtn, {
-            [styles.active]: activeTab === tab.value,
+          role="tab"
+          aria-selected={activeTab === tab.value}
+          className={clsx(styles.tabButton, {
+            [styles.tabButtonActive]: activeTab === tab.value,
           })}
           onClick={() => onTabChange(tab.value)}
         >
-          {tab.label}
-        </Button>
+          <span className={styles.tabLabel}>{tab.label}</span>
+          <span className={styles.tabCount}>{counts[tab.value] ?? 0}</span>
+        </button>
       ))}
     </div>
   );

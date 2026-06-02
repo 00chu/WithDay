@@ -15,8 +15,6 @@ import participationStyles from "../Participation.module.css";
  * - 상위의 applicantStatus state 변경
  * - useScheduleApplicantsQuery key 변경
  * - 해당 상태의 신청자 목록 재조회
- * 일정 상세 페이지에서 호스트에게만 보이는 신청자 관리 영역이다.
- * 목록 조회, 상태 필터, 신청자 카드 렌더링을 담당하고 실제 승인/거절 API 호출은 상위 ScheduleDetail로 위임한다.
  */
 function HostParticipationList({
   items,
@@ -39,7 +37,6 @@ function HostParticipationList({
       <section className={styles.section}>
         <div className={styles.header}>
           <h2 className={styles.title}>신청자 관리</h2>
-          <p className={styles.description}>신청자 목록을 불러오는 중입니다.</p>
         </div>
         <div className={participationStyles.stateBox}>
           신청자 목록을 불러오는 중입니다.
@@ -57,9 +54,6 @@ function HostParticipationList({
       <section className={styles.section}>
         <div className={styles.header}>
           <h2 className={styles.title}>신청자 관리</h2>
-          <p className={styles.description}>
-            호스트 전용 신청자 관리 영역입니다.
-          </p>
         </div>
         <div
           className={clsx(
@@ -77,11 +71,6 @@ function HostParticipationList({
     <section className={styles.section}>
       <div className={styles.header}>
         <h2 className={styles.title}>신청자 관리</h2>
-        <p className={styles.description}>
-          {isReadOnly
-            ? "진행 중인 일정은 신청자 상태를 변경할 수 없습니다."
-            : "현재 일정에 신청한 사용자를 확인하고 상태를 변경할 수 있습니다."}
-        </p>
       </div>
 
       <div className={styles.filterGroup}>
@@ -93,9 +82,6 @@ function HostParticipationList({
            * 2. useScheduleApplicantsQuery 재실행
            * 3. 새 상태 목록 도착
            * 4. HostParticipationCard 목록 재렌더링
-           *
-           * 필터를 바꾸면 ScheduleDetail의 applicantStatus가 바뀌고,
-           * react-query key에 status가 포함되어 해당 상태의 신청자 목록을 다시 조회한다.
            */
           <Button
             key={filter.value}

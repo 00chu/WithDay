@@ -3,12 +3,14 @@ import {
   cancelParticipation,
   createParticipation,
   deleteParticipation,
-  fetchMySchedules,
+  fetchHostingSchedules,
+  fetchParticipatingSchedules,
+  fetchPendingSchedules,
   fetchScheduleApplicants,
   updateParticipationStatus,
 } from "../api";
 import {
-  normalizeMySchedulesResponse,
+  normalizeMyScheduleList,
   normalizeScheduleApplicantsResponse,
 } from "./mapper";
 
@@ -46,6 +48,16 @@ export const participationQueryKeys = {
     email?.trim() || "guest",
   ],
   /*
+   * 현재 UI는 탭별 query를 사용하므로 tab까지 key에 포함한다.
+   * 이렇게 해야 참여중 탭의 APPROVED/KICKED 결과와 신청중 탭의 PENDING 결과가 서로 덮어쓰이지 않는다.
+   */
+  mySchedulesByTab: (email, tab) => [
+    "participation",
+    "my-schedules",
+    email?.trim() || "guest",
+    tab?.trim() || "participating",
+  ],
+  /*
    * 신청자 목록 전체 prefix다.
    * 특정 schedule, 특정 호스트 email 조합 아래의 모든 상태 필터(PENDING/APPROVED/...) 캐시를 한 번에 무효화할 때 사용한다.
    */
@@ -81,18 +93,42 @@ export const participationQueryKeys = {
  * select를 hook 안에 두는 이유는,
  * 화면 컴포넌트가 매번 field 변환 로직을 반복하지 않게 하기 위해서다.
  * 즉 UI는 "이미 렌더링 가능한 데이터"만 받도록 계층을 분리한다.
- * 내 일정 페이지 조회 hook이다.
- * email이 없으면 요청을 보내지 않는다. 로그인 사용자 정보가 준비되기 전에 빈 email로 API를 호출하면 잘못된 빈 목록이 캐시될 수 있기 때문이다.
- * select에서 응답을 화면 모델로 정리해 UI 컴포넌트는 API 필드명 차이를 신경 쓰지 않게 한다.
  */
-export const useMySchedulesQuery = (email) => {
+const MY_SCHEDULE_TAB_FETCHERS = {
+  participating: fetchParticipatingSchedules,
+  pending: fetchPendingSchedules,
+  hosting: fetchHostingSchedules,
+};
+
+const resolveMyScheduleTabFetcher = (tab) => {
+  /*
+   * 알 수 없는 tab 값이 들어오면 참여중 탭으로 되돌린다.
+   * 잘못된 탭 문자열 때문에 queryFn이 undefined가 되어 렌더가 깨지는 것보다 안전한 기본 탭을 보여주는 편이 낫다.
+   */
+  return MY_SCHEDULE_TAB_FETCHERS[tab] ?? MY_SCHEDULE_TAB_FETCHERS.participating;
+};
+
+/*
+ * 현재 탭 하나만 조회하는 내 일정 query hook이다.
+ * 탭을 query key에 포함시켜 참여중/신청중/호스팅 캐시가 서로 섞이지 않게 분리한다.
+ */
+export const useMySchedulesQuery = (email, activeTab = "participating") => {
   const normalizedEmail = email?.trim() ?? "";
+  const normalizedTab = activeTab?.trim() || "participating";
+  /*
+   * queryFn 선택을 렌더 전에 확정해두면 useQuery 내부에서는 "현재 탭에 맞는 fetcher"만 실행한다.
+   * enabled가 email 준비 여부를 막아주므로 로그인 초기화 전 빈 email 요청은 발생하지 않는다.
+   */
+  const queryFn = resolveMyScheduleTabFetcher(normalizedTab);
 
   return useQuery({
-    queryKey: participationQueryKeys.mySchedules(normalizedEmail),
-    queryFn: () => fetchMySchedules({ email: normalizedEmail }),
+    queryKey: participationQueryKeys.mySchedulesByTab(
+      normalizedEmail,
+      normalizedTab,
+    ),
+    queryFn: () => queryFn({ email: normalizedEmail }),
     enabled: Boolean(normalizedEmail),
-    select: normalizeMySchedulesResponse,
+    select: normalizeMyScheduleList,
     staleTime: 1000 * 60,
   });
 };
@@ -107,12 +143,15 @@ export const useMySchedulesQuery = (email) => {
  * 상태 관리 방식:
  * - 각 mutation은 react-query가 개별 pending/success/error 상태를 관리
  * - 페이지에서는 여러 mutation의 isPending을 OR로 묶어 "현재 어떤 쓰기 요청이든 진행 중인가"만 간단히 사용
- * 내 일정 페이지에서 사용하는 참여 액션 mutation 묶음이다.
- * 취소/삭제가 성공하면 같은 페이지의 탭 목록을 다시 불러와야 하므로 mySchedules 캐시를 무효화한다.
  */
 export const useParticipationMutation = (email) => {
   const queryClient = useQueryClient();
   const mySchedulesQueryKey = participationQueryKeys.mySchedules(email);
+  const myScheduleTabKeys = [
+    participationQueryKeys.mySchedulesByTab(email, "participating"),
+    participationQueryKeys.mySchedulesByTab(email, "pending"),
+    participationQueryKeys.mySchedulesByTab(email, "hosting"),
+  ];
 
   const invalidateMySchedules = async () => {
     /*
@@ -137,24 +176,25 @@ export const useParticipationMutation = (email) => {
   };
 
   const removeParticipationFromMySchedulesCache = (participationId) => {
+    /*
+     * 취소는 사용자가 방금 누른 카드가 즉시 사라지는 느낌이 중요하다.
+     * 먼저 탭별 캐시에서 해당 participationId를 제거하고, 실패하면 onError에서 snapshot으로 복구한다.
+     */
     if (!email?.trim() || !participationId) {
-      return;
+      return [];
     }
 
-    queryClient.setQueryData(mySchedulesQueryKey, (previous) => {
+    return myScheduleTabKeys.map((queryKey) => {
+      const previous = queryClient.getQueryData(queryKey);
       if (!previous) {
-        return previous;
+        return { queryKey, previous };
       }
 
-      return {
-        ...previous,
-        pending: (previous.pending ?? []).filter(
-          (item) => item.participationId !== participationId
-        ),
-        participating: (previous.participating ?? []).filter(
-          (item) => item.participationId !== participationId
-        ),
-      };
+      queryClient.setQueryData(queryKey, (current = []) =>
+        current.filter((item) => item.participationId !== participationId),
+      );
+
+      return { queryKey, previous };
     });
   };
 
@@ -185,19 +225,26 @@ export const useParticipationMutation = (email) => {
   const cancelMutation = useMutation({
     mutationFn: cancelParticipation,
     onMutate: async (variables) => {
-      await queryClient.cancelQueries({
-        queryKey: mySchedulesQueryKey,
-      });
+      await Promise.all(
+        myScheduleTabKeys.map((queryKey) =>
+          queryClient.cancelQueries({
+            queryKey,
+          }),
+        ),
+      );
 
-      const previousMySchedules = queryClient.getQueryData(mySchedulesQueryKey);
-      removeParticipationFromMySchedulesCache(variables?.participationId);
+      const previousMySchedules = removeParticipationFromMySchedulesCache(
+        variables?.participationId,
+      );
 
       return { previousMySchedules };
     },
     onError: (_error, _variables, context) => {
-      if (context?.previousMySchedules) {
-        queryClient.setQueryData(mySchedulesQueryKey, context.previousMySchedules);
-      }
+      context?.previousMySchedules?.forEach(({ queryKey, previous }) => {
+        if (previous) {
+          queryClient.setQueryData(queryKey, previous);
+        }
+      });
     },
     onSuccess: invalidateMySchedules,
   });

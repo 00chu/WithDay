@@ -36,6 +36,7 @@
 
 .primary:hover {
   background-color: var(--color-primary-light);
+  box-shadow: 0 6px 14px rgba(10, 22, 45, 0.16);
 }
 
 .accent {
@@ -45,6 +46,7 @@
 
 .accent:hover {
   background-color: var(--color-accent-dark);
+  box-shadow: 0 6px 14px rgba(29, 154, 153, 0.18);
 }
 
 .outline {
@@ -55,6 +57,8 @@
 
 .outline:hover {
   background: var(--color-border-light);
+  border-color: var(--color-border-dark);
+  box-shadow: 0 4px 10px rgba(10, 22, 45, 0.08);
 }
 
 /* ===== State ===== */

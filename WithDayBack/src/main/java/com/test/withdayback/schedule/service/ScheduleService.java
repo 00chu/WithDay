@@ -14,6 +14,7 @@ import com.test.withdayback.schedule.vo.Schedule;
 import com.test.withdayback.schedule.vo.ScheduleDetail;
 import com.test.withdayback.schedule.vo.ScheduleImage;
 import com.test.withdayback.user.dao.UserDao;
+import com.test.withdayback.user.vo.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +87,14 @@ public class ScheduleService {
         List<ScheduleImage> images = scheduleDao.selectImageByScheduleId(id);
 
         ScheduleResponseDTO response = new ScheduleResponseDTO(email, schedule, details, images);
+        User host = schedule.getUserId() == null ? null : userDao.findById(schedule.getUserId());
+        if (host != null) {
+            response.setHost(new ScheduleResponseDTO.HostSummary(
+                    host.getId(),
+                    host.getNickname(),
+                    host.getProfileImage()
+            ));
+        }
 
         /*
          * viewerEmail은 선택값이다.
@@ -147,10 +156,42 @@ public class ScheduleService {
     /*
      * 홈/탐색 탭의 일정 리스트 조회 흐름이다.
      * Service는 별도 비즈니스 가공 없이 Controller에서 받은 필터를 Dao로 넘긴다.
-     * 필터 조건 조립은 MyBatis dynamic SQL이 더 적합하므로 mapper에서 category/keyword/region 조건을 선택적으로 붙인다.
+     * 필터 조건 조립은 MyBatis dynamic SQL이 더 적합하므로 mapper에서 조건을 선택적으로 붙인다.
+     * sort는 SQL 조각 선택에 쓰이므로 허용된 값만 통과시키고, 알 수 없는 값은 최신순으로 되돌린다.
      */
-    public List<Schedule> getAllSchedules(String category, String keyword, String region, String email) {
-        return scheduleDao.getAllSchedules(category, keyword, region, email);
+    public List<Schedule> getAllSchedules(
+            String category,
+            String keyword,
+            String region,
+            String district,
+            String genderLimit,
+            String startDate,
+            String endDate,
+            String sort,
+            String email
+    ) {
+        return scheduleDao.getAllSchedules(
+                category,
+                keyword,
+                region,
+                district,
+                genderLimit,
+                startDate,
+                endDate,
+                normalizeScheduleSort(sort),
+                email
+        );
+    }
+
+    private String normalizeScheduleSort(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return "latest";
+        }
+
+        return switch (sort) {
+            case "deadlineSoon", "deadlineRelaxed", "startSoon", "startLate" -> sort;
+            default -> "latest";
+        };
     }
 
     /*

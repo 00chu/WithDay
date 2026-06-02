@@ -379,7 +379,15 @@ public class ParticipationService {
         }
 
         String normalizedStatus = normalizeStatusFilter(status);
-        return participationDao.getScheduleApplicants(scheduleId, normalizedStatus);
+        List<ParticipationApplicantDTO> applicants =
+                participationDao.getScheduleApplicants(scheduleId, normalizedStatus);
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        applicants.forEach(applicant ->
+                applicant.setFullAge(calculateFullAge(applicant.getBirthday(), today))
+        );
+
+        return applicants;
     }
 
     @Transactional
@@ -612,6 +620,10 @@ public class ParticipationService {
     }
 
     private String normalizeEmail(String email) {
+        /*
+         * 프론트는 로그인 전/초기 렌더에서 email이 빈 값일 수 있다.
+         * Service 내부에서는 null과 공백을 같은 "식별자 없음" 상태로 다뤄야 이후 userDao 조회와 권한 검증 오류가 일관된다.
+         */
         return email == null ? "" : email.trim();
     }
 
@@ -668,6 +680,10 @@ public class ParticipationService {
     }
 
     private void validateEligibility(User user, Schedule schedule) {
+        /*
+         * 참여 조건 검증은 성별 -> 나이 순서로 수행한다.
+         * 둘 다 사용자 프로필 기반 검증이지만, 실패 메시지가 사용자에게 직접 노출되므로 어떤 조건에서 막혔는지 명확히 구분한다.
+         */
         if (!isGenderEligible(user, schedule)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "성별 조건에 맞지 않아 참여할 수 없습니다.");
         }
@@ -678,6 +694,10 @@ public class ParticipationService {
     }
 
     private boolean isGenderEligible(User user, Schedule schedule) {
+        /*
+         * GenderLimit.all 또는 null은 성별 제한이 없는 일정으로 본다.
+         * 제한이 있는 일정에서 user.gender가 없으면 단순 false가 아니라 프로필 정보 부족으로 신청 자체를 막는다.
+         */
         GenderLimit genderLimit = schedule == null ? null : schedule.getGenderLimit();
         if (genderLimit == null || genderLimit == GenderLimit.all) {
             return true;
@@ -700,6 +720,10 @@ public class ParticipationService {
     }
 
     private boolean isAgeEligible(User user, Schedule schedule) {
+        /*
+         * ageMin/ageMax가 둘 다 없으면 연령 제한이 없는 일정이다.
+         * 제한이 하나라도 있으면 생년월일로 KST 기준 만 나이를 계산해야 하며, 생년월일이 없으면 조건 충족 여부를 판단할 수 없어서 신청을 막는다.
+         */
         if (schedule == null) {
             return true;
         }
@@ -727,6 +751,10 @@ public class ParticipationService {
     }
 
     private Integer calculateFullAge(String birthday, LocalDate today) {
+        /*
+         * 만 나이는 서버에서만 계산하고 생년월일 원본은 응답으로 내보내지 않는다.
+         * applicants API에서는 birthday를 mapper가 조회하더라도 DTO의 @JsonIgnore 필드로만 보관하고, 여기서 fullAge로 변환한다.
+         */
         LocalDate birthDate = parseBirthday(birthday);
         if (birthDate == null || today == null) {
             return null;
@@ -736,6 +764,10 @@ public class ParticipationService {
     }
 
     private LocalDate parseBirthday(String birthday) {
+        /*
+         * 기존 user.birthday 저장 형식은 yyyy-MM-dd 문자열을 전제로 한다.
+         * 잘못 저장된 생년월일은 개인정보 원본을 화면에 노출하거나 예외 메시지로 흘리지 않고 null로 처리해 fullAge를 "확인 불가"로 내려가게 한다.
+         */
         if (birthday == null || birthday.isBlank()) {
             return null;
         }
