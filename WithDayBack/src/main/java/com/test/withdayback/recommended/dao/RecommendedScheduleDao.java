@@ -6,6 +6,7 @@ import com.test.withdayback.recommended.vo.RecommendedScheduleImage;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 // @Mapper: 스프링 부트와 MyBatis를 연결해주는 어노테이션.
 // 이 인터페이스의 메서드 이름과 mapper.xml의 id가 같으면 해당 SQL이 실행됨.
@@ -38,6 +39,9 @@ public interface RecommendedScheduleDao {
     // 추천 일정 이미지 저장
     void insertRecommendedScheduleImage(RecommendedScheduleImage recommendedScheduleImage);
 
+    // 추천 일정 기본 정보 수정
+    void updateRecommendedSchedule(RecommendedSchedule recommendedSchedule);
+
     // 추천 일정 이미지 삭제
     // 추천 일정 삭제 전 연결된 이미지 데이터를 먼저 삭제함.
     void deleteRecommendedScheduleImages(Long recommendedScheduleId);
@@ -49,4 +53,13 @@ public interface RecommendedScheduleDao {
     // 추천 일정 기본 정보 삭제
     // 추천 일정 row 자체를 삭제하는 hard delete 방식.
     void deleteRecommendedSchedule(Long id);
+
+    // 추천 일정 이미지 단건 삭제
+    void deleteRecommendedScheduleImageById(Long imageId);
+
+    // 추천 일정 썸네일 URL 수정
+    void updateRecommendedScheduleThumbnail(
+            @Param("recommendedScheduleId") Long recommendedScheduleId,
+            @Param("thumbnailImage") String thumbnailImage
+    );
 }

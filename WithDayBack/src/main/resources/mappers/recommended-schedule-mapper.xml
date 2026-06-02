@@ -181,4 +181,46 @@
         WHERE id = #{id}
     </delete>
 
+    <!-- 추천 일정 기본 정보 수정 -->
+    <!-- 이미지가 새로 업로드된 경우에만 thumbnail_image를 함께 수정함 -->
+    <update id="updateRecommendedSchedule" parameterType="RecommendedSchedule">
+        UPDATE recommended_schedule
+        <set>
+            title = #{title},
+            description = #{description},
+            category = #{category},
+            region = #{region},
+            detail_region = #{detailRegion},
+            duration_days = #{durationDays},
+            min_participants = #{minParticipants},
+            max_participants = #{maxParticipants},
+            gender_limit = #{genderLimit},
+            age_min = #{ageMin},
+            age_max = #{ageMax},
+            total_price = #{totalPrice},
+            cost_type = #{costType},
+            is_active = #{isActive},
+            <if test="thumbnailImage != null">
+                thumbnail_image = #{thumbnailImage},
+            </if>
+            updated_at = CURRENT_TIMESTAMP
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 추천 일정 이미지 단건 삭제 -->
+    <delete id="deleteRecommendedScheduleImageById" parameterType="Long">
+        DELETE FROM recommended_schedule_image
+        WHERE id = #{imageId}
+    </delete>
+
+    <!-- 추천 일정 썸네일 URL 수정 -->
+    <!-- thumbnailImage가 null이면 추천 일정 기본 테이블의 썸네일도 null로 변경됨 -->
+    <update id="updateRecommendedScheduleThumbnail">
+        UPDATE recommended_schedule
+        SET thumbnail_image = #{thumbnailImage},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{recommendedScheduleId}
+    </update>
+
 </mapper>

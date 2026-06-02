@@ -84,8 +84,8 @@ public class RecommendedScheduleController {
     }
 
     // 추천 일정 삭제
-// 관리자만 추천 일정을 삭제할 수 있음.
-// 현재 프로젝트의 기존 일정 삭제 흐름에 맞춰 hard delete로 처리함.
+    // 관리자만 추천 일정을 삭제할 수 있음.
+    // 현재 프로젝트의 기존 일정 삭제 흐름에 맞춰 hard delete로 처리함.
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteRecommendedSchedule(
             @RequestHeader("Authorization") String authorizationHeader,
@@ -109,6 +109,39 @@ public class RecommendedScheduleController {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("추천 일정 삭제 중 오류가 발생했습니다.");
+        }
+    }
+
+    // 추천 일정 수정
+    // 관리자만 추천 일정을 수정할 수 있음.
+    // 프론트에서 JSON 데이터와 이미지 파일을 함께 보낼 수 있으므로 multipart/form-data로 받음.
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateRecommendedSchedule(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id,
+            @RequestPart("recommendedData") RecommendedScheduleRequestDTO recommendedRequest,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ) {
+        try {
+            // Authorization 헤더에서 Bearer 토큰 추출
+            String token = authorizationHeader.replace("Bearer ", "");
+
+            // 토큰에서 로그인한 유저 이메일 추출
+            Claims claims = jwtUtil.parseClaims(token);
+            String adminEmail = claims.getSubject();
+
+            String result = recommendedScheduleService.updateRecommendedSchedule(
+                    id,
+                    recommendedRequest,
+                    images,
+                    adminEmail
+            );
+
+            return ResponseEntity.ok(result);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("추천 일정 수정 중 오류가 발생했습니다.");
         }
     }
 }

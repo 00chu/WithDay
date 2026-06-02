@@ -52,3 +52,35 @@ export const deleteRecommendedSchedule = async (id) => {
 
   return response.data;
 };
+
+// 추천 일정 수정
+// JSON 데이터와 이미지 파일을 함께 보낼 수 있으므로 FormData로 보냄.
+// images가 비어 있으면 기존 이미지를 유지함.
+export const updateRecommendedSchedule = async ({
+  id,
+  recommendedData,
+  images,
+}) => {
+  const formData = new FormData();
+
+  formData.append(
+    "recommendedData",
+    new Blob([JSON.stringify(recommendedData)], {
+      type: "application/json",
+    }),
+  );
+
+  if (images && images.length > 0) {
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
+  }
+
+  const response = await api.put(`/recommended-schedules/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return response.data;
+};

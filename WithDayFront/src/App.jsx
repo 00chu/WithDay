@@ -28,6 +28,7 @@ import Header from "./widgets/Header/Header";
 import BottomNav from "./widgets/BottomNav/BottomeNav";
 import LayoutContainer from "./shared/ui/LayoutContainer/LayoutContainer";
 import PrivateRoute from "./features/ui/PrivateRoute";
+import RecommendedScheduleEdit from "./page/recommended-schedule/RecommendedScheduleEdit";
 
 function App() {
   // 로그인 상태와 토큰 만료 여부를 Zustand에서 가져옴
@@ -118,6 +119,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <RecommendedScheduleWrite />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/recommended-schedules/edit/:id"
+              element={
+                <PrivateRoute>
+                  <RecommendedScheduleEdit />
                 </PrivateRoute>
               }
             />

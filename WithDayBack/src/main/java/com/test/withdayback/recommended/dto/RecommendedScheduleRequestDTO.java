@@ -14,4 +14,5 @@ import java.util.List;
 public class RecommendedScheduleRequestDTO {
     private RecommendedSchedule recommendedSchedule;
     private List<RecommendedScheduleDetail> detailSchedule;
+    private List<Long> deletedImageIds;
 }
