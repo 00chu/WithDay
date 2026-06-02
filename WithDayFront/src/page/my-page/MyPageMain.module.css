@@ -182,13 +182,152 @@
   overflow: hidden; /* 사진이 모서리 뚫지 않게 */
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
 }
+.emptyLogCard {
+  width: 500px;
+  height: 300px;
+  flex-shrink: 0;
+
+  border: 2px dashed #cfd8e6;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 32px;
+  text-align: center;
+}
+.emptyLogIllustration {
+  position: relative;
+  width: 190px;
+  height: 95px;
+  margin-bottom: 22px;
+}
 
 .dog {
   width: 100%;
   height: 200px;
   object-fit: cover;
 }
+.emptyLogIllustration::before {
+  content: "";
+  position: absolute;
+  left: 42px;
+  top: 36px;
 
+  width: 105px;
+  height: 42px;
+  border-top: 2px dashed #9ccfd0;
+  border-radius: 50%;
+  transform: rotate(-8deg);
+}
+.emptyPinLeft {
+  position: absolute;
+  left: 12px;
+  top: 30px;
+  color: #149e97;
+  z-index: 2;
+}
+
+/* 오른쪽 핀 */
+.emptyPinRight {
+  position: absolute;
+  right: 16px;
+  top: 18px;
+  color: #149e97;
+  z-index: 2;
+}
+.emptySuitcase {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+
+  width: 52px;
+  height: 48px;
+
+  border: 2px solid #94a3b8;
+  border-radius: 9px;
+  color: transparent;
+  box-sizing: border-box;
+  z-index: 3;
+}
+
+/* 캐리어 손잡이 */
+.emptySuitcase::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -13px;
+  transform: translateX(-50%);
+
+  width: 22px;
+  height: 12px;
+  border: 2px solid #94a3b8;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  box-sizing: border-box;
+}
+
+/* 캐리어 중앙선 */
+.emptySuitcase::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 7px;
+  transform: translateX(-50%);
+
+  width: 2px;
+  height: 32px;
+  border-radius: 999px;
+  background-color: #94a3b8;
+}
+.emptyLogTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.emptyLogDesc {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.emptyLogButton {
+  min-width: 150px;
+  height: 40px;
+
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #334155;
+
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.emptyLogButton:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
 /* 카드 하단 정보 영역 */
 .card_bottom {
   padding: 18px;
