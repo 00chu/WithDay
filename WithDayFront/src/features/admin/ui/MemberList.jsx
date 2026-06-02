@@ -16,11 +16,13 @@ const MemberList = ({ memberList, page, setPage, totalPage }) => {
         <li className={styles.member_create}>가입일</li>
       </ul>
       <ul className={styles.member_list_wrap}>
-        {memberList.map((member) => {
-          return (
+        {memberList?.length > 0 ? (
+          memberList.map((member) => (
             <MemberItem key={`member-list-${member.email}`} member={member} />
-          );
-        })}
+          ))
+        ) : (
+          <h3 className={styles.resultNone}>조회 결과가 없습니다.</h3>
+        )}
         <div>
           <Pagination
             page={page}

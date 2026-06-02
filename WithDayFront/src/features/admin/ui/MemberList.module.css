@@ -84,6 +84,13 @@
   display: none;
 }
 
+.resultNone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 50px;
+}
+
 @media (max-width: 900px) {
   /* 900부터 카드로 보이게 설정 */
   .member_item_title {

@@ -59,13 +59,13 @@ const AdminPage = () => {
         <AdminSidebar closeDrawer={() => setDrawerOpen(false)} />
       </Drawer>
 
-      {/* 컨텐츠 */}
+      {/* 오른쪽 컨텐츠 */}
       <main className={styles.content}>
         <Routes>
-          <Route path="member" element={<MemberManagementPage />} />
+          <Route path="dashboard" element={<Dashboard />} />
         </Routes>
         <Routes>
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="member" element={<MemberManagementPage />} />
         </Routes>
       </main>
     </div>
