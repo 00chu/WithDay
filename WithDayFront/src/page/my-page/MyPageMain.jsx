@@ -16,7 +16,6 @@ import {
   User,
 } from "lucide-react";
 
-
 const MyPageMain = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
@@ -28,22 +27,20 @@ const MyPageMain = () => {
     return <div>불러오는 중...</div>;
   }
 
-
   const mypage = mypageQuery.data;
 
   const nickname = mypage?.nickname || "닉네임";
   const email = mypage?.email || user?.email || "이메일 정보 없음";
   const profileImage = mypage?.profileImage || "/default-profile-240.png";
   const interests =
-    mypage?.interests ??
-    mypage?.interestNames ??
-    mypage?.allInterests ??
-    [];
+    mypage?.interests ?? mypage?.interestNames ?? mypage?.allInterests ?? [];
   const selectedInterestIds = mypage?.selectedInterestIds ?? [];
   const allInterests = mypage?.allInterests ?? [];
 
   const selectedInterests = allInterests.filter((interest) =>
-    selectedInterestIds.map(Number).includes(Number(interest.interestId ?? interest.id))
+    selectedInterestIds
+      .map(Number)
+      .includes(Number(interest.interestId ?? interest.id)),
   );
   const intro =
     mypage?.intro ||
@@ -103,7 +100,7 @@ const MyPageMain = () => {
               <div className={styles.summary}>
                 <span>함께한 일정</span>
                 <span>2회</span>
-                <span>참여가 완료된 일정 수</span>
+                <span>완료된 일정 수</span>
               </div>
               <div className={styles.summary}>
                 <span>만난 위트 수</span>
@@ -149,9 +146,7 @@ const MyPageMain = () => {
               <span>소갯말</span>
             </div>
             <div className={styles.intro_text}>
-              <span>
-                {intro}
-              </span>
+              <span>{intro}</span>
             </div>
           </div>
 
