@@ -75,6 +75,8 @@ public interface UserDao {
             @Param("userId") Long userId,
             @Param("profileImage") String profileImage
     );
+    int getTogetherScheduleCount(Long userId);
 
+    int getMetWitCount(Long userId);
 
 }

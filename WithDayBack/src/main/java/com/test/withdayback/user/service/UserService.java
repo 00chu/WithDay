@@ -591,6 +591,14 @@ public class UserService {
         // null이면 false 처리
         response.setNotificationAgreed(Boolean.TRUE.equals(notificationAgreed));
 
+        //마이페이지 상단
+        response.setTogetherScheduleCount(
+                userDao.getTogetherScheduleCount(user.getId())
+        );
+        response.setMetWitCount(
+                userDao.getMetWitCount(user.getId())
+        );
+        response.setCreatedAt(user.getCreatedAt());
         return response;
     }
 

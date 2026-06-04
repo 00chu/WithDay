@@ -152,4 +152,64 @@
         SET profile_image = #{profileImage}
         WHERE id = #{userId}
     </update>
+    <!--함께한 일정 수 -->
+    <select id="getTogetherScheduleCount" parameterType="long" resultType="int">
+        SELECT COUNT(DISTINCT t.schedule_id)
+        FROM (
+                 SELECT s.id AS schedule_id
+                 FROM schedule s
+                 WHERE s.user_id = #{userId}
+                   AND s.status = 'completed'
+                   AND s.deleted_at IS NULL
+
+                 UNION
+
+                 SELECT p.schedule_id
+                 FROM participation p
+                          JOIN schedule s ON s.id = p.schedule_id
+                 WHERE p.user_id = #{userId}
+                   AND p.status = 'approved'
+                   AND s.status = 'completed'
+                   AND s.deleted_at IS NULL
+             ) t
+    </select>
+
+    <!--만난 위트 수-->
+    <select id="getMetWitCount" parameterType="long" resultType="int">
+        SELECT COUNT(DISTINCT t.wit_user_id)
+        FROM (
+                 SELECT p.user_id AS wit_user_id
+                 FROM schedule s
+                          JOIN participation p ON p.schedule_id = s.id
+                 WHERE s.user_id = #{userId}
+                   AND s.status = 'completed'
+                   AND s.deleted_at IS NULL
+                   AND p.status = 'approved'
+                   AND p.user_id &lt;&gt; #{userId}
+
+                 UNION
+
+                 SELECT s.user_id AS wit_user_id
+                 FROM participation p
+                          JOIN schedule s ON s.id = p.schedule_id
+                 WHERE p.user_id = #{userId}
+                   AND p.status = 'approved'
+                   AND s.status = 'completed'
+                   AND s.deleted_at IS NULL
+                   AND s.user_id &lt;&gt; #{userId}
+
+                 UNION
+
+                 SELECT p2.user_id AS wit_user_id
+                 FROM participation p
+                          JOIN schedule s ON s.id = p.schedule_id
+                          JOIN participation p2 ON p2.schedule_id = s.id
+                 WHERE p.user_id = #{userId}
+                   AND p.status = 'approved'
+                   AND s.status = 'completed'
+                   AND s.deleted_at IS NULL
+                   AND p2.status = 'approved'
+                   AND p2.user_id &lt;&gt; #{userId}
+             ) t
+    </select>
 </mapper>

@@ -27,7 +27,13 @@ public class MypageEditResponseDTO {
     private List<Interest> allInterests;
     // 알림 설정 여부
     private Boolean notificationAgreed;
+
     private String postcode;
     private String address;
     private String detailAddress;
+
+    // 마이페이지 상단
+    private Integer togetherScheduleCount; // 함께한 일정 수
+    private Integer metWitCount; // 함께 만난 위트 수
+    private String createdAt; // 가입일
 }
