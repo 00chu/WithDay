@@ -147,10 +147,12 @@
                 String email = getEmailFromAuthorizationHeader(authorization);
 
                 MypageEditResponseDTO result = userService.getMypageEdit(email);
+
                 return ResponseEntity.ok(result);
             } catch (Exception e) {
                 e.printStackTrace();
                 return ResponseEntity.status(401).body(e.getMessage());
+
             }
         }
 

@@ -2,25 +2,25 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMypageEditData, updateMypageData } from "./api";
 
 export const useMypageEdit = () => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    const editQuery = useQuery({
-        queryKey: ["mypageEdit"],
-        queryFn: getMypageEditData,
-        staleTime: 1000 * 60 * 5,
-        refetchOnWindowFocus: false,
-    });
+  const editQuery = useQuery({
+    queryKey: ["mypageEdit"],
+    queryFn: getMypageEditData,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
 
-    const updateMutation = useMutation({
-        mutationFn: updateMypageData,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["mypageEdit"] });
-            queryClient.invalidateQueries({ queryKey: ["mypage"] });
-        },
-    });
+  const updateMutation = useMutation({
+    mutationFn: updateMypageData,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["mypageEdit"] });
+      queryClient.invalidateQueries({ queryKey: ["mypage"] });
+    },
+  });
 
-    return {
-        editQuery,
-        updateMutation,
-    };
+  return {
+    editQuery,
+    updateMutation,
+  };
 };

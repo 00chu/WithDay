@@ -587,9 +587,9 @@ public class UserService {
 
         // 알림 동의 여부 조회
         Boolean notificationAgreed = userDao.getNotificationAgreed(user.getId());
-
         // null이면 false 처리
         response.setNotificationAgreed(Boolean.TRUE.equals(notificationAgreed));
+
 
         //마이페이지 상단
         response.setTogetherScheduleCount(
@@ -599,6 +599,13 @@ public class UserService {
                 userDao.getMetWitCount(user.getId())
         );
         response.setCreatedAt(user.getCreatedAt());
+
+        System.out.println("====================================");
+        System.out.println("[MYPAGE EDIT] createdAt = " + user.getCreatedAt());
+        System.out.println("[MYPAGE EDIT] togetherScheduleCount = " + userDao.getTogetherScheduleCount(user.getId()));
+        System.out.println("[MYPAGE EDIT] metWitCount = " + userDao.getMetWitCount(user.getId()));
+        System.out.println("====================================");
+
         return response;
     }
 
@@ -753,4 +760,5 @@ public class UserService {
             throw new RuntimeException(e.getMessage());
         }
     }
+
 }

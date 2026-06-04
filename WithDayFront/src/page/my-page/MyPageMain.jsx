@@ -14,6 +14,9 @@ import {
   MapPin,
   Calendar,
   User,
+  CalendarCheck,
+  UsersRound,
+  BadgeCheck,
 } from "lucide-react";
 
 const MyPageMain = () => {
@@ -36,7 +39,20 @@ const MyPageMain = () => {
     mypage?.interests ?? mypage?.interestNames ?? mypage?.allInterests ?? [];
   const selectedInterestIds = mypage?.selectedInterestIds ?? [];
   const allInterests = mypage?.allInterests ?? [];
-
+  const formatDateOnly = (dateValue) => {
+    if (!dateValue) return "정보 없음";
+    return String(dateValue).slice(0, 10).replaceAll("-", ".");
+  };
+  //상단 조회데이터 3종
+  const togetherScheduleCount = mypage?.togetherScheduleCount ?? 0;
+  const metWitCount = mypage?.metWitCount ?? 0;
+  const joinDate = formatDateOnly(mypage?.createdAt);
+  console.log("상단 요약 값 확인:", {
+    togetherScheduleCount,
+    metWitCount,
+    createdAt: mypage?.createdAt,
+    joinDate,
+  });
   const selectedInterests = allInterests.filter((interest) =>
     selectedInterestIds
       .map(Number)
@@ -68,49 +84,63 @@ const MyPageMain = () => {
       <section>
         <div className={styles.profile_Box}>
           <div className={styles.profile_wrapper}>
-            <div className={styles.profile}>
+            {/* 왼쪽 프로필 영역 */}
+            <div className={styles.profile_left}>
               <div className={styles.image_wrapper}>
                 <img
                   src={profileImage}
                   alt="프로필"
                   className={styles.profile_img}
                 />
-                <div
+
+                <button
+                  type="button"
                   className={styles.retouch_btn}
                   onClick={() => navigate(`/mypage/edit/${user.email}`)}
+                  aria-label="프로필 수정"
                 >
                   <EditCalendarOutlinedIcon />
-                </div>
+                </button>
+              </div>
+
+              <div className={styles.profile_text}>
+                <span className={styles.my_nickname}>{nickname}</span>
+                <span className={styles.my_email}>{email}</span>
+
+                <Button
+                  className={styles.logout}
+                  size="sm"
+                  variant="primary"
+                  onClick={() => useAuthStore.getState().setLogout()}
+                >
+                  로그아웃
+                </Button>
               </div>
             </div>
-            <div className={styles.profile_text}>
-              <span className={styles.my_nickname}>{nickname}</span>
-              <span className={styles.my_email}>{email}</span>
-              <Button
-                className={styles.logout}
-                size="sm"
-                variant="primary"
-                onClick={() => useAuthStore.getState().setLogout()}
-              >
-                로그아웃
-              </Button>
-            </div>
-            {/*오른쪽 데이터들*/}
+
+            {/* 오른쪽 요약 영역 */}
             <div className={styles.profile_summary}>
               <div className={styles.summary}>
-                <span>함께한 일정</span>
-                <span>2회</span>
-                <span>완료된 일정 수</span>
+                <CalendarCheck className={styles.summary_icon} size={18} />
+                <span className={styles.summary_label}>My Track</span>
+                <span className={styles.summary_value}>
+                  {togetherScheduleCount}회
+                </span>
+                <span className={styles.summary_desc}>참여한 일정</span>
               </div>
+
               <div className={styles.summary}>
-                <span>만난 위트 수</span>
-                <span>12명</span>
-                <span>함께 만난 위트 수</span>
+                <UsersRound className={styles.summary_icon} size={18} />
+                <span className={styles.summary_label}>Like Wits</span>
+                <span className={styles.summary_value}>{metWitCount}명</span>
+                <span className={styles.summary_desc}>함께한 위트</span>
               </div>
+
               <div className={styles.summary}>
-                <span>가입일</span>
-                <span>2026.06.01</span>
-                <span>처음 가입한 날짜</span>
+                <BadgeCheck className={styles.summary_icon} size={18} />
+                <span className={styles.summary_label}>가입일</span>
+                <span className={styles.summary_value}>{joinDate}</span>
+                <span className={styles.summary_desc}>처음 가입한 날짜</span>
               </div>
             </div>
           </div>
