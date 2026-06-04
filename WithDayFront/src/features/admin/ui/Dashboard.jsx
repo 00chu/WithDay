@@ -58,7 +58,7 @@ const Dashboard = () => {
           <div className={styles.icon}>👥</div>
           <div className={styles.card_content}>
             <span className={styles.label}>전체 회원 수</span>
-            {/* .toLocaleString() - 천 단위 콤마*/}
+            {/* .toLocaleString() - 천 단위에 콤마 표시 */}
             <h2>{dashboardData.nowTotalUserCount.toLocaleString()}</h2>
             <p className={getClassName(userDiff)}>
               {getArrow(userDiff)} {Math.abs(userDiff)}
@@ -90,11 +90,15 @@ const Dashboard = () => {
           <div className={styles.card_content}>
             <div className={styles.statusRow}>
               <span>시작된 일정</span>
-              <strong>{dashboardData.completedScheduleCount}</strong>
+              <strong>
+                {dashboardData.completedScheduleCount.toLocaleString()}
+              </strong>
             </div>
             <div className={styles.statusRow}>
               <span>마감된 일정</span>
-              <strong>{dashboardData.closedScheduleCount}</strong>
+              <strong>
+                {dashboardData.closedScheduleCount.toLocaleString()}
+              </strong>
             </div>
           </div>
         </div>
@@ -103,6 +107,7 @@ const Dashboard = () => {
       <div className={styles.dashboard_chart_wrap}>
         <div className={styles.dashboard_main_chart}>
           <div className={styles.button_wrap}>
+            {/* 각 버튼 클릭 시 차트에 출력되는 조건 다르게 설정 */}
             <Button
               type="button"
               variant="outline"
@@ -130,7 +135,10 @@ const Dashboard = () => {
               월별
             </Button>
           </div>
-          <UserScheduleAreaChart dashboardList={dashboardData.dashboardList} />
+          <UserScheduleAreaChart
+            dashboardList={dashboardData.dashboardList}
+            period={period}
+          />
         </div>
         <div className={styles.dashboard_sub_chart_wrap}>
           <div className={styles.dashboard_sub_chart}>
@@ -151,7 +159,7 @@ const Dashboard = () => {
   );
 };
 
-const UserScheduleAreaChart = ({ dashboardList }) => {
+const UserScheduleAreaChart = ({ dashboardList, period }) => {
   const categories = dashboardList.map((item) => item.statDate); // x축, 날짜
 
   const userData = dashboardList.map((item) => item.totalUserCount); // 회원 수
@@ -185,7 +193,7 @@ const UserScheduleAreaChart = ({ dashboardList }) => {
     },
 
     title: {
-      text: "전체 회원 수 / 전체 일정 수 추이", // 상단 제목
+      text: `전체 회원 수 / 전체 일정 수 추이 ( ${period === "daily" ? "일별" : period === "weekly" ? "주간" : "월별"} )`, // 상단 제목
       align: "left",
       style: {
         fontSize: "18px",
