@@ -15,12 +15,21 @@ const GENDER_LABELS = {
 };
 
 const resolveInitial = (nickname) => {
+  /*
+   * 프로필 이미지가 없는 신청자도 카드의 아바타 영역을 유지하기 위한 fallback이다.
+   * 닉네임이 비어 있으면 "?"를 넣어 빈 원형만 보이는 상태를 피한다.
+   */
   const trimmedNickname = String(nickname ?? "").trim();
 
   return trimmedNickname ? trimmedNickname.slice(0, 1) : "?";
 };
 
 const formatPhoneNumber = (phone) => {
+  /*
+   * 백엔드/DB에는 하이픈 없는 숫자, 이미 포맷된 문자열, 공백이 섞여 들어올 수 있다.
+   * 화면에서는 한국 휴대폰 UX에 맞춰 010-0000-0000 형태를 우선 만들고,
+   * 자리수가 맞지 않는 값은 원본 trim 값을 보여 운영자가 데이터를 확인할 수 있게 한다.
+   */
   const normalizedPhone = String(phone ?? "").replace(/\D/g, "");
 
   if (!normalizedPhone) {
@@ -39,6 +48,10 @@ const formatPhoneNumber = (phone) => {
 };
 
 const parseDateValue = (value) => {
+  /*
+   * 신청일은 서버 환경에 따라 "2026-05-12 12:45:47"처럼 공백 구분으로 내려올 수 있다.
+   * 브라우저 Date 파서가 안정적으로 처리하도록 T 구분자로 바꾼 뒤, 실패하면 UI에서는 "-"로만 표시한다.
+   */
   const normalizedValue = String(value ?? "").trim();
 
   if (!normalizedValue) {
@@ -55,6 +68,10 @@ const parseDateValue = (value) => {
 };
 
 const formatCreatedAt = (value) => {
+  /*
+   * 신청일은 카드 밀도를 낮추기 위해 상대적으로 짧게 표시한다.
+   * KST 기준 오늘이면 HH:mm만, 다른 날이면 "M월 D일"만 보여 상세 시간 노이즈를 줄인다.
+   */
   const parsedDate = parseDateValue(value);
 
   if (!parsedDate) {
@@ -98,9 +115,6 @@ const formatCreatedAt = (value) => {
  * 3. HostParticipationList가 목록을 순회
  * 4. 이 카드가 신청자별 배지/버튼을 렌더링
  * 5. 버튼 클릭 시 onAction으로 ScheduleDetail에 이벤트 전달
- * 일정 상세 페이지에서 호스트가 보는 신청자 카드다.
- * 신청자 개인정보 표시와 상태별 액션 버튼 렌더링을 담당하고,
- * 실제 승인/거절 API 호출은 ScheduleDetail의 handleApplicantAction으로 위임한다.
  */
 function HostParticipationCard({
   item,
@@ -113,11 +127,12 @@ function HostParticipationCard({
    * 신청자 카드도 상태별로 배지 색과 문구가 달라져야 하므로,
    * 참여 카드와 같은 메타 사전을 재사용한다.
    * 이 덕분에 같은 상태(PENDING, APPROVED 등)는 화면 위치가 달라도 일관된 색/텍스트를 유지한다.
-   *
-   * 신청자의 현재 상태에 맞는 배지 문구와 색상을 가져온다.
-   * 알 수 없는 상태가 내려와도 default 메타를 사용해 화면이 깨지지 않게 한다.
   */
   const meta = PARTICIPATION_STATUS_META[item.status] ?? PARTICIPATION_STATUS_META.default;
+  /*
+   * gender/fullAge/phone은 호스트 전용 applicants API에서만 내려오는 개인정보다.
+   * 일반 상세 응답에는 포함되지 않으므로 이 카드 밖으로 표시 로직을 옮기면 권한 경계가 흐려질 수 있다.
+   */
   const genderLabel = GENDER_LABELS[Number(item.gender)] ?? "미입력";
   const phoneLabel = formatPhoneNumber(item.phone);
   const fullAgeLabel =
@@ -151,6 +166,10 @@ function HostParticipationCard({
           </div>
 
           <div className={hostStyles.profileSummary}>
+            {/*
+              닉네임만 간결하게 보여준다.
+              이전 보조 설명 문구는 카드 밀도를 높이고 개인정보 영역을 과하게 설명해 제거했다.
+            */}
             <h3 className={styles.cardTitle}>{item.nickname}</h3>
           </div>
         </div>
@@ -211,7 +230,6 @@ function HostParticipationCard({
          * - useUpdateParticipationStatusMutation 호출
          * - 성공 시 applicants / mySchedules / schedule-detail 캐시 invalidate
          *
-         * 버튼 목록은 ParticipationStatusActions가 상태별로 결정한다.
          * hostEmail은 백엔드에서 "이 요청자가 일정 호스트인지" 검증할 때 사용되므로 액션 payload에 포함한다.
          */}
         <ParticipationStatusActions

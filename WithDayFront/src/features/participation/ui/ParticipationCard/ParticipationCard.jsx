@@ -33,9 +33,6 @@ const ACTION_ICON_MAP = {
  *
  * 즉 이 카드는 dumb component에 가깝고,
  * 비즈니스 의사결정은 MySchedulePage와 model 레이어가 담당한다.
- * 내 일정 페이지에서 참여중/신청중/호스팅 탭의 각 일정을 보여주는 카드다.
- * 이 컴포넌트는 화면 표시와 버튼 클릭 이벤트 전달만 담당하고,
- * 실제 취소/삭제/상세 이동 분기는 MySchedulePage의 handleScheduleAction에서 처리한다.
  */
 function ParticipationCard({ item, onAction, isActionLoading = false }) {
   /*
@@ -46,10 +43,6 @@ function ParticipationCard({ item, onAction, isActionLoading = false }) {
    * - APPROVED면 버튼은 "상세보기"
    * - REJECTED/KICKED면 버튼은 "삭제"
    * - host면 status보다 역할이 우선이라 "일정 관리"
-   *
-   * dbStatus(PENDING, APPROVED, REJECTED 등)와 myRole(host/participant)을 조합해
-   * 카드 배지, 버튼 문구, 버튼 종류, 비활성 여부를 결정한다.
-   * 상태 해석을 constants에 모아둔 이유는 카드 UI가 상태 분기 로직으로 길어지는 것을 막기 위해서다.
    */
   const meta = getParticipationStatusMeta(item.dbStatus, item.myRole);
   const ActionIcon = ACTION_ICON_MAP[meta.actionType] ?? BlockOutlinedIcon;
@@ -58,9 +51,6 @@ function ParticipationCard({ item, onAction, isActionLoading = false }) {
    * 버튼 클릭 시 item 전체를 넘기는 이유는,
    * 상위 페이지가 상태뿐 아니라 scheduleId, participationId, role 등을 한 번에 참고해야 하기 때문이다.
    * 필요한 필드만 잘라 보내기 시작하면 props와 handler 시그니처가 여러 버전으로 갈라지기 쉽다.
-   *
-   * 카드 버튼을 누르면 item 전체를 상위로 넘긴다.
-   * 상위 페이지는 item.dbStatus와 item.myRole을 보고 상세 이동, 신청 취소, 내역 삭제 중 하나를 선택한다.
    */
   // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleClick = useCallback(() => {
@@ -115,7 +105,7 @@ function ParticipationCard({ item, onAction, isActionLoading = false }) {
          * 클릭 이후의 도메인 흐름도 상태에 따라 달라진다.
          *
          * 예:
-         * - PENDING -> 상세 페이지 이동 -> ApplyScheduleButton에서 신청 취소
+         * - PENDING -> 상세 페이지 이동 -> 참여 CTA에서 신청 취소
          * - REJECTED/KICKED -> 삭제 확인창 -> deleteParticipation mutation
          * - APPROVED/host/CANCELED -> 상세 페이지 이동
          *

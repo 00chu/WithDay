@@ -86,14 +86,24 @@ export const rollbackCompletedSchedule = async ({ scheduleId, email }) => {
   return data;
 };
 
-const normalizeRegionValue = (value) => value?.trim() ?? "";
+const normalizeFilterValue = (value) => value?.trim() ?? "";
 
 /*
  * 홈/탐색 탭의 일정 리스트 API다.
- * 같은 GET /schedules 엔드포인트를 사용하지만, 홈은 category=all/keyword=""로 전체 목록을 받고,
- * 탐색은 사용자가 선택한 category/keyword/region을 params로 전달한다.
+ * 같은 GET /schedules 엔드포인트를 사용하지만, 홈은 기본 목록을 받고,
+ * 탐색은 사용자가 검색 버튼으로 확정한 필터만 params로 전달한다.
  */
-export const fetchSchedules = async ({ category, keyword, region, email = "" }) => {
+export const fetchSchedules = async ({
+  category,
+  keyword,
+  region,
+  district,
+  genderLimit,
+  startDate,
+  endDate,
+  sort,
+  email = "",
+}) => {
   const params = {};
 
   // "전체" 카테고리는 백엔드 필터를 걸지 않는다는 의미라 category 파라미터를 생략한다.
@@ -101,22 +111,44 @@ export const fetchSchedules = async ({ category, keyword, region, email = "" }) 
     params.category = category;
   }
 
-  // 검색어는 submit된 값만 들어온다. 입력 중인 값은 SearchForm 내부 상태에 머문다.
-  if (keyword) {
-    params.keyword = keyword;
+  // 검색어는 Explore에서 검색 버튼으로 확정된 값만 들어온다.
+  const normalizedKeyword = normalizeFilterValue(keyword);
+  if (normalizedKeyword) {
+    params.keyword = normalizedKeyword;
   }
 
-  // Header 지역 선택값은 공백을 제거한 뒤, 값이 있을 때만 백엔드 region 필터로 보낸다.
-  const normalizedRegion = normalizeRegionValue(region);
+  // Explore 지역 필터는 시/도와 시/군/구를 분리해서 보낸다.
+  const normalizedRegion = normalizeFilterValue(region);
   if (normalizedRegion) {
     params.region = normalizedRegion;
+  }
+
+  const normalizedDistrict = normalizeFilterValue(district);
+  if (normalizedDistrict) {
+    params.district = normalizedDistrict;
+  }
+
+  if (genderLimit && genderLimit !== "all") {
+    params.genderLimit = genderLimit;
+  }
+
+  if (startDate) {
+    params.startDate = startDate;
+  }
+
+  if (endDate) {
+    params.endDate = endDate;
+  }
+
+  if (sort) {
+    params.sort = sort;
   }
 
   /*
    * 북마크 여부는 사용자별로 달라지는 값이라,
    * 로그인 사용자가 목록을 볼 때만 email을 함께 보내 서버가 EXISTS 기반 isBookmarked를 계산하도록 한다.
    */
-  const normalizedEmail = email?.trim() ?? "";
+  const normalizedEmail = normalizeFilterValue(email);
   if (normalizedEmail) {
     params.email = normalizedEmail;
   }

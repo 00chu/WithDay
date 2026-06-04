@@ -189,6 +189,9 @@ export const normalizeMyScheduleList = (items = []) =>
  * 호스트 신청자 관리 카드용 데이터 정규화다.
  * applicant 목록은 사용자의 닉네임/이메일/신청 시각을 그대로 보여줘야 하므로,
  * 불필요한 가공은 줄이고 status 정규화 정도만 수행한다.
+ *
+ * phone/gender/fullAge는 호스트 권한을 통과한 applicants API에서만 기대하는 값이다.
+ * birthday 원본은 백엔드 DTO에서 @JsonIgnore 처리되므로 이 mapper에 들어오면 안 되며, 화면은 fullAge만 사용한다.
  */
 export const normalizeParticipationApplicant = (item) => ({
   participationId: item.participationId,
