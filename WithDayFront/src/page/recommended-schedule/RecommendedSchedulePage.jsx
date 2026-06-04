@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import clsx from "clsx";
 
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
-import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
-import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 
 import Button from "../../shared/ui/Button/Button";
@@ -32,11 +31,87 @@ const CATEGORY_LABELS = {
   etc: "기타",
 };
 
-const COST_TYPE_LABELS = {
-  per_person: "1/N",
-  host_covered: "호스트 부담",
-  free: "무료",
-  custom: "인당 고정",
+const GENDER_LIMIT_LABELS = {
+  all: "남·녀",
+  male: "남",
+  female: "여",
+};
+
+const DEFAULT_THUMBNAIL = "/hero.png";
+
+// DB/API 카테고리 값을 화면용 한글 라벨로 변환
+const resolveCategoryLabel = (category) => {
+  return (
+    CATEGORY_LABELS[
+      String(category ?? "")
+        .trim()
+        .toLowerCase()
+    ] ?? "기타"
+  );
+};
+
+// DB/API 성별 제한 값을 카드 우측 상단 pill 라벨로 변환
+const resolveGenderLimitLabel = (genderLimit) => {
+  return (
+    GENDER_LIMIT_LABELS[
+      String(genderLimit ?? "")
+        .trim()
+        .toLowerCase()
+    ] ?? "남·녀"
+  );
+};
+
+// region과 detailRegion을 기존 탐색 카드의 하단 위치 pill에 맞게 조합
+const resolveRegionLabel = (schedule) => {
+  const region = schedule?.region?.trim() ?? "";
+  const detailRegion = schedule?.detailRegion?.trim() ?? "";
+
+  if (region && detailRegion) {
+    return `${region} ${detailRegion}`;
+  }
+
+  return region || detailRegion || "지역 미정";
+};
+
+// 추천 일정 썸네일 우선순위
+// 1. recommended_schedule.thumbnailImage
+// 2. images 중 isThumbnail인 이미지
+// 3. images의 첫 번째 이미지
+// 4. 기본 이미지 hero.png
+const resolveThumbnail = (schedule, images = []) => {
+  const thumbnailFromSchedule = schedule?.thumbnailImage?.trim();
+
+  if (thumbnailFromSchedule) {
+    return thumbnailFromSchedule;
+  }
+
+  const thumbnailImage = images.find((image) => image?.isThumbnail)?.imageUrl;
+
+  if (thumbnailImage) {
+    return thumbnailImage;
+  }
+
+  const firstImage = images[0]?.imageUrl;
+
+  if (firstImage) {
+    return firstImage;
+  }
+
+  return DEFAULT_THUMBNAIL;
+};
+
+const isDefaultThumbnail = (src) => src === DEFAULT_THUMBNAIL;
+
+// 추천 일정 id가 비어 있는 예외 상황까지 대비한 React key 생성
+const getRecommendedKey = (item) => {
+  const schedule = item?.recommendedSchedule;
+
+  return String(
+    schedule?.id ??
+      `${schedule?.title ?? "recommended"}-${
+        schedule?.region ?? "unknown"
+      }-${schedule?.durationDays ?? "duration"}`,
+  );
 };
 
 const RecommendedSchedulePage = () => {
@@ -47,6 +122,7 @@ const RecommendedSchedulePage = () => {
 
   const isAdmin = user?.status === "admin";
 
+  // 추천 일정 목록 조회
   const {
     data: recommendedSchedules = [],
     isLoading,
@@ -56,6 +132,8 @@ const RecommendedSchedulePage = () => {
     queryFn: getRecommendedSchedules,
   });
 
+  // 선택한 카테고리가 있으면 해당 카테고리만 필터링하고,
+  // 전체를 선택한 경우에는 전체 추천 일정을 그대로 보여줌
   const filteredSchedules = useMemo(() => {
     if (!selectedCategory) {
       return recommendedSchedules;
@@ -66,16 +144,7 @@ const RecommendedSchedulePage = () => {
     });
   }, [recommendedSchedules, selectedCategory]);
 
-  const handleCardClick = (item) => {
-    const scheduleId = item.recommendedSchedule?.id;
-
-    if (!scheduleId) {
-      return;
-    }
-
-    navigate(`/recommended-schedules/${scheduleId}`);
-  };
-
+  // 관리자만 추천 일정 생성 페이지로 이동 가능
   const handleCreateClick = () => {
     navigate("/recommended-schedules/write");
   };
@@ -83,15 +152,17 @@ const RecommendedSchedulePage = () => {
   return (
     <main className={styles.page}>
       <section className={styles.heroSection}>
-        <div>
+        <div className={styles.heroContent}>
           <p className={styles.eyebrow}>
             <AutoAwesomeRoundedIcon fontSize="small" />
             WITHDAY 추천 일정
           </p>
+
           <h1 className={styles.title}>추천 일정에서 시작해보세요</h1>
+
           <p className={styles.description}>
-            WithDay가 준비한 추천 일정을 확인하고, 마음에 드는 코스를 내 일정
-            글쓰기에 템플릿처럼 사용할 수 있어요.
+            WithDay가 준비한 추천 일정을 확인하고, 마음에 드는 코스를 내
+            일정 글쓰기에 템플릿처럼 사용할 수 있어요.
           </p>
         </div>
 
@@ -114,11 +185,10 @@ const RecommendedSchedulePage = () => {
           <button
             key={category.value || "all"}
             type="button"
-            className={`${styles.categoryChip} ${
-              selectedCategory === category.value
-                ? styles.categoryChipActive
-                : ""
-            }`}
+            className={clsx(styles.categoryChip, {
+              [styles.categoryChipActive]:
+                selectedCategory === category.value,
+            })}
             onClick={() => setSelectedCategory(category.value)}
           >
             {category.label}
@@ -139,12 +209,13 @@ const RecommendedSchedulePage = () => {
 
       {isLoading && (
         <section className={styles.stateBox}>
+          <div className={styles.loadingSpinner} />
           <p>추천 일정을 불러오는 중입니다...</p>
         </section>
       )}
 
       {isError && (
-        <section className={styles.stateBox}>
+        <section className={clsx(styles.stateBox, styles.errorBox)}>
           <p>추천 일정 목록을 불러오지 못했습니다.</p>
         </section>
       )}
@@ -157,79 +228,123 @@ const RecommendedSchedulePage = () => {
 
       {!isLoading && !isError && filteredSchedules.length > 0 && (
         <section className={styles.cardGrid}>
-          {filteredSchedules.map((item) => {
-            const schedule = item.recommendedSchedule;
-            const detailSchedule = item.detailSchedule ?? [];
-            const images = item.images ?? [];
+          {filteredSchedules.map((item) => (
+            <RecommendedScheduleCard
+              key={getRecommendedKey(item)}
+              item={item}
+              onClick={() => {
+                const scheduleId = item.recommendedSchedule?.id;
 
-            const thumbnail =
-              schedule?.thumbnailImage ||
-              images.find((image) => image.isThumbnail)?.imageUrl ||
-              images[0]?.imageUrl;
+                if (!scheduleId) {
+                  return;
+                }
 
-            const categoryLabel = CATEGORY_LABELS[schedule?.category] || "추천";
-
-            const costTypeLabel =
-              COST_TYPE_LABELS[schedule?.costType] || "추천 비용";
-
-            return (
-              <article
-                key={schedule.id}
-                className={styles.scheduleCard}
-                onClick={() => handleCardClick(item)}
-              >
-                <div className={styles.thumbnailBox}>
-                  <span className={styles.badge}>{categoryLabel}</span>
-
-                  {thumbnail ? (
-                    <img
-                      src={thumbnail}
-                      alt={schedule.title}
-                      className={styles.thumbnailImage}
-                    />
-                  ) : (
-                    <span className={styles.themeIcon}>✨</span>
-                  )}
-                </div>
-
-                <div className={styles.cardBody}>
-                  <div className={styles.cardMetaTop}>
-                    <span className={styles.categoryBadge}>
-                      {categoryLabel}
-                    </span>
-                    <span className={styles.periodText}>
-                      <CalendarMonthRoundedIcon fontSize="inherit" />
-                      {schedule.durationDays || 1}일 코스
-                    </span>
-                  </div>
-
-                  <h3>{schedule.title}</h3>
-                  <p className={styles.subtitle}>{schedule.description}</p>
-
-                  <div className={styles.infoList}>
-                    <span>
-                      <LocationOnRoundedIcon fontSize="inherit" />
-                      {schedule.region} {schedule.detailRegion}
-                    </span>
-
-                    <span>
-                      <PeopleAltRoundedIcon fontSize="inherit" />
-                      {schedule.minParticipants ?? "-"}~
-                      {schedule.maxParticipants ?? "-"}명 추천
-                    </span>
-
-                    <span>
-                      <AutoAwesomeRoundedIcon fontSize="inherit" />
-                      상세 일정 {detailSchedule.length}개 · {costTypeLabel}
-                    </span>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+                navigate(`/recommended-schedules/${scheduleId}`);
+              }}
+            />
+          ))}
         </section>
       )}
     </main>
+  );
+};
+
+const RecommendedScheduleCard = ({ item, onClick }) => {
+  const schedule = item.recommendedSchedule;
+  const images = item.images ?? [];
+
+  const thumbnailSrc = resolveThumbnail(schedule, images);
+  const categoryLabel = resolveCategoryLabel(schedule?.category);
+  const genderLabel = resolveGenderLimitLabel(schedule?.genderLimit);
+  const regionLabel = resolveRegionLabel(schedule);
+
+  const durationDays = Number(schedule?.durationDays ?? 1);
+  const safeDurationDays =
+    Number.isFinite(durationDays) && durationDays > 0 ? durationDays : 1;
+
+  const descriptionText =
+    schedule?.description?.trim() || "추천 일정 소개가 아직 등록되지 않았어요.";
+
+  // 외부 이미지 URL이 깨지면 기본 이미지로 대체
+  const handleImageError = (event) => {
+    event.currentTarget.onerror = null;
+    event.currentTarget.src = DEFAULT_THUMBNAIL;
+  };
+
+  return (
+    <article
+      className={styles.scheduleCard}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      <div className={styles.cardTop}>
+        <div className={styles.headerSection}>
+          <div className={clsx(styles.infoRow, styles.topRow)}>
+            <div className={styles.topMetaGroup}>
+              <span className={styles.recommendPill}>
+                추천 {safeDurationDays}일
+              </span>
+            </div>
+
+            <div className={styles.topMetaActions}>
+              <span className={styles.genderPill}>{genderLabel}</span>
+            </div>
+          </div>
+
+          <div className={clsx(styles.infoRow, styles.dateRow)}>
+            <div className={styles.dateRowContent}>
+              <span className={styles.dateIconWrap} aria-hidden="true">
+                <CalendarMonthIcon className={styles.dateIcon} />
+              </span>
+
+              <span className={styles.dateText}>
+                {safeDurationDays}일 코스
+              </span>
+            </div>
+          </div>
+
+          <div className={clsx(styles.infoRow, styles.titleRow)}>
+            <div className={styles.titleGroup}>
+              <h3 className={styles.cardTitle}>
+                {schedule?.title ?? "제목 없는 추천 일정"}
+              </h3>
+            </div>
+          </div>
+
+          <div className={clsx(styles.infoRow, styles.descriptionRow)}>
+            <p className={styles.cardDescription}>{descriptionText}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.ticketDivider} aria-hidden="true" />
+
+      <div className={styles.cardBottom}>
+        <div className={styles.thumbnailWrap}>
+          <img
+            src={thumbnailSrc}
+            alt={schedule?.title ?? "추천 일정 썸네일"}
+            className={clsx(
+              styles.thumbnail,
+              isDefaultThumbnail(thumbnailSrc) && styles.thumbnailFallback,
+            )}
+            onError={handleImageError}
+          />
+
+          <div className={styles.thumbnailOverlay}>
+            <span className={styles.overlayPill}>{regionLabel}</span>
+            <span className={styles.overlayPill}>{categoryLabel}</span>
+          </div>
+        </div>
+      </div>
+    </article>
   );
 };
 
