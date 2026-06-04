@@ -16,14 +16,13 @@ import { participationQueryKeys } from "./queries";
 /*
  * 일정 상세 페이지의 참여 신청 mutation이다.
  * 호출 시점:
- * - ApplyScheduleButton에서 사용자가 "참여 신청하기" 클릭
+ * - ScheduleDetail의 참여 CTA에서 사용자가 "참여 신청하기" 클릭
  *
  * 성공 후 invalidate가 필요한 이유:
  * - schedule-detail: 상세 화면의 viewerParticipationStatus가 즉시 PENDING으로 바뀌어야 함
  * - participation 전체 캐시: 내 일정 탭에도 새 신청 row가 보여야 함
  *
  * 즉 "한 화면에서 신청했는데 다른 화면은 예전 상태로 남는 문제"를 막기 위한 hook이다.
- * mutateAsync를 노출하는 이유는 ApplyScheduleButton에서 try/catch로 성공/실패 토스트를 직접 제어해야 하기 때문이다.
  */
 export const useApplyScheduleMutation = () => {
   const queryClient = useQueryClient();
@@ -42,6 +41,10 @@ export const useApplyScheduleMutation = () => {
        */
       await Promise.all([
         queryClient.invalidateQueries({
+          /*
+           * 상세 query key에는 email이 붙는 버전도 있지만,
+           * 여기서는 scheduleId prefix를 무효화해 해당 일정 상세 변형 캐시를 폭넓게 stale 처리한다.
+           */
           queryKey: ["schedule-detail", Number(variables.scheduleId)],
         }),
         queryClient.invalidateQueries({
@@ -69,6 +72,10 @@ export const useCancelParticipationMutation = () => {
     onSuccess: async (_data, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({
+          /*
+           * 취소 후 상세 버튼은 "다시 신청" 또는 취소된 상태 안내로 바뀔 수 있다.
+           * 상세 응답의 viewerParticipationStatus를 다시 받아와야 참여 CTA의 라벨과 액션 가능 여부가 맞는다.
+           */
           queryKey: ["schedule-detail", Number(variables.scheduleId)],
         }),
         queryClient.invalidateQueries({
@@ -94,8 +101,6 @@ export const useCancelParticipationMutation = () => {
  * - 신청자 목록: 해당 유저가 다른 상태 탭으로 이동하거나 목록에서 사라짐
  * - 내 일정 목록: 신청자 본인 화면에 상태가 반영되어야 함
  * - schedule-detail: 인원 수, 모집 마감 상태, 채팅 권한 등이 달라질 수 있음
- * 호스트의 신청자 승인/거절 mutation이다.
- * 상태 변경은 신청자 목록, 내 일정 목록, 상세 화면 인원/상태에 모두 영향을 주므로 관련 캐시를 함께 무효화한다.
  */
 export const useUpdateParticipationStatusMutation = () => {
   const queryClient = useQueryClient();

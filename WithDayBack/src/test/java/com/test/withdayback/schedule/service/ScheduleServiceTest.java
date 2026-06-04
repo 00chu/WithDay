@@ -5,13 +5,16 @@ import com.test.withdayback.participation.enums.ParticipationStatus;
 import com.test.withdayback.participation.vo.Participation;
 import com.test.withdayback.schedule.dto.ScheduleExecutionResponseDTO;
 import com.test.withdayback.schedule.dao.ScheduleDao;
+import com.test.withdayback.schedule.dto.ScheduleRequestDTO;
 import com.test.withdayback.schedule.dto.ScheduleResponseDTO;
 import com.test.withdayback.schedule.enums.CostType;
 import com.test.withdayback.schedule.enums.GenderLimit;
 import com.test.withdayback.schedule.enums.ScheduleStatus;
 import com.test.withdayback.schedule.vo.Schedule;
+import com.test.withdayback.user.dao.UserDao;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,6 +28,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,8 +43,71 @@ class ScheduleServiceTest {
     @Mock
     private ParticipationDao participationDao;
 
+    @Mock
+    private UserDao userDao;
+
     @InjectMocks
     private ScheduleService scheduleService;
+
+    @Test
+    void insertScheduleCreatesApprovedHostParticipationWithoutIncreasingCurrentParticipants() {
+        Long userId = 15L;
+        Long scheduleId = 87L;
+        Schedule schedule = new Schedule();
+        ScheduleRequestDTO dto = new ScheduleRequestDTO();
+        dto.setEmail("host@withday.test");
+        dto.setSchedule(schedule);
+
+        when(userDao.findUserIdByEmail("host@withday.test")).thenReturn(userId);
+        doAnswer(invocation -> {
+            Schedule insertedSchedule = invocation.getArgument(0);
+            insertedSchedule.setId(scheduleId);
+            return null;
+        }).when(scheduleDao).insertSchedule(schedule);
+        when(participationDao.findByEmailAndScheduleId("host@withday.test", scheduleId))
+                .thenReturn(null);
+        doAnswer(invocation -> {
+            Participation participation = invocation.getArgument(0);
+            participation.setId(301L);
+            return 1;
+        }).when(participationDao).insertParticipation(any(Participation.class));
+
+        scheduleService.insertSchedule(dto, List.of());
+
+        ArgumentCaptor<Participation> participationCaptor = ArgumentCaptor.forClass(Participation.class);
+        verify(participationDao).insertParticipation(participationCaptor.capture());
+        Participation hostParticipation = participationCaptor.getValue();
+        assertEquals(userId, hostParticipation.getUserId());
+        assertEquals(scheduleId, hostParticipation.getScheduleId());
+        assertEquals(ParticipationStatus.APPROVED, hostParticipation.getStatus());
+        verify(scheduleDao, never()).increaseCurrentParticipants(scheduleId);
+    }
+
+    @Test
+    void insertScheduleThrowsWhenHostParticipationInsertFails() {
+        Long scheduleId = 87L;
+        Schedule schedule = new Schedule();
+        ScheduleRequestDTO dto = new ScheduleRequestDTO();
+        dto.setEmail("host@withday.test");
+        dto.setSchedule(schedule);
+
+        when(userDao.findUserIdByEmail("host@withday.test")).thenReturn(15L);
+        doAnswer(invocation -> {
+            Schedule insertedSchedule = invocation.getArgument(0);
+            insertedSchedule.setId(scheduleId);
+            return null;
+        }).when(scheduleDao).insertSchedule(schedule);
+        when(participationDao.findByEmailAndScheduleId("host@withday.test", scheduleId))
+                .thenReturn(null);
+        when(participationDao.insertParticipation(any(Participation.class))).thenReturn(0);
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> scheduleService.insertSchedule(dto, List.of())
+        );
+
+        assertEquals("500 INTERNAL_SERVER_ERROR \"호스트 참여 정보 생성에 실패했습니다.\"", exception.getMessage());
+    }
 
     @Test
     void increaseViewCountReturnsTrueWhenRowWasUpdated() {

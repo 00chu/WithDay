@@ -14,7 +14,13 @@ import { PARTICIPATION_TAB_STATUS_PARAMS } from "./model/constants";
  * 5. 상위 mutation/query hook이 캐시 무효화 또는 데이터 select를 수행
  * 6. 화면이 최신 상태로 다시 렌더링
  */
-const normalizeEmailParam = (email) => email?.trim() ?? "";
+const normalizeEmailParam = (email) => {
+  /*
+   * email은 서버에서 사용자 식별과 호스트 권한 검증에 쓰이는 값이다.
+   * 공백이 섞이면 같은 사용자도 다른 query param처럼 보일 수 있으므로 요청 직전에 항상 trim한다.
+   */
+  return email?.trim() ?? "";
+};
 
 /*
  * 개발 중에는 "어떤 상태 필터로 어떤 데이터가 왔는지"를 보는 일이 잦다.
@@ -40,9 +46,7 @@ const debugMyScheduleResponse = (label, data) => {
  *
  * 응답은 schedule 카드에 필요한 원본 필드 배열이며,
  * 이 단계에서는 아직 화면 전용 포맷으로 바꾸지 않고 그대로 반환한다.
- * 이후 useMySchedulesQuery -> normalizeMySchedulesResponse에서 UI 모델로 변환한다.
- * 내 일정 페이지의 참여중/신청중 탭 목록을 조회한다.
- * statuses는 APPROVED,KICKED처럼 콤마 문자열로 넘기며, 백엔드는 이 값을 상태 필터 목록으로 해석한다.
+ * 이후 useMySchedulesQuery -> normalizeMyScheduleList에서 UI 모델로 변환한다.
  */
 export const fetchParticipationList = async ({ email, statuses }) => {
   const normalizedEmail = normalizeEmailParam(email);
@@ -88,8 +92,6 @@ export const fetchPendingSchedules = ({ email }) =>
  *
  * 응답 row에는 participationId가 없을 수 있으며,
  * 상위 화면은 이를 보고 "참여 취소"가 아니라 "상세/관리 이동" 흐름으로 분기한다.
- * 내가 만든 일정 탭을 조회한다.
- * 이 데이터는 participation row가 아니라 schedule.user_id 기준으로 오기 때문에 participationId가 없을 수 있다.
  */
 export const fetchHostingSchedules = async ({ email }) => {
   const normalizedEmail = normalizeEmailParam(email);
@@ -114,10 +116,8 @@ export const fetchHostingSchedules = async ({ email }) => {
  *   hosting: [...]
  * }
  *
- * 이 구조는 query layer에서 그대로 캐시되고,
- * mapper에서 각 배열을 카드용 shape로 정리한 뒤 MySchedulePage가 탭별로 골라 쓴다.
- * 내 일정 화면은 세 탭을 한 번에 구성해야 하므로 참여중/신청중/호스팅 목록을 병렬로 가져온다.
- * Promise.all을 쓰는 이유는 각 탭이 서로 의존하지 않아 순차 호출보다 화면 대기 시간을 줄일 수 있기 때문이다.
+ * 이 구조는 과거 전체 탭 동시 조회 방식에서 쓰던 계약이며, 현재 화면은 탭별 query를 주로 사용한다.
+ * 함수 자체는 다른 화면 재사용 가능성을 위해 유지하되, 각 배열은 mapper에서 카드용 shape로 정리한다.
  */
 export const fetchMySchedules = async ({ email }) => {
   const [participating, pending, hosting] = await Promise.all([
@@ -145,8 +145,6 @@ export const fetchMySchedules = async ({ email }) => {
  *
  * 프런트는 성공 응답의 상세 필드 자체보다,
  * 이후 캐시 무효화를 통해 viewerParticipationStatus와 내 일정 목록이 갱신되는 효과를 더 중요하게 사용한다.
- * 일정 상세의 "참여 신청하기" API다.
- * 성공하면 participation row가 PENDING 상태로 생성되고, 이후 호스트가 승인/거절한다.
  */
 export const applySchedule = async ({ email, scheduleId }) => {
   const { data } = await api.post("/participations", {
@@ -169,9 +167,8 @@ export const createParticipation = applySchedule;
  * 즉 단순 조회처럼 보여도 서버는 이 email 사용자가 정말 호스트인지 검사한다.
  *
  * 응답은 신청자 목록 원본 배열이며,
- * 각 row에는 참여자 email, nickname, status, createdAt 같은 관리용 정보가 들어 있다.
- * 호스트가 일정 상세에서 신청자 목록을 조회할 때 사용한다.
- * status는 PENDING/APPROVED 같은 필터이며, 기본값을 PENDING으로 둬 최초 진입 시 승인 대기 신청자를 먼저 보여준다.
+ * 각 row에는 email/nickname/status/createdAt와 호스트 전용 개인정보(phone/gender/fullAge)가 들어갈 수 있다.
+ * 이 함수는 ScheduleDetail의 viewerIsHost 조건 아래에서만 호출되어야 하며, 서버도 같은 권한을 다시 검증한다.
  */
 export const fetchScheduleApplicants = async ({
   scheduleId,
@@ -204,8 +201,6 @@ export const fetchScheduleApplicants = async ({
  *
  * reason은 현재 UI에서 실제로 입력받지는 않지만,
  * API shape를 미리 열어 두어 추후 운영 사유 저장 기능을 붙이기 쉽게 해 둔 상태다.
- * 호스트 전용 참여 상태 변경 API다.
- * 승인(APPROVED), 거절(REJECTED), 강퇴(KICKED)를 모두 같은 endpoint로 처리한다.
  */
 export const updateParticipationStatusByHost = async ({
   participationId,
@@ -236,8 +231,6 @@ export const updateParticipationStatusByHost = async ({
  * action별 의미:
  * - cancel: 사용자가 본인 참여를 취소 -> 서버 status를 CANCELED로 변경
  * - delete: 종료된 내역(REJECTED/KICKED)을 화면/DB에서 제거
- * 내 일정 화면에서 사용자가 자신의 참여 내역에 수행하는 액션을 공통 함수로 묶었다.
- * cancel은 본인 참여를 CANCELED 상태로 바꾸고, delete는 REJECTED/KICKED 내역을 실제 삭제한다.
  */
 export const updateParticipationStatus = async ({
   participationId,

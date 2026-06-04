@@ -10,7 +10,7 @@ import { useAuthStore } from "../../features/auth/store/authStore";
 
 /*
  * 홈 탭은 전체 일정 중 일부만 "추천/미리보기" 형태로 보여준다.
- * 탐색 탭처럼 검색/카테고리 UI를 직접 노출하지 않고, 현재 선택된 지역만 반영해 가볍게 목록을 구성한다.
+ * 탐색 탭처럼 검색/카테고리 UI를 직접 노출하지 않고, 전체 일정 중 홈에 적합한 일부만 가볍게 구성한다.
  */
 const MAX_HOME_ITEMS = 8;
 
@@ -25,8 +25,6 @@ const getScheduleKey = (schedule) =>
       `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`
   );
 
-const normalizeRegionValue = (value) => value?.trim() ?? "";
-
 /*
  * 홈에서는 "가까운 일정"이 먼저 보이도록 endDate/startDate 기준으로 정렬한다.
  * 백엔드 기본 정렬은 최신 등록순이지만, 홈 섹션은 탐색 목록이 아니라 추천 영역이라 노출 우선순위를 프론트에서 한 번 더 잡는다.
@@ -37,14 +35,12 @@ const sortByPriorityDate = (left, right) => {
   return leftTime - rightTime;
 };
 
-export default function Home({ selectedRegion = "" }) {
+export default function Home() {
   const navigate = useNavigate();
-  const normalizedRegion = normalizeRegionValue(selectedRegion);
   const authEmail = useAuthStore((state) => state.user?.email?.trim() ?? "");
 
   /*
-   * 페이지 진입 또는 지역 필터 변경 시 react-query가 GET /schedules를 호출한다.
-   * queryKey에 normalizedRegion을 넣은 이유는 지역별 결과를 별도 캐시로 관리하기 위해서다.
+   * 페이지 진입 시 react-query가 GET /schedules를 호출한다.
    * staleTime 1분 동안은 같은 지역으로 다시 돌아왔을 때 즉시 캐시를 보여주고, 불필요한 재요청을 줄인다.
    */
   const {
@@ -52,12 +48,11 @@ export default function Home({ selectedRegion = "" }) {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["home-schedules", normalizedRegion, authEmail || "guest"],
+    queryKey: ["home-schedules", authEmail || "guest"],
     queryFn: () =>
       fetchSchedules({
         category: "all",
         keyword: "",
-        region: normalizedRegion,
         email: authEmail,
       }),
     staleTime: 1000 * 60,
@@ -83,9 +78,7 @@ export default function Home({ selectedRegion = "" }) {
             <div>
               <h2 className={styles.sectionTitle}>마중 나온 위트들</h2>
               <p className={styles.sectionCaption}>
-                {normalizedRegion
-                  ? `${normalizedRegion}에서 찾은 일정들을 먼저 보여드려요`
-                  : "함께 가기 좋은 일정들을 홈에서 먼저 만나보세요"}
+                함께 가기 좋은 일정들을 홈에서 먼저 만나보세요
               </p>
             </div>
           </div>
@@ -115,7 +108,7 @@ export default function Home({ selectedRegion = "" }) {
           <div className={styles.homeEmpty}>
             <h3 className={styles.homeEmptyTitle}>추천할 일정이 아직 없어요.</h3>
             <p className={styles.homeEmptyText}>
-              지역 필터를 바꾸거나 탐색 탭에서 전체 일정을 확인해보세요.
+              탐색 탭에서 조건을 바꿔 전체 일정을 확인해보세요.
             </p>
           </div>
         )}
