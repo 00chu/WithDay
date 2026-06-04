@@ -10,6 +10,9 @@ import Login from "./page/login/Login";
 import SocialExtra from "./page/login/SocialExtra";
 import FindId from "./page/login/FindId";
 import FindPw from "./page/login/FindPw";
+import RecommendedSchedulePage from "./page/recommended-schedule/RecommendedSchedulePage";
+import RecommendedScheduleWrite from "./page/recommended-schedule/RecommendedScheduleWrite";
+import RecommendedScheduleDetail from "./page/recommended-schedule/RecommendedScheduleDetail";
 
 import ScheduleDetail from "./page/schedule/ScheduleDetail";
 import WriteSchedule from "./page/schedule/WriteSchedule";
@@ -25,6 +28,7 @@ import Header from "./widgets/Header/Header";
 import BottomNav from "./widgets/BottomNav/BottomeNav";
 import LayoutContainer from "./shared/ui/LayoutContainer/LayoutContainer";
 import PrivateRoute from "./features/ui/PrivateRoute";
+import RecommendedScheduleEdit from "./page/recommended-schedule/RecommendedScheduleEdit";
 import AdminPage from "./page/admin/AdminPage";
 
 function App() {
@@ -92,6 +96,38 @@ function App() {
             <Route path="/signup/extra" element={<SocialExtra />} />
             <Route path="/find-id" element={<FindId />} />
             <Route path="/find-pw" element={<FindPw />} />
+            <Route
+              path="/recommended-schedules"
+              element={
+                <PrivateRoute>
+                  <RecommendedSchedulePage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/recommended-schedules/write"
+              element={
+                <PrivateRoute>
+                  <RecommendedScheduleWrite />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/recommended-schedules/edit/:id"
+              element={
+                <PrivateRoute>
+                  <RecommendedScheduleEdit />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/recommended-schedules/:id"
+              element={
+                <PrivateRoute>
+                  <RecommendedScheduleDetail />
+                </PrivateRoute>
+              }
+            />
 
             <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
 

@@ -1,0 +1,738 @@
+/* ─── 페이지 레이아웃: 기존 탐색 페이지의 전체 콘텐츠 폭에 맞춤 ─── */
+
+.page {
+  width: min(1260px, calc(100% - 96px));
+  margin: 0 auto;
+  padding: 48px 0 96px;
+  box-sizing: border-box;
+  background: var(--color-bg);
+}
+
+/* ─── 상단 소개 영역 ─────────────────────────────────────── */
+
+.heroSection {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.heroContent {
+  min-width: 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 34px;
+  line-height: 1.25;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.description {
+  max-width: 100%;
+  margin: 12px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.createButton {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─── 카테고리 필터 ───────────────────────────────────────── */
+
+.filterSection {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.categoryChip {
+  min-width: 62px;
+  height: 38px;
+  padding: 0 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.categoryChip:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent-dark);
+  transform: translateY(-1px);
+}
+
+.categoryChipActive {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.categoryChipActive:hover {
+  color: var(--color-text-inverse);
+}
+
+/* ─── 목록 헤더 ───────────────────────────────────────────── */
+
+.listHeader {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.listHeader h2 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.listHeader p {
+  margin: 7px 0 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+/* ─── 카드 그리드: 기존 탐색 페이지처럼 넓은 5열 카드 영역 ─── */
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 22px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+  overflow: visible;
+  align-items: stretch;
+  justify-items: stretch;
+}
+
+.cardGrid > * {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* ─── 상태 박스 ───────────────────────────────────────────── */
+
+.stateBox {
+  width: 100%;
+  min-height: 220px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.stateBox p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.errorBox p {
+  color: var(--color-error);
+}
+
+.loadingSpinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── 추천 일정 카드: 기존 탐색 티켓 카드 구조 ─────────── */
+
+.scheduleCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 100%;
+  background: transparent;
+  filter: var(--shadow-card-ticket);
+  cursor: pointer;
+  outline: 1px solid transparent;
+  outline-offset: 0;
+  transition: filter 0.24s ease;
+}
+
+.scheduleCard:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.cardTop,
+.cardBottom {
+  background: var(--color-surface);
+  transition: background-color 0.24s ease;
+}
+
+.cardTop {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 16px 14px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.headerSection {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+}
+
+.topMetaGroup {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.topMetaActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* 기존 탐색 카드의 왼쪽 마감 배지 자리에 추천 기간을 표시 */
+.recommendPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  min-width: 0;
+  padding: 0 12px;
+  margin-left: -16px;
+  border-radius: 0 999px 999px 0;
+  flex-shrink: 0;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+/* 기존 탐색 카드의 성별 pill만 유지하고, 하트/추천 이모지는 제거 */
+.genderPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: var(--color-accent-light);
+  color: var(--color-accent-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.dateRow,
+.dateRowContent,
+.titleGroup,
+.descriptionRow {
+  min-width: 0;
+}
+
+.dateRow {
+  align-items: stretch;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.dateRowContent {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 5px 5px;
+  gap: 6px;
+}
+
+.dateIconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.dateIcon {
+  font-size: 0.88rem;
+}
+
+.dateText {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.28;
+  white-space: normal;
+  word-break: keep-all;
+}
+
+.titleGroup {
+  flex: 1 1 auto;
+}
+
+/* 기존 탐색 카드처럼 제목은 1줄 말줄임 */
+.cardTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.18rem;
+  font-weight: 800;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  width: 100%;
+  min-height: 1.28em;
+  max-height: 1.28em;
+  word-break: keep-all;
+}
+
+/* 기존 탐색 카드처럼 설명은 2줄 고정 */
+.cardDescription {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: calc(1.45em * 2);
+  max-height: calc(1.45em * 2);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  width: 100%;
+}
+
+/* ─── 티켓 점선 / 양쪽 노치 ─────────────────────────────── */
+
+.ticketDivider {
+  position: relative;
+  height: 34px;
+  background: var(--color-surface);
+  transition: background-color 0.24s ease;
+  -webkit-mask-image:
+    radial-gradient(
+      circle at left center,
+      transparent 0 13px,
+      var(--color-mask-solid) 13.5px
+    ),
+    radial-gradient(
+      circle at right center,
+      transparent 0 13px,
+      var(--color-mask-solid) 13.5px
+    );
+  -webkit-mask-size: 51% 100%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: left, right;
+  mask-image:
+    radial-gradient(
+      circle at left center,
+      transparent 0 13px,
+      var(--color-mask-solid) 13.5px
+    ),
+    radial-gradient(
+      circle at right center,
+      transparent 0 13px,
+      var(--color-mask-solid) 13.5px
+    );
+  mask-size: 51% 100%;
+  mask-repeat: no-repeat;
+  mask-position: left, right;
+}
+
+.ticketDivider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 24px;
+  right: 24px;
+  border-top: 2px dashed var(--color-border);
+  transform: translateY(-50%);
+}
+
+/* ─── 카드 하단 이미지 영역 ─────────────────────────────── */
+
+.cardBottom {
+  padding: 14px 16px 16px;
+}
+
+.thumbnailWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    var(--color-bg) 0%,
+    var(--color-border-light) 100%
+  );
+}
+
+.thumbnail {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.thumbnailFallback {
+  object-fit: fill;
+  object-position: center center;
+}
+
+/* 이미지 위 지역/카테고리 pill 영역 */
+.thumbnailOverlay {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  overflow: hidden;
+}
+
+/* pill 자체의 배경도 글자 크기에 맞게 작게 축소 */
+.overlayPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--color-overlay-glass);
+  color: var(--color-text-inverse);
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px var(--color-overlay-shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* 지역명은 원본 텍스트를 유지하고, 공간이 부족할 때만 pill 배경도 함께 줄어듦 */
+.overlayPill:first-child {
+  flex: 0 1 auto;
+  max-width: calc(100% - 46px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 카테고리 pill은 항상 글자 크기만큼만 차지 */
+.overlayPill:last-child {
+  flex: 0 0 auto;
+}
+
+/* ─── Hover ─────────────────────────────────────────────── */
+
+@media (hover: hover) and (pointer: fine) {
+  .scheduleCard:hover {
+    filter: var(--shadow-card-ticket-hover);
+  }
+
+  .scheduleCard:hover .cardTop,
+  .scheduleCard:hover .cardBottom,
+  .scheduleCard:hover .ticketDivider {
+    background: var(--color-surface-hover);
+  }
+}
+
+/* ─── 반응형 ─────────────────────────────────────────────── */
+
+@media (max-width: 1439px) {
+  .page {
+    width: min(1260px, calc(100% - 80px));
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .thumbnailOverlay {
+    gap: 4px;
+  }
+
+  .overlayPill {
+    height: 19px;
+    padding: 0 5px;
+    font-size: 0.56rem;
+  }
+
+  .overlayPill:first-child {
+    max-width: calc(100% - 42px);
+  }
+}
+
+@media (max-width: 1180px) {
+  .page {
+    width: min(100% - 48px, 100%);
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .overlayPill {
+    height: 21px;
+    padding: 0 7px;
+    font-size: 0.64rem;
+  }
+
+  .overlayPill:first-child {
+    max-width: calc(100% - 52px);
+  }
+}
+
+@media (max-width: 980px) {
+  .cardGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .overlayPill {
+    height: 22px;
+    padding: 0 8px;
+    font-size: 0.68rem;
+  }
+
+  .overlayPill:first-child {
+    max-width: calc(100% - 58px);
+  }
+}
+
+@media screen and (max-width: 860px) {
+  .page {
+    width: min(100% - 32px, 100%);
+    padding: 34px 0 92px;
+  }
+
+  .heroSection {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+
+  .createButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overlayPill {
+    height: 21px;
+    padding: 0 6px;
+    font-size: 0.62rem;
+  }
+
+  .overlayPill:first-child {
+    max-width: calc(100% - 50px);
+  }
+}
+
+@media (max-width: 520px) {
+  .page {
+    width: min(100% - 28px, 100%);
+    padding: 28px 0 88px;
+  }
+
+  .cardGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .title {
+    font-size: 26px;
+  }
+
+  .description {
+    font-size: 14px;
+  }
+
+  .filterSection {
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .categoryChip {
+    height: 34px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+
+  .cardTop {
+    gap: 11px;
+    padding: 14px 14px 12px;
+  }
+
+  .headerSection {
+    gap: 9px;
+  }
+
+  .infoRow {
+    gap: 10px;
+  }
+
+  .topRow {
+    align-items: flex-start;
+    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .topMetaGroup,
+  .titleGroup,
+  .descriptionRow,
+  .dateRow {
+    width: 100%;
+  }
+
+  .recommendPill,
+  .genderPill {
+    min-height: 26px;
+    padding: 0 9px;
+    font-size: 0.74rem;
+  }
+
+  .recommendPill {
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-left: -14px;
+  }
+
+  .dateText {
+    font-size: 0.86rem;
+  }
+
+  .dateIcon {
+    font-size: 0.82rem;
+  }
+
+  .cardTitle {
+    font-size: 1.08rem;
+  }
+
+  .cardDescription {
+    font-size: 0.78rem;
+    min-height: calc(1.45em * 2);
+    max-height: calc(1.45em * 2);
+  }
+
+  .thumbnailOverlay {
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    gap: 5px;
+  }
+
+  .overlayPill {
+    height: 24px;
+    padding: 0 9px;
+    font-size: 0.72rem;
+  }
+
+  .overlayPill:first-child {
+    max-width: calc(100% - 66px);
+  }
+}

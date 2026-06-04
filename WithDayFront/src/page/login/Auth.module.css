@@ -19,7 +19,7 @@
   border-radius: 12px;
   box-shadow: var(--shadow-md);
   width: 100%;
-  max-width: 400px;
+  max-width: 480px;
   transform: translateY(16px);
 }
 
@@ -173,7 +173,8 @@
 
 .findLinks span {
   cursor: pointer;
-  transition: color var(--transition-fast),
+  transition:
+    color var(--transition-fast),
     text-decoration-color var(--transition-fast);
 }
 

@@ -1,40 +1,25 @@
 import { Input, TextArea } from "../../shared/ui/Form/Form";
-import styles from "./WriteSchedule.module.css";
+import styles from "./RecommendedScheduleWrite.module.css";
 import { useEffect, useState, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { DateRange } from "react-date-range";
-import "react-date-range/dist/styles.css";
-import "react-date-range/dist/theme/default.css";
-import { ko } from "date-fns/locale";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { registerLocale } from "react-datepicker";
+import { useNavigate } from "react-router-dom";
 import Button from "../../shared/ui/Button/Button";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDetailRegion, getRegion } from "../../features/region/api";
-import { insertSchedule } from "../../features/schedule/api";
+import { createRecommendedSchedule } from "../../features/recommended/api";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
-import { insertSchema } from "../../features/schedule/validation/insertSchema";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import { recommendedScheduleSchema } from "../../features/recommended/validation/recommendedScheduleSchema";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuthStore } from "../../features/auth/store/authStore";
-import CommonSelect from "../../shared/ui/Select/CommonSelect";
 
-registerLocale("ko", ko);
-
-const WriteSchedule = () => {
+const RecommendedScheduleWrite = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // 추천 일정 상세 페이지에서 "추천 일정 사용하기"를 눌렀을 때 넘어오는 데이터
-  const recommendedPayload = location.state?.recommendedSchedule;
-  const recommendedTemplate = recommendedPayload?.recommendedSchedule;
-
-  // 추천 일정 기본 정보는 최초 1회만 주입하기 위한 방어용 ref
-  const recommendedInitializedRef = useRef(false);
+  const queryClient = useQueryClient();
 
   // DB Enum 매핑용 카테고리 리스트
   const categories = [
@@ -51,6 +36,9 @@ const WriteSchedule = () => {
   const [images, setImages] = useState([]);
   const [files, setFiles] = useState([]);
 
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.status === "admin";
+
   const {
     register,
     handleSubmit,
@@ -60,20 +48,15 @@ const WriteSchedule = () => {
     control,
     formState: { errors, isSubmitted },
   } = useForm({
-    resolver: yupResolver(insertSchema),
+    resolver: yupResolver(recommendedScheduleSchema),
     defaultValues: {
-      post: {
-        email: "",
+      recommendedSchedule: {
         title: "",
         description: "",
         category: "",
         region: "",
         detailRegion: "",
-        chatLink: "",
-        startDate: new Date(),
-        endDate: new Date(),
-        recruitStartDate: new Date(),
-        recruitEndDate: new Date(),
+        durationDays: null,
         minParticipants: null,
         maxParticipants: null,
         ageMin: null,
@@ -81,89 +64,46 @@ const WriteSchedule = () => {
         genderLimit: "all",
         totalPrice: null,
         costType: "per_person",
-        thumbnail: "",
       },
-      detailSchedule: [],
+      files: [],
+      detailSchedule: [
+        {
+          dayNumber: 1,
+          sortOrder: 1,
+          title: "",
+          description: "",
+        },
+      ],
     },
   });
 
-  const email = useAuthStore((state) => state.user.email);
-
-  // 추천 일정 상세에서 넘어온 데이터를 기존 글쓰기 폼 초기값으로 채움
-  // 기존 글쓰기 로직을 건드리지 않기 위해 최초 1회만 setValue로 주입함.
-  useEffect(() => {
-    if (recommendedInitializedRef.current) return;
-    if (!recommendedTemplate) return;
-
-    recommendedInitializedRef.current = true;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const durationDays = Number(recommendedTemplate.durationDays ?? 1);
-
-    const safeDurationDays =
-      Number.isFinite(durationDays) && durationDays > 0 ? durationDays : 1;
-    const endDate = new Date(today);
-    endDate.setDate(today.getDate() + safeDurationDays - 1);
-
-    setValue("post.title", recommendedTemplate.title ?? "");
-    setValue("post.description", recommendedTemplate.description ?? "");
-    setValue("post.category", recommendedTemplate.category ?? "");
-    setValue("post.region", recommendedTemplate.region ?? "");
-    setValue("post.detailRegion", recommendedTemplate.detailRegion ?? "");
-
-    setValue(
-      "post.minParticipants",
-      recommendedTemplate.minParticipants ?? null,
-    );
-    setValue(
-      "post.maxParticipants",
-      recommendedTemplate.maxParticipants ?? null,
-    );
-    setValue("post.ageMin", recommendedTemplate.ageMin ?? null);
-    setValue("post.ageMax", recommendedTemplate.ageMax ?? null);
-    setValue("post.genderLimit", recommendedTemplate.genderLimit ?? "all");
-    setValue("post.totalPrice", recommendedTemplate.totalPrice ?? null);
-    setValue("post.costType", recommendedTemplate.costType ?? "per_person");
-
-    // 추천 일정은 실제 날짜가 없으므로 오늘부터 추천 기간만큼 기본 날짜를 잡아줌.
-    // 사용자가 글쓰기 화면에서 직접 수정 가능함.
-    setValue("post.startDate", today);
-    setValue("post.endDate", endDate);
-    setValue("post.recruitStartDate", today);
-    setValue("post.recruitEndDate", today);
-
-    // 오픈채팅 링크는 추천 일정에 없는 실제 모집글 전용 값이므로 비워둠.
-    setValue("post.chatLink", "");
-  }, [recommendedTemplate, setValue]);
-
-  useEffect(() => {
-    if (!email) return;
-
-    setValue("post.email", email);
-  }, [email, setValue]);
-
-  const { fields, replace } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: "detailSchedule",
   });
 
-  const region = watch("post.region");
-  const genderLimit = watch("post.genderLimit");
-  const recruitEndDate = watch("post.recruitEndDate");
-  const startDate = watch("post.startDate");
-  const costType = watch("post.costType");
-  const totalPrice = watch("post.totalPrice");
+  const region = watch("recommendedSchedule.region");
+  const genderLimit = watch("recommendedSchedule.genderLimit");
+  const costType = watch("recommendedSchedule.costType");
+  const totalPrice = watch("recommendedSchedule.totalPrice");
 
   const flattenErrors = (errorsObj) => {
     return Object.values(errorsObj).flatMap((err) => {
       if (!err) return [];
 
-      // nested error (post)
+      // nested error
       if (err?.message) return [err.message];
 
-      // nested object (post.title 등)
+      // array error
+      if (Array.isArray(err)) {
+        return err.flatMap((item) =>
+          Object.values(item ?? {})
+            .map((e) => e?.message)
+            .filter(Boolean),
+        );
+      }
+
+      // nested object
       return Object.values(err ?? {})
         .map((e) => e?.message)
         .filter(Boolean);
@@ -171,80 +111,57 @@ const WriteSchedule = () => {
   };
 
   const errorList = flattenErrors(errors);
-
   const hasError = isSubmitted && Object.keys(errors).length > 0;
-
   const errorMessage = errorList.join("\n");
 
   // 시/도 조회
   const { data: regions = [] } = useQuery({
-    queryKey: ["region"],
+    queryKey: ["recommended-region"],
     queryFn: getRegion,
   });
 
-  // 군/구 조회(RHF)
+  // 군/구 조회
   const { data: detailRegions = [] } = useQuery({
-    queryKey: ["detailRegion", region],
+    queryKey: ["recommended-detail-region", region],
     queryFn: () => getDetailRegion(region),
     enabled: !!region,
   });
 
-  // 추천 일정에서 넘어온 지역 값은 select option이 로딩된 뒤 한 번 더 세팅
-  // option이 생기기 전에 값을 먼저 넣으면 화면에 선택값이 안 보일 수 있어서 보정함.
+  // 지역이 바뀌면 상세 지역 초기화
   useEffect(() => {
-    if (!recommendedTemplate) return;
-
-    if (
-      recommendedTemplate.region &&
-      Array.isArray(regions) &&
-      regions.some((item) => item.regionName === recommendedTemplate.region)
-    ) {
-      setValue("post.region", recommendedTemplate.region, {
-        shouldValidate: true,
-      });
-    }
-
-    if (
-      recommendedTemplate.detailRegion &&
-      Array.isArray(detailRegions) &&
-      detailRegions.some(
-        (item) => item.detailName === recommendedTemplate.detailRegion,
-      )
-    ) {
-      setValue("post.detailRegion", recommendedTemplate.detailRegion, {
-        shouldValidate: true,
-      });
-    }
-  }, [regions, detailRegions, recommendedTemplate, setValue]);
-
-  // 시작일보다 모집 마감일이 더 뒤일 때 시작일과 모집 마감일을 동일하게 설정
-  useEffect(() => {
-    if (!startDate || !recruitEndDate) return;
-
-    const start = new Date(startDate);
-    const end = new Date(recruitEndDate);
-
-    start.setHours(0, 0, 0, 0);
-    end.setHours(0, 0, 0, 0);
-
-    if (end > start) {
-      setValue("post.recruitEndDate", startDate);
-    }
-  }, [startDate, recruitEndDate, setValue]);
+    setValue("recommendedSchedule.detailRegion", "");
+  }, [region, setValue]);
 
   const formatNumber = (value) => {
     if (!value) return "";
     return Number(value).toLocaleString();
   };
 
-  // 사진 업로드 시 시간 오래 걸릴 때 등록/수정 버튼 막음
-  const { mutateAsync: submitSchedule, isPending } = useMutation({
-    mutationFn: ({ postData, filesData, detailScheduleData }) => {
-      return insertSchedule(postData, filesData, detailScheduleData);
+  // 관리자 권한 방어
+  useEffect(() => {
+    if (!user) return;
+
+    if (!isAdmin) {
+      navigate("/recommended-schedules", { replace: true });
+    }
+  }, [user, isAdmin, navigate]);
+
+  // 사진 업로드 시 시간 오래 걸릴 때 등록 버튼 막음
+  const { mutateAsync: submitRecommendedSchedule, isPending } = useMutation({
+    mutationFn: ({ recommendedData, images }) => {
+      return createRecommendedSchedule({
+        recommendedData,
+        images,
+      });
     },
-    onSuccess: (res) => {
-      console.log("등록 성공", res);
-      navigate("/");
+    onSuccess: async (res) => {
+      console.log("추천 일정 등록 성공", res);
+
+      await queryClient.invalidateQueries({
+        queryKey: ["recommended-schedules"],
+      });
+
+      navigate("/recommended-schedules");
     },
     onError: (err) => {
       console.error("error: ", err);
@@ -255,10 +172,30 @@ const WriteSchedule = () => {
     // 등록 2차 방어
     if (isPending) return;
 
-    await submitSchedule({
-      postData: formValues.post,
-      filesData: files,
-      detailScheduleData: formValues.detailSchedule,
+    const recommendedData = {
+      recommendedSchedule: {
+        ...formValues.recommendedSchedule,
+        durationDays: Number(formValues.recommendedSchedule.durationDays),
+        minParticipants: Number(formValues.recommendedSchedule.minParticipants),
+        maxParticipants: Number(formValues.recommendedSchedule.maxParticipants),
+        ageMin: Number(formValues.recommendedSchedule.ageMin),
+        ageMax: Number(formValues.recommendedSchedule.ageMax),
+        totalPrice:
+          formValues.recommendedSchedule.totalPrice === null
+            ? 0
+            : Number(formValues.recommendedSchedule.totalPrice),
+      },
+      detailSchedule: formValues.detailSchedule.map((item, index) => ({
+        dayNumber: Number(item.dayNumber),
+        sortOrder: index + 1,
+        title: item.title,
+        description: item.description,
+      })),
+    };
+
+    await submitRecommendedSchedule({
+      recommendedData,
+      images: files,
     });
   };
 
@@ -267,6 +204,24 @@ const WriteSchedule = () => {
   useEffect(() => {
     setOpenSnackbar(hasError);
   }, [hasError]);
+
+  if (!isAdmin) {
+    return (
+      <>
+        <header className={styles.header}></header>
+        <main className={styles.main}>
+          <div className={styles.contentWrap}>
+            <div className={styles.inputContentWrap}>
+              <h2 className={styles.inputTitle}>권한 확인</h2>
+              <div className={styles.sectionContent}>
+                관리자 권한을 확인하는 중입니다.
+              </div>
+            </div>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
@@ -291,7 +246,7 @@ const WriteSchedule = () => {
                       name="title"
                       id="title"
                       placeholder="일정명"
-                      {...register("post.title")}
+                      {...register("recommendedSchedule.title")}
                     />
                   </li>
                 </ul>
@@ -305,7 +260,7 @@ const WriteSchedule = () => {
                       name="description"
                       id="description"
                       placeholder="일정 설명"
-                      {...register("post.description")}
+                      {...register("recommendedSchedule.description")}
                     />
                   </li>
                 </ul>
@@ -315,31 +270,13 @@ const WriteSchedule = () => {
                     <label htmlFor="category">일정 종류</label>
                   </li>
                   <li>
-                    <Controller
-                      name="post.category"
-                      control={control}
-                      render={({ field }) => (
-                        <CommonSelect
-                          label="일정 종류"
-                          value={field.value}
-                          onChange={field.onChange}
-                          options={categories}
-                        />
-                      )}
-                    />
-                  </li>
-                </ul>
-
-                <ul className={`${styles.inputWrap} ${styles.link}`}>
-                  <li>
-                    <label htmlFor="link">오픈 채팅 링크</label>
-                  </li>
-                  <li>
-                    <Input
-                      type="text"
-                      placeholder="오픈 채팅 링크"
-                      {...register("post.chatLink")}
-                    />
+                    <select {...register("recommendedSchedule.category")}>
+                      {categories.map((item) => (
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
                   </li>
                 </ul>
 
@@ -348,24 +285,14 @@ const WriteSchedule = () => {
                     <label htmlFor="region">지역(시/도)</label>
                   </li>
                   <li>
-                    <Controller
-                      name="post.region"
-                      control={control}
-                      render={({ field }) => (
-                        <CommonSelect
-                          label="시/도"
-                          value={field.value}
-                          onChange={field.onChange}
-                          options={[
-                            { label: "시/도", value: "" },
-                            ...regions.map((item) => ({
-                              label: item.regionName,
-                              value: item.regionName,
-                            })),
-                          ]}
-                        />
-                      )}
-                    />
+                    <select {...register("recommendedSchedule.region")}>
+                      <option value="">시/도</option>
+                      {regions?.map((item) => (
+                        <option key={item.regionId} value={item.regionName}>
+                          {item.regionName}
+                        </option>
+                      ))}
+                    </select>
                   </li>
                 </ul>
 
@@ -374,28 +301,56 @@ const WriteSchedule = () => {
                     <label htmlFor="detailRegion">지역(시/군/구)</label>
                   </li>
                   <li>
-                    <Controller
-                      name="post.detailRegion"
-                      control={control}
-                      render={({ field }) => (
-                        <CommonSelect
-                          label="시/군/구"
-                          value={field.value}
-                          onChange={field.onChange}
-                          options={[
-                            { label: "시/군/구", value: "" },
-                            ...detailRegions.map((item) => ({
-                              label: item.detailName,
-                              value: item.detailName,
-                            })),
-                          ]}
-                        />
-                      )}
+                    <select {...register("recommendedSchedule.detailRegion")}>
+                      <option value="">시/군/구</option>
+                      {detailRegions?.map((item) => (
+                        <option key={item.detailId} value={item.detailName}>
+                          {item.detailName}
+                        </option>
+                      ))}
+                    </select>
+                  </li>
+                </ul>
+
+                <ul className={`${styles.inputWrap} ${styles.duration}`}>
+                  <li>
+                    <label htmlFor="durationDays">추천 기간</label>
+                  </li>
+                  <li>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="1"
+                      {...register("recommendedSchedule.durationDays", {
+                        setValueAs: (v) => (v === "" ? null : Number(v)),
+
+                        onChange: (e) => {
+                          const onlyNumber = e.target.value.replace(
+                            /[^0-9]/g,
+                            "",
+                          );
+                          e.target.value = onlyNumber;
+                        },
+
+                        onBlur: (e) => {
+                          let value = e.target.value;
+                          if (value === "") return;
+
+                          value = Number(value);
+
+                          if (value < 1) value = 1;
+                          if (value > 30) value = 30;
+
+                          setValue("recommendedSchedule.durationDays", value);
+                        },
+                      })}
                     />
                   </li>
                 </ul>
               </div>
             </div>
+
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>인원 및 성별 정보</h2>
               <div className={styles.gridContainer}>
@@ -408,7 +363,7 @@ const WriteSchedule = () => {
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder={2}
-                      {...register("post.minParticipants", {
+                      {...register("recommendedSchedule.minParticipants", {
                         setValueAs: (v) => (v === "" ? null : Number(v)),
 
                         onChange: (e) => {
@@ -428,10 +383,15 @@ const WriteSchedule = () => {
                           if (value < 2) value = 2;
                           if (value > 100) value = 100;
 
-                          const max = getValues("post.maxParticipants");
+                          const max = getValues(
+                            "recommendedSchedule.maxParticipants",
+                          );
                           if (max && value > max) value = max;
 
-                          setValue("post.minParticipants", value);
+                          setValue(
+                            "recommendedSchedule.minParticipants",
+                            value,
+                          );
                         },
                       })}
                     />
@@ -448,7 +408,7 @@ const WriteSchedule = () => {
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder={100}
-                      {...register("post.maxParticipants", {
+                      {...register("recommendedSchedule.maxParticipants", {
                         setValueAs: (v) => (v === "" ? null : Number(v)),
 
                         onChange: (e) => {
@@ -468,10 +428,15 @@ const WriteSchedule = () => {
                           if (value < 2) value = 2;
                           if (value > 100) value = 100;
 
-                          const min = getValues("post.minParticipants");
+                          const min = getValues(
+                            "recommendedSchedule.minParticipants",
+                          );
                           if (min && value < min) value = min;
 
-                          setValue("post.maxParticipants", value);
+                          setValue(
+                            "recommendedSchedule.maxParticipants",
+                            value,
+                          );
                         },
                       })}
                     />
@@ -488,7 +453,7 @@ const WriteSchedule = () => {
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder="18"
-                      {...register("post.ageMin", {
+                      {...register("recommendedSchedule.ageMin", {
                         setValueAs: (v) => (v === "" ? null : Number(v)),
 
                         onChange: (e) => {
@@ -508,10 +473,10 @@ const WriteSchedule = () => {
                           if (value < 18) value = 18;
                           if (value > 100) value = 100;
 
-                          const max = getValues("post.ageMax");
+                          const max = getValues("recommendedSchedule.ageMax");
                           if (max && value > max) value = max;
 
-                          setValue("post.ageMin", value);
+                          setValue("recommendedSchedule.ageMin", value);
                         },
                       })}
                     />
@@ -528,7 +493,7 @@ const WriteSchedule = () => {
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder="100"
-                      {...register("post.ageMax", {
+                      {...register("recommendedSchedule.ageMax", {
                         setValueAs: (v) => (v === "" ? null : Number(v)),
 
                         onChange: (e) => {
@@ -548,10 +513,10 @@ const WriteSchedule = () => {
                           if (value < 18) value = 18;
                           if (value > 100) value = 100;
 
-                          const min = getValues("post.ageMin");
+                          const min = getValues("recommendedSchedule.ageMin");
                           if (min && value < min) value = min;
 
-                          setValue("post.ageMax", value);
+                          setValue("recommendedSchedule.ageMax", value);
                         },
                       })}
                     />
@@ -566,7 +531,7 @@ const WriteSchedule = () => {
                       type="button"
                       variant={genderLimit === "all" ? "primary" : "outline"}
                       onClick={() =>
-                        setValue("post.genderLimit", "all", {
+                        setValue("recommendedSchedule.genderLimit", "all", {
                           shouldValidate: true,
                         })
                       }
@@ -578,7 +543,7 @@ const WriteSchedule = () => {
                       type="button"
                       variant={genderLimit === "male" ? "primary" : "outline"}
                       onClick={() =>
-                        setValue("post.genderLimit", "male", {
+                        setValue("recommendedSchedule.genderLimit", "male", {
                           shouldValidate: true,
                         })
                       }
@@ -590,7 +555,7 @@ const WriteSchedule = () => {
                       type="button"
                       variant={genderLimit === "female" ? "primary" : "outline"}
                       onClick={() =>
-                        setValue("post.genderLimit", "female", {
+                        setValue("recommendedSchedule.genderLimit", "female", {
                           shouldValidate: true,
                         })
                       }
@@ -601,54 +566,19 @@ const WriteSchedule = () => {
                 </ul>
               </div>
             </div>
-            <div className={styles.inputContentWrap}>
-              <h2 className={styles.inputTitle}>일정 및 모집 기간</h2>
-              <div>
-                <CalendarRange
-                  startDate={watch("post.startDate")}
-                  endDate={watch("post.endDate")}
-                  setValue={setValue}
-                />
 
-                <ul
-                  className={`${styles.inputWrap} ${styles.recruitmentPeriod}`}
-                >
-                  <li>
-                    <label>모집 마감일</label>
-                  </li>
-                  <li>
-                    <DatePicker
-                      locale="ko"
-                      selected={recruitEndDate}
-                      onChange={(date) =>
-                        setValue("post.recruitEndDate", date, {
-                          shouldValidate: true,
-                        })
-                      }
-                      minDate={new Date()}
-                      maxDate={startDate}
-                      customInput={
-                        <button type="button" className={styles.dateButton}>
-                          📅{" "}
-                          {recruitEndDate?.toLocaleDateString() || "날짜 선택"}
-                        </button>
-                      }
-                    />
-                  </li>
-                </ul>
-              </div>
-            </div>
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>상세 일정</h2>
-              <ScheduleTable
-                startDate={watch("post.startDate")}
-                endDate={watch("post.endDate")}
+              <RecommendedScheduleTable
                 fields={fields}
+                append={append}
+                remove={remove}
                 replace={replace}
                 setValue={setValue}
                 watch={watch}
               />
             </div>
+
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>정산 방식</h2>
               <div>
@@ -671,7 +601,7 @@ const WriteSchedule = () => {
                         }
 
                         setValue(
-                          "post.totalPrice",
+                          "recommendedSchedule.totalPrice",
                           value === "" ? null : Number(value),
                         );
                       }}
@@ -689,7 +619,9 @@ const WriteSchedule = () => {
                         variant={
                           costType === "per_person" ? "primary" : "outline"
                         }
-                        onClick={() => setValue("post.costType", "per_person")}
+                        onClick={() =>
+                          setValue("recommendedSchedule.costType", "per_person")
+                        }
                       >
                         총액 1 / N<div className={styles.desc}>나누어 지불</div>
                       </Button>
@@ -700,7 +632,10 @@ const WriteSchedule = () => {
                           costType === "host_covered" ? "primary" : "outline"
                         }
                         onClick={() =>
-                          setValue("post.costType", "host_covered")
+                          setValue(
+                            "recommendedSchedule.costType",
+                            "host_covered",
+                          )
                         }
                       >
                         호스트 지불
@@ -710,7 +645,9 @@ const WriteSchedule = () => {
                       <Button
                         type="button"
                         variant={costType === "free" ? "primary" : "outline"}
-                        onClick={() => setValue("post.costType", "free")}
+                        onClick={() =>
+                          setValue("recommendedSchedule.costType", "free")
+                        }
                       >
                         무료
                         <div className={styles.desc}>비용 없음</div>
@@ -719,7 +656,9 @@ const WriteSchedule = () => {
                       <Button
                         type="button"
                         variant={costType === "custom" ? "primary" : "outline"}
-                        onClick={() => setValue("post.costType", "custom")}
+                        onClick={() =>
+                          setValue("recommendedSchedule.costType", "custom")
+                        }
                       >
                         인당 고정
                         <div className={styles.desc}>정해진 금액 지불</div>
@@ -735,9 +674,12 @@ const WriteSchedule = () => {
               <AddThumbnail
                 images={images}
                 setImages={setImages}
+                files={files}
                 setFiles={setFiles}
+                setValue={setValue}
               />
             </div>
+
             <div className={styles.registButtonWrap}>
               <Button type="submit" disabled={isPending}>
                 {isPending ? "등록 중" : "등록"}
@@ -784,134 +726,150 @@ const WriteSchedule = () => {
   );
 };
 
-const CalendarRange = ({ startDate, endDate, setValue }) => {
-  const [state, setState] = useState([
-    {
-      startDate: startDate || new Date(),
-      endDate: endDate || new Date(),
-      key: "selection",
-    },
-  ]);
-
-  const handleChange = (item) => {
-    console.log("setValue:", setValue);
-
-    const selection = item.selection;
-
-    setState([selection]);
-
-    // RHF로 값 업데이트
-    setValue("post.startDate", selection.startDate);
-    setValue("post.endDate", selection.endDate);
-  };
-
-  return (
-    <div className={styles.calendarWrapper}>
-      <DateRange
-        locale={ko}
-        ranges={state}
-        onChange={handleChange}
-        moveRangeOnFirstSelection={false}
-        editableDateInputs={true}
-        showMonthAndYearPickers={true}
-        months={1}
-        direction="horizontal"
-        minDate={new Date()}
-      />
-      <div className={styles.dateWrap}>
-        <ul className={`${styles.inputWrap} ${styles.duringDate}`}>
-          <li>
-            <label>일정</label>
-          </li>
-          <li>
-            <p>시작일: {startDate?.toLocaleDateString()}</p>
-            <p>종료일: {endDate?.toLocaleDateString()}</p>
-          </li>
-        </ul>
-      </div>
-    </div>
-  );
-};
-
-const ScheduleTable = ({
-  startDate,
-  endDate,
+const RecommendedScheduleTable = ({
   fields,
+  append,
+  remove,
   replace,
   setValue,
   watch,
 }) => {
   useEffect(() => {
-    if (!startDate || !endDate) return;
+    if (fields.length > 0) return;
 
-    const diff = new Date(endDate) - new Date(startDate);
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
-
-    const arr = Array.from({ length: days }, (_, i) => ({
-      dayNumber: i + 1,
-      title: "",
-      description: "",
-    }));
-
-    replace(arr);
-  }, [startDate, endDate, replace]);
+    replace([
+      {
+        dayNumber: 1,
+        sortOrder: 1,
+        title: "",
+        description: "",
+      },
+    ]);
+  }, [fields.length, replace]);
 
   const handleChange = (index, key, value) => {
-    setValue(`detailSchedule.${index}.${key}`, value);
+    setValue(`detailSchedule.${index}.${key}`, value, {
+      shouldValidate: true,
+    });
+  };
+
+  const handleAddDetail = () => {
+    append({
+      dayNumber: fields.length + 1,
+      sortOrder: fields.length + 1,
+      title: "",
+      description: "",
+    });
+  };
+
+  const handleRemoveDetail = (index) => {
+    if (fields.length <= 1) {
+      alert("상세 일정은 최소 1개 이상 필요합니다.");
+      return;
+    }
+
+    remove(index);
   };
 
   return (
-    <div className={styles.scheduleTimeline}>
-      {fields.map((row, i) => (
-        <div key={row.id} className={styles.scheduleCard}>
-          {/* 왼쪽 일차 */}
-          <div className={styles.dayBadge}>
-            <span>{row.dayNumber}</span>
-            <p>일차</p>
-          </div>
+    <div className={styles.scheduleSection}>
+      <div className={styles.scheduleAddRow}>
+        <Button type="button" variant="outline" onClick={handleAddDetail}>
+          <AddRoundedIcon fontSize="small" />
+          상세 일정 추가
+        </Button>
+      </div>
 
-          {/* 오른쪽 */}
-          <div className={styles.scheduleContent}>
-            <div className={styles.scheduleField}>
-              <label>제목</label>
-
-              <input
-                className={styles.scheduleInput}
-                placeholder="일정 제목을 입력해주세요"
-                value={watch(`detailSchedule.${i}.title`) || ""}
-                onChange={(e) => handleChange(i, "title", e.target.value)}
-              />
+      <div className={styles.scheduleTimeline}>
+        {fields.map((row, i) => (
+          <div key={row.id} className={styles.scheduleCard}>
+            {/* 왼쪽 일차 */}
+            <div className={styles.dayBadge}>
+              <span>{watch(`detailSchedule.${i}.dayNumber`) || i + 1}</span>
+              <p>일차</p>
             </div>
 
-            <div className={styles.scheduleField}>
-              <label>소개</label>
+            {/* 오른쪽 */}
+            <div className={styles.scheduleContent}>
+              <div className={styles.scheduleHeader}>
+                <strong>상세 일정 {i + 1}</strong>
 
-              <div className={styles.textareaWrap}>
-                <textarea
-                  className={styles.scheduleTextarea}
-                  placeholder="일정 소개를 입력해주세요"
-                  maxLength={300}
-                  value={watch(`detailSchedule.${i}.description`) || ""}
-                  onChange={(e) =>
-                    handleChange(i, "description", e.target.value)
-                  }
+                <button
+                  type="button"
+                  className={styles.scheduleDeleteButton}
+                  onClick={() => handleRemoveDetail(i)}
+                >
+                  <DeleteOutlineRoundedIcon fontSize="small" />
+                </button>
+              </div>
+
+              <div className={styles.scheduleField}>
+                <label>일차</label>
+
+                <input
+                  className={styles.scheduleInput}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="1"
+                  value={watch(`detailSchedule.${i}.dayNumber`) || ""}
+                  onChange={(e) => {
+                    const onlyNumber = e.target.value.replace(/[^0-9]/g, "");
+                    handleChange(i, "dayNumber", onlyNumber);
+                  }}
+                  onBlur={(e) => {
+                    let value = e.target.value;
+                    if (value === "") return;
+
+                    value = Number(value);
+
+                    if (value < 1) value = 1;
+                    if (value > 30) value = 30;
+
+                    handleChange(i, "dayNumber", value);
+                  }}
                 />
+              </div>
 
-                <div className={styles.textCount}>
-                  {(watch(`detailSchedule.${i}.description`) || "").length}
-                  /300
+              <div className={styles.scheduleField}>
+                <label>제목</label>
+
+                <input
+                  className={styles.scheduleInput}
+                  placeholder="일정 제목을 입력해주세요"
+                  value={watch(`detailSchedule.${i}.title`) || ""}
+                  onChange={(e) => handleChange(i, "title", e.target.value)}
+                />
+              </div>
+
+              <div className={styles.scheduleField}>
+                <label>소개</label>
+
+                <div className={styles.textareaWrap}>
+                  <textarea
+                    className={styles.scheduleTextarea}
+                    placeholder="일정 소개를 입력해주세요"
+                    maxLength={300}
+                    value={watch(`detailSchedule.${i}.description`) || ""}
+                    onChange={(e) =>
+                      handleChange(i, "description", e.target.value)
+                    }
+                  />
+
+                  <div className={styles.textCount}>
+                    {(watch(`detailSchedule.${i}.description`) || "").length}
+                    /300
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
 
-const AddThumbnail = ({ images, setImages, setFiles }) => {
+const AddThumbnail = ({ images, setImages, files, setFiles, setValue }) => {
   const fileInputRef = useRef(null);
   const imageUrlsRef = useRef([]);
 
@@ -930,8 +888,12 @@ const AddThumbnail = ({ images, setImages, setFiles }) => {
 
     const url = URL.createObjectURL(file);
 
-    setImages((prev) => [...prev, url]); // 미리보기용
-    setFiles((prev) => [...prev, file]); // 업로드용
+    const nextImages = [...images, url];
+    const nextFiles = [...files, file];
+
+    setImages(nextImages); // 미리보기용
+    setFiles(nextFiles); // 업로드용
+    setValue("files", nextFiles, { shouldValidate: true });
   };
 
   // 드롭
@@ -974,6 +936,8 @@ const AddThumbnail = ({ images, setImages, setFiles }) => {
     }
 
     selectedFiles.forEach(addImage);
+
+    e.target.value = "";
   };
 
   // 삭제 시 revoke
@@ -984,8 +948,12 @@ const AddThumbnail = ({ images, setImages, setFiles }) => {
       URL.revokeObjectURL(targetUrl);
     }
 
-    setImages((prev) => prev.filter((_, i) => i !== index));
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+    const nextImages = images.filter((_, i) => i !== index);
+    const nextFiles = files.filter((_, i) => i !== index);
+
+    setImages(nextImages);
+    setFiles(nextFiles);
+    setValue("files", nextFiles, { shouldValidate: true });
   };
 
   // 컴포넌트 사라질 때만 전체 revoke
@@ -1034,4 +1002,4 @@ const AddThumbnail = ({ images, setImages, setFiles }) => {
   );
 };
 
-export default WriteSchedule;
+export default RecommendedScheduleWrite;
