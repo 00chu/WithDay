@@ -14,6 +14,7 @@ import com.test.withdayback.user.vo.Terms;
 import com.test.withdayback.user.vo.User;
 import com.test.withdayback.user.vo.UserInterest;
 import com.test.withdayback.user.vo.UserTerms;
+import com.test.withdayback.schedule.dao.ScheduleDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,9 @@ public class UserService {
 
     @Autowired
     private EmailSender emailSender; // 이메일 발송용
+
+    @Autowired
+    private ScheduleDao scheduleDao;
 
     private static final int MIN_AGE = 18; // 최소 가입 연령 제한
 
@@ -581,6 +585,8 @@ public class UserService {
         response.setPostcode(user.getPostcode());
         response.setAddress(user.getAddress());
         response.setDetailAddress(user.getDetailAddress());
+        response.setStatus(user.getStatus());
+
         // 유저가 선택한 관심사 id 목록
         response.setSelectedInterestIds(userDao.getUserInterestIds(user.getId()));
 
@@ -602,11 +608,9 @@ public class UserService {
         );
         response.setCreatedAt(user.getCreatedAt());
 
-        System.out.println("====================================");
-        System.out.println("[MYPAGE EDIT] createdAt = " + user.getCreatedAt());
-        System.out.println("[MYPAGE EDIT] togetherScheduleCount = " + userDao.getTogetherScheduleCount(user.getId()));
-        System.out.println("[MYPAGE EDIT] metWitCount = " + userDao.getMetWitCount(user.getId()));
-        System.out.println("====================================");
+        response.setMySchedules(
+                scheduleDao.selectMyScheduleCards(user.getId())
+        );
 
         return response;
     }

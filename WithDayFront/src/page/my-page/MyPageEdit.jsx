@@ -116,13 +116,10 @@ const MyPageEdit = () => {
   const handlePwChange = (e, field) =>
     setPwState({ ...pwState, [field]: e.target.value });
 
-  {/*초기 값*/ }
-  const {
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-  } = useForm({
+  {
+    /*초기 값*/
+  }
+  const { handleSubmit, reset, watch, setValue } = useForm({
     defaultValues: {
       nickname: "",
       phone: "",
@@ -158,13 +155,17 @@ const MyPageEdit = () => {
       .filter((id) => Number.isFinite(id));
   };
 
-  {/*백엔드에서 가져온 데이터로 초기값 세팅*/ }
+  {
+    /*백엔드에서 가져온 데이터로 초기값 세팅*/
+  }
   useEffect(() => {
     if (!editQuery.data || initializedRef.current) return;
 
     const data = editQuery.data;
 
-    const initialInterestIds = normalizeInterestIds(data.selectedInterestIds ?? []);
+    const initialInterestIds = normalizeInterestIds(
+      data.selectedInterestIds ?? [],
+    );
 
     reset({
       nickname: data.nickname ?? "",
@@ -226,7 +227,7 @@ const MyPageEdit = () => {
       setValue(
         "interestIds",
         current.filter((item) => item !== id),
-        { shouldValidate: true }
+        { shouldValidate: true },
       );
       return;
     }
@@ -293,7 +294,6 @@ const MyPageEdit = () => {
 
   // 이미지 편집
   const handleProfileFileChange = (e) => {
-
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -463,8 +463,9 @@ const MyPageEdit = () => {
       <div className={styles.content}>
         <div className={styles.profile}>
           <div
-            className={`${styles.avatarEditBox} ${cropModalOpen ? styles.avatarEditBoxCropping : ""
-              }`}
+            className={`${styles.avatarEditBox} ${
+              cropModalOpen ? styles.avatarEditBoxCropping : ""
+            }`}
           >
             {cropModalOpen && selectedImage ? (
               <Cropper
@@ -592,10 +593,12 @@ const MyPageEdit = () => {
           <div className={styles.email}>
             {formatPhoneNumber(editQuery.data?.phone)}
           </div>
+          <button className={styles.userout} type="button">
+            회원 탈퇴
+          </button>
         </div>
 
         <div className={styles.formSide}>
-
           {/* 1. 닉네임 */}
           <div className={styles.group}>
             <div className={styles.groupTitle}>
@@ -662,11 +665,13 @@ const MyPageEdit = () => {
                   <button
                     key={interestId}
                     type="button"
-                    className={`${styles.interestChip} ${isSelected ? styles.interestChipSelected : ""
-                      } ${shineInterestId === interestId
+                    className={`${styles.interestChip} ${
+                      isSelected ? styles.interestChipSelected : ""
+                    } ${
+                      shineInterestId === interestId
                         ? styles.interestChipShine
                         : ""
-                      }`}
+                    }`}
                     onClick={() => handleToggleInterest(interestId)}
                   >
                     {interest.interestName ?? interest.name}
@@ -687,8 +692,9 @@ const MyPageEdit = () => {
               <div className={styles.genderSelectRow}>
                 <button
                   type="button"
-                  className={`${styles.genderButton} ${watch("gender") === "1" ? styles.genderButtonSelected : ""
-                    }`}
+                  className={`${styles.genderButton} ${
+                    watch("gender") === "1" ? styles.genderButtonSelected : ""
+                  }`}
                   onClick={() =>
                     setValue("gender", "1", {
                       shouldValidate: true,
@@ -701,8 +707,9 @@ const MyPageEdit = () => {
 
                 <button
                   type="button"
-                  className={`${styles.genderButton} ${watch("gender") === "2" ? styles.genderButtonSelected : ""
-                    }`}
+                  className={`${styles.genderButton} ${
+                    watch("gender") === "2" ? styles.genderButtonSelected : ""
+                  }`}
                   onClick={() =>
                     setValue("gender", "2", {
                       shouldValidate: true,
@@ -883,8 +890,9 @@ const MyPageEdit = () => {
                 <span>위트 신청, 승인, 일정 관련 알림을 받아볼 수 있어요.</span>
                 <button
                   type="button"
-                  className={`${styles.notificationSwitch} ${isNotiOn ? styles.notificationSwitchOn : ""
-                    }`}
+                  className={`${styles.notificationSwitch} ${
+                    isNotiOn ? styles.notificationSwitchOn : ""
+                  }`}
                   onClick={() => setIsNotiOn(!isNotiOn)}
                   aria-checked={isNotiOn}
                   role="switch"
@@ -928,7 +936,6 @@ const MyPageEdit = () => {
       </div>
     </div>
   );
-
 };
 
 export default MyPageEdit;

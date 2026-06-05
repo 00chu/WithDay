@@ -454,4 +454,33 @@
         from schedule
         where id = #{scheduleId}
     </delete>
+
+
+    <!-- 마이페이지에서 내가 만든 + 내가 참여 일정 카드 -->
+    <select id="selectMyScheduleCards" parameterType="long" resultType="Schedule">
+        SELECT DISTINCT
+            s.id,
+            s.user_id AS userId,
+            s.title,
+            s.region,
+            s.detail_region AS detailRegion,
+            s.start_date AS startDate,
+            s.end_date AS endDate,
+            s.thumbnail_image AS thumbnailImage,
+            s.current_participants AS currentParticipants,
+            s.max_participants AS maxParticipants,
+            s.status,
+            s.created_at AS createdAt
+        FROM schedule s
+                 LEFT JOIN participation p
+                           ON p.schedule_id = s.id
+                               AND p.user_id = #{userId}
+                               AND p.status = 'approved'
+        WHERE s.deleted_at IS NULL
+          AND (
+            s.user_id = #{userId}
+                OR p.user_id = #{userId}
+            )
+        ORDER BY s.start_date DESC, s.id DESC
+    </select>
 </mapper>

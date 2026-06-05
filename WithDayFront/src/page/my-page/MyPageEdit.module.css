@@ -1,3 +1,19 @@
+.userout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  cursor: pointer;
+  width: fit-content;
+  background-color: var(--color-surface);
+  padding: 0 13px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid rgba(10, 22, 45, 0.22);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
 .container {
   max-width: 900px;
   margin: 0 auto;
