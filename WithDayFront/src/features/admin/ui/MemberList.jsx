@@ -56,6 +56,24 @@ const MemberItem = ({ member }) => {
     setAnchorEl(null);
   };
 
+  const handleRoleChange = () => {
+    if (member.status === "active") {
+      makeAdminMutation.mutate(member.email);
+    }
+
+    handleMenuClose();
+  };
+
+  const handleStatusChange = () => {
+    if (member.status === "active") {
+      handleSuspend(); // 회원 정지
+    } else if (member.status === "suspended") {
+      handleRelease(); // 정지 해제
+    }
+
+    handleMenuClose();
+  };
+
   return (
     <ul className={styles.member_item}>
       <li className={styles.member_profile}>
@@ -88,22 +106,26 @@ const MemberItem = ({ member }) => {
       <li className={styles.member_create}>{member.createdAt.slice(0, 10)}</li>
       {/* 메뉴 */}
       <li className={styles.member_manage}>
-        <IconButton onClick={handleMenuOpen}>
-          <MoreVertIcon />
-        </IconButton>
+        {member.status === "admin" ? null : (
+          <>
+            <IconButton onClick={handleMenuOpen}>
+              <MoreVertIcon />
+            </IconButton>
 
-        <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-          <MenuItem onClick={handleMenuClose}>
-            {member.status === "active" ? "관리자로 변경" : ""}
-          </MenuItem>
-          <MenuItem onClick={handleMenuClose} sx={{ color: "error.main" }}>
-            {member.status === "active"
-              ? "회원 정지"
-              : member.status === "suspended"
-                ? "정지 해제"
-                : ""}
-          </MenuItem>
-        </Menu>
+            <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+              <MenuItem onClick={handleRoleChange}>
+                {member.status === "active" ? "관리자로 변경" : ""}
+              </MenuItem>
+
+              <MenuItem
+                onClick={handleStatusChange}
+                sx={{ color: "error.main" }}
+              >
+                {member.status === "active" ? "회원 정지" : "정지 해제"}
+              </MenuItem>
+            </Menu>
+          </>
+        )}
       </li>
 
       {/* 모바일 전용 추가 */}

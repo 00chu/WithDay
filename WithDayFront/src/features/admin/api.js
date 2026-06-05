@@ -63,6 +63,7 @@ export const deleteAdminInterest = async (id) => {
   const { data } = await api.delete(`/admins/interests/${id}`);
   return data;
 };
+
 // 회원 조회
 export const selectAllMember = async (params) => {
   const { data } = await api.get(`/admins/members`, {
@@ -88,5 +89,11 @@ export const updateSchedulePublic = async (scheduleId) => {
 // 일정 삭제
 export const deleteSchedule = async (scheduleId) => {
   const { data } = await api.delete(`/admins/schedules/delete/${scheduleId}`);
+  return data;
+};
+
+// 회원 관리자로 변경
+export const roleChange = async (email) => {
+  const { data } = await api.patch(`/admins/${email}`);
   return data;
 };
