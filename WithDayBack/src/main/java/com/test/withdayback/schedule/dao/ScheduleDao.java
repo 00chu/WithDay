@@ -105,4 +105,6 @@ public interface ScheduleDao {
     void updateScheduleImage(Long scheduleId, List<String> imageUrls);
 
     int closeExpiredSchedules();
+
+    List<Schedule> selectMyScheduleCards(@Param("userId") Long userId);
 }

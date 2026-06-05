@@ -18,7 +18,7 @@ public class MypageResponseDTO {
     private String profileImage;
     private String intro;
     private String createdAt;
-
+    private String status;
     private Integer participatedTravelCount;
 
     private List<Interest> interests;
