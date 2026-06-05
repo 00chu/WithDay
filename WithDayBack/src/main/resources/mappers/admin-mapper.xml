@@ -123,13 +123,17 @@
     </select>
 
     <select id="selectDailyDashboard" resultType="Dashboard">
+        select *
+        from (
         select
         stat_date,
         total_user_count,
         total_schedule_count
         from dashboard
-        order by stat_date
-        limit 14 <!-- 2주간 기록 출력 -->
+        order by stat_date desc
+        limit 14 <!-- 최근부터 2주간 기록 -->
+        ) d
+        order by stat_date asc <!-- 최근부터 2주간 기록을 역순으로 -->
     </select>
 
     <select id="selectWeeklyDashboard" resultType="Dashboard">

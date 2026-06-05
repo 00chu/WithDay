@@ -43,6 +43,17 @@
   font-weight: 500;
 }
 
+.memberLink {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.memberLink:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
 .profileImage {
   width: 40px;
   height: 40px;
@@ -52,7 +63,7 @@
 }
 
 .member_email {
-  width: 27%;
+  width: 22%;
 }
 
 .member_route {
@@ -77,6 +88,11 @@
 
 .member_create {
   width: 12%;
+  text-align: center;
+}
+
+.member_manage {
+  width: 5%;
   text-align: center;
 }
 

@@ -1,6 +1,12 @@
+import { Link } from "react-router-dom";
 import Pagination from "../../../shared/ui/Pagination/Pagination";
 import styles from "./MemberList.module.css";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { useState } from "react";
 
 const MemberList = ({ memberList, page, setPage, totalPage }) => {
   return (
@@ -14,6 +20,7 @@ const MemberList = ({ memberList, page, setPage, totalPage }) => {
         <li className={styles.member_birthday}>생년월일</li>
         <li className={styles.member_status}>상태</li>
         <li className={styles.member_create}>가입일</li>
+        <li className={styles.member_manage}>관리</li>
       </ul>
       <ul className={styles.member_list_wrap}>
         {memberList?.length > 0 ? (
@@ -37,6 +44,18 @@ const MemberList = ({ memberList, page, setPage, totalPage }) => {
 };
 
 const MemberItem = ({ member }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <ul className={styles.member_item}>
       <li className={styles.member_profile}>
@@ -55,7 +74,9 @@ const MemberItem = ({ member }) => {
             ></AccountCircleIcon>
           )}
 
-          {member.nickname}
+          <Link to={`/mypage/${member.email}`} className={styles.memberLink}>
+            {member.nickname}
+          </Link>
         </div>
       </li>
       <li className={styles.member_email}>{member.email}</li>
@@ -63,7 +84,27 @@ const MemberItem = ({ member }) => {
       <li className={styles.member_gender}>{member.gender ? "남" : "여"}</li>
       <li className={styles.member_birthday}>{member.birthday}</li>
       <li className={styles.member_status}>{member.status}</li>
+
       <li className={styles.member_create}>{member.createdAt.slice(0, 10)}</li>
+      {/* 메뉴 */}
+      <li className={styles.member_manage}>
+        <IconButton onClick={handleMenuOpen}>
+          <MoreVertIcon />
+        </IconButton>
+
+        <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+          <MenuItem onClick={handleMenuClose}>
+            {member.status === "active" ? "관리자로 변경" : ""}
+          </MenuItem>
+          <MenuItem onClick={handleMenuClose} sx={{ color: "error.main" }}>
+            {member.status === "active"
+              ? "회원 정지"
+              : member.status === "suspended"
+                ? "정지 해제"
+                : ""}
+          </MenuItem>
+        </Menu>
+      </li>
 
       {/* 모바일 전용 추가 */}
       <div className={styles.mobileCard}>

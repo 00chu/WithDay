@@ -211,7 +211,7 @@ const MyPageMain = () => {
                     <button
                       type="button"
                       className={styles.profileActionButton}
-                      onClick={() => navigate("/admin")}
+                      onClick={() => navigate("/admin/dashboard")}
                     >
                       관리자 페이지
                     </button>

@@ -1,7 +1,7 @@
 import styles from "./Dashboard.module.css";
 import { getDashboardData } from "../api";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Chart from "react-apexcharts";
 import Button from "../../../shared/ui/Button/Button";
 
@@ -11,10 +11,6 @@ const Dashboard = () => {
   const { data: dashboardData } = useQuery({
     queryKey: ["dashboard", period],
     queryFn: () => getDashboardData(period),
-  });
-
-  useEffect(() => {
-    console.log(dashboardData);
   });
 
   // dashboardData의 값이 없을 때 null 반환.

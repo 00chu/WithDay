@@ -124,12 +124,7 @@ const ScheduleItem = ({ schedule }) => {
       }`}
     >
       <li style={{ flex: 3 }}>
-        <Link
-          to={`/schedule/${schedule.id}`}
-          className={`${styles.scheduleLink} ${
-            schedule.deletedAt ? styles.deletedTitle : ""
-          }`}
-        >
+        <Link to={`/schedule/${schedule.id}`} className={styles.scheduleLink}>
           {schedule.title}
         </Link>
       </li>
@@ -170,15 +165,17 @@ const ScheduleItem = ({ schedule }) => {
           <strong>
             <Link
               to={`/schedule/${schedule.id}`}
-              className="styles.scheduleLink"
+              className={styles.scheduleLink}
             >
               {schedule.title}
             </Link>
           </strong>
 
-          <IconButton onClick={handleMenuOpen}>
-            <MoreVertIcon />
-          </IconButton>
+          <div className={styles.mobileMenu}>
+            <IconButton onClick={handleMenuOpen}>
+              <MoreVertIcon />
+            </IconButton>
+          </div>
         </div>
 
         <div className={styles.mobileInfo}>
