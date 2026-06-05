@@ -1,7 +1,7 @@
 import { Input, TextArea } from "../../shared/ui/Form/Form";
 import styles from "./WriteSchedule.module.css";
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
@@ -18,14 +18,23 @@ import IconButton from "@mui/material/IconButton";
 import { insertSchema } from "../../features/schedule/validation/insertSchema";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import CommonSelect from "../../shared/ui/Select/CommonSelect";
 
 registerLocale("ko", ko);
 
 const WriteSchedule = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 추천 일정 상세 페이지에서 "추천 일정 사용하기"를 눌렀을 때 넘어오는 데이터
+  const recommendedPayload = location.state?.recommendedSchedule;
+  const recommendedTemplate = recommendedPayload?.recommendedSchedule;
+
+  // 추천 일정 기본 정보는 최초 1회만 주입하기 위한 방어용 ref
+  const recommendedInitializedRef = useRef(false);
 
   // DB Enum 매핑용 카테고리 리스트
   const categories = [
@@ -80,6 +89,55 @@ const WriteSchedule = () => {
 
   const email = useAuthStore((state) => state.user.email);
 
+  // 추천 일정 상세에서 넘어온 데이터를 기존 글쓰기 폼 초기값으로 채움
+  // 기존 글쓰기 로직을 건드리지 않기 위해 최초 1회만 setValue로 주입함.
+  useEffect(() => {
+    if (recommendedInitializedRef.current) return;
+    if (!recommendedTemplate) return;
+
+    recommendedInitializedRef.current = true;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const durationDays = Number(recommendedTemplate.durationDays ?? 1);
+
+    const safeDurationDays =
+      Number.isFinite(durationDays) && durationDays > 0 ? durationDays : 1;
+    const endDate = new Date(today);
+    endDate.setDate(today.getDate() + safeDurationDays - 1);
+
+    setValue("post.title", recommendedTemplate.title ?? "");
+    setValue("post.description", recommendedTemplate.description ?? "");
+    setValue("post.category", recommendedTemplate.category ?? "");
+    setValue("post.region", recommendedTemplate.region ?? "");
+    setValue("post.detailRegion", recommendedTemplate.detailRegion ?? "");
+
+    setValue(
+      "post.minParticipants",
+      recommendedTemplate.minParticipants ?? null,
+    );
+    setValue(
+      "post.maxParticipants",
+      recommendedTemplate.maxParticipants ?? null,
+    );
+    setValue("post.ageMin", recommendedTemplate.ageMin ?? null);
+    setValue("post.ageMax", recommendedTemplate.ageMax ?? null);
+    setValue("post.genderLimit", recommendedTemplate.genderLimit ?? "all");
+    setValue("post.totalPrice", recommendedTemplate.totalPrice ?? null);
+    setValue("post.costType", recommendedTemplate.costType ?? "per_person");
+
+    // 추천 일정은 실제 날짜가 없으므로 오늘부터 추천 기간만큼 기본 날짜를 잡아줌.
+    // 사용자가 글쓰기 화면에서 직접 수정 가능함.
+    setValue("post.startDate", today);
+    setValue("post.endDate", endDate);
+    setValue("post.recruitStartDate", today);
+    setValue("post.recruitEndDate", today);
+
+    // 오픈채팅 링크는 추천 일정에 없는 실제 모집글 전용 값이므로 비워둠.
+    setValue("post.chatLink", "");
+  }, [recommendedTemplate, setValue]);
+
   useEffect(() => {
     if (!email) return;
 
@@ -130,6 +188,34 @@ const WriteSchedule = () => {
     queryFn: () => getDetailRegion(region),
     enabled: !!region,
   });
+
+  // 추천 일정에서 넘어온 지역 값은 select option이 로딩된 뒤 한 번 더 세팅
+  // option이 생기기 전에 값을 먼저 넣으면 화면에 선택값이 안 보일 수 있어서 보정함.
+  useEffect(() => {
+    if (!recommendedTemplate) return;
+
+    if (
+      recommendedTemplate.region &&
+      Array.isArray(regions) &&
+      regions.some((item) => item.regionName === recommendedTemplate.region)
+    ) {
+      setValue("post.region", recommendedTemplate.region, {
+        shouldValidate: true,
+      });
+    }
+
+    if (
+      recommendedTemplate.detailRegion &&
+      Array.isArray(detailRegions) &&
+      detailRegions.some(
+        (item) => item.detailName === recommendedTemplate.detailRegion,
+      )
+    ) {
+      setValue("post.detailRegion", recommendedTemplate.detailRegion, {
+        shouldValidate: true,
+      });
+    }
+  }, [regions, detailRegions, recommendedTemplate, setValue]);
 
   // 시작일보다 모집 마감일이 더 뒤일 때 시작일과 모집 마감일을 동일하게 설정
   useEffect(() => {
@@ -229,13 +315,18 @@ const WriteSchedule = () => {
                     <label htmlFor="category">일정 종류</label>
                   </li>
                   <li>
-                    <select {...register("post.category")}>
-                      {categories.map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="post.category"
+                      control={control}
+                      render={({ field }) => (
+                        <CommonSelect
+                          label="일정 종류"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={categories}
+                        />
+                      )}
+                    />
                   </li>
                 </ul>
 
@@ -257,14 +348,24 @@ const WriteSchedule = () => {
                     <label htmlFor="region">지역(시/도)</label>
                   </li>
                   <li>
-                    <select {...register("post.region")}>
-                      <option value="">시/도</option>
-                      {regions?.map((item) => (
-                        <option key={item.regionId} value={item.regionName}>
-                          {item.regionName}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="post.region"
+                      control={control}
+                      render={({ field }) => (
+                        <CommonSelect
+                          label="시/도"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={[
+                            { label: "시/도", value: "" },
+                            ...regions.map((item) => ({
+                              label: item.regionName,
+                              value: item.regionName,
+                            })),
+                          ]}
+                        />
+                      )}
+                    />
                   </li>
                 </ul>
 
@@ -273,14 +374,24 @@ const WriteSchedule = () => {
                     <label htmlFor="detailRegion">지역(시/군/구)</label>
                   </li>
                   <li>
-                    <select {...register("post.detailRegion")}>
-                      <option value="">시/군/구</option>
-                      {detailRegions?.map((item) => (
-                        <option key={item.detailId} value={item.detailName}>
-                          {item.detailName}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="post.detailRegion"
+                      control={control}
+                      render={({ field }) => (
+                        <CommonSelect
+                          label="시/군/구"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={[
+                            { label: "시/군/구", value: "" },
+                            ...detailRegions.map((item) => ({
+                              label: item.detailName,
+                              value: item.detailName,
+                            })),
+                          ]}
+                        />
+                      )}
+                    />
                   </li>
                 </ul>
               </div>

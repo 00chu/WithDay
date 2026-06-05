@@ -230,21 +230,64 @@
                 AND s.category = #{category}
             </if>
 
-            <!-- 검색어는 제목 또는 설명 중 하나라도 포함하면 결과에 포함한다. -->
+            <!-- 검색어는 탐색 화면의 일정명/내용 검색만 담당한다. -->
             <if test="keyword != null and keyword != ''">
                 AND (
-                s.title LIKE CONCAT('%', #{keyword}, '%')
-                OR s.description LIKE CONCAT('%', #{keyword}, '%')
+                UPPER(s.title) LIKE CONCAT('%', UPPER(#{keyword}), '%')
+                OR UPPER(s.description) LIKE CONCAT('%', UPPER(#{keyword}), '%')
                 )
             </if>
 
-            <!-- Header 지역 필터는 공백/대소문자 차이를 줄이기 위해 TRIM + UPPER로 비교한다. -->
+            <!-- 시/도 필터는 공백/대소문자 차이를 줄이기 위해 TRIM + UPPER로 비교한다. -->
             <if test="region != null and region != ''">
                 AND UPPER(TRIM(s.region)) = UPPER(TRIM(#{region}))
             </if>
+
+            <!-- 시/군/구를 선택하면 같은 시/도 안에서도 상세 지역까지 좁힌다. -->
+            <if test="district != null and district != ''">
+                AND UPPER(TRIM(s.detail_region)) = UPPER(TRIM(#{district}))
+            </if>
+
+            <!-- gender_limit은 all/male/female enum 문자열을 그대로 저장하므로 단순 일치로 충분하다. -->
+            <if test="genderLimit != null and genderLimit != ''">
+                AND s.gender_limit = #{genderLimit}
+            </if>
+
+            <!-- 기간 필터는 일정 기간과 선택 기간이 겹치면 결과에 포함한다. -->
+            <if test="startDate != null and startDate != ''">
+                AND (s.end_date IS NULL OR s.end_date &gt;= #{startDate})
+            </if>
+
+            <if test="endDate != null and endDate != ''">
+                AND (s.start_date IS NULL OR s.start_date &lt;= #{endDate})
+            </if>
         </where>
-        <!-- 최신 등록 일정이 탐색 탭 상단에 보이도록 id DESC 정렬을 사용한다. -->
-        ORDER BY s.id DESC
+        <choose>
+            <when test="sort == 'deadlineSoon'">
+                ORDER BY CASE WHEN s.recruit_end_date IS NULL THEN 1 ELSE 0 END,
+                         s.recruit_end_date ASC,
+                         s.id DESC
+            </when>
+            <when test="sort == 'deadlineRelaxed'">
+                ORDER BY CASE WHEN s.recruit_end_date IS NULL THEN 1 ELSE 0 END,
+                         s.recruit_end_date DESC,
+                         s.id DESC
+            </when>
+            <when test="sort == 'startSoon'">
+                ORDER BY CASE WHEN s.start_date IS NULL THEN 1 ELSE 0 END,
+                         s.start_date ASC,
+                         s.id DESC
+            </when>
+            <when test="sort == 'startLate'">
+                ORDER BY CASE WHEN s.start_date IS NULL THEN 1 ELSE 0 END,
+                         s.start_date DESC,
+                         s.id DESC
+            </when>
+            <otherwise>
+                <!-- 최신 등록 일정이 탐색 탭 상단에 보이도록 id DESC 정렬을 기본값으로 사용한다. -->
+                ORDER BY s.id DESC
+            </otherwise>
+        </choose>
     </select>
 
     <insert id="insertSchedule"

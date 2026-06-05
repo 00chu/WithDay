@@ -205,6 +205,7 @@ public class UserService {
         userInfo.put("birthday", dbUser.getBirthday());
         userInfo.put("gender", dbUser.getGender());
         userInfo.put("postcode", dbUser.getPostcode());
+        userInfo.put("status", dbUser.getStatus());
 
         responseData.put("user", userInfo);
         return responseData;
@@ -242,6 +243,7 @@ public class UserService {
         userInfo.put("gender", dbUser.getGender());
         userInfo.put("postcode", dbUser.getPostcode());
         userInfo.put("profileImage", dbUser.getProfileImage());
+        userInfo.put("status", dbUser.getStatus());
 
         responseData.put("user", userInfo);
         return responseData;

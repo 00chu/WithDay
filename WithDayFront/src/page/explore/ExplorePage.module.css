@@ -10,6 +10,7 @@
   margin: 20px 0;
   padding: 10px 0;
 }
+
 .bannerTitle {
   font-size: 1.5rem;
   font-weight: 700;
@@ -17,8 +18,291 @@
   line-height: 1.4;
   margin: 0;
 }
+
 .highlight {
   color: var(--color-primary);
+}
+
+/* ─── 통합 필터 패널 ───────────────────────────────────────── */
+.filterPanel {
+  margin-bottom: 28px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+  min-width: 0;
+}
+
+.searchRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.searchInputWrapper {
+  min-width: 0;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+  background: #ffffff;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.searchInputWrapper:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.searchIcon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.searchInput {
+  min-width: 0;
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+.searchButton {
+  min-width: 92px;
+  min-height: 46px;
+  padding: 0 20px;
+}
+
+.filterBar {
+  display: grid;
+  grid-template-columns:
+    minmax(112px, 0.9fr)
+    minmax(130px, 1fr)
+    minmax(130px, 1fr)
+    minmax(112px, 0.9fr)
+    minmax(170px, 1.2fr)
+    minmax(260px, 1.5fr);
+  gap: 10px;
+  align-items: end;
+  margin-top: 14px;
+}
+
+.filterField {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filterLabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.muiFormControl {
+  width: 100%;
+}
+
+.muiSelect :global(.MuiOutlinedInput-root),
+.dateInput {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+  padding: 0 12px;
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.muiSelect :global(.MuiOutlinedInput-root) {
+  padding: 0;
+}
+
+.muiSelect :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline) {
+  border-color: var(--color-border);
+}
+
+.muiSelect :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--color-border);
+  border-width: 1px;
+}
+
+.muiSelect :global(.MuiSelect-select) {
+  min-width: 0;
+  padding: 10px 40px 10px 12px !important;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+}
+
+.muiSelect :global(.MuiSelect-icon) {
+  color: var(--color-text-muted);
+}
+
+.muiSelect :global(.Mui-disabled) {
+  background: rgba(241, 245, 249, 0.7);
+  color: var(--color-text-muted);
+}
+
+.muiSelect :global(.Mui-disabled .MuiSelect-icon) {
+  color: var(--color-text-muted);
+}
+
+.muiSelect :global(.Mui-focused) {
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.muiSelect :global(.Mui-focused .MuiOutlinedInput-notchedOutline) {
+  border-color: var(--color-primary);
+}
+
+.dateInput:focus {
+  box-shadow: none;
+}
+
+.dateRangeField {
+  min-width: 260px;
+  align-items: flex-start;
+}
+
+.dateRangeInputs {
+  display: grid;
+  grid-template-columns: fit-content(10ch) auto fit-content(10ch);
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+  gap: 8px;
+  align-items: center;
+  justify-content: start;
+  align-self: flex-start;
+  min-height: 46px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 12px;
+  background: #ffffff;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.dateRangeInputs:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.dateRangeInputs .dateInput {
+  min-height: auto;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.dateValueSlot {
+  position: relative;
+  min-width: 7.5ch;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dateValueText {
+  min-width: 0;
+  width: auto;
+  max-width: 10ch;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.datePlaceholder {
+  color: var(--color-text-muted);
+}
+
+.dateInputOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dateDivider {
+  color: var(--color-text-muted);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.selectedFilterRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.selectedChipList {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selectedChip {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px 0 12px;
+  border: 1px solid rgba(30, 58, 138, 0.18);
+  border-radius: 999px;
+  background: rgba(30, 58, 138, 0.07);
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.selectedChip:hover {
+  border-color: rgba(30, 58, 138, 0.36);
+  background: rgba(30, 58, 138, 0.12);
+}
+
+.resetButton {
+  flex-shrink: 0;
 }
 
 /* ─── 섹션 공통 ─────────────────────────────────────────────── */
@@ -27,6 +311,7 @@
   overflow: visible;
   min-width: 0;
 }
+
 .sectionHeader {
   display: flex;
   justify-content: space-between;
@@ -34,141 +319,12 @@
   width: 100%;
   margin: 0 auto 16px;
 }
+
 .sectionTitle {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0;
-}
-
-.homePlaceholder {
-  display: flex;
-  justify-content: center;
-  padding: 28px 0 8px;
-}
-
-.homePlaceholderCard {
-  width: min(100%, 520px);
-  padding: 28px;
-  border-radius: 24px;
-  border: 1px solid var(--color-border);
-  background: radial-gradient(
-      circle at top right,
-      var(--color-surface-highlight),
-      transparent 30%
-    ),
-    var(--color-surface);
-  box-shadow: var(--shadow-panel);
-}
-
-.homePlaceholderEyebrow {
-  margin: 0 0 10px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--color-primary-light);
-}
-
-.homePlaceholderTitle {
-  margin: 0 0 10px;
-  font-size: 1.4rem;
-  line-height: 1.35;
-  color: var(--color-text-primary);
-}
-
-.homePlaceholderText {
-  margin: 0 0 20px;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: var(--color-text-secondary);
-}
-
-/* ─── 검색 폼 (react-hook-form + yup) ──────────────────────── */
-.searchForm {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  width: 100%;
-}
-.searchInputWrapper {
-  flex: 1;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 0 12px;
-  background: var(--color-surface);
-  transition: border-color 0.2s;
-}
-.searchInputWrapper:focus-within {
-  border-color: var(--color-primary);
-}
-.inputError {
-  border-color: var(--color-error) !important;
-}
-.searchIcon {
-  color: var(--color-text-muted);
-  flex-shrink: 0;
-}
-.searchInput {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 0.95rem;
-  color: var(--color-text-primary);
-  padding: 10px 0;
-}
-.searchInput::placeholder {
-  color: var(--color-text-muted);
-}
-.errorMessage {
-  margin: 6px 0 0;
-  font-size: 0.8rem;
-  color: var(--color-error);
-}
-.searchResultInfo {
-  margin: 8px 0 0;
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-}
-
-/* ─── 카테고리 칩 (clsx로 active 토글) ─────────────────────── */
-.categoryList {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-.categoryList::-webkit-scrollbar {
-  display: none;
-}
-.categoryChip {
-  flex-shrink: 0;
-  padding: 7px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-.categoryChip:hover {
-  border-color: var(--color-primary-light);
-  color: var(--color-primary);
-}
-.categoryChipActive {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-text-inverse);
-}
-.categoryChipActive:hover {
-  color: var(--color-text-inverse);
 }
 
 /* ─── 상태 박스 (로딩 / 에러) ──────────────────────────────── */
@@ -182,9 +338,11 @@
   color: var(--color-text-muted);
   font-size: 0.9rem;
 }
+
 .errorBox {
   color: var(--color-error);
 }
+
 .loadingSpinner {
   width: 28px;
   height: 28px;
@@ -193,6 +351,7 @@
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -205,4 +364,69 @@
   width: 100%;
   color: var(--color-text-muted);
   font-size: 0.9rem;
+}
+
+@media (max-width: 1180px) {
+  .filterBar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dateRangeField {
+    min-width: 0;
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 767px) {
+  .banner {
+    margin: 14px 0;
+  }
+
+  .bannerTitle {
+    font-size: 1.3rem;
+  }
+
+  .filterPanel {
+    padding: 14px;
+    border-radius: var(--radius-md);
+  }
+
+  .searchRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .filterBar {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 2px 2px 10px;
+    scroll-snap-type: x proximity;
+  }
+
+  .filterBar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filterField {
+    flex: 0 0 150px;
+    scroll-snap-align: start;
+  }
+
+  .dateRangeField {
+    flex-basis: 282px;
+    min-width: 282px;
+  }
+
+  .dateValueText {
+    white-space: nowrap;
+  }
+
+  .selectedFilterRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .resetButton {
+    width: 100%;
+  }
 }

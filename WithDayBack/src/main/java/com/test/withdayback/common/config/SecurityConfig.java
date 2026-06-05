@@ -44,10 +44,13 @@ public class SecurityConfig {
                                 "/users/find-password/email-verification",
                                 "/users/find-password/verify-code",
                                 "/users/reset-password",
+                                "/recommended-schedules/**",
                                 "/schedules/**",
                                 "/bookmarks/**",
                                 "/participations/**",
                                 "/region/**",
+                                "/notifications/**",
+                                "/admins/**",
                                 "/notifications/**"
 
                         ).permitAll()

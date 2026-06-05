@@ -75,14 +75,19 @@ public class ScheduleController {
      *
      * 프론트 Home.jsx와 ExplorePage.jsx가 모두 이 endpoint를 사용한다.
      * Home은 전체 목록을 받아 가까운 일정 8개만 보여주고,
-     * Explore는 category/keyword/region 파라미터를 조합해 필터링된 목록을 카드 그리드로 보여준다.
+     * Explore는 검색어/카테고리/지역/성별/기간/정렬 파라미터를 조합해 필터링된 목록을 카드 그리드로 보여준다.
      *
      * Controller는 HTTP query parameter만 받고 실제 필터 조합은 Service/Mapper에 위임한다.
      * 이렇게 해두면 화면이 늘어나도 같은 리스트 API를 재사용할 수 있고, SQL 조건은 mapper 한 곳에서 관리된다.
      *
      * @param category travel, food 같은 카테고리 코드. null이면 전체 카테고리 조회.
      * @param keyword 제목/설명 검색어. null이면 검색 조건 없음.
-     * @param region Header에서 선택한 지역. null이면 전체 지역 조회.
+     * @param region 탐색 필터에서 선택한 시/도. null이면 전체 지역 조회.
+     * @param district 탐색 필터에서 선택한 시/군/구. null이면 시/도 전체 조회.
+     * @param genderLimit all, male, female 중 하나. null이면 전체 성별 조회.
+     * @param startDate 조회 기간 시작일. null이면 시작일 조건 없음.
+     * @param endDate 조회 기간 종료일. null이면 종료일 조건 없음.
+     * @param sort latest, deadlineSoon, deadlineRelaxed, startSoon, startLate 중 하나.
      * @return 조건에 맞는 일정 목록
      */
     @GetMapping
@@ -90,9 +95,24 @@ public class ScheduleController {
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String region,
+            @RequestParam(required = false) String district,
+            @RequestParam(required = false) String genderLimit,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String sort,
             @RequestParam(required = false) String email
     ) {
-        List<Schedule> list = scheduleService.getAllSchedules(category, keyword, region, email);
+        List<Schedule> list = scheduleService.getAllSchedules(
+                category,
+                keyword,
+                region,
+                district,
+                genderLimit,
+                startDate,
+                endDate,
+                sort,
+                email
+        );
         if (list == null) {
             return ResponseEntity.notFound().build();
         }

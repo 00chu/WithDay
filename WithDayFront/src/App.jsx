@@ -1,5 +1,5 @@
 import styles from "./App.module.css";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Home from "./page/home/Home";
@@ -10,6 +10,9 @@ import Login from "./page/login/Login";
 import SocialExtra from "./page/login/SocialExtra";
 import FindId from "./page/login/FindId";
 import FindPw from "./page/login/FindPw";
+import RecommendedSchedulePage from "./page/recommended-schedule/RecommendedSchedulePage";
+import RecommendedScheduleWrite from "./page/recommended-schedule/RecommendedScheduleWrite";
+import RecommendedScheduleDetail from "./page/recommended-schedule/RecommendedScheduleDetail";
 
 import ScheduleDetail from "./page/schedule/ScheduleDetail";
 import WriteSchedule from "./page/schedule/WriteSchedule";
@@ -25,6 +28,8 @@ import Header from "./widgets/Header/Header";
 import BottomNav from "./widgets/BottomNav/BottomeNav";
 import LayoutContainer from "./shared/ui/LayoutContainer/LayoutContainer";
 import PrivateRoute from "./features/ui/PrivateRoute";
+import RecommendedScheduleEdit from "./page/recommended-schedule/RecommendedScheduleEdit";
+import AdminPage from "./page/admin/AdminPage";
 
 function App() {
   // 로그인 상태와 토큰 만료 여부를 Zustand에서 가져옴
@@ -75,33 +80,54 @@ function App() {
     init();
   }, []);
 
-  const [selectedRegion, setSelectedRegion] = useState("");
-
   return (
     <div className={styles.container}>
-      <Header
-        selectedRegion={selectedRegion}
-        onRegionChange={setSelectedRegion}
-      />
+      <Header />
 
       <main className={styles.mainContent}>
         <LayoutContainer>
           <Routes>
-            <Route
-              path="/"
-              element={<Home selectedRegion={selectedRegion} />}
-            />
+            <Route path="/" element={<Home />} />
 
-            <Route
-              path="/explore"
-              element={<ExplorePage selectedRegion={selectedRegion} />}
-            />
+            <Route path="/explore" element={<ExplorePage />} />
 
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup/extra" element={<SocialExtra />} />
             <Route path="/find-id" element={<FindId />} />
             <Route path="/find-pw" element={<FindPw />} />
+            <Route
+              path="/recommended-schedules"
+              element={
+                <PrivateRoute>
+                  <RecommendedSchedulePage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/recommended-schedules/write"
+              element={
+                <PrivateRoute>
+                  <RecommendedScheduleWrite />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/recommended-schedules/edit/:id"
+              element={
+                <PrivateRoute>
+                  <RecommendedScheduleEdit />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/recommended-schedules/:id"
+              element={
+                <PrivateRoute>
+                  <RecommendedScheduleDetail />
+                </PrivateRoute>
+              }
+            />
 
             <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
 
@@ -163,6 +189,15 @@ function App() {
               element={
                 <PrivateRoute>
                   <UpdateSchedule />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/admin/*"
+              element={
+                <PrivateRoute>
+                  <AdminPage />
                 </PrivateRoute>
               }
             />

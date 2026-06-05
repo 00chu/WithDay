@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
@@ -10,7 +10,6 @@ import { useMypage } from "../../features/user/mypage/useMypage";
 import { getRegion } from "../../features/region/api";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import LayoutContainer from "../../shared/ui/LayoutContainer/LayoutContainer";
-import RegionSelect from "../../shared/ui/RegionSelect/RegionSelect";
 import NotificationPopover from "../../features/notification/ui/NotificationPopover";
 import Badge from "@mui/material/Badge";
 import { getNotificationCount } from "../../features/notification/api";
@@ -26,17 +25,11 @@ export default function Header({ selectedRegion, onRegionChange }) {
   const { user: loginUser, isLoggedIn } = useAuthStore();
   const { mypageQuery } = useMypage(isLoggedIn);
 
-  const { data: regions = [] } = useQuery({
-    queryKey: ["header-region-options"],
-    queryFn: getRegion,
-    staleTime: 1000 * 60 * 10,
-  });
-
   const { data: notificationCount = 0 } = useQuery({
     queryKey: ["notification-count", loginUser?.email],
     queryFn: () => getNotificationCount(loginUser.email),
     enabled: !!(isLoggedIn && loginUser?.email),
-    refetchInterval: 30000,
+    refetchOnWindowFocus: true, // 사용자가 앱/탭에 다시 들어왔을 때만 최신화되도록
   });
 
   const regionOptions = useMemo(() => {
@@ -82,7 +75,10 @@ export default function Header({ selectedRegion, onRegionChange }) {
   };
 
   console.log("헤더 mypageQuery.data:", mypageQuery?.data);
-  console.log("헤더 mypageQuery profileImage:", mypageQuery?.data?.profileImage);
+  console.log(
+    "헤더 mypageQuery profileImage:",
+    mypageQuery?.data?.profileImage,
+  );
   console.log("헤더 loginUser:", loginUser);
   console.log("헤더 loginUser.profileImage:", loginUser?.profileImage);
   console.log("헤더 최종 이미지:", headerProfileImage);
@@ -103,18 +99,6 @@ export default function Header({ selectedRegion, onRegionChange }) {
               className={styles.logoImage}
             />
           </button>
-        </div>
-
-        <div className={styles.centerGroup}>
-          <RegionSelect
-            value={selectedRegionValue}
-            options={regionOptions}
-            onSelect={(option) =>
-              onRegionChange?.(normalizeRegionValue(option.value))
-            }
-            theme="navy"
-            className={styles.regionSelect}
-          />
         </div>
 
         <div className={styles.rightGroup}>

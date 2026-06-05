@@ -22,8 +22,9 @@ import IconButton from "@mui/material/IconButton";
 import { insertSchema } from "../../features/schedule/validation/insertSchema";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import CommonSelect from "../../shared/ui/Select/CommonSelect";
 
 registerLocale("ko", ko);
 
@@ -159,6 +160,7 @@ const UpdateSchedule = () => {
   const totalPrice = watch("post.totalPrice");
 
   // 시/도 조회
+  // useQuery - get
   const { data: regions = [] } = useQuery({
     queryKey: ["region"],
     queryFn: getRegion,
@@ -214,6 +216,7 @@ const UpdateSchedule = () => {
   const queryClient = useQueryClient();
 
   // 사진 업로드 시 시간 오래 걸릴 때 등록/수정 버튼 막음
+  // useMutation - post/put/delete
   const { mutateAsync: submitSchedule, isPending } = useMutation({
     mutationFn: ({
       scheduleId,
@@ -315,13 +318,18 @@ const UpdateSchedule = () => {
                     <label htmlFor="category">일정 종류</label>
                   </li>
                   <li>
-                    <select {...register("post.category")}>
-                      {categories.map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="post.category"
+                      control={control}
+                      render={({ field }) => (
+                        <CommonSelect
+                          label="일정 종류"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={categories}
+                        />
+                      )}
+                    />
                   </li>
                 </ul>
 
@@ -343,14 +351,24 @@ const UpdateSchedule = () => {
                     <label htmlFor="region">지역(시/도)</label>
                   </li>
                   <li>
-                    <select {...register("post.region")}>
-                      <option value="">시/도</option>
-                      {regions?.map((item) => (
-                        <option key={item.regionId} value={item.regionName}>
-                          {item.regionName}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="post.region"
+                      control={control}
+                      render={({ field }) => (
+                        <CommonSelect
+                          label="시/도"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={[
+                            { label: "시/도", value: "" },
+                            ...regions.map((item) => ({
+                              label: item.regionName,
+                              value: item.regionName,
+                            })),
+                          ]}
+                        />
+                      )}
+                    />
                   </li>
                 </ul>
 
@@ -359,14 +377,24 @@ const UpdateSchedule = () => {
                     <label htmlFor="detailRegion">지역(시/군/구)</label>
                   </li>
                   <li>
-                    <select {...register("post.detailRegion")}>
-                      <option value="">시/군/구</option>
-                      {detailRegions?.map((item) => (
-                        <option key={item.detailId} value={item.detailName}>
-                          {item.detailName}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="post.detailRegion"
+                      control={control}
+                      render={({ field }) => (
+                        <CommonSelect
+                          label="시/군/구"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={[
+                            { label: "시/군/구", value: "" },
+                            ...detailRegions.map((item) => ({
+                              label: item.detailName,
+                              value: item.detailName,
+                            })),
+                          ]}
+                        />
+                      )}
+                    />
                   </li>
                 </ul>
               </div>

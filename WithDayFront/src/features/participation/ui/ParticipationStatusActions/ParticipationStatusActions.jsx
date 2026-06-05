@@ -12,9 +12,6 @@ import styles from "../HostParticipationList/HostParticipationList.module.css";
  *
  * 실제 서버 검증은 백엔드가 다시 수행하지만,
  * 프런트도 미리 가능한 버튼만 노출해 사용자가 불필요한 실패 요청을 덜 보내게 한다.
- * 호스트가 신청자 상태별로 수행할 수 있는 액션 목록이다.
- * PENDING은 승인/거절이 가능하고, APPROVED는 강퇴(KICKED)만 가능하다.
- * 이 UI 규칙은 사용자가 가능한 버튼만 보게 하기 위한 것이며, 최종 상태 전이 검증은 백엔드 enum 규칙에서 다시 수행한다.
  */
 const ACTIONS_BY_STATUS = {
   PENDING: [
@@ -64,9 +61,6 @@ function ParticipationStatusActions({
   /*
    * 이미 최종 상태에 들어간 신청자는 액션 버튼을 숨긴다.
    * 이 설계는 disabled 버튼 여러 개를 늘어놓는 것보다 "이제 변경할 수 없는 상태"라는 메시지를 더 명확하게 전달한다.
-   *
-   * 이미 거절/취소/강퇴된 상태는 화면에서 더 이상 바꿀 수 있는 액션을 제공하지 않는다.
-   * 버튼을 숨기는 대신 안내 문구를 보여줘 호스트가 "왜 버튼이 없는지" 이해할 수 있게 한다.
    */
   if (actions.length === 0) {
     return (

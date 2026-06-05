@@ -22,4 +22,6 @@ public interface NotificationDao {
     void deleteReadNotifications(Long id);
 
     void deleteAllNotifications(Long id);
+
+    void readAllNotification(Long id);
 }

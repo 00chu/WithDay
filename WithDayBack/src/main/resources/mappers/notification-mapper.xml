@@ -46,6 +46,12 @@
                )
     </insert>
 
+    <update id="readAllNotification">
+        update notification
+        set is_read = 1
+        where receiver_id = #{id}
+    </update>
+
     <update id="readNotification">
         update notification
         set is_read = 1
