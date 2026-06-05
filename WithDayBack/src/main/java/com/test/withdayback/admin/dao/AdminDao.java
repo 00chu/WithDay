@@ -45,4 +45,8 @@ public interface AdminDao {
     List<AdminSchedule> selectAllSchedule(AdminScheduleRequest request);
 
     int selectAllScheduleCount(AdminScheduleRequest request);
+
+    int updateSchedulePublic(Long scheduleId);
+
+    int deleteSchedule(Long scheduleId);
 }

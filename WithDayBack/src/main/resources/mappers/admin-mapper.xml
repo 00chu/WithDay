@@ -171,7 +171,8 @@
         s.region,
         s.detail_region,
         s.is_public,
-        s.created_at as createdAt
+        s.created_at as createdAt,
+        s.deleted_at as deletedAt
         from schedule s
         inner join user u
         on s.user_id = u.id
@@ -224,4 +225,23 @@
             </if>
         </where>
     </select>
+
+    <!-- 일정 공개 상태 변경 -->
+    <update id="updateSchedulePublic">
+        update schedule
+        set is_public =
+        case
+            <!-- 공개 / 비공개 토글 -->
+            when is_public = 1 then 0
+            else 1
+        end
+        where id = #{scheduleId}
+    </update>
+
+    <!-- 일정 소프트 삭제 -->
+    <update id="deleteSchedule">
+        update schedule
+        set deleted_at = now()
+        where id = #{scheduleId}
+    </update>
 </mapper>

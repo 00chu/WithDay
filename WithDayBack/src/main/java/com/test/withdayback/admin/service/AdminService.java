@@ -7,6 +7,7 @@ import com.test.withdayback.admin.vo.Dashboard;
 import com.test.withdayback.user.vo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -121,5 +122,15 @@ public class AdminService {
         result.put("size", response.getSize());
 
         return result;
+    }
+
+    @Transactional
+    public int updateSchedulePublic(Long scheduleId) {
+        return adminDao.updateSchedulePublic(scheduleId);
+    }
+
+    @Transactional
+    public int deleteSchedule(Long scheduleId) {
+        return adminDao.deleteSchedule(scheduleId);
     }
 }

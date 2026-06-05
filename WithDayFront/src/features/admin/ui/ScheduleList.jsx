@@ -1,6 +1,13 @@
 import Pagination from "../../../shared/ui/Pagination/Pagination";
 import styles from "./ScheduleList.module.css";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateSchedulePublic, deleteSchedule } from "../api";
 
 const ScheduleList = ({ scheduleList = [], page, setPage, totalPage }) => {
   return (
@@ -10,10 +17,11 @@ const ScheduleList = ({ scheduleList = [], page, setPage, totalPage }) => {
       <ul className={styles.scheduleHeader}>
         <li style={{ flex: 3 }}>일정명</li>
         <li style={{ flex: 2 }}>지역</li>
-        <li style={{ flex: 1 }}>작성자</li>
-        <li style={{ flex: 1 }}>상태</li>
-        <li style={{ flex: 1 }}>공개여부</li>
-        <li style={{ flex: 2 }}>등록일</li>
+        <li style={{ flex: 1, textAlign: "center" }}>작성자</li>
+        <li style={{ flex: 1, textAlign: "center" }}>상태</li>
+        <li style={{ flex: 1, textAlign: "center" }}>공개여부</li>
+        <li style={{ flex: 2, textAlign: "center" }}>등록일</li>
+        <li style={{ flex: 1, textAlign: "center" }}>삭제여부</li>
         <li style={{ flex: 0.5 }}>관리</li>
       </ul>
 
@@ -40,6 +48,10 @@ const ScheduleList = ({ scheduleList = [], page, setPage, totalPage }) => {
 };
 
 const ScheduleItem = ({ schedule }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const open = Boolean(anchorEl);
+
   const statusMap = {
     recruiting: "모집중",
     closed: "마감",
@@ -52,24 +64,108 @@ const ScheduleItem = ({ schedule }) => {
     0: "비공개",
   };
 
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const queryClient = useQueryClient();
+
+  const updatePublicMutation = useMutation({
+    mutationFn: updateSchedulePublic,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["scheduleList"],
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteSchedule,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["scheduleList"],
+      });
+    },
+  });
+
+  const handleTogglePublic = async () => {
+    try {
+      await updatePublicMutation.mutateAsync(schedule.id);
+
+      handleMenuClose();
+    } catch (error) {
+      console.error(error);
+      alert("공개 여부 변경 실패");
+    }
+  };
+
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("정말 이 일정을 삭제하시겠습니까?");
+
+    if (!confirmDelete) return;
+
+    try {
+      await deleteMutation.mutateAsync(schedule.id);
+
+      handleMenuClose();
+    } catch (error) {
+      console.error(error);
+      alert("일정 삭제 실패");
+    }
+  };
+
   return (
-    <ul className={styles.scheduleItem}>
+    <ul
+      className={`${styles.scheduleItem} ${
+        schedule.deletedAt ? styles.deletedItem : ""
+      }`}
+    >
       <li style={{ flex: 3 }}>
-        <Link to={`/schedule/${schedule.id}`} className={styles.scheduleLink}>
+        <Link
+          to={`/schedule/${schedule.id}`}
+          className={`${styles.scheduleLink} ${
+            schedule.deletedAt ? styles.deletedTitle : ""
+          }`}
+        >
           {schedule.title}
         </Link>
       </li>
       <li style={{ flex: 2 }}>
         {schedule.region} {schedule.detailRegion}
       </li>
-      <li style={{ flex: 1 }}>{schedule.nickname}</li>
-      <li style={{ flex: 1 }}>
+      <li style={{ flex: 1, textAlign: "center" }}>{schedule.nickname}</li>
+      <li style={{ flex: 1, textAlign: "center" }}>
         {statusMap[schedule.status] ?? schedule.status}
       </li>
-      <li style={{ flex: 1 }}>{publicMap[schedule.isPublic] ?? "-"}</li>
-      <li style={{ flex: 2 }}>{schedule.createdAt?.slice(0, 10)}</li>
+      <li style={{ flex: 1, textAlign: "center" }}>
+        {publicMap[schedule.isPublic] ?? "-"}
+      </li>
+      <li style={{ flex: 2, textAlign: "center" }}>
+        {schedule.createdAt?.slice(0, 10)}
+      </li>
+      <li style={{ flex: 1, textAlign: "center" }}>
+        {schedule.deletedAt ? "삭제됨" : "-"}
+      </li>
+
+      {/* 메뉴 */}
       <li style={{ flex: 0.5 }}>
-        <ScheduleMenu schedule={schedule} />
+        <IconButton onClick={handleMenuOpen}>
+          <MoreVertIcon />
+        </IconButton>
+
+        <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+          <MenuItem onClick={handleTogglePublic}>
+            {schedule.isPublic === 1 ? "비공개로 변경" : "공개로 변경"}
+          </MenuItem>
+
+          <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>
+            일정 삭제
+          </MenuItem>
+        </Menu>
       </li>
 
       {/* 모바일 */}
@@ -78,11 +174,17 @@ const ScheduleItem = ({ schedule }) => {
           <strong>
             <Link
               to={`/schedule/${schedule.id}`}
-              className={styles.scheduleLink}
+              className={`${styles.scheduleLink} ${
+                schedule.deletedAt ? styles.deletedTitle : ""
+              }`}
             >
-              <strong>{schedule.title}</strong>
+              {schedule.title}
             </Link>
           </strong>
+
+          <IconButton onClick={handleMenuOpen}>
+            <MoreVertIcon />
+          </IconButton>
         </div>
 
         <div className={styles.mobileInfo}>
@@ -96,64 +198,6 @@ const ScheduleItem = ({ schedule }) => {
         </div>
       </div>
     </ul>
-  );
-};
-
-import { useState } from "react";
-
-const ScheduleMenu = ({ schedule }) => {
-  const [open, setOpen] = useState(false);
-
-  const handleTogglePublic = () => {
-    const nextValue = schedule.isPublic === 1 ? 0 : 1;
-
-    console.log("공개 여부 변경", schedule.id, nextValue);
-
-    // API 연결
-    // updateSchedulePublic(schedule.id, nextValue)
-  };
-
-  const handleDelete = () => {
-    if (!window.confirm("정말 삭제하시겠습니까?")) {
-      return;
-    }
-
-    console.log("삭제", schedule.id);
-
-    // API 연결
-    // deleteSchedule(schedule.id)
-  };
-
-  return (
-    <div className={styles.menuWrapper}>
-      <button
-        type="button"
-        className={styles.menuButton}
-        onClick={() => setOpen((prev) => !prev)}
-      >
-        ⋮
-      </button>
-
-      {open && (
-        <div className={styles.dropdown}>
-          <button
-            type="button"
-            className={styles.dropdownItem}
-            onClick={handleTogglePublic}
-          >
-            {schedule.isPublic === 1 ? "비공개 전환" : "공개 전환"}
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.dropdownItem} ${styles.deleteItem}`}
-            onClick={handleDelete}
-          >
-            일정 삭제
-          </button>
-        </div>
-      )}
-    </div>
   );
 };
 
