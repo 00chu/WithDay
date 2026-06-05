@@ -10,6 +10,7 @@ import MemberManagementPage from "../../features/admin/ui/MemberManagementPage";
 import AdminSignupSettingPage from "../../features/admin/ui/AdminSignupSettingPage";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import Dashboard from "../../features/admin/ui/Dashboard";
+import ScheduleManagementPage from "../../features/admin/ui/ScheduleManagementPage";
 
 const AdminPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -67,6 +68,9 @@ const AdminPage = () => {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="member" element={<MemberManagementPage />} />
           <Route path="setting" element={<AdminSignupSettingPage />} />
+        </Routes>
+        <Routes>
+          <Route path="schedule" element={<ScheduleManagementPage />} />
         </Routes>
       </main>
     </div>

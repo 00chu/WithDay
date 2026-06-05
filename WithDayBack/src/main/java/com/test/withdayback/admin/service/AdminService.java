@@ -6,6 +6,8 @@ import com.test.withdayback.admin.dto.AdminInterestRequest;
 import com.test.withdayback.admin.dto.AdminMemberRequest;
 import com.test.withdayback.admin.dto.AdminMemberResponse;
 import com.test.withdayback.admin.dto.AdminTermsRequest;
+import com.test.withdayback.admin.dto.*;
+import com.test.withdayback.admin.vo.AdminSchedule;
 import com.test.withdayback.admin.vo.Dashboard;
 import com.test.withdayback.user.vo.Interest;
 import com.test.withdayback.user.vo.Terms;
@@ -14,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // @Service: 관리자 기능의 비즈니스 로직을 처리하는 클래스
 @Service
@@ -198,5 +202,54 @@ public class AdminService {
         if (request.getInterestName().trim().length() > 50) {
             throw new RuntimeException("관심사 이름은 50자 이하로 입력해주세요.");
         }
+    public Map<String, Object> selectAllSchedule(String keyword, String region, String detailRegion, String status, int page, int size) {
+        AdminScheduleRequest request = new AdminScheduleRequest();
+
+        request.setKeyword(keyword);
+        request.setRegion(region);
+        request.setDetailRegion(detailRegion);
+        request.setStatus(status);
+        request.setPage(page);
+        request.setSize(size);
+
+        // 목록 조회
+        List<AdminSchedule> scheduleList =
+                adminDao.selectAllSchedule(request);
+
+        // 전체 개수 조회
+        int totalCount =
+                adminDao.selectAllScheduleCount(request);
+
+        int totalPage =
+                (int) Math.ceil((double) totalCount / size);
+
+        AdminScheduleResponse response =
+                new AdminScheduleResponse();
+
+        response.setScheduleList(scheduleList);
+        response.setTotalCount(totalCount);
+        response.setTotalPage(totalPage);
+        response.setPage(page);
+        response.setSize(size);
+
+        Map<String, Object> result = new HashMap<>();
+
+        result.put("scheduleList", response.getScheduleList());
+        result.put("totalCount", response.getTotalCount());
+        result.put("totalPage", response.getTotalPage());
+        result.put("page", response.getPage());
+        result.put("size", response.getSize());
+
+        return result;
+    }
+
+    @Transactional
+    public int updateSchedulePublic(Long scheduleId) {
+        return adminDao.updateSchedulePublic(scheduleId);
+    }
+
+    @Transactional
+    public int deleteSchedule(Long scheduleId) {
+        return adminDao.deleteSchedule(scheduleId);
     }
 }

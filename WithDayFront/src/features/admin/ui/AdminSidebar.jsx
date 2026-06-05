@@ -2,8 +2,7 @@ import { NavLink } from "react-router-dom";
 
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
-import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
-import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
+import EventNoteIcon from "@mui/icons-material/EventNote";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 
 import styles from "./AdminSidebar.module.css";
@@ -38,6 +37,17 @@ const AdminSidebar = ({ closeDrawer = () => {} }) => {
         >
           <GroupOutlinedIcon />
           <span>회원 관리</span>
+        </NavLink>
+
+        <NavLink
+          to="/admin/schedule"
+          onClick={closeDrawer}
+          className={({ isActive }) =>
+            isActive ? `${styles.menuItem} ${styles.active}` : styles.menuItem
+          }
+        >
+          <EventNoteIcon />
+          <span>일정 관리</span>
         </NavLink>
 
         <NavLink

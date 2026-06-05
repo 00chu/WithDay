@@ -242,5 +242,85 @@
     <delete id="deleteInterest" parameterType="Long">
         delete from interests
         where id = #{id}
+    <select id="selectAllSchedule"
+            parameterType="AdminScheduleRequest"
+            resultType="AdminSchedule">
+        select
+        s.id,
+        s.title,
+        u.nickname,
+        s.status,
+        s.region,
+        s.detail_region,
+        s.is_public,
+        s.created_at as createdAt
+        from schedule s
+        inner join user u
+        on s.user_id = u.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (
+                s.title like concat('%', #{keyword}, '%')
+                or
+                u.nickname like concat('%', #{keyword}, '%')
+                )
+            </if>
+            <if test="region != null and region != ''">
+                and s.region = #{region}
+            </if>
+            <if test="detailRegion != null and detailRegion != ''">
+                and s.detail_region = #{detailRegion}
+            </if>
+            <if test="status != null and status != ''">
+                and s.status = #{status}
+            </if>
+        </where>
+        order by s.created_at desc
+        limit #{size}
+        offset #{offset}
+    </select>
+
+    <select id="selectAllScheduleCount"
+            parameterType="AdminScheduleRequest"
+            resultType="int">
+        select count(*)
+        from schedule s
+        inner join user u
+        on s.user_id = u.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (
+                s.title like concat('%', #{keyword}, '%')
+                or
+                u.nickname like concat('%', #{keyword}, '%')
+                )
+            </if>
+            <if test="region != null and region != ''">
+                and s.region = #{region}
+            </if>
+            <if test="detailRegion != null and detailRegion != ''">
+                and s.detail_region = #{detailRegion}
+            </if>
+            <if test="status != null and status != ''">
+                and s.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 일정 공개 상태 변경 -->
+    <update id="updateSchedulePublic">
+        update schedule
+        set is_public =
+        case
+            <!-- 공개 / 비공개 토글 -->
+            when is_public = 1 then 0
+            else 1
+        end
+        where id = #{scheduleId}
+    </update>
+
+    <delete id="deleteSchedule">
+        delete from schedule
+        where id = #{scheduleId}
     </delete>
 </mapper>

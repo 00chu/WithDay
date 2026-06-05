@@ -3,6 +3,8 @@ package com.test.withdayback.admin.dao;
 import com.test.withdayback.admin.dto.AdminInterestRequest;
 import com.test.withdayback.admin.dto.AdminMemberRequest;
 import com.test.withdayback.admin.dto.AdminTermsRequest;
+import com.test.withdayback.admin.dto.AdminScheduleRequest;
+import com.test.withdayback.admin.vo.AdminSchedule;
 import com.test.withdayback.admin.vo.Dashboard;
 import com.test.withdayback.user.vo.Interest;
 import com.test.withdayback.user.vo.Terms;
@@ -82,4 +84,11 @@ public interface AdminDao {
 
     // 관심사 삭제
     void deleteInterest(Long id);
+    List<AdminSchedule> selectAllSchedule(AdminScheduleRequest request);
+
+    int selectAllScheduleCount(AdminScheduleRequest request);
+
+    int updateSchedulePublic(Long scheduleId);
+
+    int deleteSchedule(Long scheduleId);
 }
