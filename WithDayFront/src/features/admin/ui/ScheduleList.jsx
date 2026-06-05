@@ -21,7 +21,6 @@ const ScheduleList = ({ scheduleList = [], page, setPage, totalPage }) => {
         <li style={{ flex: 1, textAlign: "center" }}>상태</li>
         <li style={{ flex: 1, textAlign: "center" }}>공개여부</li>
         <li style={{ flex: 2, textAlign: "center" }}>등록일</li>
-        <li style={{ flex: 1, textAlign: "center" }}>삭제여부</li>
         <li style={{ flex: 0.5 }}>관리</li>
       </ul>
 
@@ -147,9 +146,6 @@ const ScheduleItem = ({ schedule }) => {
       <li style={{ flex: 2, textAlign: "center" }}>
         {schedule.createdAt?.slice(0, 10)}
       </li>
-      <li style={{ flex: 1, textAlign: "center" }}>
-        {schedule.deletedAt ? "삭제됨" : "-"}
-      </li>
 
       {/* 메뉴 */}
       <li style={{ flex: 0.5 }}>
@@ -174,9 +170,7 @@ const ScheduleItem = ({ schedule }) => {
           <strong>
             <Link
               to={`/schedule/${schedule.id}`}
-              className={`${styles.scheduleLink} ${
-                schedule.deletedAt ? styles.deletedTitle : ""
-              }`}
+              className="styles.scheduleLink"
             >
               {schedule.title}
             </Link>

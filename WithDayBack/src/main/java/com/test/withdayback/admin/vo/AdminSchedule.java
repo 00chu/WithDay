@@ -14,5 +14,4 @@ public class AdminSchedule {
     private String detailRegion;
     private int isPublic;
     private String createdAt;
-    private String deletedAt;
 }

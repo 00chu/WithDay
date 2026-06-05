@@ -171,8 +171,7 @@
         s.region,
         s.detail_region,
         s.is_public,
-        s.created_at as createdAt,
-        s.deleted_at as deletedAt
+        s.created_at as createdAt
         from schedule s
         inner join user u
         on s.user_id = u.id
@@ -238,10 +237,8 @@
         where id = #{scheduleId}
     </update>
 
-    <!-- 일정 소프트 삭제 -->
-    <update id="deleteSchedule">
-        update schedule
-        set deleted_at = now()
+    <delete id="deleteSchedule">
+        delete from schedule
         where id = #{scheduleId}
-    </update>
+    </delete>
 </mapper>

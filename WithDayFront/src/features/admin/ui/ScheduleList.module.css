@@ -54,17 +54,6 @@
   text-decoration: underline;
 }
 
-.deletedItem {
-  background-color: #f2f2f2;
-  color: #999;
-}
-
-.deletedTitle {
-  text-decoration: line-through;
-  color: #888;
-  pointer-events: none;
-}
-
 .mobileCard {
   display: none;
 }
