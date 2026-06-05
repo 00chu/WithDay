@@ -9,6 +9,7 @@ import AdminSidebar from "../../features/admin/ui/AdminSidebar";
 import MemberManagementPage from "../../features/admin/ui/MemberManagementPage";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import Dashboard from "../../features/admin/ui/Dashboard";
+import ScheduleManagementPage from "../../features/admin/ui/ScheduleManagementPage";
 
 const AdminPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -66,6 +67,9 @@ const AdminPage = () => {
         </Routes>
         <Routes>
           <Route path="member" element={<MemberManagementPage />} />
+        </Routes>
+        <Routes>
+          <Route path="schedule" element={<ScheduleManagementPage />} />
         </Routes>
       </main>
     </div>

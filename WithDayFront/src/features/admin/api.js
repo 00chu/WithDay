@@ -21,3 +21,10 @@ export const getDashboardData = async (period) => {
   });
   return data;
 };
+
+export const selectAllSchedule = async (params) => {
+  const { data } = await api.get(`/admins/schedules`, {
+    params,
+  });
+  return data;
+};
