@@ -216,6 +216,15 @@
         FROM schedule s
         <where>
             s.deleted_at IS NULL
+            <if test="!viewerIsAdmin">
+                AND (
+                    s.is_public IS NULL
+                    OR s.is_public != 0
+                    <if test="viewerUserId != null">
+                        OR s.user_id = #{viewerUserId}
+                    </if>
+                )
+            </if>
             AND (
                 s.status = 'recruiting'
                 OR (

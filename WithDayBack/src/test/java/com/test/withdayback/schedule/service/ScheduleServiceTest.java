@@ -11,6 +11,7 @@ import com.test.withdayback.schedule.enums.CostType;
 import com.test.withdayback.schedule.enums.GenderLimit;
 import com.test.withdayback.schedule.enums.ScheduleStatus;
 import com.test.withdayback.schedule.vo.Schedule;
+import com.test.withdayback.user.vo.User;
 import com.test.withdayback.user.dao.UserDao;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -139,6 +140,7 @@ class ScheduleServiceTest {
     void getScheduleFullDetailsIncludesFieldsNeededByCard() {
         Long scheduleId = 7L;
         Schedule schedule = new Schedule();
+        schedule.setUserId(1L);
         schedule.setStartDate("2026-05-20");
         schedule.setEndDate("2026-05-22");
         schedule.setRecruitEndDate("2026-05-18");
@@ -150,6 +152,7 @@ class ScheduleServiceTest {
         when(scheduleDao.selectScheduleByIdForViewer(scheduleId, "")).thenReturn(schedule);
         when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
         when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
+        when(userDao.findById(1L)).thenReturn(new User(1L, "host@withday.test", null, null, null, "host", null, null, null, null, "active", null, null, null, null));
 
         ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(scheduleId, "");
 
@@ -160,6 +163,8 @@ class ScheduleServiceTest {
         assertEquals("female", result.getGenderLimit());
         assertEquals("host_covered", result.getCostType());
         assertTrue(result.getIsBookmarked());
+        assertFalse(result.getHiddenFromPublic());
+        assertFalse(result.getViewerIsAdmin());
     }
 
     @Test
@@ -178,12 +183,16 @@ class ScheduleServiceTest {
     void getScheduleFullDetailsHidesChatLinkForPendingViewer() {
         Long scheduleId = 21L;
         Schedule schedule = new Schedule();
+        schedule.setUserId(1L);
         schedule.setChatLink("https://open.kakao.com/test-room");
 
         when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
         when(scheduleDao.selectScheduleByIdForViewer(scheduleId, "guest@withday.test")).thenReturn(schedule);
         when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
         when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
+        when(userDao.findByEmail("guest@withday.test"))
+                .thenReturn(new User(2L, "guest@withday.test", null, null, null, "guest", null, null, null, null, "active", null, null, null, null));
+        when(userDao.findById(1L)).thenReturn(new User(1L, "host@withday.test", null, null, null, "host", null, null, null, null, "active", null, null, null, null));
         Participation participation = new Participation();
         participation.setId(201L);
         participation.setStatus(ParticipationStatus.PENDING);
@@ -206,12 +215,16 @@ class ScheduleServiceTest {
     void getScheduleFullDetailsShowsChatLinkForApprovedViewer() {
         Long scheduleId = 22L;
         Schedule schedule = new Schedule();
+        schedule.setUserId(1L);
         schedule.setChatLink("https://open.kakao.com/test-room");
 
         when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
         when(scheduleDao.selectScheduleByIdForViewer(scheduleId, "approved@withday.test")).thenReturn(schedule);
         when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
         when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
+        when(userDao.findByEmail("approved@withday.test"))
+                .thenReturn(new User(3L, "approved@withday.test", null, null, null, "approved", null, null, null, null, "active", null, null, null, null));
+        when(userDao.findById(1L)).thenReturn(new User(1L, "host@withday.test", null, null, null, "host", null, null, null, null, "active", null, null, null, null));
         Participation participation = new Participation();
         participation.setId(202L);
         participation.setStatus(ParticipationStatus.APPROVED);
@@ -227,6 +240,68 @@ class ScheduleServiceTest {
         assertEquals(202L, result.getViewerParticipationId());
         assertEquals("APPROVED", result.getViewerParticipationStatus());
         assertEquals("https://open.kakao.com/test-room", result.getSchedule().getChatLink());
+    }
+
+    @Test
+    void getScheduleFullDetailsReturnsHiddenScheduleForHost() {
+        Long scheduleId = 23L;
+        Schedule schedule = new Schedule();
+        schedule.setUserId(1L);
+        schedule.setIsPublic(0);
+
+        when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
+        when(scheduleDao.selectScheduleByIdForViewer(scheduleId, "host@withday.test")).thenReturn(schedule);
+        when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
+        when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
+        when(userDao.findByEmail("host@withday.test"))
+                .thenReturn(new User(1L, "host@withday.test", null, null, null, "host", null, null, null, null, "active", null, null, null, null));
+        when(userDao.findById(1L)).thenReturn(new User(1L, "host@withday.test", null, null, null, "host", null, null, null, null, "active", null, null, null, null));
+
+        ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(scheduleId, "host@withday.test");
+
+        assertTrue(result.getHiddenFromPublic());
+        assertTrue(result.getViewerIsHost());
+        assertFalse(result.getViewerIsAdmin());
+    }
+
+    @Test
+    void getScheduleFullDetailsReturnsHiddenScheduleForAdmin() {
+        Long scheduleId = 24L;
+        Schedule schedule = new Schedule();
+        schedule.setUserId(1L);
+        schedule.setIsPublic(0);
+
+        when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
+        when(scheduleDao.selectScheduleByIdForViewer(scheduleId, "admin@withday.test")).thenReturn(schedule);
+        when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
+        when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
+        when(userDao.findByEmail("admin@withday.test"))
+                .thenReturn(new User(99L, "admin@withday.test", null, null, null, "admin", null, null, null, null, "admin", null, null, null, null));
+        when(userDao.findById(1L)).thenReturn(new User(1L, "host@withday.test", null, null, null, "host", null, null, null, null, "active", null, null, null, null));
+
+        ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(scheduleId, "admin@withday.test");
+
+        assertTrue(result.getHiddenFromPublic());
+        assertFalse(result.getViewerIsHost());
+        assertTrue(result.getViewerIsAdmin());
+    }
+
+    @Test
+    void getScheduleFullDetailsRejectsHiddenScheduleForGuest() {
+        Long scheduleId = 25L;
+        Schedule schedule = new Schedule();
+        schedule.setUserId(1L);
+        schedule.setIsPublic(0);
+
+        when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
+        when(scheduleDao.selectScheduleByIdForViewer(scheduleId, "")).thenReturn(schedule);
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> scheduleService.getScheduleFullDetails(scheduleId, "")
+        );
+
+        assertEquals("404 NOT_FOUND \"일정을 찾을 수 없습니다.\"", exception.getMessage());
     }
 
     @Test

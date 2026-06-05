@@ -462,6 +462,7 @@ export default function ScheduleDetail() {
    * true이면 신청자 개인정보 조회/호스트 관리/승인 참여자 요약을 열고, false이면 공개 가능한 호스트 프로필만 보여준다.
    */
   const viewerIsHost = Boolean(data?.viewerIsHost);
+  const viewerIsAdmin = Boolean(data?.viewerIsAdmin);
 
   /*
    * 호스트 전용 신청자 목록 조회다.
@@ -1001,10 +1002,13 @@ export default function ScheduleDetail() {
   }
 
   if (isError) {
+    const errorStatus = error?.response?.status;
     const errorMessage =
-      error?.response?.data?.message ??
-      error?.response?.data ??
-      "데이터를 불러오는 데 실패했습니다.";
+      errorStatus === 404
+        ? "일정을 찾을 수 없습니다."
+        : (error?.response?.data?.message ??
+          error?.response?.data ??
+          "데이터를 불러오는 데 실패했습니다.");
 
     return <div className={styles.container}>{errorMessage}</div>;
   }
@@ -1035,6 +1039,8 @@ export default function ScheduleDetail() {
     Number(schedule.currentParticipants ?? 0) >= Number(schedule.minParticipants ?? 0);
   const isScheduleActionPending = isCompletingSchedule || isRollbackPending;
   const isBookmarked = Boolean(data?.isBookmarked ?? schedule?.isBookmarked);
+  const shouldShowHiddenBanner =
+    Boolean(data?.hiddenFromPublic) && (viewerIsHost || viewerIsAdmin);
   const BookmarkIcon = isBookmarked
     ? FavoriteRoundedIcon
     : FavoriteBorderRoundedIcon;
@@ -1182,6 +1188,11 @@ export default function ScheduleDetail() {
               현재 API에 있는 정보만 사용하고, HTML 시안의 포함/불포함/출발 장소 같은 더미성 항목은 넣지 않는다.
             */}
             <section className={`${styles.panel} ${styles.titleSection}`}>
+              {shouldShowHiddenBanner ? (
+                <div className={styles.hiddenNoticeBanner}>
+                  이 일정은 비공개로 숨겨져 있으며 호스트 또는 관리자만 확인할 수 있습니다.
+                </div>
+              ) : null}
               <div className={styles.titleRow}>
                 <div className={styles.titleContent}>
                   <h1 className={styles.title}>{schedule.title ?? "제목 없음"}</h1>

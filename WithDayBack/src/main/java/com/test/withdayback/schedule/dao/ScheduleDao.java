@@ -74,6 +74,8 @@ public interface ScheduleDao {
             @Param("startDate") String startDate,
             @Param("endDate") String endDate,
             @Param("sort") String sort,
+            @Param("viewerUserId") Long viewerUserId,
+            @Param("viewerIsAdmin") boolean viewerIsAdmin,
             @Param("email") String email);
             
     void insertSchedule(Schedule schedule);
