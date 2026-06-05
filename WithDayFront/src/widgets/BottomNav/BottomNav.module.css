@@ -32,8 +32,10 @@
   min-width: 0;
   padding: 8px 4px 10px;
   color: var(--color-text-disabled);
-  transition: color var(--transition-fast),
-    background-color var(--transition-fast), transform var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .innerNav :global(.MuiBottomNavigationAction-label) {
@@ -104,7 +106,8 @@
   ) !important;
   color: var(--color-text-inverse) !important;
   box-shadow: none !important;
-  transition: background var(--transition-fast),
+  transition:
+    background var(--transition-fast),
     transform var(--transition-fast) !important;
 }
 
