@@ -23,6 +23,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import styles from "./BottomNav.module.css";
 
+// 머지 오류 수정
+
 const getTabValue = (pathname) => {
   if (pathname.startsWith("/explore")) {
     return 1;
@@ -158,7 +160,7 @@ export default function BottomNav() {
               className={clsx(
                 styles.navAction,
                 isActive && styles.navActionActive,
-                item.isAdd && styles.navActionAddSpacer,
+                item.isAdd && styles.navActionAddSpacer
               )}
               icon={
                 item.isAdd ? (
