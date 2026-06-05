@@ -34,9 +34,11 @@ public class ScheduleResponseDTO {
 
     // 현재 viewer 기준 권한/참여 상태다. 참여 버튼과 오픈채팅 링크 노출 여부를 결정한다.
     private Boolean viewerIsHost;
+    private Boolean viewerIsAdmin;
     private Long viewerParticipationId;
     private String viewerParticipationStatus;
     private Boolean viewerCanAccessChatLink;
+    private Boolean hiddenFromPublic;
 
     // 상세 화면의 핵심 데이터 묶음이다.
     private HostSummary host;
@@ -74,7 +76,9 @@ public class ScheduleResponseDTO {
                 : null;
         this.isBookmarked = schedule != null ? schedule.getIsBookmarked() : Boolean.FALSE;
         this.viewerIsHost = false;
+        this.viewerIsAdmin = false;
         this.viewerParticipationId = null;
         this.viewerCanAccessChatLink = false;
+        this.hiddenFromPublic = schedule != null && Integer.valueOf(0).equals(schedule.getIsPublic());
     }
 }

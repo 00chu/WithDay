@@ -227,6 +227,18 @@
   padding: 28px;
 }
 
+.hiddenNoticeBanner {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border: 1px solid rgba(217, 119, 6, 0.22);
+  border-radius: var(--radius-md);
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
 .titleRow {
   display: flex;
   gap: 18px;

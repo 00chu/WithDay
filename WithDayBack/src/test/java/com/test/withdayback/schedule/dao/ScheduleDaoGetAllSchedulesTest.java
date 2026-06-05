@@ -34,7 +34,8 @@ class ScheduleDaoGetAllSchedulesTest {
         jdbcTemplate.execute("""
                 CREATE TABLE `user` (
                     id BIGINT PRIMARY KEY,
-                    email VARCHAR(255) NOT NULL
+                    email VARCHAR(255) NOT NULL,
+                    status VARCHAR(20) NULL
                 )
                 """);
         jdbcTemplate.execute("""
@@ -79,31 +80,40 @@ class ScheduleDaoGetAllSchedulesTest {
                 )
                 """);
 
-        jdbcTemplate.update("INSERT INTO `user` (id, email) VALUES (?, ?)", 100L, "viewer@withday.test");
+        jdbcTemplate.update(
+                "INSERT INTO `user` (id, email, status) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)",
+                1L, "host@withday.test", "active",
+                100L, "viewer@withday.test", "active",
+                200L, "admin@withday.test", "admin"
+        );
 
         LocalDate today = LocalDate.now();
 
-        insertSchedule(1L, "Open Travel", "Seoul mountain trip", "travel", "SEOUL",
-                "recruiting", 1, 5, today.plusDays(2), null);
-        insertSchedule(2L, "Full Travel", "Busan beach trip", "travel", "BUSAN",
-                "closed", 5, 5, today.plusDays(2), null);
-        insertSchedule(3L, "Expired Travel", "Daegu night walk", "travel", "DAEGU",
-                "closed", 2, 5, today.minusDays(1), null);
-        insertSchedule(4L, "Expired Full Travel", "Jeju full group", "travel", "JEJU",
-                "closed", 4, 4, today.minusDays(1), null);
-        insertSchedule(5L, "Cancelled Travel", "No longer active", "travel", "SEOUL",
-                "canceled", 1, 5, today.plusDays(2), null);
-        insertSchedule(6L, "Completed Travel", "Already done", "travel", "SEOUL",
-                "completed", 1, 5, today.plusDays(2), null);
-        insertSchedule(7L, "Deleted Travel", "Soft deleted", "travel", "SEOUL",
-                "recruiting", 1, 5, today.plusDays(2), Timestamp.valueOf(today.atStartOfDay()));
-        insertSchedule(8L, "Food Gathering", "Seoul dinner plan", "food", "SEOUL",
-                "recruiting", 2, 6, today.plusDays(3), null);
+        insertSchedule(1L, 1L, "Open Travel", "Seoul mountain trip", "travel", "SEOUL",
+                "recruiting", 1, 5, 1, today.plusDays(2), null);
+        insertSchedule(2L, 1L, "Full Travel", "Busan beach trip", "travel", "BUSAN",
+                "closed", 5, 5, 1, today.plusDays(2), null);
+        insertSchedule(3L, 1L, "Expired Travel", "Daegu night walk", "travel", "DAEGU",
+                "closed", 2, 5, 1, today.minusDays(1), null);
+        insertSchedule(4L, 1L, "Expired Full Travel", "Jeju full group", "travel", "JEJU",
+                "closed", 4, 4, 1, today.minusDays(1), null);
+        insertSchedule(5L, 1L, "Cancelled Travel", "No longer active", "travel", "SEOUL",
+                "canceled", 1, 5, 1, today.plusDays(2), null);
+        insertSchedule(6L, 1L, "Completed Travel", "Already done", "travel", "SEOUL",
+                "completed", 1, 5, 1, today.plusDays(2), null);
+        insertSchedule(7L, 1L, "Deleted Travel", "Soft deleted", "travel", "SEOUL",
+                "recruiting", 1, 5, 1, today.plusDays(2), Timestamp.valueOf(today.atStartOfDay()));
+        insertSchedule(8L, 1L, "Food Gathering", "Seoul dinner plan", "food", "SEOUL",
+                "recruiting", 2, 6, 1, today.plusDays(3), null);
+        insertSchedule(9L, 100L, "Viewer Hidden Travel", "Private host schedule", "travel", "SEOUL",
+                "recruiting", 1, 4, 0, today.plusDays(4), null);
+        insertSchedule(10L, 1L, "Host Hidden Travel", "Private schedule for host only", "travel", "SEOUL",
+                "recruiting", 1, 4, 0, today.plusDays(4), null);
     }
 
     @Test
     void getAllSchedulesShowsRecruitingAndFullClosedButHidesExpiredClosed() {
-        List<Schedule> schedules = scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "latest", null);
+        List<Schedule> schedules = scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "latest", null, false, null);
 
         assertEquals(3, schedules.size());
         assertIterableEquals(List.of(8L, 2L, 1L), schedules.stream().map(Schedule::getId).toList());
@@ -112,7 +122,7 @@ class ScheduleDaoGetAllSchedulesTest {
 
     @Test
     void getAllSchedulesAppliesCategoryKeywordAndRegionFiltersOnTopOfVisibilityRule() {
-        List<Schedule> schedules = scheduleDao.getAllSchedules("travel", "beach", " busan ", null, null, null, null, "latest", null);
+        List<Schedule> schedules = scheduleDao.getAllSchedules("travel", "beach", " busan ", null, null, null, null, "latest", null, false, null);
 
         assertEquals(1, schedules.size());
         assertEquals(2L, schedules.get(0).getId());
@@ -120,12 +130,12 @@ class ScheduleDaoGetAllSchedulesTest {
 
     @Test
     void getAllSchedulesKeepsFullClosedVisibleWhenRecruitEndDateIsToday() {
-        insertSchedule(9L, "Today Full Travel", "Still visible today", "travel", "SEOUL",
-                "closed", 3, 3, LocalDate.now(), null);
+        insertSchedule(11L, 1L, "Today Full Travel", "Still visible today", "travel", "SEOUL",
+                "closed", 3, 3, 1, LocalDate.now(), null);
 
-        List<Schedule> schedules = scheduleDao.getAllSchedules("travel", null, "seoul", null, null, null, null, "latest", null);
+        List<Schedule> schedules = scheduleDao.getAllSchedules("travel", null, "seoul", null, null, null, null, "latest", null, false, null);
 
-        assertIterableEquals(List.of(9L, 1L), schedules.stream().map(Schedule::getId).toList());
+        assertIterableEquals(List.of(11L, 1L), schedules.stream().map(Schedule::getId).toList());
     }
 
     @Test
@@ -137,7 +147,7 @@ class ScheduleDaoGetAllSchedulesTest {
         );
 
         List<Schedule> schedules =
-                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "latest", "viewer@withday.test");
+                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "latest", 100L, false, "viewer@withday.test");
 
         Schedule bookmarkedSchedule = schedules.stream()
                 .filter(schedule -> schedule.getId().equals(2L))
@@ -163,15 +173,15 @@ class ScheduleDaoGetAllSchedulesTest {
         );
 
         List<Schedule> titleMatches =
-                scheduleDao.getAllSchedules(null, "open", null, null, null, null, null, "latest", null);
+                scheduleDao.getAllSchedules(null, "open", null, null, null, null, null, "latest", null, false, null);
         List<Schedule> descriptionMatches =
-                scheduleDao.getAllSchedules(null, "dinner", null, null, null, null, null, "latest", null);
+                scheduleDao.getAllSchedules(null, "dinner", null, null, null, null, null, "latest", null, false, null);
         List<Schedule> regionMatches =
-                scheduleDao.getAllSchedules(null, "incheon", null, null, null, null, null, "latest", null);
+                scheduleDao.getAllSchedules(null, "incheon", null, null, null, null, null, "latest", null, false, null);
         List<Schedule> detailRegionMatches =
-                scheduleDao.getAllSchedules(null, "gangnam", null, null, null, null, null, "latest", null);
+                scheduleDao.getAllSchedules(null, "gangnam", null, null, null, null, null, "latest", null, false, null);
         List<Schedule> categoryMatches =
-                scheduleDao.getAllSchedules(null, "culture", null, null, null, null, null, "latest", null);
+                scheduleDao.getAllSchedules(null, "culture", null, null, null, null, null, "latest", null, false, null);
 
         assertIterableEquals(List.of(1L), titleMatches.stream().map(Schedule::getId).toList());
         assertIterableEquals(List.of(8L), descriptionMatches.stream().map(Schedule::getId).toList());
@@ -208,6 +218,8 @@ class ScheduleDaoGetAllSchedulesTest {
                 String.valueOf(LocalDate.now().plusDays(11)),
                 String.valueOf(LocalDate.now().plusDays(11)),
                 "latest",
+                null,
+                false,
                 null
         );
 
@@ -235,15 +247,15 @@ class ScheduleDaoGetAllSchedulesTest {
                 8L
         );
 
-        List<Schedule> latest = scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "latest", null);
+        List<Schedule> latest = scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "latest", null, false, null);
         List<Schedule> deadlineSoon =
-                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "deadlineSoon", null);
+                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "deadlineSoon", null, false, null);
         List<Schedule> deadlineRelaxed =
-                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "deadlineRelaxed", null);
+                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "deadlineRelaxed", null, false, null);
         List<Schedule> startSoon =
-                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "startSoon", null);
+                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "startSoon", null, false, null);
         List<Schedule> startLate =
-                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "startLate", null);
+                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "startLate", null, false, null);
 
         assertIterableEquals(List.of(8L, 2L, 1L), latest.stream().map(Schedule::getId).toList());
         assertIterableEquals(List.of(2L, 1L, 8L), deadlineSoon.stream().map(Schedule::getId).toList());
@@ -252,8 +264,25 @@ class ScheduleDaoGetAllSchedulesTest {
         assertIterableEquals(List.of(8L, 1L, 2L), startLate.stream().map(Schedule::getId).toList());
     }
 
+    @Test
+    void getAllSchedulesShowsOwnHiddenSchedulesForLoggedInViewer() {
+        List<Schedule> schedules =
+                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "latest", 100L, false, "viewer@withday.test");
+
+        assertIterableEquals(List.of(9L, 8L, 2L, 1L), schedules.stream().map(Schedule::getId).toList());
+    }
+
+    @Test
+    void getAllSchedulesShowsHiddenSchedulesForAdminViewer() {
+        List<Schedule> schedules =
+                scheduleDao.getAllSchedules(null, null, null, null, null, null, null, "latest", 200L, true, "admin@withday.test");
+
+        assertIterableEquals(List.of(10L, 9L, 8L, 2L, 1L), schedules.stream().map(Schedule::getId).toList());
+    }
+
     private void insertSchedule(
             Long id,
+            Long userId,
             String title,
             String description,
             String category,
@@ -261,6 +290,7 @@ class ScheduleDaoGetAllSchedulesTest {
             String status,
             int currentParticipants,
             int maxParticipants,
+            int isPublic,
             LocalDate recruitEndDate,
             Timestamp deletedAt
     ) {
@@ -275,7 +305,7 @@ class ScheduleDaoGetAllSchedulesTest {
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                 id,
-                1L,
+                userId,
                 title,
                 description,
                 category,
@@ -297,7 +327,7 @@ class ScheduleDaoGetAllSchedulesTest {
                 null,
                 0,
                 status,
-                1,
+                isPublic,
                 null,
                 Timestamp.valueOf(LocalDate.now().atStartOfDay()),
                 Timestamp.valueOf(LocalDate.now().atStartOfDay()),

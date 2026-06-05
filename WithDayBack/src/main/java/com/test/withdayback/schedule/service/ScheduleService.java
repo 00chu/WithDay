@@ -57,7 +57,10 @@ public class ScheduleService {
      * DTO로 묶어 내려줘야 프론트가 여러 API를 순차 호출하지 않아도 된다.
      */
     public ScheduleResponseDTO getScheduleFullDetails(Long id, String viewerEmail) {
-        String normalizedViewerEmail = viewerEmail == null ? "" : viewerEmail.trim();
+        String normalizedViewerEmail = normalizeEmail(viewerEmail);
+        User viewer = findViewerByEmail(normalizedViewerEmail);
+        Long viewerUserId = viewer != null ? viewer.getId() : null;
+        boolean viewerIsAdmin = isAdminUser(viewer);
 
         /*
          * 일정 작성자의 email은 상세 화면에서 호스트 판별 기준으로 사용한다.
@@ -73,6 +76,13 @@ public class ScheduleService {
         Schedule schedule = scheduleDao.selectScheduleByIdForViewer(id, normalizedViewerEmail);
 
         if (schedule == null) return null;
+
+        boolean hiddenFromPublic = isHiddenFromPublic(schedule);
+        boolean viewerCanViewHiddenSchedule =
+                canViewHiddenSchedule(schedule, viewerUserId, viewerIsAdmin);
+        if (hiddenFromPublic && !viewerCanViewHiddenSchedule) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "일정을 찾을 수 없습니다.");
+        }
 
         /*
          * 2. Day-by-Day 세부 계획 조회
@@ -100,7 +110,7 @@ public class ScheduleService {
          * viewerEmail은 선택값이다.
          * 비로그인 사용자는 guest로 상세를 볼 수 있지만, 참여 버튼 상태와 채팅 링크 권한은 로그인 사용자일 때만 계산할 수 있다.
          */
-        boolean viewerIsHost = !normalizedViewerEmail.isBlank() && normalizedViewerEmail.equalsIgnoreCase(email);
+        boolean viewerIsHost = isViewerHost(schedule, viewerUserId, email, normalizedViewerEmail);
         Long viewerParticipationId = null;
         String viewerParticipationStatus = null;
 
@@ -131,10 +141,12 @@ public class ScheduleService {
         }
 
         response.setViewerIsHost(viewerIsHost);
+        response.setViewerIsAdmin(viewerIsAdmin);
         response.setViewerParticipationId(viewerParticipationId);
         response.setViewerParticipationStatus(viewerParticipationStatus);
         response.setViewerCanAccessChatLink(viewerCanAccessChatLink);
         response.setIsBookmarked(schedule.getIsBookmarked());
+        response.setHiddenFromPublic(hiddenFromPublic);
 
         return response;
     }
@@ -170,6 +182,11 @@ public class ScheduleService {
             String sort,
             String email
     ) {
+        String normalizedEmail = normalizeEmail(email);
+        User viewer = findViewerByEmail(normalizedEmail);
+        Long viewerUserId = viewer != null ? viewer.getId() : null;
+        boolean viewerIsAdmin = isAdminUser(viewer);
+
         return scheduleDao.getAllSchedules(
                 category,
                 keyword,
@@ -179,7 +196,9 @@ public class ScheduleService {
                 startDate,
                 endDate,
                 normalizeScheduleSort(sort),
-                email
+                viewerUserId,
+                viewerIsAdmin,
+                normalizedEmail
         );
     }
 
@@ -549,6 +568,48 @@ public class ScheduleService {
 
     private String normalizeEmail(String email) {
         return email == null ? "" : email.trim();
+    }
+
+    private User findViewerByEmail(String normalizedEmail) {
+        if (normalizedEmail.isBlank()) {
+            return null;
+        }
+
+        return userDao.findByEmail(normalizedEmail);
+    }
+
+    private boolean isAdminUser(User viewer) {
+        return viewer != null && "admin".equalsIgnoreCase(viewer.getStatus());
+    }
+
+    private boolean isHiddenFromPublic(Schedule schedule) {
+        return schedule != null && Integer.valueOf(0).equals(schedule.getIsPublic());
+    }
+
+    private boolean canViewHiddenSchedule(Schedule schedule, Long viewerUserId, boolean viewerIsAdmin) {
+        if (!isHiddenFromPublic(schedule)) {
+            return true;
+        }
+
+        if (viewerIsAdmin) {
+            return true;
+        }
+
+        return viewerUserId != null && Objects.equals(schedule.getUserId(), viewerUserId);
+    }
+
+    private boolean isViewerHost(
+            Schedule schedule,
+            Long viewerUserId,
+            String hostEmail,
+            String normalizedViewerEmail
+    ) {
+        if (schedule != null && viewerUserId != null && Objects.equals(schedule.getUserId(), viewerUserId)) {
+            return true;
+        }
+
+        return !normalizedViewerEmail.isBlank() && hostEmail != null
+                && normalizedViewerEmail.equalsIgnoreCase(hostEmail.trim());
     }
 
     /*
