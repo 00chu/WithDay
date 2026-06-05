@@ -87,10 +87,10 @@
         <!-- coalesce - null 값이면 다른 값 coalesce(쿼리, n)값으로 대체 -->
         <!-- coalesce(쿼리, 값1, 값2, ...) null이 아닌 첫 번쨰 값으로 대체 -->
         select coalesce(
-                       (select total_user_count
-                        from dashboard
-                        order by stat_date desc
-                       limit 1 ),
+        (select total_user_count
+        from dashboard
+        order by stat_date desc
+        limit 1 ),
         0
         )
     </select>
@@ -124,9 +124,9 @@
 
     <select id="selectDailyDashboard" resultType="Dashboard">
         select
-            stat_date,
-            total_user_count,
-            total_schedule_count
+        stat_date,
+        total_user_count,
+        total_schedule_count
         from dashboard
         order by stat_date
         limit 14 <!-- 2주간 기록 출력 -->
@@ -134,9 +134,9 @@
 
     <select id="selectWeeklyDashboard" resultType="Dashboard">
         select
-            max(stat_date) as stat_date,
-            max(total_user_count) as total_user_count,
-            max(total_schedule_count) as total_schedule_count
+        max(stat_date) as stat_date,
+        max(total_user_count) as total_user_count,
+        max(total_schedule_count) as total_schedule_count
         from dashboard
         <!-- 날짜별로 저장된 데이터를 주 단위로 묶어서 집계 -->
         group by
@@ -148,9 +148,9 @@
 
     <select id="selectMonthlyDashboard" resultType="Dashboard">
         select
-            max(stat_date) as stat_date,
-            max(total_user_count) as total_user_count,
-            max(total_schedule_count) as total_schedule_count
+        max(stat_date) as stat_date,
+        max(total_user_count) as total_user_count,
+        max(total_schedule_count) as total_schedule_count
         from dashboard
         <!-- 날짜별로 저장된 데이터를 월 단위로 묶어서 집계 -->
         group by
@@ -159,4 +159,88 @@
         <!-- 20nn년, n월 처럼 처리됨 -->
         order by stat_date
     </select>
+
+    <!-- ========================= -->
+    <!-- 약관 관리 -->
+    <!-- ========================= -->
+
+    <select id="selectAllTerms" resultType="Terms">
+        select
+            id,
+            type,
+            version,
+            content,
+            is_required as isRequired
+        from terms
+        order by id
+    </select>
+
+    <select id="selectTermsCountById" parameterType="Long" resultType="int">
+        select count(*)
+        from terms
+        where id = #{id}
+    </select>
+
+    <update id="updateTerms">
+        update terms
+        set
+            version = #{request.version},
+            content = #{request.content}
+        where id = #{id}
+    </update>
+
+    <!-- ========================= -->
+    <!-- 관심사 관리 -->
+    <!-- ========================= -->
+
+    <select id="selectAllInterests" resultType="Interest">
+        select
+            id as id,
+            name as interestName,
+            icon_name as iconName
+        from interests
+        order by id
+    </select>
+
+    <select id="selectInterestCountById" parameterType="Long" resultType="int">
+        select count(*)
+        from interests
+        where id = #{id}
+    </select>
+
+    <select id="selectInterestCountByName" parameterType="String" resultType="int">
+        select count(*)
+        from interests
+        where name = #{interestName}
+    </select>
+
+    <select id="selectInterestCountByNameExceptId" resultType="int">
+        select count(*)
+        from interests
+        where name = #{interestName}
+          and id != #{id}
+    </select>
+
+    <insert id="insertInterest" parameterType="com.test.withdayback.admin.dto.AdminInterestRequest">
+        insert into interests (
+            name,
+            icon_name
+        ) values (
+                     #{interestName},
+                     #{iconName}
+                 )
+    </insert>
+
+    <update id="updateInterest">
+        update interests
+        set
+            name = #{request.interestName},
+            icon_name = #{request.iconName}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteInterest" parameterType="Long">
+        delete from interests
+        where id = #{id}
+    </delete>
 </mapper>

@@ -7,6 +7,7 @@ import styles from "./AdminPage.module.css";
 
 import AdminSidebar from "../../features/admin/ui/AdminSidebar";
 import MemberManagementPage from "../../features/admin/ui/MemberManagementPage";
+import AdminSignupSettingPage from "../../features/admin/ui/AdminSignupSettingPage";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import Dashboard from "../../features/admin/ui/Dashboard";
 
@@ -62,10 +63,10 @@ const AdminPage = () => {
       {/* 오른쪽 컨텐츠 */}
       <main className={styles.content}>
         <Routes>
+          <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
-        </Routes>
-        <Routes>
           <Route path="member" element={<MemberManagementPage />} />
+          <Route path="setting" element={<AdminSignupSettingPage />} />
         </Routes>
       </main>
     </div>
