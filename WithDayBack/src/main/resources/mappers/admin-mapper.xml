@@ -242,6 +242,8 @@
     <delete id="deleteInterest" parameterType="Long">
         delete from interests
         where id = #{id}
+    </delete>
+
     <select id="selectAllSchedule"
             parameterType="AdminScheduleRequest"
             resultType="AdminSchedule">
