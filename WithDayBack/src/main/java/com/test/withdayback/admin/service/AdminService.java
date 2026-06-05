@@ -202,6 +202,8 @@ public class AdminService {
         if (request.getInterestName().trim().length() > 50) {
             throw new RuntimeException("관심사 이름은 50자 이하로 입력해주세요.");
         }
+    }
+
     public Map<String, Object> selectAllSchedule(String keyword, String region, String detailRegion, String status, int page, int size) {
         AdminScheduleRequest request = new AdminScheduleRequest();
 
