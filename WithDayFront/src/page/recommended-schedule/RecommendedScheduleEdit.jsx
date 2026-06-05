@@ -16,9 +16,10 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { recommendedScheduleSchema } from "../../features/recommended/validation/recommendedScheduleSchema";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import CommonSelect from "../../shared/ui/Select/CommonSelect";
 
 const RecommendedScheduleEdit = () => {
   const navigate = useNavigate();
@@ -433,13 +434,18 @@ const RecommendedScheduleEdit = () => {
                     <label htmlFor="category">일정 종류</label>
                   </li>
                   <li>
-                    <select {...register("recommendedSchedule.category")}>
-                      {categories.map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="recommendedSchedule.category"
+                      control={control}
+                      render={({ field }) => (
+                        <CommonSelect
+                          label="일정 종류"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={categories}
+                        />
+                      )}
+                    />
                   </li>
                 </ul>
 
@@ -448,14 +454,24 @@ const RecommendedScheduleEdit = () => {
                     <label htmlFor="region">지역(시/도)</label>
                   </li>
                   <li>
-                    <select {...register("recommendedSchedule.region")}>
-                      <option value="">시/도</option>
-                      {regions?.map((item) => (
-                        <option key={item.regionId} value={item.regionName}>
-                          {item.regionName}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="recommendedSchedule.region"
+                      control={control}
+                      render={({ field }) => (
+                        <CommonSelect
+                          label="시/도"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={[
+                            { label: "시/도", value: "" },
+                            ...regions.map((item) => ({
+                              label: item.regionName,
+                              value: item.regionName,
+                            })),
+                          ]}
+                        />
+                      )}
+                    />
                   </li>
                 </ul>
 
@@ -464,17 +480,24 @@ const RecommendedScheduleEdit = () => {
                     <label htmlFor="detailRegion">지역(시/군/구)</label>
                   </li>
                   <li>
-                    <select
-                      {...register("recommendedSchedule.detailRegion")}
-                      disabled={!region}
-                    >
-                      <option value="">시/군/구</option>
-                      {detailRegions?.map((item) => (
-                        <option key={item.detailId} value={item.detailName}>
-                          {item.detailName}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="recommendedSchedule.detailRegion"
+                      control={control}
+                      render={({ field }) => (
+                        <CommonSelect
+                          label="시/군/구"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={[
+                            { label: "시/군/구", value: "" },
+                            ...detailRegions.map((item) => ({
+                              label: item.detailName,
+                              value: item.detailName,
+                            })),
+                          ]}
+                        />
+                      )}
+                    />
                   </li>
                 </ul>
 
