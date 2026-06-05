@@ -30,7 +30,7 @@ public class MypageEditResponseDTO {
     private List<Interest> allInterests;
     // 알림 설정 여부
     private List<Schedule> mySchedules;
-    
+
     private Boolean notificationAgreed;
 
     private String postcode;
