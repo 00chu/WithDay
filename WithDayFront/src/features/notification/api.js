@@ -45,7 +45,14 @@ export const getNotifications = async () => {
   return response.data;
 };
 
-// 알림 읽음 처리
+// 알림 전체 읽음 처리
+export const readAllNotification = async () => {
+  const response = await api.patch(`/notifications/read`);
+
+  return response.data;
+};
+
+// 알림 1개 읽음 처리
 export const readNotification = async (notificationId) => {
   const response = await api.patch(`/notifications/${notificationId}/read`);
 

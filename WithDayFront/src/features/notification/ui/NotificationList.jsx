@@ -6,6 +6,7 @@ import {
   deleteNotification,
   deleteReadNotifications,
   deleteAllNotifications,
+  readAllNotification,
 } from "../api";
 import styles from "./Notification.module.css";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -76,6 +77,40 @@ export default function NotificationList({ onClose }) {
     navigate(notification.targetUrl);
   };
 
+  // 알림 전체 읽음
+  const handleReadAllNotification = async (e) => {
+    e.stopPropagation(); // 부모 클릭 이벤트 방지
+
+    await readAllNotification();
+
+    // 목록 갱신
+    await queryClient.invalidateQueries({
+      queryKey: ["notifications", loginUser?.email],
+    });
+
+    // 빨간 점 갱신
+    await queryClient.invalidateQueries({
+      queryKey: ["notification-count", loginUser?.email],
+    });
+  };
+
+  // 알림 1개 삭제
+  const handleDeleteNotification = async (e, notificationId) => {
+    e.stopPropagation(); // 부모 클릭 이벤트 방지
+
+    await deleteNotification(notificationId);
+
+    // 목록 갱신
+    await queryClient.invalidateQueries({
+      queryKey: ["notifications", loginUser?.email],
+    });
+
+    // 빨간 점 갱신
+    await queryClient.invalidateQueries({
+      queryKey: ["notification-count", loginUser?.email],
+    });
+  };
+
   // 전체 알림 삭제
   const handleDeleteAll = async () => {
     await deleteAllNotifications();
@@ -124,6 +159,13 @@ export default function NotificationList({ onClose }) {
       <div className={styles.topBar}>
         <button className={styles.topButton} onClick={handleDeleteAll}>
           전체 삭제
+        </button>
+
+        <button
+          className={styles.topButton}
+          onClick={handleReadAllNotification}
+        >
+          전체 읽음
         </button>
 
         <button className={styles.topButton} onClick={handleDeleteRead}>

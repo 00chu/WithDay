@@ -169,4 +169,8 @@ public class NotificationService {
     public void deleteAllNotifications(Long id) {
         notificationDao.deleteAllNotifications(id);
     }
+
+    public void readAllNotification(Long id) {
+        notificationDao.readAllNotification(id);
+    }
 }

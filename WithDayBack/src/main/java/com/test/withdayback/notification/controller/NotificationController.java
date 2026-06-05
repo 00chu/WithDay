@@ -69,6 +69,27 @@ public class NotificationController {
         }
     }
 
+    @PatchMapping("/read")
+    public ResponseEntity<?> readAllNotification(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+
+            String email = jwtUtil.getEmail(token);
+
+            User user = userService.findByEmail(email);
+
+            notificationService.readAllNotification(user.getId());
+
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return ResponseEntity.badRequest()
+                    .body(e.getMessage());
+        }
+    }
+
     @PatchMapping("/{notificationId}/read")
     public ResponseEntity<?> readNotification(@PathVariable Long notificationId) {
         notificationService.readNotification(notificationId);
