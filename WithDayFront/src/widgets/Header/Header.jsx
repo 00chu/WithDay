@@ -7,19 +7,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { useMypage } from "../../features/user/mypage/useMypage";
-import { getRegion } from "../../features/region/api";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import LayoutContainer from "../../shared/ui/LayoutContainer/LayoutContainer";
 import NotificationPopover from "../../features/notification/ui/NotificationPopover";
 import Badge from "@mui/material/Badge";
 import { getNotificationCount } from "../../features/notification/api";
 
-const DEFAULT_REGION_OPTION = { label: "전체", value: "" };
 const DEFAULT_PROFILE_IMAGE = "/default-profile-240.png";
 
-const normalizeRegionValue = (value) => value?.trim() ?? "";
-
-export default function Header({ selectedRegion, onRegionChange }) {
+export default function Header() {
   const navigate = useNavigate();
 
   const { user: loginUser, isLoggedIn } = useAuthStore();
@@ -31,18 +27,6 @@ export default function Header({ selectedRegion, onRegionChange }) {
     enabled: !!(isLoggedIn && loginUser?.email),
     refetchOnWindowFocus: true, // 사용자가 앱/탭에 다시 들어왔을 때만 최신화되도록
   });
-
-  const regionOptions = useMemo(() => {
-    return [
-      DEFAULT_REGION_OPTION,
-      ...regions.map((region) => ({
-        label: region.regionName,
-        value: normalizeRegionValue(region.regionName),
-      })),
-    ];
-  }, [regions]);
-
-  const selectedRegionValue = normalizeRegionValue(selectedRegion);
 
   const headerProfileImage =
     mypageQuery.data?.profileImage ||
