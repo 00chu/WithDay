@@ -296,7 +296,10 @@
   overflow-x: auto;
   white-space: nowrap;
   margin-top: 20px;
-  padding-bottom: 10px;
+
+  padding: 12px 12px 36px;
+  margin-left: -12px;
+  margin-right: -12px;
 }
 
 .log_box {
@@ -322,150 +325,6 @@
   width: 100%;
   height: 200px;
   object-fit: cover;
-}
-
-/* 빈 로그 카드 */
-.emptyLogCard {
-  width: 500px;
-  height: 300px;
-  flex-shrink: 0;
-
-  border: 2px dashed #cfd8e6;
-  border-radius: 16px;
-  background-color: #ffffff;
-  box-sizing: border-box;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  padding: 32px;
-  text-align: center;
-}
-
-.emptyLogIllustration {
-  position: relative;
-  width: 190px;
-  height: 95px;
-  margin-bottom: 22px;
-}
-
-.emptyLogIllustration::before {
-  content: "";
-  position: absolute;
-  left: 42px;
-  top: 36px;
-
-  width: 105px;
-  height: 42px;
-  border-top: 2px dashed #9ccfd0;
-  border-radius: 50%;
-  transform: rotate(-8deg);
-}
-
-.emptyPinLeft {
-  position: absolute;
-  left: 12px;
-  top: 30px;
-  color: #149e97;
-  z-index: 2;
-}
-
-.emptyPinRight {
-  position: absolute;
-  right: 16px;
-  top: 18px;
-  color: #149e97;
-  z-index: 2;
-}
-
-.emptySuitcase {
-  position: absolute;
-  left: 50%;
-  bottom: 2px;
-  transform: translateX(-50%);
-
-  width: 52px;
-  height: 48px;
-
-  border: 2px solid #94a3b8;
-  border-radius: 9px;
-  color: transparent;
-  box-sizing: border-box;
-  z-index: 3;
-}
-
-.emptySuitcase::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -13px;
-  transform: translateX(-50%);
-
-  width: 22px;
-  height: 12px;
-  border: 2px solid #94a3b8;
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-  box-sizing: border-box;
-}
-
-.emptySuitcase::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 7px;
-  transform: translateX(-50%);
-
-  width: 2px;
-  height: 32px;
-  border-radius: 999px;
-  background-color: #94a3b8;
-}
-
-.emptyLogTitle {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin-bottom: 8px;
-}
-
-.emptyLogDesc {
-  font-size: 14px;
-  color: var(--color-text-muted);
-  line-height: 1.5;
-  margin-bottom: 22px;
-}
-
-.emptyLogButton {
-  min-width: 150px;
-  height: 40px;
-
-  border: 1px solid #94a3b8;
-  border-radius: 8px;
-  background-color: #ffffff;
-  color: #334155;
-
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease,
-    transform 0.15s ease;
-}
-
-.emptyLogButton:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  transform: translateY(-1px);
 }
 
 /* 카드 하단 정보 영역 */
@@ -657,6 +516,290 @@
   color: var(--color-text-primary, #071224);
   word-break: keep-all;
   white-space: pre-line;
+}
+.emptyWitLogCard {
+  position: relative;
+  width: 400px;
+  height: 210px;
+  flex-shrink: 0;
+
+  border-radius: 16px;
+  border: 1px dashed rgba(10, 22, 45, 0.22);
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(7, 18, 36, 0.06);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px 30px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.emptyWitVisual {
+  position: relative;
+  width: 142px;
+  height: 50px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.emptyTicket {
+  position: absolute;
+  left: 10px;
+  top: 5px;
+
+  width: 118px;
+  height: 38px;
+
+  border: 1.3px solid rgba(10, 22, 45, 0.32);
+  border-radius: 8px;
+  background-color: #ffffff;
+
+  transform: rotate(-7deg);
+  box-shadow: 0 4px 9px rgba(10, 22, 45, 0.05);
+
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  grid-template-rows: 1fr 1fr;
+  align-items: center;
+
+  padding: 5px 8px;
+  box-sizing: border-box;
+}
+
+.ticketLogo {
+  grid-row: 1 / 3;
+  font-size: 12px;
+  font-weight: 900;
+  color: #149e97;
+}
+
+.ticketLine {
+  width: 100%;
+  height: 1px;
+  background-color: rgba(10, 22, 45, 0.12);
+}
+
+.ticketRoute {
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--color-primary);
+  text-align: left;
+}
+
+.ticketSub {
+  font-size: 6px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-align: left;
+}
+
+.emptyPin {
+  position: absolute;
+  right: 6px;
+  top: 18px;
+
+  width: 20px;
+  height: 20px;
+
+  background-color: #149e97;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 4px 8px rgba(20, 158, 151, 0.14);
+}
+
+.emptyPin::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 6px;
+
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+
+.emptyWitTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1.25;
+}
+
+.emptyWitDesc {
+  margin: 7px 0 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  word-break: keep-all;
+}
+/* 버튼 */
+.emptyWitPrimaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  height: 35px;
+  min-width: 170px;
+  margin-top: 19px;
+
+  border: none;
+  border-radius: 8px;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+
+  box-shadow: 0 6px 14px rgba(10, 22, 45, 0.14);
+}
+.btn_align {
+  text-align: center;
+}
+.emptyWitPrimaryButton svg {
+  width: 14px;
+  height: 14px;
+}
+.emptyWitPrimaryButton:hover {
+  opacity: 0.94;
+}
+
+.emptyWitTextButton {
+  margin-top: 11px;
+  padding: 0;
+  border: none;
+  background: transparent;
+
+  color: var(--color-text-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.emptyWitTextButton:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* 설명 화면 */
+.emptyWitCloseButton {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+
+  width: 28px;
+  height: 28px;
+
+  border: none;
+  border-radius: 50%;
+  background-color: #f3f5f7;
+  color: var(--color-primary);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.emptyWitCloseButton:hover {
+  background-color: #e8edf3;
+}
+
+.witInfoIconBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 58px;
+  height: 58px;
+  margin-bottom: 14px;
+
+  border-radius: 18px;
+  background-color: rgba(20, 158, 151, 0.12);
+  color: #149e97;
+}
+
+.witInfoList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+
+  width: 100%;
+  margin-top: 18px;
+}
+
+.witInfoList div {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background-color: #ffffff;
+  border: 1px solid rgba(10, 22, 45, 0.08);
+  text-align: left;
+}
+
+.witInfoList strong {
+  display: block;
+  margin-bottom: 5px;
+
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.witInfoList span {
+  display: block;
+
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+.emptyWitTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.emptyWitTextBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+/* 모바일 대응 */
+@media (max-width: 600px) {
+  .emptyWitLogCard {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    min-height: 300px;
+    padding: 26px 18px;
+  }
+
+  .emptyWitSteps {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .emptyWitStep {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .witInfoList {
+    grid-template-columns: 1fr;
+  }
 }
 /* 태블릿 */
 @media (max-width: 900px) {

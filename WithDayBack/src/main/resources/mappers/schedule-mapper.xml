@@ -456,7 +456,7 @@
     </delete>
 
 
-    <!-- 마이페이지에서 내가 만든 + 내가 참여 일정 카드 -->
+    <!-- 마이페이지- 완료된 일정만 위트 로그-->
     <select id="selectMyScheduleCards" parameterType="long" resultType="Schedule">
         SELECT DISTINCT
             s.id,
@@ -471,16 +471,13 @@
             s.max_participants AS maxParticipants,
             s.status,
             s.created_at AS createdAt
-        FROM schedule s
-                 LEFT JOIN participation p
-                           ON p.schedule_id = s.id
-                               AND p.user_id = #{userId}
-                               AND p.status = 'approved'
-        WHERE s.deleted_at IS NULL
-          AND (
-            s.user_id = #{userId}
-                OR p.user_id = #{userId}
-            )
-        ORDER BY s.start_date DESC, s.id DESC
+        FROM participation p
+                 INNER JOIN schedule s
+                            ON s.id = p.schedule_id
+        WHERE p.user_id = #{userId}
+          AND p.status = 'approved'
+          AND s.status = 'completed'
+          AND s.deleted_at IS NULL
+        ORDER BY s.end_date DESC, s.id DESC
     </select>
 </mapper>
