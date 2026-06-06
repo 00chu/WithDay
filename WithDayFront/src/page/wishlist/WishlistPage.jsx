@@ -10,7 +10,7 @@ const getScheduleKey = (schedule) =>
   String(
     schedule?.id ??
       schedule?.scheduleId ??
-      `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`
+      `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`,
   );
 
 export default function WishlistPage() {
@@ -33,14 +33,6 @@ export default function WishlistPage() {
 
   return (
     <main className={styles.main}>
-      <section className={styles.hero}>
-        <p className={styles.eyebrow}>WISHLIST</p>
-        <h1 className={styles.title}>저장해 둔 일정</h1>
-        <p className={styles.description}>
-          다시 보고 싶은 일정만 모아 최신 저장순으로 확인할 수 있어요.
-        </p>
-      </section>
-
       {isLoading && (
         <section className={styles.stateBox}>
           <div className={styles.loadingSpinner} />
