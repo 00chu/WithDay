@@ -164,7 +164,13 @@ const MemberItem = ({ member }) => {
       <li className={styles.member_route}>{member.provider}</li>
       <li className={styles.member_gender}>{member.gender ? "남" : "여"}</li>
       <li className={styles.member_birthday}>{member.birthday}</li>
-      <li className={styles.member_status}>{member.status}</li>
+      <li className={styles.member_status}>
+        {member.status === "admin"
+          ? "관리자"
+          : member.status === "active"
+            ? "회원"
+            : "정지"}
+      </li>
 
       <li className={styles.member_create}>{member.createdAt.slice(0, 10)}</li>
       {/* 메뉴 */}
@@ -214,7 +220,14 @@ const MemberItem = ({ member }) => {
           <span>가입경로 : {member.provider}</span>
           <span>성별 : {member.gender ? "남" : "여"}</span>
           <span>생년월일 : {member.birthday}</span>
-          <span>상태 : {member.status}</span>
+          <span>
+            상태 :
+            {member.status === "admin"
+              ? "관리자"
+              : member.status === "active"
+                ? "회원"
+                : "정지"}
+          </span>
           <span>가입일 : {member.createdAt.slice(0, 10)}</span>
         </div>
       </div>

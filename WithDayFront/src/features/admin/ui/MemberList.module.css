@@ -41,12 +41,18 @@
   gap: 10px;
   align-items: center;
   font-weight: 500;
+  min-width: 0;
 }
 
 .memberLink {
   color: inherit;
   text-decoration: none;
   font-weight: 500;
+
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .memberLink:hover {
@@ -60,10 +66,16 @@
   object-fit: cover;
   border-radius: 50%;
   display: block;
+  flex-shrink: 0;
 }
 
 .member_email {
   width: 22%;
+  text-align: center;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .member_route {
@@ -79,6 +91,10 @@
 .member_birthday {
   width: 12%;
   text-align: center;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .member_status {
@@ -108,38 +124,29 @@
 }
 
 @media (max-width: 900px) {
-  /* 900부터 카드로 보이게 설정 */
   .member_item_title {
     display: none;
   }
 
   .member_item {
     display: block;
-
     padding: 0;
     border: none;
     background: transparent;
   }
 
-  /* 기존 테이블 컬럼 숨김 */
   .member_item > li {
     display: none;
   }
 
-  /* 카드 노출 */
   .mobileCard {
     display: block;
-
     background: white;
-
     padding: 16px;
-
     border-radius: 12px;
-
     border: 1px solid var(--color-border-light);
-
+    margin-top: 20px;
     margin-bottom: 12px;
-
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   }
 
@@ -147,14 +154,30 @@
     display: flex;
     align-items: center;
     gap: 12px;
-
     margin-bottom: 12px;
+  }
+
+  /* 중요 */
+  .mobileHeader > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mobileHeader strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .mobileHeader p {
     margin: 4px 0 0;
     color: var(--color-text-muted);
     font-size: 13px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .mobileInfo {
@@ -165,9 +188,9 @@
 
   .mobileInfo span {
     font-size: 14px;
-  }
 
-  .mobileCard {
-    margin-top: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
