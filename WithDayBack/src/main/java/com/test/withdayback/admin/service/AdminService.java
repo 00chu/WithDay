@@ -48,6 +48,18 @@ public class AdminService {
         return response;
     }
 
+    public void changeRole(String email) {
+        adminDao.changeRole(email);
+    }
+
+    public void suspendUser(String email) {
+        adminDao.suspendUser(email);
+    }
+
+    public void releaseUser(String email) {
+        adminDao.releaseUser(email);
+    }
+
     public AdminDashboardResponse getDashboardData(String period) {
         AdminDashboardResponse response = new AdminDashboardResponse();
 

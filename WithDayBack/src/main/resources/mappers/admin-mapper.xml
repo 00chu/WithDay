@@ -40,6 +40,24 @@
         limit #{offset}, #{size}
     </select>
 
+    <update id="changeRole" parameterType="string">
+        UPDATE user
+        SET status = 'admin'
+        WHERE email = #{email}
+    </update>
+
+    <update id="suspendUser" parameterType="string">
+        UPDATE user
+        SET status = 'suspended'
+        WHERE email = #{email}
+    </update>
+
+    <update id="releaseUser" parameterType="string">
+        UPDATE user
+        SET status = 'active'
+        WHERE email = #{email}
+    </update>
+
     <select id="selectMemberCount"
             parameterType="com.test.withdayback.admin.dto.AdminMemberRequest"
             resultType="int">

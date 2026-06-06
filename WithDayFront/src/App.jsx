@@ -1,6 +1,7 @@
 import styles from "./App.module.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import Home from "./page/home/Home";
 import ExplorePage from "./page/explore/ExplorePage";
@@ -80,9 +81,28 @@ function App() {
     init();
   }, []);
 
+  // 현재 URL 정보
+  const location = useLocation();
+  // location.pathname - 현재 URL을 문자열로
+  const isAdminPage = location.pathname.startsWith("/admin");
+  // 현재 화면 사이즈가 모바일인지 확인
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   return (
     <div className={styles.container}>
-      <Header />
+      {!(isAdminPage && isMobile) && <Header />}
 
       <main className={styles.mainContent}>
         <LayoutContainer>

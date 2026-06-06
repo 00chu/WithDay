@@ -34,7 +34,7 @@ const Pagination = ({ page, setPage, totalPage, naviSize }) => {
           setPage(0);
         }}
         disabled={isFirst}
-        className={styles.navButton}
+        className={`${styles.navButton} ${styles.firstLastButton}`}
         aria-label="첫 페이지"
       >
         <FirstPageRoundedIcon className={styles.navIcon} />
@@ -84,7 +84,7 @@ const Pagination = ({ page, setPage, totalPage, naviSize }) => {
           setPage(totalPage - 1);
         }}
         disabled={isLast}
-        className={styles.navButton}
+        className={`${styles.navButton} ${styles.firstLastButton}`}
         aria-label="마지막 페이지"
       >
         <LastPageRoundedIcon className={styles.navIcon} />

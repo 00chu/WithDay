@@ -10,6 +10,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateSchedulePublic, deleteSchedule } from "../api";
 
 const ScheduleList = ({ scheduleList = [], page, setPage, totalPage }) => {
+  const isMobile = window.innerWidth <= 768;
+
   return (
     <div className={styles.scheduleList}>
       <label className={styles.scheduleCount}>총 {scheduleList.length}건</label>
@@ -38,7 +40,7 @@ const ScheduleList = ({ scheduleList = [], page, setPage, totalPage }) => {
             page={page}
             setPage={setPage}
             totalPage={totalPage ?? 0}
-            naviSize={5}
+            naviSize={isMobile ? 3 : 5}
           />
         </div>
       </ul>

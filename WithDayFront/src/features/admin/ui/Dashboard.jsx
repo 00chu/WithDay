@@ -189,7 +189,12 @@ const UserScheduleAreaChart = ({ dashboardList, period }) => {
     },
 
     title: {
-      text: `전체 회원 수 / 전체 일정 수 추이 ( ${period === "daily" ? "일별" : period === "weekly" ? "주간" : "월별"} )`, // 상단 제목
+      text:
+        period === "daily"
+          ? "일별 추이"
+          : period === "weekly"
+            ? "주간 추이"
+            : "월별 추이",
       align: "left",
       style: {
         fontSize: "18px",
@@ -251,7 +256,16 @@ const UserScheduleAreaChart = ({ dashboardList, period }) => {
     },
   };
 
-  return <Chart options={options} series={series} type="area" height={400} />;
+  const isMobile = window.innerWidth <= 768;
+
+  return (
+    <Chart
+      options={options}
+      series={series}
+      type="area"
+      height={isMobile ? 280 : 400}
+    />
+  );
 };
 
 const DonutChart = ({ recommended, normal }) => {

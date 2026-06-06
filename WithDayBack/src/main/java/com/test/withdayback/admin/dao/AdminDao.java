@@ -22,6 +22,12 @@ public interface AdminDao {
 
     int selectMemberCount(AdminMemberRequest dto);
 
+    void changeRole(String email);
+
+    void suspendUser(String email);
+
+    void releaseUser(String email);
+
     int selectUserCount();
 
     int selectScheduleCount();
@@ -91,4 +97,5 @@ public interface AdminDao {
     int updateSchedulePublic(Long scheduleId);
 
     int deleteSchedule(Long scheduleId);
+
 }

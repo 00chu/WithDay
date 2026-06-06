@@ -7,6 +7,8 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useState } from "react";
+import { releaseUser, roleChange, suspendUser } from "../api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const MemberList = ({ memberList, page, setPage, totalPage }) => {
   return (
@@ -56,12 +58,73 @@ const MemberItem = ({ member }) => {
     setAnchorEl(null);
   };
 
-  const handleRoleChange = () => {
-    if (member.status === "active") {
-      makeAdminMutation.mutate(member.email);
-    }
+  const queryClient = useQueryClient();
 
-    handleMenuClose();
+  const makeAdminMutation = useMutation({
+    mutationFn: roleChange,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["memberList"],
+      });
+
+      alert("관리자로 변경되었습니다.");
+    },
+    onError: () => {
+      alert("관리자 변경 실패");
+    },
+  });
+
+  const handleRoleChange = async () => {
+    const confirmChange = window.confirm(
+      "해당 회원을 관리자로 변경하시겠습니까?",
+    );
+
+    if (!confirmChange) return;
+
+    try {
+      await makeAdminMutation.mutateAsync(member.email);
+
+      handleMenuClose();
+    } catch (error) {
+      console.error(error);
+      alert("관리자 변경 실패");
+    }
+  };
+
+  const suspendMutation = useMutation({
+    mutationFn: suspendUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["memberList"],
+      });
+    },
+  });
+
+  const releaseMutation = useMutation({
+    mutationFn: releaseUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["memberList"],
+      });
+    },
+  });
+
+  const handleSuspend = async () => {
+    try {
+      await suspendMutation.mutateAsync(member.email);
+    } catch (error) {
+      console.error(error);
+      alert("회원 정지 실패");
+    }
+  };
+
+  const handleRelease = async () => {
+    try {
+      await releaseMutation.mutateAsync(member.email);
+    } catch (error) {
+      console.error(error);
+      alert("정지 해제 실패");
+    }
   };
 
   const handleStatusChange = () => {

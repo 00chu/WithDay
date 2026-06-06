@@ -53,6 +53,10 @@
   }
 
   .content {
+    box-sizing: border-box;
+    margin-top: 64px;
+    margin-bottom: 20px;
+    min-width: 0;
     padding: 0px;
   }
 

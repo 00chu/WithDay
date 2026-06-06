@@ -28,6 +28,27 @@ public class AdminController {
         );
     }
 
+    // 관리자 권한 부여
+    @PatchMapping("/members/admin/{email}")
+    public ResponseEntity<String> changeRole(@PathVariable String email) {
+        adminService.changeRole(email);
+        return ResponseEntity.ok("관리자로 변경되었습니다.");
+    }
+
+    // 회원 정지
+    @PatchMapping("/members/suspend/{email}")
+    public ResponseEntity<String> suspendUser(@PathVariable String email) {
+        adminService.suspendUser(email);
+        return ResponseEntity.ok("회원이 정지되었습니다.");
+    }
+
+    // 회원 정지 해제
+    @PatchMapping("/members/release/{email}")
+    public ResponseEntity<String> releaseUser(@PathVariable String email) {
+        adminService.releaseUser(email);
+        return ResponseEntity.ok("회원 정지가 해제되었습니다.");
+    }
+
     // 대시보드 데이터 조회
     @GetMapping(value = "/dashboards")
     public ResponseEntity<?> getDashboardData(@RequestParam(defaultValue = "daily") String period) {

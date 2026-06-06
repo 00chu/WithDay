@@ -23,9 +23,12 @@
   font-size: 0.95rem;
   font-weight: 600;
   line-height: 1;
-  transition: background-color var(--transition-fast),
-    border-color var(--transition-fast), color var(--transition-fast),
-    box-shadow var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .pagination_wrap > button:hover:not(:disabled) {
@@ -64,4 +67,27 @@
   color: var(--color-text-inverse);
   border-color: var(--color-primary);
   box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 768px) {
+  .pagination_wrap > button {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 6px;
+    font-size: 13px;
+  }
+
+  .navButton {
+    min-width: 30px;
+  }
+
+  .navIcon {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pagination_wrap > .firstLastButton {
+    display: none !important;
+  }
 }

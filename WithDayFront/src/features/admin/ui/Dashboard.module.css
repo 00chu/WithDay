@@ -167,6 +167,14 @@
 }
 
 @media (max-width: 768px) {
+  .card_content h2 {
+    font-size: 22px;
+  }
+
+  .statusRow strong {
+    font-size: 20px;
+  }
+
   .dashboard_chart_wrap {
     display: flex;
     flex-direction: column;

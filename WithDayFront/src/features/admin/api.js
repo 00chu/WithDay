@@ -72,6 +72,24 @@ export const selectAllMember = async (params) => {
   return data;
 };
 
+// 회원 관리자로 변경
+export const roleChange = async (email) => {
+  const { data } = await api.patch(`/admins/members/admin/${email}`);
+  return data;
+};
+
+// 회원 정지
+export const suspendUser = async (email) => {
+  const { data } = await api.patch(`/admins/members/suspend/${email}`);
+  return data;
+};
+
+// 회원 정지 해제
+export const releaseUser = async (email) => {
+  const { data } = await api.patch(`/admins/members/release/${email}`);
+  return data;
+};
+
 // 일정 조회
 export const selectAllSchedule = async (params) => {
   const { data } = await api.get(`/admins/schedules`, {
@@ -89,11 +107,5 @@ export const updateSchedulePublic = async (scheduleId) => {
 // 일정 삭제
 export const deleteSchedule = async (scheduleId) => {
   const { data } = await api.delete(`/admins/schedules/delete/${scheduleId}`);
-  return data;
-};
-
-// 회원 관리자로 변경
-export const roleChange = async (email) => {
-  const { data } = await api.patch(`/admins/${email}`);
   return data;
 };
