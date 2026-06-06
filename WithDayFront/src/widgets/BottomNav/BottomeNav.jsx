@@ -184,11 +184,9 @@ export default function BottomNav() {
         open={isAddMenuOpen}
         onClose={closeAddMenu}
         direction="up"
-        slotProps={{
-          fab: {
-            className: styles.addSpeedDialFab,
-            onClick: handleAddButtonClick,
-          },
+        FabProps={{
+          className: styles.addSpeedDialFab,
+          onClick: handleAddButtonClick,
         }}
       >
         <SpeedDialAction
@@ -198,24 +196,20 @@ export default function BottomNav() {
             </Tooltip>
           }
           onClick={handleDirectWrite}
-          slotProps={{
-            fab: {
-              className: styles.speedDialActionFab,
-            },
+          FabProps={{
+            className: styles.speedDialActionFab,
           }}
         />
 
         <SpeedDialAction
           icon={
-            <Tooltip title="추천 일정" placement="left" arrow>
+            <Tooltip title="추천 일정" placement="left" arrow> 
               <AutoAwesomeRoundedIcon />
             </Tooltip>
           }
           onClick={handleRecommendedSchedule}
-          slotProps={{
-            fab: {
-              className: styles.speedDialActionFab,
-            },
+          FabProps={{
+            className: styles.speedDialActionFab,
           }}
         />
       </SpeedDial>
