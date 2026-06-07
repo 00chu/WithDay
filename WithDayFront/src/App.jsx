@@ -103,7 +103,7 @@ function App() {
 
   return (
     <div className={styles.container}>
-      {/* 관리자 페이지고 너비가 1024 이하일 때 헤더를 사용하지 않도록 함*/}
+      {/* 관리자 페이지고 너비가 1024 이하일 때 헤더를 사용하지 않도록 함 */}
       {!(isAdminPage && isMobile) && <Header />}
       <main className={styles.mainContent}>
         <LayoutContainer>
