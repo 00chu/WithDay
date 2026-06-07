@@ -285,7 +285,7 @@ const DonutChart = ({ recommended, normal }) => {
     labels: ["추천 일정", "일반 일정"],
     dataLabels: { enabled: false },
     title: {
-      text: "추천 일정 / 일반 일정 비율", // 상단 제목
+      text: "추천 일정 / 일반 일정", // 상단 제목
       align: "left",
       style: {
         fontSize: "18px",
@@ -342,7 +342,7 @@ const ScheduleStatusChart = ({ completed, closed }) => {
       type: "bar",
     },
     title: {
-      text: "시작된 일정 / 마감된 일정", // 상단 제목
+      text: "시작 / 마감 일정", // 상단 제목
       align: "left",
       style: {
         fontSize: "18px",
