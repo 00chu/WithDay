@@ -1,32 +1,38 @@
 import Popover from "@mui/material/Popover";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import NotificationList from "./NotificationList";
 
 export default function NotificationPopover({ open, anchorEl, handleClose }) {
+  const isMobile = useMediaQuery("(max-width:768px)");
+
   return (
     <Popover
       open={open}
-      anchorEl={anchorEl} // 팝오버 컴포넌트가 붙을 기준 DOM 요소
+      anchorEl={anchorEl}
       onClose={handleClose}
       anchorOrigin={{
-        // 기준 DOM 요소의 어느 위치에 붙을지 설정
         vertical: "bottom",
         horizontal: "right",
       }}
       transformOrigin={{
-        // 자신의 어느 위치를 기준점으로 사용할지 결정
         vertical: "top",
         horizontal: "right",
       }}
       slotProps={{
         paper: {
-          //popover 내부 실제 박스 (paper)를 꾸미는 부분
           sx: {
-            mt: 3,
-            width: 480,
-            maxWidth: "90vw",
-            maxHeight: 600,
+            position: isMobile ? "fixed" : "absolute",
+            top: isMobile ? "50%" : undefined,
+            left: isMobile ? "50%" : undefined,
+            transform: isMobile ? "translate(-50%, -50%)" : undefined,
+
+            width: isMobile ? "calc(100vw - 24px)" : 480,
+            maxWidth: isMobile ? "calc(100vw - 24px)" : 480,
+            maxHeight: isMobile ? "80vh" : 600,
+
             overflowY: "auto",
             borderRadius: 2,
+            m: 0,
           },
         },
       }}
