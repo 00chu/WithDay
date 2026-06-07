@@ -456,6 +456,18 @@ const MyPageEdit = () => {
 
     setIsPostcodeOpen(false);
   };
+  const handleNotificationToggle = async () => {
+    const nextValue = !isNotiOn;
+
+    setIsNotiOn(nextValue);
+
+    try {
+      await updateNotificationOptIn(nextValue);
+    } catch (error) {
+      setIsNotiOn(!nextValue);
+      console.error("알림 설정 변경 실패:", error);
+    }
+  };
   return (
     <div className={styles.container}>
       <h1 className={styles.headerTitle}>회원 정보 수정</h1>
@@ -893,7 +905,7 @@ const MyPageEdit = () => {
                   className={`${styles.notificationSwitch} ${
                     isNotiOn ? styles.notificationSwitchOn : ""
                   }`}
-                  onClick={() => setIsNotiOn(!isNotiOn)}
+                  onClick={() => setIsNotiOn((prev) => !prev)}
                   aria-checked={isNotiOn}
                   role="switch"
                 >

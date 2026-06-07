@@ -19,6 +19,11 @@ import {
   BadgeCheck,
   ChevronDown,
   MessageCircle,
+  Search,
+  ClipboardPen,
+  BookHeart,
+  X,
+  ArrowRight,
 } from "lucide-react";
 
 const MyPageMain = () => {
@@ -28,7 +33,7 @@ const MyPageMain = () => {
   const isAdmin = mypageQuery.data?.status === "admin";
   const [isServiceOpen, setIsServiceOpen] = useState(true);
   const [activeServiceTab, setActiveServiceTab] = useState("recommend");
-
+  const [isWitLogInfoOpen, setIsWitLogInfoOpen] = useState(false);
   console.log("mypageQuery 전체:", mypageQuery);
   const serviceTabs = [
     {
@@ -355,30 +360,94 @@ const MyPageMain = () => {
                     );
                   })
                 ) : (
-                  <div className={styles.emptyLogCard}>
-                    <div className={styles.emptyLogIllustration}>
-                      <MapPin size={26} className={styles.emptyPinLeft} />
-                      <div className={styles.emptySuitcase}></div>
-                      <MapPin size={22} className={styles.emptyPinRight} />
-                    </div>
+                  <div className={styles.emptyWitLogCard}>
+                    {!isWitLogInfoOpen ? (
+                      <>
+                        <div className={styles.emptyWitTopRow}>
+                          <div className={styles.emptyWitVisual}>
+                            <div className={styles.emptyTicket}>
+                              <span className={styles.ticketLogo}>W</span>
+                              <span className={styles.ticketLine}></span>
+                              <span className={styles.ticketRoute}>
+                                WITH → DAY
+                              </span>
+                              <span className={styles.ticketSub}>
+                                JOURNEY PASS
+                              </span>
+                            </div>
 
-                    <div className={styles.emptyLogTitle}>
-                      아직 위트 로그가 없어요
-                    </div>
+                            <div className={styles.emptyPin}></div>
+                          </div>
 
-                    <div className={styles.emptyLogDesc}>
-                      함께한 일정이 생기면 이곳에 기록돼요.
-                      <br />
-                      새로운 일정을 탐색하고 첫 번째 위트 로그를 만들어보세요.
-                    </div>
+                          <div className={styles.emptyWitTextBox}>
+                            <h3 className={styles.emptyWitTitle}>
+                              아직 위트 로그가 없어요
+                            </h3>
 
-                    <button
-                      type="button"
-                      className={styles.emptyLogButton}
-                      onClick={() => navigate("/explore")}
-                    >
-                      일정 둘러보기
-                    </button>
+                            <p className={styles.emptyWitDesc}>
+                              함께한 순간을 모아,
+                              <br />
+                              나만의 위트 로그를 만들어보세요.
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className={styles.emptyWitPrimaryButton}
+                          onClick={() => navigate("/explore")}
+                        >
+                          일정 둘러보기
+                          <ArrowRight size={16} />
+                        </button>
+
+                        <button
+                          type="button"
+                          className={styles.emptyWitTextButton}
+                          onClick={() => setIsWitLogInfoOpen(true)}
+                        >
+                          위트 로그가 무엇인가요?
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className={styles.emptyWitCloseButton}
+                          onClick={() => setIsWitLogInfoOpen(false)}
+                          aria-label="위트 로그 설명 닫기"
+                        >
+                          <X size={16} />
+                        </button>
+
+                        <div className={styles.witInfoIconBox}>
+                          <BookHeart size={28} />
+                        </div>
+
+                        <h3 className={styles.emptyWitTitle}>
+                          위트 로그가 무엇인가요?
+                        </h3>
+
+                        <p className={styles.emptyWitDesc}>
+                          위트 로그는 내가 참여하고 완료된 일정을 기록하는
+                          공간이에요.
+                          <br />
+                          함께한 일정, 만난 위트, 다녀온 순간들이 쌓이면 나만의
+                          활동 기록처럼 확인할 수 있어요.
+                        </p>
+
+                        <div className={styles.witInfoList}>
+                          <div>
+                            <strong>완료된 일정만 기록</strong>
+                            <span>모집 중인 일정은 표시되지 않아요.</span>
+                          </div>
+
+                          <div>
+                            <strong>함께한 경험 저장</strong>
+                            <span>참여한 일정이 끝나면 로그로 남아요.</span>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
