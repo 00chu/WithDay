@@ -9,6 +9,8 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useMypageEdit } from "../../features/user/mypage/useMypageEdit";
 import EditCalendarOutlinedIcon from "@mui/icons-material/EditCalendarOutlined";
+import InterestIcon from "../../shared/ui/InterestIconRenderer/InterestIconRenderer";
+
 import {
   EyeClosedIcon,
   EyeIcon,
@@ -22,7 +24,6 @@ import {
   MapPinIcon,
   VenusAndMarsIcon,
 } from "lucide-react";
-
 const MyPageEdit = () => {
   // authStore에서 로그인 유저 정보 가져오기
   const user = useAuthStore((state) => state.user);
@@ -655,26 +656,28 @@ const MyPageEdit = () => {
               <TagsIcon size={18} />
               <span>관심사</span>
             </div>
+
             <div className={styles.interestList}>
               {(editQuery.data?.allInterests ?? []).map((interest) => {
                 const interestId = Number(interest.interestId ?? interest.id);
+                const interestName = interest.interestName ?? interest.name;
+                const iconName = interest.iconName;
+
                 const isSelected = selectedInterestIds
                   .map(Number)
                   .includes(interestId);
+
                 return (
                   <button
                     key={interestId}
                     type="button"
                     className={`${styles.interestChip} ${
                       isSelected ? styles.interestChipSelected : ""
-                    } ${
-                      shineInterestId === interestId
-                        ? styles.interestChipShine
-                        : ""
-                    }`}
+                    } ${shineInterestId === interestId ? styles.interestChipShine : ""}`}
                     onClick={() => handleToggleInterest(interestId)}
                   >
-                    {interest.interestName ?? interest.name}
+                    <InterestIcon iconName={iconName} size={14} />
+                    <span>{interestName}</span>
                   </button>
                 );
               })}

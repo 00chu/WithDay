@@ -4,7 +4,7 @@ import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-
+import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 import styles from "./AdminSidebar.module.css";
 
 const AdminSidebar = ({ closeDrawer = () => {} }) => {
@@ -48,6 +48,17 @@ const AdminSidebar = ({ closeDrawer = () => {} }) => {
         >
           <EventNoteIcon />
           <span>일정 관리</span>
+        </NavLink>
+
+        <NavLink
+          to="/admin/interests"
+          onClick={closeDrawer}
+          className={({ isActive }) =>
+            isActive ? `${styles.menuItem} ${styles.active}` : styles.menuItem
+          }
+        >
+          <LocalOfferOutlinedIcon />
+          <span>관심사 관리</span>
         </NavLink>
 
         <NavLink

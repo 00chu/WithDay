@@ -456,7 +456,7 @@
     </delete>
 
 
-    <!-- 마이페이지- 완료된 일정만 위트 로그-->
+    <!-- 마이페이지- 완료된 일정만 띄우는 위트 로그(나의 위트 로그 카드 목록 조회용)-->
     <select id="selectMyScheduleCards" parameterType="long" resultType="Schedule">
         SELECT DISTINCT
             s.id,

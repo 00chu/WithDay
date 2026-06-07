@@ -4,13 +4,8 @@ import { useAuthStore } from "../../features/auth/store/authStore";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMypage } from "../../features/user/mypage/useMypage";
+import InterestIcon from "../../shared/ui/InterestIconRenderer/InterestIconRenderer";
 import {
-  Coffee,
-  Earth,
-  FerrisWheel,
-  Heart,
-  Store,
-  Utensils,
   MapPin,
   Calendar,
   User,
@@ -19,8 +14,6 @@ import {
   BadgeCheck,
   ChevronDown,
   MessageCircle,
-  Search,
-  ClipboardPen,
   BookHeart,
   X,
   ArrowRight,
@@ -157,23 +150,7 @@ const MyPageMain = () => {
   const intro =
     mypage?.intro ||
     "아직 등록된 소개글이 없습니다. 회원정보 수정에서 소개글을 작성해보세요.";
-  const getInterestIcon = (interestName) => {
-    switch (interestName) {
-      case "여행":
-        return <Earth size={18} />;
-      case "식사":
-        return <Utensils size={18} />;
-      case "카페":
-      case "문화":
-        return <Coffee size={18} />;
-      case "팝업":
-        return <Store size={18} />;
-      case "액티비티":
-        return <FerrisWheel size={18} />;
-      default:
-        return <Heart size={18} />;
-    }
-  };
+
   console.log("mySchedules:", mySchedules);
   return (
     <div>
@@ -233,21 +210,21 @@ const MyPageMain = () => {
                 <span className={styles.summary_value}>
                   {togetherScheduleCount}회
                 </span>
-                <span className={styles.summary_desc}>참여한 일정</span>
+                <span className={styles.summary_desc}>함께한 일정</span>
               </div>
 
               <div className={styles.summary}>
                 <UsersRound className={styles.summary_icon} size={18} />
-                <span className={styles.summary_label}>Like Wits</span>
+                <span className={styles.summary_label}>With Wits</span>
                 <span className={styles.summary_value}>{metWitCount}명</span>
-                <span className={styles.summary_desc}>함께한 위트</span>
+                <span className={styles.summary_desc}>만난 위트</span>
               </div>
 
               <div className={styles.summary}>
                 <BadgeCheck className={styles.summary_icon} size={18} />
                 <span className={styles.summary_label}>가입일</span>
                 <span className={styles.summary_value}>{joinDate}</span>
-                <span className={styles.summary_desc}>처음 가입한 날짜</span>
+                <span className={styles.summary_desc}>여정 시작일</span>
               </div>
             </div>
           </div>
@@ -263,10 +240,11 @@ const MyPageMain = () => {
               selectedInterests.map((interest) => {
                 const interestId = Number(interest.interestId ?? interest.id);
                 const interestName = interest.interestName ?? interest.name;
+                const iconName = interest.iconName;
 
                 return (
                   <div className={styles.int_btn} key={interestId}>
-                    {getInterestIcon(interestName)}
+                    <InterestIcon iconName={iconName} size={18} />
                     <span>{interestName}</span>
                   </div>
                 );

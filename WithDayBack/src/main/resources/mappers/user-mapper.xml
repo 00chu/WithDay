@@ -136,7 +136,7 @@
         SET profile_image = #{profileImage}
         WHERE id = #{userId}
     </update>
-    <!--함께한 일정 수 -->
+    <!--함께한 일정 수(상단 요약 카드의 숫자 계산용) -->
     <select id="getTogetherScheduleCount" parameterType="long" resultType="int">
         SELECT COUNT(DISTINCT t.schedule_id)
         FROM (

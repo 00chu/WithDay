@@ -11,6 +11,7 @@ import { useAuthStore } from "../../features/auth/store/authStore";
 import Dashboard from "../../features/admin/ui/Dashboard";
 import ScheduleManagementPage from "../../features/admin/ui/ScheduleManagementPage";
 import AdminSignupSettingPage from "../../features/admin/ui/AdminSignupSettingPage";
+import AdminInterestPage from "../../features/admin/ui/AdminInterestPage";
 
 const AdminPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -69,6 +70,9 @@ const AdminPage = () => {
         </Routes>
         <Routes>
           <Route path="schedule" element={<ScheduleManagementPage />} />
+        </Routes>
+        <Routes>
+          <Route path="interests" element={<AdminInterestPage />} />
         </Routes>
         <Routes>
           <Route path="setting" element={<AdminSignupSettingPage />} />
