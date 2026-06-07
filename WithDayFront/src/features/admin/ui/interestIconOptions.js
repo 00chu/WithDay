@@ -1,4 +1,4 @@
-export const interestIconOptions = [
+const interestIconOptions = [
   { label: "여행", value: "FaSuitcaseRolling" },
   { label: "팝업", value: "FaStore" },
   { label: "식사", value: "FaUtensils" },
@@ -15,3 +15,5 @@ export const interestIconOptions = [
   { label: "자연", value: "FaLeaf" },
   { label: "반려동물", value: "FaPaw" },
 ];
+
+export default interestIconOptions;
