@@ -4,6 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import Chart from "react-apexcharts";
 import Button from "../../../shared/ui/Button/Button";
+import GroupIcon from "@mui/icons-material/Group";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import StarIcon from "@mui/icons-material/Star";
+import FlagIcon from "@mui/icons-material/Flag";
 
 const Dashboard = () => {
   const [period, setPeriod] = useState("daily");
@@ -51,7 +55,9 @@ const Dashboard = () => {
     <div className={styles.dashboard_wrap}>
       <div className={styles.dashboard_card_wrap}>
         <div className={styles.dashboard_card}>
-          <div className={styles.icon}>👥</div>
+          <div className={styles.icon}>
+            <GroupIcon />
+          </div>
           <div className={styles.card_content}>
             <span className={styles.label}>전체 회원 수</span>
             {/* .toLocaleString() - 천 단위에 콤마 표시 */}
@@ -63,7 +69,9 @@ const Dashboard = () => {
         </div>
 
         <div className={styles.dashboard_card}>
-          <div className={styles.icon}>📅</div>
+          <div className={styles.icon}>
+            <CalendarMonthIcon />
+          </div>
           <div className={styles.card_content}>
             <span className={styles.label}>전체 일정 수</span>
             <h2>{dashboardData.nowTotalScheduleCount.toLocaleString()}</h2>
@@ -74,7 +82,9 @@ const Dashboard = () => {
         </div>
 
         <div className={styles.dashboard_card}>
-          <div className={styles.icon}>⭐</div>
+          <div className={styles.icon}>
+            <StarIcon />
+          </div>
           <div className={styles.card_content}>
             <span className={styles.label}>추천 일정 수</span>
             <h2>{dashboardData.recommendedScheduleCount.toLocaleString()}</h2>
@@ -82,7 +92,9 @@ const Dashboard = () => {
         </div>
 
         <div className={styles.dashboard_card}>
-          <div className={styles.icon}>🚩</div>
+          <div className={styles.icon}>
+            <FlagIcon />
+          </div>
           <div className={styles.card_content}>
             <div className={styles.statusRow}>
               <span>시작된 일정</span>
