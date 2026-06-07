@@ -124,11 +124,13 @@
         WHERE user_id = #{userId}
           AND terms_id = #{termsId}
     </update>
+    <!--비밀번호 수정(로컬일 때만 변경가능함)-->
     <update id="updatePassword">
         UPDATE `user`
         SET password = #{password}
         WHERE email = #{email} AND status IN ('active', 'admin')
     </update>
+    <!--이미지 수정-->
     <update id="updateProfileImage">
         UPDATE user
         SET profile_image = #{profileImage}
