@@ -21,13 +21,6 @@ export default function Header() {
   const { user: loginUser, isLoggedIn } = useAuthStore();
   const { mypageQuery } = useMypage(isLoggedIn);
 
-  const { data: notificationCount = 0 } = useQuery({
-    queryKey: ["notification-count", loginUser?.email],
-    queryFn: () => getNotificationCount(loginUser.email),
-    enabled: !!(isLoggedIn && loginUser?.email),
-    refetchOnWindowFocus: true, // 사용자가 앱/탭에 다시 들어왔을 때만 최신화되도록
-  });
-
   const headerProfileImage =
     mypageQuery.data?.profileImage ||
     loginUser?.profileImage ||
@@ -48,10 +41,19 @@ export default function Header() {
     navigate("/login");
   };
 
+  const { data: notificationCount = 0 } = useQuery({
+    queryKey: ["notification-count", loginUser?.email],
+    queryFn: () => getNotificationCount(loginUser.email),
+    // 로그인 상태와 로그인한 유저의 이메일 값이 있을 때만 API실행하도록 함
+    enabled: !!(isLoggedIn && loginUser?.email),
+    refetchOnWindowFocus: true, // 사용자가 앱/탭에 다시 들어왔을 때만 최신화되도록 자동 재조회
+  });
+
+  // 팝오버가 붙을 기준 DOM 요소
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleNotificationClick = (event) => {
-    setAnchorEl(event.currentTarget);
+    setAnchorEl(event.currentTarget); // ahchorEl 설정
   };
 
   const handleClose = () => {
@@ -91,18 +93,18 @@ export default function Header() {
               <IconButton
                 className={styles.actionButton}
                 aria-label="알림"
-                onClick={handleNotificationClick}
+                onClick={handleNotificationClick} //AnchorEl으로 설정
               >
                 <Badge
                   color="error"
-                  variant="dot"
-                  invisible={notificationCount === 0}
+                  variant="dot" // 읽지 않은 알림 있을 때 빨간 점 표시하도록 설정
+                  invisible={notificationCount === 0} // 읽지 않은 알림 있을 때는 점이 사라지도록
                 >
                   <NotificationsNoneRoundedIcon />
                 </Badge>
               </IconButton>
 
-              <NotificationPopover
+              <NotificationPopover // 알림창 Popover
                 open={Boolean(anchorEl)}
                 anchorEl={anchorEl}
                 handleClose={handleClose}

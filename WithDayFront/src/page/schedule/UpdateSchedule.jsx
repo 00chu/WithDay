@@ -882,7 +882,7 @@ const ScheduleTable = ({
       description: "",
     }));
 
-    replace(arr); // 핵심
+    replace(arr);
   }, [startDate, endDate, replace]);
 
   const handleChange = (index, key, value) => {

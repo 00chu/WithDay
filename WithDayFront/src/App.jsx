@@ -88,6 +88,7 @@ function App() {
   // 현재 화면 사이즈가 모바일인지 확인
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
+  // 사이즈가 1024보다 작아지면 모바일 버전으로 설정
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1024);
@@ -102,8 +103,8 @@ function App() {
 
   return (
     <div className={styles.container}>
+      // 관리자 페이지고 너비가 1024 이하일 때 헤더를 사용하지 않도록 함
       {!(isAdminPage && isMobile) && <Header />}
-
       <main className={styles.mainContent}>
         <LayoutContainer>
           <Routes>
@@ -224,7 +225,6 @@ function App() {
           </Routes>
         </LayoutContainer>
       </main>
-
       <BottomNav />
     </div>
   );

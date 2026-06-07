@@ -40,6 +40,7 @@ export default function NotificationList({ onClose }) {
     await readNotification(notification.id);
 
     // 알림 목록 재요청
+    // invalidateQueries - 기존 쿼리를 만료된 상태로 표시하고 다음에 쿼리를 재사용 시 다시 값을 가져옴.
     await queryClient.invalidateQueries({
       queryKey: ["notifications", loginUser?.email],
     });

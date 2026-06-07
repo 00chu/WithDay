@@ -99,9 +99,8 @@ const Login = () => {
             if (permission === "default") {
               await OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
             }
-
             await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
-
+            // 사용자의 푸시 알림 수신을 활성화 함
             await window.OneSignal.User.PushSubscription.optIn();
           }
         } catch (error) {
@@ -159,9 +158,8 @@ const Login = () => {
               if (permission === "default") {
                 await OneSignal.Notifications.requestPermission(); // 브라우저 알림 여부 창
               }
-
               await OneSignal.login(user.email.toString()); // OneSignal 유저 연결
-
+              // 사용자의 푸시 알림 수신을 활성화 함
               await window.OneSignal.User.PushSubscription.optIn();
             }
           } catch (error) {

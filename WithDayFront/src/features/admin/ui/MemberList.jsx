@@ -82,6 +82,8 @@ const MemberItem = ({ member }) => {
     if (!confirmChange) return;
 
     try {
+      // API 응답이 올 때까지 기다림.
+      // 흐름 제어를 위해 사용
       await makeAdminMutation.mutateAsync(member.email);
 
       handleMenuClose();
