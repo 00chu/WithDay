@@ -200,7 +200,7 @@ const AdminInterestPage = () => {
           <p className={styles.eyebrow}>ADMIN INTEREST</p>
           <h1>관심사 관리</h1>
           <p>
-            회원가입과 마이페이지에서 사용하는 관심사 키워드와 아이콘을
+            사용자들이 자신에게 맞는 일정과 위트를 찾을 수 있도록 관심사 항목을
             관리합니다.
           </p>
         </div>
@@ -213,9 +213,6 @@ const AdminInterestPage = () => {
           <div className={styles.cardHeader}>
             <div>
               <h2>{interestMode === "edit" ? "관심사 수정" : "관심사 추가"}</h2>
-              <p>
-                관리자가 입력한 관심사명과 선택한 아이콘 이름이 DB에 저장됩니다.
-              </p>
             </div>
           </div>
 
@@ -266,8 +263,8 @@ const AdminInterestPage = () => {
             </div>
 
             <span className={styles.helperText}>
-              아이콘은 미리 등록된 목록에서 선택하며, DB에는 아이콘 이름
-              문자열만 저장됩니다.
+              사용자가 관심사를 쉽게 알아볼 수 있도록 이름과 어울리는 아이콘을
+              선택해주세요.
             </span>
           </div>
 
@@ -306,8 +303,8 @@ const AdminInterestPage = () => {
             <div>
               <h2>관심사 목록</h2>
               <p>
-                등록된 관심사는 사용자 회원가입, 마이페이지 수정, 마이페이지
-                관심사 영역에 사용됩니다.
+                등록된 관심사는 회원가입과 마이페이지의 관심사 선택 영역에
+                표시됩니다
               </p>
             </div>
           </div>

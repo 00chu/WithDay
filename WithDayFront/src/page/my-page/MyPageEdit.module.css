@@ -103,7 +103,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 35px;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 .interestChip {
