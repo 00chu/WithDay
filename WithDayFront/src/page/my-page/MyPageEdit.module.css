@@ -688,3 +688,416 @@
   color: #ffffff;
   font-weight: 700;
 }
+/* 회원 정보 수정 페이지 반응형*/
+
+/* 태블릿 이하 */
+@media (max-width: 768px) {
+  .container {
+    max-width: 100%;
+    padding: 28px 20px 100px;
+    box-sizing: border-box;
+  }
+
+  .headerTitle {
+    font-size: 22px;
+    margin-bottom: 24px;
+  }
+
+  .content {
+    flex-direction: column;
+    gap: 28px;
+    align-items: stretch;
+  }
+
+  .profile {
+    width: 100%;
+    min-height: auto;
+    padding: 28px 20px;
+    border-radius: 18px;
+  }
+
+  .avatarEditBox,
+  .avatarEditBoxCropping,
+  .avatar {
+    width: 112px;
+    height: 112px;
+  }
+
+  .retouch_btn {
+    width: 32px;
+    height: 32px;
+    right: 0;
+    bottom: 0;
+  }
+
+  .profileImageMenu {
+    top: 108px;
+    width: 160px;
+  }
+
+  .name {
+    font-size: 17px;
+  }
+
+  .email {
+    font-size: 13px;
+    text-align: center;
+    word-break: break-all;
+  }
+
+  .userout {
+    margin-top: 8px;
+  }
+
+  .inlineCropControls {
+    width: 100%;
+    max-width: 240px;
+  }
+
+  .formSide {
+    width: 100%;
+  }
+
+  .group {
+    margin-bottom: 28px;
+  }
+
+  .groupTitle {
+    font-size: 17px;
+    margin-bottom: 16px;
+    padding-top: 18px;
+  }
+
+  .inputRow {
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+    column-gap: 0;
+    align-items: stretch;
+    margin-bottom: 16px;
+  }
+
+  .fieldLabel {
+    width: 100%;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* 소개글 라벨에 inline style이 들어가 있어서 모바일에서 강제로 정리 */
+  .inputRow .fieldLabel {
+    align-self: auto !important;
+    margin-top: 0 !important;
+  }
+
+  .inputWrapper,
+  .textareaContainer,
+  .addressSearchRow,
+  .genderSelectRow {
+    width: 100%;
+  }
+
+  .input_name,
+  .input,
+  .textarea {
+    width: 100%;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+
+  .input {
+    padding: 14px 44px 14px 14px;
+  }
+
+  .input_name {
+    padding: 14px;
+  }
+
+  .charCount {
+    right: 14px;
+    font-size: 12px;
+  }
+
+  .textarea {
+    min-height: 110px;
+    padding: 14px 14px 32px;
+  }
+
+  .interestList {
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .interestChip {
+    padding: 8px 15px;
+    font-size: 13px;
+  }
+
+  .genderSelectRow {
+    gap: 8px;
+  }
+
+  .genderButton {
+    height: 44px;
+    font-size: 14px;
+  }
+
+  .addressSearchRow {
+    display: flex;
+    gap: 8px;
+  }
+
+  .addressSearchButton {
+    width: 96px;
+    height: 44px;
+    font-size: 12px;
+  }
+
+  .postcodeLayer {
+    width: 100%;
+    margin-left: 0;
+    margin-bottom: 18px;
+  }
+
+  .postcodeHeader {
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .messageWrapper {
+    margin-left: 0;
+    margin-top: -4px;
+    margin-bottom: 18px;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+
+  .pw_text {
+    margin-left: 0;
+    line-height: 1.5;
+  }
+
+  .notiRow {
+    width: 100%;
+    padding-right: 0;
+    gap: 12px;
+  }
+
+  .notiRow span {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .footer {
+    margin-top: 34px;
+    padding-top: 24px;
+    gap: 8px;
+  }
+
+  .btn {
+    min-width: 90px;
+    padding: 0 22px;
+  }
+}
+
+/* 모바일 */
+@media (max-width: 480px) {
+  .container {
+    padding: 24px 16px 96px;
+  }
+
+  .headerTitle {
+    font-size: 20px;
+    margin-bottom: 22px;
+  }
+
+  .content {
+    gap: 24px;
+  }
+
+  .profile {
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+
+  .avatarEditBox,
+  .avatarEditBoxCropping,
+  .avatar {
+    width: 104px;
+    height: 104px;
+  }
+
+  .retouch_btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .retouch_btn svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .profileImageMenu {
+    top: 100px;
+    width: 154px;
+  }
+
+  .profileImageMenuItem {
+    height: 32px;
+    font-size: 11px;
+  }
+
+  .name {
+    font-size: 16px;
+  }
+
+  .email {
+    font-size: 12px;
+  }
+
+  .group {
+    margin-bottom: 26px;
+  }
+
+  .groupTitle {
+    font-size: 16px;
+    gap: 7px;
+    margin-bottom: 14px;
+  }
+
+  .groupTitle svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .fieldLabel {
+    font-size: 13px;
+  }
+
+  .input_name,
+  .input,
+  .textarea {
+    font-size: 13px;
+  }
+
+  .input_name,
+  .input {
+    min-height: 44px;
+  }
+
+  .textarea {
+    min-height: 104px;
+  }
+
+  .interestList {
+    gap: 8px;
+  }
+
+  .interestChip {
+    padding: 7px 13px;
+    font-size: 12px;
+  }
+
+  .genderSelectRow {
+    gap: 8px;
+  }
+
+  .genderButton {
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .addressSearchRow {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .addressSearchButton {
+    width: 100%;
+    height: 42px;
+  }
+
+  .postcodeLayer {
+    border-radius: 10px;
+  }
+
+  .notiRow {
+    align-items: flex-start;
+  }
+
+  .notificationSwitch {
+    width: 54px;
+    height: 30px;
+    padding: 4px;
+  }
+
+  .notificationSwitchThumb {
+    width: 22px;
+    height: 22px;
+  }
+
+  .notificationSwitchOn .notificationSwitchThumb {
+    transform: translateX(24px);
+  }
+
+  .notificationSwitchIcon {
+    width: 13px;
+    height: 13px;
+  }
+
+  .footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 30px;
+  }
+
+  .btn {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    padding: 0;
+    font-size: 14px;
+  }
+}
+
+/* 아주 작은 모바일 */
+@media (max-width: 360px) {
+  .container {
+    padding: 22px 14px 92px;
+  }
+
+  .profile {
+    padding: 22px 14px;
+  }
+
+  .avatarEditBox,
+  .avatarEditBoxCropping,
+  .avatar {
+    width: 96px;
+    height: 96px;
+  }
+
+  .retouch_btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .profileImageMenu {
+    top: 94px;
+  }
+
+  .interestChip {
+    padding: 7px 11px;
+    font-size: 12px;
+  }
+
+  .notiRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notificationSwitch {
+    align-self: flex-end;
+  }
+}

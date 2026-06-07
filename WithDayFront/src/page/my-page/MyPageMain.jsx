@@ -461,6 +461,7 @@ const MyPageMain = () => {
             type="button"
             className={styles.serviceAccordionHeader}
             onClick={() => setIsServiceOpen((prev) => !prev)}
+            aria-expanded={isServiceOpen}
           >
             <span>WithDay 서비스 소개</span>
             <ChevronDown
