@@ -78,7 +78,8 @@ createRoot(document.getElementById("root")).render(
     <ThemeProvider theme={appTheme}>
       <CssBaseline />
       <BrowserRouter>
-        <ScrollToTop /> // 페이지 이동 시 항상 맨 위로 이동하도록
+        {/* 페이지 이동 시 항상 맨 위로 이동하도록 */}
+        <ScrollToTop />
         <QueryClientProvider client={queryClient}>
           <App />
         </QueryClientProvider>
