@@ -60,6 +60,8 @@ public interface ScheduleDao {
             @Param("targetStatus") String targetStatus
     );
 
+    int cancelSchedule(@Param("scheduleId") Long scheduleId);
+
     /*
      * 홈/탐색 탭의 일정 리스트 조회다.
      * 탐색 필터는 모두 선택 조건이라 null/빈 문자열일 때는 mapper에서 조건을 붙이지 않는다.

@@ -144,7 +144,7 @@ class ParticipationServiceTest {
                 () -> participationService.cancelParticipation(participationId, "user@withday.test")
         );
 
-        assertEquals("409 CONFLICT \"진행 중인 일정은 참여 취소할 수 없습니다.\"", exception.getMessage());
+        assertEquals("409 CONFLICT \"일정완료 상태의 일정은 참여 취소할 수 없습니다.\"", exception.getMessage());
         verify(participationDao, never()).cancelParticipation(participationId, "user@withday.test", "APPROVED", "canceled");
     }
 
@@ -264,7 +264,7 @@ class ParticipationServiceTest {
                 () -> participationService.updateParticipationStatus(participationId, dto)
         );
 
-        assertEquals("409 CONFLICT \"진행 중인 일정의 참여 상태는 변경할 수 없습니다.\"", exception.getMessage());
+        assertEquals("409 CONFLICT \"일정완료 상태의 참여 상태는 변경할 수 없습니다.\"", exception.getMessage());
         verify(participationDao, never()).updateStatus(participationId, "PENDING", "approved");
     }
 

@@ -354,6 +354,50 @@ class ScheduleServiceTest {
     }
 
     @Test
+    void cancelScheduleChangesRecruitingToCanceledForHost() {
+        Long scheduleId = 35L;
+        Schedule recruitingSchedule = new Schedule();
+        recruitingSchedule.setId(scheduleId);
+        recruitingSchedule.setStatus(ScheduleStatus.recruiting);
+        recruitingSchedule.setCurrentParticipants(3);
+        recruitingSchedule.setMaxParticipants(5);
+
+        Schedule canceledSchedule = new Schedule();
+        canceledSchedule.setId(scheduleId);
+        canceledSchedule.setStatus(ScheduleStatus.canceled);
+        canceledSchedule.setCurrentParticipants(3);
+        canceledSchedule.setMaxParticipants(5);
+
+        when(scheduleDao.selectScheduleById(scheduleId)).thenReturn(recruitingSchedule, canceledSchedule);
+        when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
+        when(scheduleDao.cancelSchedule(scheduleId)).thenReturn(1);
+
+        ScheduleExecutionResponseDTO response =
+                scheduleService.cancelSchedule(scheduleId, "host@withday.test");
+
+        assertEquals("CANCELED", response.getStatus());
+        verify(scheduleDao).cancelSchedule(scheduleId);
+    }
+
+    @Test
+    void cancelScheduleRejectsCompletedSchedule() {
+        Long scheduleId = 36L;
+        Schedule completedSchedule = new Schedule();
+        completedSchedule.setId(scheduleId);
+        completedSchedule.setStatus(ScheduleStatus.completed);
+
+        when(scheduleDao.selectScheduleById(scheduleId)).thenReturn(completedSchedule);
+        when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn("host@withday.test");
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> scheduleService.cancelSchedule(scheduleId, "host@withday.test")
+        );
+
+        assertEquals("409 CONFLICT \"완료된 일정은 취소할 수 없습니다.\"", exception.getMessage());
+    }
+
+    @Test
     void rollbackCompletedScheduleReturnsClosedWhenRecruitDeadlinePassed() {
         Long scheduleId = 31L;
         Schedule completedSchedule = new Schedule();
@@ -415,7 +459,7 @@ class ScheduleServiceTest {
                 () -> scheduleService.updateSchedule(scheduleId, new com.test.withdayback.schedule.dto.ScheduleRequestDTO(), List.of())
         );
 
-        assertEquals("409 CONFLICT \"진행 중인 일정은 수정할 수 없습니다.\"", exception.getMessage());
+        assertEquals("409 CONFLICT \"일정완료 상태의 일정은 수정할 수 없습니다.\"", exception.getMessage());
     }
 
     @Test
@@ -432,6 +476,6 @@ class ScheduleServiceTest {
                 () -> scheduleService.deleteSchedule(scheduleId)
         );
 
-        assertEquals("409 CONFLICT \"진행 중인 일정은 삭제할 수 없습니다.\"", exception.getMessage());
+        assertEquals("409 CONFLICT \"일정완료 상태의 일정은 삭제할 수 없습니다.\"", exception.getMessage());
     }
 }

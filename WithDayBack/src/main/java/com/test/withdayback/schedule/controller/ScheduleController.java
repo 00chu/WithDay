@@ -154,6 +154,21 @@ public class ScheduleController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * 호스트가 모집중 또는 모집마감 상태의 일정을 취소하는 API다.
+     *
+     * canceled는 "일정 자체를 더 이상 진행하지 않는다"는 의미이므로,
+     * 단순 모집마감(closed)과 분리된 목적형 endpoint로 둔다.
+     */
+    @PostMapping("/{scheduleId}/cancel")
+    public ResponseEntity<ScheduleExecutionResponseDTO> cancelSchedule(
+            @PathVariable Long scheduleId,
+            @RequestParam String email
+    ) {
+        ScheduleExecutionResponseDTO result = scheduleService.cancelSchedule(scheduleId, email);
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> insertSchedule(
             @RequestPart("data") ScheduleRequestDTO dto,

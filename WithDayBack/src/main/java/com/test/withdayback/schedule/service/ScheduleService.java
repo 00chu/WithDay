@@ -214,7 +214,7 @@ public class ScheduleService {
     }
 
     /*
-     * 호스트가 "일정 실행" 버튼을 눌렀을 때의 핵심 상태 전환이다.
+     * 호스트가 "일정 완료 처리" 버튼을 눌렀을 때의 핵심 상태 전환이다.
      * 이 기능은 단순 status 변경이 아니라 운영 정책을 서버에서 확정하는 지점이므로
      * 프론트에서 버튼을 숨기거나 비활성화해도 백엔드에서 같은 규칙을 반드시 다시 검증해야 한다.
      *
@@ -237,15 +237,15 @@ public class ScheduleService {
         validateHostAction(scheduleId, normalizedEmail, schedule);
 
         /*
-         * 이미 completed인 일정은 중복 실행을 허용하지 않는다.
+         * 이미 completed인 일정은 중복 완료 처리를 허용하지 않는다.
          * 같은 상태로 다시 덮어써도 기능상 의미가 없고, 사용자는 "실행"이 성공했다고 오해할 수 있기 때문이다.
          */
         if (schedule.getStatus() == ScheduleStatus.completed) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 실행 중인 일정입니다.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 완료 처리된 일정입니다.");
         }
 
         /*
-         * 취소된 일정은 운영상 종료된 상태로 간주하므로 실행 대상으로 되살리지 않는다.
+         * 취소된 일정은 운영상 종료된 상태로 간주하므로 완료 대상으로 되살리지 않는다.
          * 이 정책을 풀고 싶다면 status 전이 규칙 자체를 다시 설계해야 한다.
          */
         if (schedule.getStatus() == ScheduleStatus.canceled) {
@@ -283,10 +283,10 @@ public class ScheduleService {
         }
 
         /*
-         * TODO: 일정 실행 알림 전송
+         * TODO: 일정 완료 알림 전송
          * - 위치: 이 status 변경 성공 직후
          * - 대상: APPROVED 상태 참여자
-         * - 내용 예시: "일정이 시작되었습니다"
+         * - 내용 예시: "일정이 완료되었습니다"
          * - OneSignalService 또는 NotificationService 래퍼를 통해 비동기 전송 권장
          *
          * 알림 전송은 핵심 상태 변경과 트랜잭션을 분리하는 편이 안전하다.
@@ -295,14 +295,14 @@ public class ScheduleService {
          * - 상태 변경은 핵심 도메인 작업이고, 알림은 후속 부가 작업으로 취급하는 것이 장애 전파를 줄인다.
          */
         Schedule updatedSchedule = requireSchedule(scheduleId);
-        log.info("일정 실행 완료 - scheduleId: {}, actorEmail: {}, from: {}, to: {}",
+        log.info("일정 완료 처리 완료 - scheduleId: {}, actorEmail: {}, from: {}, to: {}",
                 scheduleId, normalizedEmail, schedule.getStatus(), updatedSchedule.getStatus());
 
         return toExecutionResponse(updatedSchedule);
     }
 
     /*
-     * 호스트가 "실행 취소" 버튼을 눌렀을 때의 롤백 로직이다.
+     * 호스트가 "일정완료 취소" 버튼을 눌렀을 때의 롤백 로직이다.
      * completed를 무조건 recruiting으로 되돌리지 않고, 모집 마감일이 지났는지에 따라 recruiting/closed를 나눈다.
      *
      * 정책 이유:
@@ -316,11 +316,11 @@ public class ScheduleService {
         validateHostAction(scheduleId, normalizedEmail, schedule);
 
         /*
-         * 실행 취소는 completed 상태에서만 의미가 있다.
-         * recruiting/closed에서 호출되면 "실행 취소"가 아니라 단순 중복 요청이므로 명시적으로 막는다.
+         * 일정완료 취소는 completed 상태에서만 의미가 있다.
+         * recruiting/closed에서 호출되면 단순 중복 요청이므로 명시적으로 막는다.
          */
         if (schedule.getStatus() != ScheduleStatus.completed) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "실행 중인 일정만 취소할 수 있습니다.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "일정완료 상태의 일정만 되돌릴 수 있습니다.");
         }
 
         /*
@@ -337,14 +337,56 @@ public class ScheduleService {
         }
 
         /*
-         * TODO: 일정 실행 취소 알림 전송
+         * TODO: 일정완료 취소 알림 전송
          * - 위치: status 롤백 성공 직후
          * - 대상: APPROVED 상태 참여자
-         * - 내용 예시: "일정 실행이 취소되었습니다"
+         * - 내용 예시: "일정 완료 처리가 취소되었습니다"
          * - 알림 실패가 롤백 자체를 막지 않도록 트랜잭션 외부 처리 또는 예외 격리 필요
          */
         Schedule updatedSchedule = requireSchedule(scheduleId);
-        log.info("일정 실행 취소 완료 - scheduleId: {}, actorEmail: {}, from: {}, to: {}",
+        log.info("일정완료 취소 완료 - scheduleId: {}, actorEmail: {}, from: {}, to: {}",
+                scheduleId, normalizedEmail, schedule.getStatus(), updatedSchedule.getStatus());
+
+        return toExecutionResponse(updatedSchedule);
+    }
+
+    /*
+     * 호스트가 일정을 아예 취소하는 상태 전환이다.
+     * 모집중(recruiting)과 모집마감(closed) 상태에서만 canceled로 갈 수 있고,
+     * 완료(completed)되었거나 이미 취소(canceled)된 일정은 다시 취소하지 않는다.
+     */
+    @Transactional
+    public ScheduleExecutionResponseDTO cancelSchedule(Long scheduleId, String email) {
+        Schedule schedule = requireSchedule(scheduleId);
+        String normalizedEmail = normalizeEmail(email);
+        validateHostAction(scheduleId, normalizedEmail, schedule);
+
+        if (schedule.getStatus() == ScheduleStatus.completed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "완료된 일정은 취소할 수 없습니다.");
+        }
+
+        if (schedule.getStatus() == ScheduleStatus.canceled) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 취소된 일정입니다.");
+        }
+
+        if (schedule.getStatus() != ScheduleStatus.recruiting
+                && schedule.getStatus() != ScheduleStatus.closed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "취소할 수 없는 일정 상태입니다.");
+        }
+
+        int updated = scheduleDao.cancelSchedule(scheduleId);
+        if (updated <= 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "일정 취소 처리에 실패했습니다.");
+        }
+
+        /*
+         * TODO: 일정 취소 알림 전송
+         * - 대상: APPROVED 또는 PENDING 상태 참여자
+         * - 내용 예시: "호스트가 일정을 취소했습니다"
+         * - 알림 실패가 상태 변경을 되돌리지 않도록 트랜잭션 밖 비동기 처리 권장
+         */
+        Schedule updatedSchedule = requireSchedule(scheduleId);
+        log.info("일정 취소 완료 - scheduleId: {}, actorEmail: {}, from: {}, to: {}",
                 scheduleId, normalizedEmail, schedule.getStatus(), updatedSchedule.getStatus());
 
         return toExecutionResponse(updatedSchedule);
@@ -415,11 +457,11 @@ public class ScheduleService {
     @Transactional
     public void updateSchedule(Long scheduleId, ScheduleRequestDTO dto, List<MultipartFile> images) {
         /*
-         * 진행 중인 일정은 내용을 바꾸지 못하게 막는다.
+         * 일정완료 상태의 일정은 내용을 바꾸지 못하게 막는다.
          * 일정이 이미 시작된 뒤 제목/날짜/모집 조건이 바뀌면 참여자 입장에서 계약이 바뀐 것처럼 보일 수 있기 때문이다.
          */
         Schedule existingSchedule = requireSchedule(scheduleId);
-        validateScheduleNotCompleted(existingSchedule, "진행 중인 일정은 수정할 수 없습니다.");
+        validateScheduleNotCompleted(existingSchedule, "일정완료 상태의 일정은 수정할 수 없습니다.");
 
         Schedule schedule = dto.getSchedule();
 
@@ -500,11 +542,11 @@ public class ScheduleService {
 
     public int deleteSchedule(Long scheduleId) {
         /*
-         * 실행 중 일정 삭제를 막는 이유는 운영 일관성 때문이다.
-         * 이미 시작한 일정은 "취소" 또는 별도 종료 정책으로 다뤄야 하고, 단순 삭제는 추적성을 크게 떨어뜨린다.
+         * 완료된 일정 삭제를 막는 이유는 운영 일관성 때문이다.
+         * 이미 완료된 일정은 기록으로 남겨야 하고, 단순 삭제는 추적성을 크게 떨어뜨린다.
          */
         Schedule existingSchedule = requireSchedule(scheduleId);
-        validateScheduleNotCompleted(existingSchedule, "진행 중인 일정은 삭제할 수 없습니다.");
+        validateScheduleNotCompleted(existingSchedule, "일정완료 상태의 일정은 삭제할 수 없습니다.");
         return scheduleDao.deleteSchedule(scheduleId);
     }
 
@@ -536,7 +578,7 @@ public class ScheduleService {
     }
 
     /*
-     * completed 상태는 "진행 중이라 주요 관리 액션이 잠긴 상태"라는 뜻이다.
+     * completed 상태는 "일정완료 상태라 주요 관리 액션이 잠긴 상태"라는 뜻이다.
      * 수정/삭제 같은 관리자 액션도 이 helper 하나로 같은 정책을 재사용한다.
      */
     private void validateScheduleNotCompleted(Schedule schedule, String message) {

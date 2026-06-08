@@ -190,6 +190,15 @@
           AND status = 'completed'
     </update>
 
+    <update id="cancelSchedule">
+        UPDATE schedule
+        SET status = 'canceled',
+            updated_at = NOW()
+        WHERE id = #{scheduleId}
+          AND deleted_at IS NULL
+          AND status IN ('recruiting', 'closed')
+    </update>
+
     <update id="closeExpiredSchedules">
         UPDATE schedule
         SET status = 'closed',
