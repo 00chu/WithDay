@@ -89,8 +89,8 @@
 .inputRow input,
 .inputRowCenter input {
   width: 100%;
-  height: 40px;
-  min-height: 40px;
+  height: 38px;
+  min-height: 38px;
   box-sizing: border-box;
 }
 
@@ -585,8 +585,8 @@
 .inlineActionButton {
   flex: 0 0 104px;
   min-width: 104px;
-  height: 40px;
-  min-height: 40px;
+  height: 38px;
+  min-height: 38px;
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
@@ -1300,5 +1300,65 @@
     width: 100%;
     padding: 20px;
     align-items: flex-start;
+  }
+}
+
+/* =========================================
+   [로그인 320px 초소형 모바일 대응]
+   - 375px 이상 디자인은 유지
+   - 320px 화면에서 카드 내부 폭이 부족해 제목/문구가 줄바꿈되는 현상만 보정
+   ========================================= */
+@media (max-width: 340px) {
+  .container {
+    padding: 20px 12px;
+    min-height: calc(100vh - 160px);
+  }
+
+  .card {
+    box-sizing: border-box;
+    padding: 36px 24px 30px;
+    max-width: 100%;
+    transform: translateY(8px);
+  }
+
+  .header {
+    margin-bottom: 28px;
+  }
+
+  .title {
+    font-size: 23px;
+    line-height: 1.25;
+    white-space: nowrap;
+    word-break: keep-all;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    line-height: 1.45;
+    word-break: keep-all;
+  }
+
+  .form {
+    gap: 18px;
+  }
+
+  .findLinks {
+    font-size: 12.5px;
+    gap: 8px;
+  }
+
+  .checkboxText {
+    font-size: 13px;
+  }
+
+  .googleLoginWrap {
+    margin-top: 22px;
+    padding-top: 22px;
+  }
+
+  .linkText {
+    margin-top: 22px;
+    font-size: 13px;
+    word-break: keep-all;
   }
 }

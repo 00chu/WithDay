@@ -101,7 +101,7 @@ const FindId = () => {
         <div className={styles.findHeader}>
           <p className={styles.findEyebrow}>WITHDAY ACCOUNT</p>
           <h1 className={styles.findTitle}>아이디 찾기</h1>
-          <p className={styles.findSubtitle}>
+          <p className={`${styles.findSubtitle} ${styles.findIdSubtitle}`}>
             가입 시 입력한 닉네임과 전화번호로 아이디를 찾을 수 있어요.
           </p>
         </div>
