@@ -30,6 +30,12 @@ export const updateMypageData = async (data) => {
   return response.data;
 };
 
+export const withdrawMe = async () => {
+  const response = await api.delete("/users/me");
+
+  return response.data;
+};
+
 export const uploadMypageProfileImage = async (file) => {
   const formData = new FormData();
   formData.append("profileFile", file);

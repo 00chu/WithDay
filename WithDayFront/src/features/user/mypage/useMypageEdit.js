@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getMypageEditData, updateMypageData } from "./api";
+import { getMypageEditData, updateMypageData, withdrawMe } from "./api";
 
 export const useMypageEdit = () => {
   const queryClient = useQueryClient();
@@ -19,8 +19,13 @@ export const useMypageEdit = () => {
     },
   });
 
+  const withdrawMutation = useMutation({
+    mutationFn: withdrawMe,
+  });
+
   return {
     editQuery,
     updateMutation,
+    withdrawMutation,
   };
 };

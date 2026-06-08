@@ -1,4 +1,5 @@
 import { useAuthStore } from "../auth/store/authStore";
+import { clearAuthSession } from "../auth/lib/clearAuthSession";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,7 +8,6 @@ import Alert from "@mui/material/Alert";
 
 const PrivateRoute = ({ children }) => {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const setLogout = useAuthStore((state) => state.setLogout);
   const isTokenExpired = useAuthStore((state) => state.isTokenExpired);
 
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ const PrivateRoute = ({ children }) => {
 
   useEffect(() => {
     if (isExpired) {
-      setLogout();
+      void clearAuthSession();
     }
 
     if (shouldBlock) {
@@ -35,7 +35,7 @@ const PrivateRoute = ({ children }) => {
 
       return () => clearTimeout(timer);
     }
-  }, [isExpired, shouldBlock, setLogout, navigate]);
+  }, [isExpired, shouldBlock, navigate]);
 
   if (shouldBlock) {
     return (

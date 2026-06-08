@@ -180,6 +180,27 @@ class ScheduleServiceTest {
     }
 
     @Test
+    void getScheduleFullDetailsDoesNotExposeSuspendedHostEmail() {
+        Long scheduleId = 109L;
+        Schedule schedule = new Schedule();
+        schedule.setUserId(1L);
+
+        when(scheduleDao.getEmailByScheduleId(scheduleId)).thenReturn(null);
+        when(scheduleDao.selectScheduleByIdForViewer(scheduleId, "")).thenReturn(schedule);
+        when(scheduleDao.selectDetailsByScheduleId(scheduleId)).thenReturn(List.of());
+        when(scheduleDao.selectImageByScheduleId(scheduleId)).thenReturn(List.of());
+        when(userDao.findById(1L)).thenReturn(
+                new User(1L, "deleted+1+999@withdrawn.withday.local", null, null, null, "host", null, null, null, null, "suspended", null, null, null, null)
+        );
+
+        ScheduleResponseDTO result = scheduleService.getScheduleFullDetails(scheduleId, "");
+
+        assertNotNull(result);
+        assertNull(result.getEmail());
+        assertEquals("host", result.getHost().getNickname());
+    }
+
+    @Test
     void getScheduleFullDetailsHidesChatLinkForPendingViewer() {
         Long scheduleId = 21L;
         Schedule schedule = new Schedule();

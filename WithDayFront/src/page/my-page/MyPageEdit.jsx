@@ -4,11 +4,20 @@ import DaumPostcode from "react-daum-postcode";
 import { uploadMypageProfileImage } from "../../features/user/mypage/api";
 import { getCroppedImg } from "../../features/user/mypage/getCroppedImg";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import { clearAuthSession } from "../../features/auth/lib/clearAuthSession";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMypageEdit } from "../../features/user/mypage/useMypageEdit";
+import { useQueryClient } from "@tanstack/react-query";
 import EditCalendarOutlinedIcon from "@mui/icons-material/EditCalendarOutlined";
+import Alert from "@mui/material/Alert";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import Snackbar from "@mui/material/Snackbar";
 import InterestIcon from "../../shared/ui/InterestIconRenderer/InterestIconRenderer";
 
 import {
@@ -32,7 +41,8 @@ const MyPageEdit = () => {
   // 수정 라우트도 /mypage/edit/:email 형태라 path param 을 decode 후 비교해야 본인 판별이 정확하다.
   const normalizedRouteEmail = routeEmail ? decodeURIComponent(routeEmail) : "";
   const navigate = useNavigate();
-  const { editQuery, updateMutation } = useMypageEdit();
+  const queryClient = useQueryClient();
+  const { editQuery, updateMutation, withdrawMutation } = useMypageEdit();
   console.log("editQuery.data", editQuery.data);
   const [nickname, setNickname] = useState("단이");
   const [showPw, setShowPw] = useState([false, false, false]);
@@ -51,6 +61,8 @@ const MyPageEdit = () => {
   const profileFileInputRef = useRef(null);
   const profileMenuRef = useRef(null);
   const [isImageUploading, setIsImageUploading] = useState(false);
+  const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
+  const [withdrawErrorToastOpen, setWithdrawErrorToastOpen] = useState(false);
 
   const DEFAULT_PROFILE_IMAGE = "/default-profile-240.png";
   const formatPhoneNumber = (value = "") => {
@@ -411,6 +423,31 @@ const MyPageEdit = () => {
     });
   };
 
+  const handleWithdraw = () => {
+    if (withdrawMutation.isPending) {
+      return;
+    }
+
+    withdrawMutation.mutate(undefined, {
+      onSuccess: async () => {
+        // 탈퇴 직후 예전 사용자 캐시가 잠깐 남으면 홈 이동 과정에서 stale 정보가 섞일 수 있어 먼저 정리한다.
+        queryClient.removeQueries({ queryKey: ["mypage"] });
+        queryClient.removeQueries({ queryKey: ["mypageEdit"] });
+        queryClient.removeQueries({ queryKey: ["wishlist"] });
+        queryClient.removeQueries({ queryKey: ["mySchedules"] });
+        queryClient.removeQueries({ queryKey: ["notifications"] });
+
+        await clearAuthSession();
+        setIsWithdrawDialogOpen(false);
+        navigate("/", { replace: true });
+      },
+      onError: () => {
+        setIsWithdrawDialogOpen(false);
+        setWithdrawErrorToastOpen(true);
+      },
+    });
+  };
+
   if (!email) {
     return <div className={styles.container}>로그인이 필요합니다.</div>;
   }
@@ -605,7 +642,11 @@ const MyPageEdit = () => {
           <div className={styles.email}>
             {formatPhoneNumber(editQuery.data?.phone)}
           </div>
-          <button className={styles.userout} type="button">
+          <button
+            className={styles.userout}
+            type="button"
+            onClick={() => setIsWithdrawDialogOpen(true)}
+          >
             회원 탈퇴
           </button>
         </div>
@@ -948,6 +989,66 @@ const MyPageEdit = () => {
           </div>
         </div>
       </div>
+
+      <Dialog
+        open={isWithdrawDialogOpen}
+        onClose={
+          withdrawMutation.isPending
+            ? undefined
+            : () => setIsWithdrawDialogOpen(false)
+        }
+        aria-labelledby="withdraw-dialog-title"
+        aria-describedby="withdraw-dialog-description"
+      >
+        <DialogTitle id="withdraw-dialog-title">회원 탈퇴</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="withdraw-dialog-description">
+            정말 탈퇴하시겠습니까?
+            <br />
+            탈퇴 시 아래 정보는 복구할 수 없습니다.
+            <br />
+            <br />
+            • 프로필 정보
+            <br />
+            • 위시리스트
+            <br />
+            • 참여 기록
+            <br />
+            • 알림 기록
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <button
+            type="button"
+            onClick={() => setIsWithdrawDialogOpen(false)}
+            disabled={withdrawMutation.isPending}
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={handleWithdraw}
+            disabled={withdrawMutation.isPending}
+          >
+            {withdrawMutation.isPending ? "처리 중..." : "회원 탈퇴"}
+          </button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={withdrawErrorToastOpen}
+        autoHideDuration={3000}
+        onClose={() => setWithdrawErrorToastOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setWithdrawErrorToastOpen(false)}
+          severity="error"
+          variant="filled"
+        >
+          회원 탈퇴에 실패했습니다. 잠시 후 다시 시도해주세요.
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

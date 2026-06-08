@@ -1,6 +1,7 @@
 import styles from "./MyPageMain.module.css";
 import EditCalendarOutlinedIcon from "@mui/icons-material/EditCalendarOutlined";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import { clearAuthSession } from "../../features/auth/lib/clearAuthSession";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMypage } from "../../features/user/mypage/useMypage";
@@ -216,7 +217,7 @@ const MyPageMain = () => {
                     <button
                       type="button"
                       className={styles.logout}
-                      onClick={() => useAuthStore.getState().setLogout()}
+                      onClick={() => void clearAuthSession()}
                     >
                       로그아웃
                     </button>
