@@ -152,6 +152,22 @@ function App() {
 
             <Route path="/schedule/:scheduleId" element={<ScheduleDetail />} />
 
+            {/*
+              /mypage 는 로그인한 "내 프로필" 진입점이다.
+              MyPageMain 이 email 파라미터가 없음을 보고 기존 마이페이지 조회 API를 사용한다.
+            */}
+            <Route
+              path="/mypage"
+              element={
+                <PrivateRoute>
+                  <MyPageMain />
+                </PrivateRoute>
+              }
+            />
+            {/*
+              /mypage/:email 은 특정 사용자 프로필 진입점이다.
+              같은 화면 컴포넌트를 재사용하되, 내부에서 URL email 존재 여부를 보고 공개 프로필 조회로 분기한다.
+            */}
             <Route
               path="/mypage/:email"
               element={

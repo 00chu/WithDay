@@ -4,6 +4,7 @@
     import com.test.withdayback.common.util.JwtUtil;
     import com.test.withdayback.user.dto.MypageEditRequestDTO;
     import com.test.withdayback.user.dto.MypageEditResponseDTO;
+    import com.test.withdayback.user.dto.MypageResponseDTO;
     import com.test.withdayback.user.dto.FindAccountDTO;
     import com.test.withdayback.user.dto.SignupRequestDTO;
     import com.test.withdayback.user.service.UserService;
@@ -153,6 +154,20 @@
                 e.printStackTrace();
                 return ResponseEntity.status(401).body(e.getMessage());
 
+            }
+        }
+
+        // 다른 사용자 프로필 조회
+        // 수정용 /users/mypage/edit 와 분리해서, 읽기 전용 공개 정보만 내려주는 전용 엔드포인트다.
+        @GetMapping("/profile/{email}")
+        public ResponseEntity<?> getUserProfile(@PathVariable("email") String email) {
+            try {
+                MypageResponseDTO result = userService.getUserProfile(email);
+
+                return ResponseEntity.ok(result);
+            } catch (org.springframework.web.server.ResponseStatusException e) {
+                // 존재하지 않는 사용자처럼 의도된 HTTP 상태는 200으로 뭉개지지 않게 원래 상태코드 그대로 전달한다.
+                return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
             }
         }
 

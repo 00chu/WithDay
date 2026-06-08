@@ -2,7 +2,7 @@ import styles from "./MyPageMain.module.css";
 import EditCalendarOutlinedIcon from "@mui/icons-material/EditCalendarOutlined";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMypage } from "../../features/user/mypage/useMypage";
 import InterestIcon from "../../shared/ui/InterestIconRenderer/InterestIconRenderer";
 import {
@@ -21,8 +21,16 @@ import {
 
 const MyPageMain = () => {
   const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
-  const { mypageQuery } = useMypage();
+  const { email: targetEmail } = useParams();
+  const loginUser = useAuthStore((state) => state.user);
+  // 이메일은 URL 인코딩된 상태로 들어올 수 있으므로 decode 후 비교해야 본인 여부 판별이 틀어지지 않는다.
+  const normalizedTargetEmail = targetEmail ? decodeURIComponent(targetEmail) : "";
+  // /mypage 또는 /mypage/{내 이메일} 은 자기 프로필, 그 외 /mypage/{다른 이메일} 은 타인 프로필로 본다.
+  const isOwnProfile =
+    !normalizedTargetEmail || normalizedTargetEmail === loginUser?.email;
+  const { mypageQuery } = useMypage(
+    isOwnProfile ? undefined : normalizedTargetEmail,
+  );
   const isAdmin = mypageQuery.data?.status === "admin";
   const [isServiceOpen, setIsServiceOpen] = useState(true);
   const [activeServiceTab, setActiveServiceTab] = useState("recommend");
@@ -101,13 +109,24 @@ const MyPageMain = () => {
     return <div>불러오는 중...</div>;
   }
 
+  if (mypageQuery.isError) {
+    const errorStatus = mypageQuery.error?.response?.status;
+    const errorMessage = mypageQuery.error?.response?.data;
+
+    // 없는 사용자와 일반 서버 오류를 같은 문구로 보여주면 원인을 오해하기 쉬우므로 404는 별도 처리한다.
+    if (errorStatus === 404) {
+      return <div>존재하지 않는 사용자입니다.</div>;
+    }
+
+    // 401/500/네트워크 오류 등은 서버 메시지가 있으면 우선 그대로 보여준다.
+    return <div>{errorMessage || "프로필 정보를 불러오지 못했습니다."}</div>;
+  }
+
   const mypage = mypageQuery.data;
 
   const nickname = mypage?.nickname || "닉네임";
-  const email = mypage?.email || user?.email || "이메일 정보 없음";
+  const email = mypage?.email || loginUser?.email || "이메일 정보 없음";
   const profileImage = mypage?.profileImage || "/default-profile-240.png";
-  const interests =
-    mypage?.interests ?? mypage?.interestNames ?? mypage?.allInterests ?? [];
   const selectedInterestIds = mypage?.selectedInterestIds ?? [];
   const allInterests = mypage?.allInterests ?? [];
 
@@ -135,6 +154,7 @@ const MyPageMain = () => {
   const metWitCount = mypage?.metWitCount ?? 0;
   const joinDate = formatDateOnly(mypage?.createdAt);
 
+  // 위트 로그는 백엔드가 "보여줘야 할 completed 일정"만 골라서 내려준다는 전제 아래 그대로 렌더한다.
   const mySchedules = mypageQuery.data?.mySchedules ?? [];
   console.log("상단 요약 값 확인:", {
     togetherScheduleCount,
@@ -149,7 +169,11 @@ const MyPageMain = () => {
   );
   const intro =
     mypage?.intro ||
-    "아직 등록된 소개글이 없습니다. 회원정보 수정에서 소개글을 작성해보세요.";
+    (isOwnProfile
+      // 자기 프로필에서는 수정 유도 문구가 자연스럽다.
+      ? "아직 등록된 소개글이 없습니다. 회원정보 수정에서 소개글을 작성해보세요."
+      // 타인 프로필에서 상대에게 수정하라고 안내하면 어색하므로 중립 문구를 쓴다.
+      : "아직 등록된 소개글이 없습니다.");
 
   console.log("mySchedules:", mySchedules);
   return (
@@ -166,39 +190,49 @@ const MyPageMain = () => {
                   className={styles.profile_img}
                 />
 
-                <button
-                  type="button"
-                  className={styles.retouch_btn}
-                  onClick={() => navigate(`/mypage/edit/${user.email}`)}
-                  aria-label="프로필 수정"
-                >
-                  <EditCalendarOutlinedIcon />
-                </button>
+                {isOwnProfile && loginUser?.email ? (
+                  <button
+                    type="button"
+                    className={styles.retouch_btn}
+                    // 수정 버튼은 본인 프로필에서만 노출해 1차 UX 차단을 하고, 수정 화면/백엔드가 다시 최종 검증한다.
+                    onClick={() =>
+                      navigate(
+                        `/mypage/edit/${encodeURIComponent(loginUser.email)}`,
+                      )
+                    }
+                    aria-label="프로필 수정"
+                  >
+                    <EditCalendarOutlinedIcon />
+                  </button>
+                ) : null}
               </div>
 
               <div className={styles.profile_text}>
                 <span className={styles.my_nickname}>{nickname}</span>
                 <span className={styles.my_email}>{email}</span>
 
-                <div className={styles.buttonRow}>
-                  <button
-                    type="button"
-                    className={styles.logout}
-                    onClick={() => useAuthStore.getState().setLogout()}
-                  >
-                    로그아웃
-                  </button>
-
-                  {isAdmin && (
+                {isOwnProfile ? (
+                  <div className={styles.buttonRow}>
                     <button
                       type="button"
-                      className={styles.profileActionButton}
-                      onClick={() => navigate("/admin/dashboard")}
+                      className={styles.logout}
+                      onClick={() => useAuthStore.getState().setLogout()}
                     >
-                      관리자 페이지
+                      로그아웃
                     </button>
-                  )}
-                </div>
+
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        className={styles.profileActionButton}
+                        // 관리자 페이지 이동은 "현재 로그인한 내 계정" 맥락에서만 의미가 있어 타인 프로필에서는 숨긴다.
+                        onClick={() => navigate("/admin/dashboard")}
+                      >
+                        관리자 페이지
+                      </button>
+                    )}
+                  </div>
+                ) : null}
               </div>
             </div>
 
@@ -233,7 +267,9 @@ const MyPageMain = () => {
 
       <section>
         <div className={styles.Inter_container}>
-          <div className={styles.Interest}>Interest | 나의 관심사</div>
+          <div className={styles.Interest}>
+            Interest | {isOwnProfile ? "나의 관심사" : `${nickname}님의 관심사`}
+          </div>
 
           <div className={styles.int_boxs}>
             {selectedInterests.length > 0 ? (
@@ -258,7 +294,7 @@ const MyPageMain = () => {
 
           <div className={styles.intro_box}>
             <div className={styles.intro}>
-              <span>소갯말</span>
+              <span>{isOwnProfile ? "소갯말" : `${nickname}님의 소갯말`}</span>
             </div>
             <div className={styles.intro_text}>
               <span>{intro}</span>
@@ -267,7 +303,10 @@ const MyPageMain = () => {
 
           <div className={styles.log_container}>
             <div className={styles.log_title}>
-              <div className={styles.Interest}>My Wit Log | 나의 위트 로그</div>
+              <div className={styles.Interest}>
+                My Wit Log |{" "}
+                {isOwnProfile ? "나의 위트 로그" : `${nickname}님의 위트 로그`}
+              </div>
             </div>
             <div className={styles.scroll_wrapper}>
               <div className={styles.log_box}>
