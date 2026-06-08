@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "WithDayFront/**"
+      - ".github/workflows/deploy-frontend.yml"
 
 env:
   AWS_REGION: ap-northeast-2
@@ -22,9 +25,11 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
+        working-directory: WithDayFront
         run: npm ci
 
       - name: Build frontend
+        working-directory: WithDayFront
         run: npm run build
 
       - name: Configure AWS credentials
@@ -36,7 +41,7 @@ jobs:
 
       - name: Upload dist to S3
         run: |
-          aws s3 sync ./dist s3://${{ secrets.S3_BUCKET_NAME }} --delete
+          aws s3 sync WithDayFront/dist s3://${{ secrets.S3_BUCKET_NAME }} --delete
 
       - name: Invalidate CloudFront cache
         run: |
