@@ -141,3 +141,9 @@
     font-size: 1.85rem;
   }
 }
+
+@media (max-width: 767px) {
+  .tabsSection {
+    margin-top: 28px;
+  }
+}
