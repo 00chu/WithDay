@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMypage } from "../../features/user/mypage/useMypage";
 import InterestIcon from "../../shared/ui/InterestIconRenderer/InterestIconRenderer";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   MapPin,
   Calendar,
@@ -35,6 +36,7 @@ const MyPageMain = () => {
   const [isServiceOpen, setIsServiceOpen] = useState(true);
   const [activeServiceTab, setActiveServiceTab] = useState("recommend");
   const [isWitLogInfoOpen, setIsWitLogInfoOpen] = useState(false);
+  const queryClient = useQueryClient();
   console.log("mypageQuery 전체:", mypageQuery);
   const serviceTabs = [
     {
@@ -216,7 +218,12 @@ const MyPageMain = () => {
                     <button
                       type="button"
                       className={styles.logout}
-                      onClick={() => useAuthStore.getState().setLogout()}
+                      onClick={() => {
+                        useAuthStore.getState().setLogout();
+                        queryClient.removeQueries({ queryKey: ["mypage"] });
+                        queryClient.removeQueries({ queryKey: ["notification-count"] });
+                        navigate("/login");
+                      }}
                     >
                       로그아웃
                     </button>

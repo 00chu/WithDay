@@ -21,16 +21,19 @@ export default function Header() {
   const { user: loginUser, isLoggedIn } = useAuthStore();
   const { mypageQuery } = useMypage(undefined, isLoggedIn);
 
-  const headerProfileImage =
-    mypageQuery.data?.profileImage ||
+  const headerProfileImage = isLoggedIn
+    ? mypageQuery.data?.profileImage ||
     loginUser?.profileImage ||
-    DEFAULT_PROFILE_IMAGE;
+    DEFAULT_PROFILE_IMAGE
+    : DEFAULT_PROFILE_IMAGE;
 
-  const avatarFallback = (
-    loginUser?.nickname?.trim()?.charAt(0) ||
-    loginUser?.email?.trim()?.charAt(0) ||
-    ""
-  ).toUpperCase();
+  const avatarFallback = isLoggedIn
+    ? (
+      loginUser?.nickname?.trim()?.charAt(0) ||
+      loginUser?.email?.trim()?.charAt(0) ||
+      ""
+    ).toUpperCase()
+    : "";
 
   const handleProfileClick = () => {
     if (isLoggedIn && loginUser?.email) {

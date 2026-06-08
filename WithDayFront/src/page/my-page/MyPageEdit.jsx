@@ -10,6 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMypageEdit } from "../../features/user/mypage/useMypageEdit";
 import EditCalendarOutlinedIcon from "@mui/icons-material/EditCalendarOutlined";
 import InterestIcon from "../../shared/ui/InterestIconRenderer/InterestIconRenderer";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   EyeClosedIcon,
@@ -32,6 +33,7 @@ const MyPageEdit = () => {
   // 수정 라우트도 /mypage/edit/:email 형태라 path param 을 decode 후 비교해야 본인 판별이 정확하다.
   const normalizedRouteEmail = routeEmail ? decodeURIComponent(routeEmail) : "";
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { editQuery, updateMutation } = useMypageEdit();
   console.log("editQuery.data", editQuery.data);
   const [nickname, setNickname] = useState("단이");
@@ -336,6 +338,19 @@ const MyPageEdit = () => {
         shouldDirty: true,
       });
 
+      queryClient.setQueryData(["mypage", email], (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          profileImage: imageUrl,
+        };
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["mypage", email],
+      });
+
       setCropModalOpen(false);
       setSelectedImage(null);
       setZoom(1);
@@ -475,9 +490,8 @@ const MyPageEdit = () => {
       <div className={styles.content}>
         <div className={styles.profile}>
           <div
-            className={`${styles.avatarEditBox} ${
-              cropModalOpen ? styles.avatarEditBoxCropping : ""
-            }`}
+            className={`${styles.avatarEditBox} ${cropModalOpen ? styles.avatarEditBoxCropping : ""
+              }`}
           >
             {cropModalOpen && selectedImage ? (
               <Cropper
@@ -682,9 +696,8 @@ const MyPageEdit = () => {
                   <button
                     key={interestId}
                     type="button"
-                    className={`${styles.interestChip} ${
-                      isSelected ? styles.interestChipSelected : ""
-                    } ${shineInterestId === interestId ? styles.interestChipShine : ""}`}
+                    className={`${styles.interestChip} ${isSelected ? styles.interestChipSelected : ""
+                      } ${shineInterestId === interestId ? styles.interestChipShine : ""}`}
                     onClick={() => handleToggleInterest(interestId)}
                   >
                     <InterestIcon iconName={iconName} size={14} />
@@ -706,9 +719,8 @@ const MyPageEdit = () => {
               <div className={styles.genderSelectRow}>
                 <button
                   type="button"
-                  className={`${styles.genderButton} ${
-                    watch("gender") === "1" ? styles.genderButtonSelected : ""
-                  }`}
+                  className={`${styles.genderButton} ${watch("gender") === "1" ? styles.genderButtonSelected : ""
+                    }`}
                   onClick={() =>
                     setValue("gender", "1", {
                       shouldValidate: true,
@@ -721,9 +733,8 @@ const MyPageEdit = () => {
 
                 <button
                   type="button"
-                  className={`${styles.genderButton} ${
-                    watch("gender") === "2" ? styles.genderButtonSelected : ""
-                  }`}
+                  className={`${styles.genderButton} ${watch("gender") === "2" ? styles.genderButtonSelected : ""
+                    }`}
                   onClick={() =>
                     setValue("gender", "2", {
                       shouldValidate: true,
@@ -904,9 +915,8 @@ const MyPageEdit = () => {
                 <span>위트 신청, 승인, 일정 관련 알림을 받아볼 수 있어요.</span>
                 <button
                   type="button"
-                  className={`${styles.notificationSwitch} ${
-                    isNotiOn ? styles.notificationSwitchOn : ""
-                  }`}
+                  className={`${styles.notificationSwitch} ${isNotiOn ? styles.notificationSwitchOn : ""
+                    }`}
                   onClick={() => setIsNotiOn((prev) => !prev)}
                   aria-checked={isNotiOn}
                   role="switch"
