@@ -1,0 +1,56 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "WithDayBack/**"
+      - ".github/workflows/deploy-backend.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepare SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/withday-key.pem
+          chmod 600 ~/.ssh/withday-key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy backend on EC2
+        run: |
+          ssh -i ~/.ssh/withday-key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+
+            echo "Move to project"
+            cd ~/WithDay
+
+            echo "Pull latest source"
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "Build backend docker image"
+            cd WithDayBack
+            docker build -t withday-backend:latest .
+
+            echo "Stop old container"
+            docker stop withday-backend || true
+            docker rm withday-backend || true
+
+            echo "Run new container"
+            docker run -d \
+              --restart unless-stopped \
+              --name withday-backend \
+              -p 8080:10400 \
+              --env-file /home/ubuntu/withday-backend.env \
+              withday-backend:latest
+
+            echo "Clean unused images"
+            docker image prune -f
+
+            echo "Container status"
+            docker ps --filter "name=withday-backend"
+          EOF
