@@ -8,7 +8,7 @@ const BASE_URL = import.meta.env.VITE_BACKSERVER;
  * Home/Explore/ScheduleDetail 모두 같은 axios 인스턴스를 사용해 baseURL과 Authorization 헤더 규칙을 공유한다.
  */
 export const api = axios.create({
-  baseURL: `http://${BASE_URL}`,
+  baseURL: `${BASE_URL}`,
 });
 
 api.interceptors.request.use((config) => {

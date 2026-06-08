@@ -3,7 +3,7 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BACKSERVER;
 
 export const api = axios.create({
-  baseURL: `http://${BASE_URL}`,
+  baseURL: `${BASE_URL}`,
 });
 
 // 대시보드 데이터 조회

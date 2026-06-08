@@ -4,7 +4,7 @@ import { useAuthStore } from "../auth/store/authStore";
 const BASE_URL = import.meta.env.VITE_BACKSERVER;
 
 export const api = axios.create({
-  baseURL: `http://${BASE_URL}`,
+  baseURL: `${BASE_URL}`,
 });
 
 // 인증에 필요한 토큰을 로그인 후 최신 토큰 반영
