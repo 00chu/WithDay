@@ -7,9 +7,8 @@ const AUTO_PLAY_DELAY = 4500;
 const CAROUSEL_ITEMS = [
   {
     id: "withday-night",
-    image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1400&q=80",
-    title: "오늘의 일정은 누군가의 위트가 됩니다",
+    image: "/carousel.png",
+    title: "지도에는 없는 길, 우리라는 이름으로 걷다",
     description: "가볍게 식사부터, 주말 여행까지 한 번에 둘러보세요.",
   },
   {

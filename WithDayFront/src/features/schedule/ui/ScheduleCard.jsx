@@ -11,7 +11,7 @@ import styles from "./ScheduleCard.module.css";
  * 페이지별 레이아웃은 className/variant로만 조정하고, 카드 내부의 데이터 해석과 표시 규칙은 이 파일에 모아둔다.
  */
 const GENDER_LIMIT_LABELS = {
-  all: "남·녀",
+  all: "남·여",
   male: "남",
   female: "여",
 };
@@ -42,16 +42,16 @@ const isDefaultThumbnail = (src) => src === defaultThumbnail;
 // DB/API 값은 영문 코드이고, 카드에는 사용자가 읽기 쉬운 한글 라벨을 보여준다.
 const resolveGenderLimitLabel = (genderLimit) =>
   GENDER_LIMIT_LABELS[
-    String(genderLimit ?? "")
-      .trim()
-      .toLowerCase()
+  String(genderLimit ?? "")
+    .trim()
+    .toLowerCase()
   ] ?? "전체";
 
 const resolveCategoryLabel = (category) =>
   CATEGORY_LABELS[
-    String(category ?? "")
-      .trim()
-      .toLowerCase()
+  String(category ?? "")
+    .trim()
+    .toLowerCase()
   ] ?? "기타";
 
 const resolveRegionLabel = (region) => region?.trim() || "지역 미정";
@@ -132,7 +132,21 @@ const resolvePeriodLabel = (startDate, endDate) => {
 
   return `${formatCardDate(start)} → ${formatCardDate(end)}`;
 };
+const splitTextByLength = (text, size = 10) => {
+  const value = String(text ?? "").trim();
 
+  if (!value) {
+    return ["제목 없는 일정"];
+  }
+
+  const chunks = [];
+
+  for (let i = 0; i < value.length; i += size) {
+    chunks.push(value.slice(i, i + size));
+  }
+
+  return chunks;
+};
 export default function ScheduleCard({
   schedule,
   className,
@@ -152,6 +166,7 @@ export default function ScheduleCard({
   const isCompact = variant === "compact";
   const descriptionText =
     schedule?.description?.trim() || "일정 소개가 아직 등록되지 않았어요.";
+  const titleLines = splitTextByLength(schedule?.title ?? "제목 없는 일정", 10);
   const categoryLabel = resolveCategoryLabel(schedule?.category);
   const regionLabel = resolveRegionLabel(schedule?.region);
   const genderLabel = resolveGenderLimitLabel(schedule?.genderLimit);
@@ -271,7 +286,11 @@ export default function ScheduleCard({
                   isCompact && styles.cardTitleCompact
                 )}
               >
-                {schedule?.title ?? "제목 없는 일정"}
+                {titleLines.map((line, index) => (
+                  <span key={`${line}-${index}`} className={styles.titleLine}>
+                    {line}
+                  </span>
+                ))}
               </h3>
             </div>
           </div>
