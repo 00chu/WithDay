@@ -200,7 +200,7 @@ const FindPw = () => {
         <div className={styles.findHeader}>
           <p className={styles.findEyebrow}>WITHDAY ACCOUNT</p>
           <h1 className={styles.findTitle}>비밀번호 찾기</h1>
-          <p className={styles.findSubtitle}>
+          <p className={`${styles.findSubtitle} ${styles.findPwSubtitle}`}>
             이메일 인증 후 새 비밀번호를 설정할 수 있어요.
           </p>
         </div>

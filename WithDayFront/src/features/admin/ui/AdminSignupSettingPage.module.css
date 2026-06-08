@@ -396,7 +396,7 @@
 
 @media (max-width: 1024px) {
   .page {
-    padding: 84px 16px 80px;
+    padding: 14px 16px;
   }
 
   .interestLayout {
@@ -414,7 +414,7 @@
 
 @media (max-width: 640px) {
   .page {
-    padding: 80px 12px 72px;
+    padding: 14px 12px;
   }
 
   .pageHeader h1 {
