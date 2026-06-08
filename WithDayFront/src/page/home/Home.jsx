@@ -78,7 +78,7 @@ export default function Home() {
             <div>
               <h2 className={styles.sectionTitle}>마중 나온 위트들</h2>
               <p className={styles.sectionCaption}>
-                함께 가기 좋은 일정들을 홈에서 먼저 만나보세요 [추천/미리보기]
+                함께 가기 좋은 일정들을 홈에서 먼저 만나보세요
               </p>
             </div>
           </div>
