@@ -156,18 +156,22 @@ const WriteSchedule = () => {
   const costType = watch("post.costType");
   const totalPrice = watch("post.totalPrice");
 
-  const flattenErrors = (errorsObj) => {
-    return Object.values(errorsObj).flatMap((err) => {
-      if (!err) return [];
+  const flattenErrors = (obj) => {
+    if (!obj) return [];
 
-      // nested error (post)
-      if (err?.message) return [err.message];
+    if (obj.message) {
+      return [obj.message];
+    }
 
-      // nested object (post.title 등)
-      return Object.values(err ?? {})
-        .map((e) => e?.message)
-        .filter(Boolean);
-    });
+    if (Array.isArray(obj)) {
+      return obj.flatMap(flattenErrors);
+    }
+
+    if (typeof obj === "object") {
+      return Object.values(obj).flatMap(flattenErrors);
+    }
+
+    return [];
   };
 
   const errorList = flattenErrors(errors);
@@ -655,26 +659,27 @@ const WriteSchedule = () => {
                 <ul className={`${styles.inputWrap} ${styles.costWrap}`}>
                   <li>총액</li>
                   <li className={styles.cost}>
-                    <input
-                      type="text"
-                      className={styles.costInput}
-                      value={formatNumber(totalPrice ?? "")}
-                      onChange={(e) => {
-                        // 숫자만 추출
-                        let value = e.target.value.replace(/[^0-9]/g, "");
+                    <Controller
+                      name="post.totalPrice"
+                      control={control}
+                      render={({ field }) => (
+                        <input
+                          type="text"
+                          className={styles.costInput}
+                          value={formatNumber(field.value ?? "")}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/[^0-9]/g, "");
 
-                        // 1000만원까지만 허용
-                        value = value.slice(0, 8);
+                            value = value.slice(0, 8);
 
-                        if (Number(value) > 10000000) {
-                          value = "10000000";
-                        }
+                            if (Number(value) > 10000000) {
+                              value = "10000000";
+                            }
 
-                        setValue(
-                          "post.totalPrice",
-                          value === "" ? null : Number(value),
-                        );
-                      }}
+                            field.onChange(value === "" ? null : Number(value));
+                          }}
+                        />
+                      )}
                     />
                     <span className={styles.won}>원</span>
                   </li>
@@ -848,7 +853,6 @@ const ScheduleTable = ({
     if (!startDate || !endDate) return;
 
     const diff = new Date(endDate) - new Date(startDate);
-
     const days = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
 
     const arr = Array.from({ length: days }, (_, i) => ({
@@ -861,7 +865,10 @@ const ScheduleTable = ({
   }, [startDate, endDate, replace]);
 
   const handleChange = (index, key, value) => {
-    setValue(`detailSchedule.${index}.${key}`, value);
+    setValue(`detailSchedule.${index}.${key}`, value, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   };
 
   return (
