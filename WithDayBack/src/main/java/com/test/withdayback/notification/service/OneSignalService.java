@@ -23,14 +23,14 @@ public class OneSignalService {
     @PostConstruct
     public void init() {
 
-        System.out.println("apiKey = " + properties.getApiKey());
-        System.out.println("appId = " + properties.getAppId());
+//        System.out.println("apiKey = " + properties.getApiKey());
+//        System.out.println("appId = " + properties.getAppId());
     }
 
     // 알림 실행 시 확인
     public void sendToUser(String email, String title, String message) {
-        System.out.println("apiKey = " + properties.getApiKey());
-        System.out.println("appId = " + properties.getAppId());
+//        System.out.println("apiKey = " + properties.getApiKey());
+//        System.out.println("appId = " + properties.getAppId());
 
         RestTemplate restTemplate = new RestTemplate();
 
