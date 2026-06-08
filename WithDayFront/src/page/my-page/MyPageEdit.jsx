@@ -6,7 +6,7 @@ import { getCroppedImg } from "../../features/user/mypage/getCroppedImg";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMypageEdit } from "../../features/user/mypage/useMypageEdit";
 import EditCalendarOutlinedIcon from "@mui/icons-material/EditCalendarOutlined";
 import InterestIcon from "../../shared/ui/InterestIconRenderer/InterestIconRenderer";
@@ -28,6 +28,9 @@ const MyPageEdit = () => {
   // authStore에서 로그인 유저 정보 가져오기
   const user = useAuthStore((state) => state.user);
   const email = user?.email;
+  const { email: routeEmail } = useParams();
+  // 수정 라우트도 /mypage/edit/:email 형태라 path param 을 decode 후 비교해야 본인 판별이 정확하다.
+  const normalizedRouteEmail = routeEmail ? decodeURIComponent(routeEmail) : "";
   const navigate = useNavigate();
   const { editQuery, updateMutation } = useMypageEdit();
   console.log("editQuery.data", editQuery.data);
@@ -397,7 +400,8 @@ const MyPageEdit = () => {
     updateMutation.mutate(payload, {
       onSuccess: () => {
         alert("프로필이 수정되었습니다.");
-        navigate("/mypage/:email");
+        // 수정 직후에는 placeholder 경로가 아니라 실제 사용자 프로필 URL로 돌아가야 방금 바뀐 결과를 바로 확인할 수 있다.
+        navigate(`/mypage/${encodeURIComponent(email)}`);
       },
       onError: (error) => {
         const message =
@@ -409,6 +413,13 @@ const MyPageEdit = () => {
 
   if (!email) {
     return <div className={styles.container}>로그인이 필요합니다.</div>;
+  }
+
+  // URL 조작으로 타인 이메일을 넣고 수정 화면에 진입하는 시도를 프런트에서 먼저 차단한다.
+  if (normalizedRouteEmail && normalizedRouteEmail !== email) {
+    return (
+      <div className={styles.container}>본인 프로필만 수정할 수 있습니다.</div>
+    );
   }
 
   if (editQuery.isLoading) {

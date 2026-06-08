@@ -7,6 +7,7 @@ import com.test.withdayback.common.util.JwtUtil;
 import com.test.withdayback.user.dao.UserDao;
 import com.test.withdayback.user.dto.MypageEditRequestDTO;
 import com.test.withdayback.user.dto.MypageEditResponseDTO;
+import com.test.withdayback.user.dto.MypageResponseDTO;
 import com.test.withdayback.user.dto.SignupRequestDTO;
 import com.test.withdayback.user.dto.FindAccountDTO;
 import com.test.withdayback.user.vo.Interest;
@@ -16,10 +17,12 @@ import com.test.withdayback.user.vo.UserInterest;
 import com.test.withdayback.user.vo.UserTerms;
 import com.test.withdayback.schedule.dao.ScheduleDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -559,6 +562,37 @@ public class UserService {
 
     public User findByEmail(String email) {
         return userDao.findByEmail(email);
+    }
+
+    // 다른 사용자 공개 프로필 조회
+    public MypageResponseDTO getUserProfile(String email) {
+        User user = userDao.findByEmail(email);
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다.");
+        }
+
+        MypageResponseDTO response = new MypageResponseDTO();
+        /*
+         * 공개 프로필은 MyPageMain 화면을 그대로 재사용할 수 있을 정도의 읽기 정보는 유지하되,
+         * 수정/민감 정보(phone, address, provider, notificationAgreed 등)는 제외하는 조립 단계다.
+         */
+        response.setUserId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setNickname(user.getNickname());
+        response.setProfileImage(user.getProfileImage());
+        response.setIntro(user.getIntro());
+        response.setCreatedAt(user.getCreatedAt());
+        response.setStatus(user.getStatus());
+        response.setGender(user.getGender());
+        response.setSelectedInterestIds(userDao.getUserInterestIds(user.getId()));
+        response.setAllInterests(userDao.getAllInterests());
+        response.setTogetherScheduleCount(userDao.getTogetherScheduleCount(user.getId()));
+        response.setMetWitCount(userDao.getMetWitCount(user.getId()));
+        // 위트 로그 영역은 내 프로필/타인 프로필 모두 같은 카드 UI를 쓰므로 completed 일정 카드 목록도 같은 contract 로 맞춘다.
+        response.setMySchedules(scheduleDao.selectMyScheduleCards(user.getId()));
+
+        return response;
     }
 
     //마이페이지 수정
