@@ -328,7 +328,7 @@ const MySchedulePage = () => {
                 <div className={styles.sectionHeader}>
                   <h3 className={styles.sectionTitle}>진행 중 일정</h3>
                   <p className={styles.sectionDescription}>
-                    모집중이거나 종료일이 지나지 않은 일정입니다.
+                    모집중 상태이거나 아직 일정완료/일정취소로 전환되지 않은 일정입니다.
                   </p>
                 </div>
 
@@ -351,9 +351,9 @@ const MySchedulePage = () => {
                   <div className={styles.sectionHeader}>
                     <div className={styles.closedHeadingRow}>
                       <div>
-                        <h3 className={styles.sectionTitle}>마감된 일정</h3>
+                        <h3 className={styles.sectionTitle}>모집마감/완료/취소 일정</h3>
                         <p className={styles.sectionDescription}>
-                          모집 마감 또는 종료된 일정입니다.
+                          모집마감, 일정완료, 일정취소 상태의 일정입니다.
                         </p>
                       </div>
 
@@ -363,8 +363,8 @@ const MySchedulePage = () => {
                         onClick={() => setShowClosedHosting((prev) => !prev)}
                       >
                         {showClosedHosting
-                          ? "마감된 일정 숨기기"
-                          : `마감된 일정 보기 (${hostingSections.closedHostingItems.length})`}
+                          ? "종료 상태 일정 숨기기"
+                          : `종료 상태 일정 보기 (${hostingSections.closedHostingItems.length})`}
                       </button>
                     </div>
                   </div>
@@ -375,8 +375,8 @@ const MySchedulePage = () => {
                         items={pagedClosedHostingItems}
                         loading={currentQuery.isPending}
                         errorMessage={currentQuery.error ? errorMessage : ""}
-                        emptyTitle="마감된 일정이 없습니다."
-                        emptyDescription="아직 마감되거나 종료된 일정이 없어요."
+                        emptyTitle="종료 상태 일정이 없습니다."
+                        emptyDescription="아직 모집마감, 일정완료, 일정취소 상태 일정이 없어요."
                         onItemAction={handleScheduleAction}
                         isActionLoading={isMutationPending}
                         itemKeyPrefix="hosting-closed"

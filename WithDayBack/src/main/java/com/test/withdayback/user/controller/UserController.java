@@ -157,6 +157,23 @@
             }
         }
 
+        @DeleteMapping("/me")
+        public ResponseEntity<?> withdrawMe(
+                @RequestHeader(value = "Authorization", required = false) String authorization
+        ) {
+            try {
+                String email = getEmailFromAuthorizationHeader(authorization);
+                String result = userService.withdrawMe(email);
+
+                return ResponseEntity.ok(result);
+            } catch (org.springframework.web.server.ResponseStatusException e) {
+                return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(401).body(e.getMessage());
+            }
+        }
+
         // 다른 사용자 프로필 조회
         // 수정용 /users/mypage/edit 와 분리해서, 읽기 전용 공개 정보만 내려주는 전용 엔드포인트다.
         @GetMapping("/profile/{email}")

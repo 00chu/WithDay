@@ -51,13 +51,13 @@ export const incrementScheduleViewCount = async (scheduleId) => {
 };
 
 /*
- * 호스트가 일정 실행 버튼을 눌렀을 때 호출하는 API다.
+ * 호스트가 일정 완료 처리 버튼을 눌렀을 때 호출하는 API다.
  * 요청 자체는 단순 POST지만, 서버에서는 아래 정책을 함께 검증한다.
  * - 요청자가 실제 호스트인지
  * - 최소 인원이 충족됐는지
  * - 현재 상태가 recruiting/closed인지
  *
- * 프론트는 "실행 요청"만 보내고, 상태 전이 가능 여부의 최종 판단은 서버에 맡긴다.
+ * 프런트는 "완료 처리 요청"만 보내고, 상태 전이 가능 여부의 최종 판단은 서버에 맡긴다.
  */
 export const completeSchedule = async ({ scheduleId, email }) => {
   const normalizedEmail = email?.trim() ?? "";
@@ -69,9 +69,9 @@ export const completeSchedule = async ({ scheduleId, email }) => {
 };
 
 /*
- * 호스트가 실행 취소 버튼을 눌렀을 때 호출하는 API다.
+ * 호스트가 일정완료 취소 버튼을 눌렀을 때 호출하는 API다.
  * 서버는 이 요청을 받아 completed -> recruiting 또는 completed -> closed 중 어느 쪽으로 갈지 결정한다.
- * 즉, 프론트는 복귀 상태를 계산하지 않고 "실행 취소 의도"만 전달한다.
+ * 즉, 프런트는 복귀 상태를 계산하지 않고 "일정완료 취소 의도"만 전달한다.
  */
 export const rollbackCompletedSchedule = async ({ scheduleId, email }) => {
   const normalizedEmail = email?.trim() ?? "";
@@ -82,6 +82,19 @@ export const rollbackCompletedSchedule = async ({ scheduleId, email }) => {
       params: normalizedEmail ? { email: normalizedEmail } : {},
     },
   );
+
+  return data;
+};
+
+/*
+ * 호스트가 모집중 또는 모집마감 상태의 일정을 취소할 때 호출하는 API다.
+ * canceled는 일정 자체가 더 이상 진행되지 않는 종료 상태이므로 closed와 분리해 다룬다.
+ */
+export const cancelSchedule = async ({ scheduleId, email }) => {
+  const normalizedEmail = email?.trim() ?? "";
+  const { data } = await api.post(`/schedules/${scheduleId}/cancel`, null, {
+    params: normalizedEmail ? { email: normalizedEmail } : {},
+  });
 
   return data;
 };

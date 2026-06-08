@@ -1,6 +1,7 @@
 import styles from "./MyPageMain.module.css";
 import EditCalendarOutlinedIcon from "@mui/icons-material/EditCalendarOutlined";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import { clearAuthSession } from "../../features/auth/lib/clearAuthSession";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMypage } from "../../features/user/mypage/useMypage";
@@ -25,12 +26,14 @@ const MyPageMain = () => {
   const { email: targetEmail } = useParams();
   const loginUser = useAuthStore((state) => state.user);
   // 이메일은 URL 인코딩된 상태로 들어올 수 있으므로 decode 후 비교해야 본인 여부 판별이 틀어지지 않는다.
-  const normalizedTargetEmail = targetEmail ? decodeURIComponent(targetEmail) : "";
+  const normalizedTargetEmail = targetEmail
+    ? decodeURIComponent(targetEmail)
+    : "";
   // /mypage 또는 /mypage/{내 이메일} 은 자기 프로필, 그 외 /mypage/{다른 이메일} 은 타인 프로필로 본다.
   const isOwnProfile =
     !normalizedTargetEmail || normalizedTargetEmail === loginUser?.email;
   const { mypageQuery } = useMypage(
-    isOwnProfile ? undefined : normalizedTargetEmail,
+    isOwnProfile ? undefined : normalizedTargetEmail
   );
   const isAdmin = mypageQuery.data?.status === "admin";
   const [isServiceOpen, setIsServiceOpen] = useState(true);
@@ -167,15 +170,15 @@ const MyPageMain = () => {
   const selectedInterests = allInterests.filter((interest) =>
     selectedInterestIds
       .map(Number)
-      .includes(Number(interest.interestId ?? interest.id)),
+      .includes(Number(interest.interestId ?? interest.id))
   );
   const intro =
     mypage?.intro ||
     (isOwnProfile
-      // 자기 프로필에서는 수정 유도 문구가 자연스럽다.
-      ? "아직 등록된 소개글이 없습니다. 회원정보 수정에서 소개글을 작성해보세요."
-      // 타인 프로필에서 상대에게 수정하라고 안내하면 어색하므로 중립 문구를 쓴다.
-      : "아직 등록된 소개글이 없습니다.");
+      ? // 자기 프로필에서는 수정 유도 문구가 자연스럽다.
+        "아직 등록된 소개글이 없습니다. 회원정보 수정에서 소개글을 작성해보세요."
+      : // 타인 프로필에서 상대에게 수정하라고 안내하면 어색하므로 중립 문구를 쓴다.
+        "아직 등록된 소개글이 없습니다.");
 
   console.log("mySchedules:", mySchedules);
   return (
@@ -199,7 +202,7 @@ const MyPageMain = () => {
                     // 수정 버튼은 본인 프로필에서만 노출해 1차 UX 차단을 하고, 수정 화면/백엔드가 다시 최종 검증한다.
                     onClick={() =>
                       navigate(
-                        `/mypage/edit/${encodeURIComponent(loginUser.email)}`,
+                        `/mypage/edit/${encodeURIComponent(loginUser.email)}`
                       )
                     }
                     aria-label="프로필 수정"
@@ -218,12 +221,7 @@ const MyPageMain = () => {
                     <button
                       type="button"
                       className={styles.logout}
-                      onClick={() => {
-                        useAuthStore.getState().setLogout();
-                        queryClient.removeQueries({ queryKey: ["mypage"] });
-                        queryClient.removeQueries({ queryKey: ["notification-count"] });
-                        navigate("/login");
-                      }}
+                      onClick={() => void clearAuthSession()}
                     >
                       로그아웃
                     </button>
@@ -328,7 +326,7 @@ const MyPageMain = () => {
 
                     const dateText = formatScheduleDate(
                       schedule.startDate,
-                      schedule.endDate,
+                      schedule.endDate
                     );
 
                     const witCount =

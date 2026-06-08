@@ -5,7 +5,11 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PeopleIcon from "@mui/icons-material/People";
 import PaymentsIcon from "@mui/icons-material/Payments";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { SCHEDULE_STATUS } from "../model/constants";
+import {
+  SCHEDULE_STATUS,
+  getScheduleStatusLabel,
+  normalizeScheduleStatus,
+} from "../model/constants";
 import styles from "../../../page/schedule/ScheduleDetail.module.css";
 
 const CATEGORY_MAP = {
@@ -26,13 +30,8 @@ const costTypeMap = {
 };
 
 export default function ScheduleInfo({ schedule }) {
-  const normalizedStatus = String(schedule?.status ?? "").trim().toLowerCase();
-  const statusLabel =
-    normalizedStatus === SCHEDULE_STATUS.COMPLETED
-      ? "진행중"
-      : normalizedStatus === SCHEDULE_STATUS.RECRUITING
-        ? "모집중"
-        : "모집종료";
+  const normalizedStatus = normalizeScheduleStatus(schedule?.status);
+  const statusLabel = getScheduleStatusLabel(normalizedStatus);
   const statusClassName =
     normalizedStatus === SCHEDULE_STATUS.COMPLETED
       ? styles.statusInProgress

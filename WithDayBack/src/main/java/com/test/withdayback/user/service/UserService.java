@@ -564,6 +564,42 @@ public class UserService {
         return userDao.findByEmail(email);
     }
 
+    public User findAnyByEmail(String email) {
+        return userDao.findAnyByEmail(email);
+    }
+
+    @Transactional
+    public String withdrawMe(String email) {
+        User user = userDao.findByEmail(email);
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다.");
+        }
+
+        /*
+         * 탈퇴 시에도 schedule과 approved participation 기록은 보존해야 하므로 핵심 이력 row는 남긴다.
+         * 대신 호스트가 아직 모집 중이던 일정은 더 이상 운영될 수 없으므로 closed로 닫고,
+         * 탈퇴 사용자 본인의 pending/rejected/canceled/kicked participation만 정리한다.
+         * 사용자의 개인 설정성 데이터(bookmark, interests, terms, notification)만 지운다.
+         * 마지막에 user row만 suspended+tombstone 상태로 남겨 재가입 가능성과 로그인 차단을 동시에 만족시킨다.
+         */
+        String tombstoneEmail = buildWithdrawnEmail(user.getId());
+
+        userDao.closeSchedulesByHostUserId(user.getId());
+        userDao.deleteNonApprovedParticipationsByUserId(user.getId());
+        userDao.deleteBookmarksByUserId(user.getId());
+        userDao.deleteUserInterests(user.getId());
+        userDao.deleteUserTermsByUserId(user.getId());
+        userDao.deleteNotificationsByUserId(user.getId());
+
+        int updatedRows = userDao.softDeleteUser(user.getId(), tombstoneEmail);
+        if (updatedRows <= 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "회원 탈퇴 처리에 실패했습니다.");
+        }
+
+        return "success";
+    }
+
     // 다른 사용자 공개 프로필 조회
     public MypageResponseDTO getUserProfile(String email) {
         User user = userDao.findByEmail(email);
@@ -799,6 +835,11 @@ public class UserService {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    private String buildWithdrawnEmail(Long userId) {
+        long timestamp = System.currentTimeMillis();
+        return "deleted+" + userId + "+" + timestamp + "@withdrawn.withday.local";
     }
 
 }

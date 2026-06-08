@@ -115,11 +115,15 @@ public class ParticipationService {
         }
 
         /*
-         * completed는 "이미 일정이 진행 중이라 참여 구성이 잠긴 상태"를 뜻한다.
+         * completed는 "일정 완료 처리되어 참여 구성이 잠긴 상태"를 뜻한다.
          * 사용자가 이 시점에 빠질 수 있게 열어 두면 실제 진행 인원과 시스템 인원이 어긋날 수 있으므로 취소를 막는다.
          */
         if (schedule.getStatus() == ScheduleStatus.completed) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "진행 중인 일정은 참여 취소할 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "일정완료 상태의 일정은 참여 취소할 수 없습니다.");
+        }
+
+        if (schedule.getStatus() == ScheduleStatus.canceled) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "취소된 일정은 참여 취소할 수 없습니다.");
         }
 
         if (isScheduleEnded(schedule.getEndDate())) {
@@ -447,11 +451,15 @@ public class ParticipationService {
         }
 
         /*
-         * 일정 실행이 시작된 뒤에는 승인/거절/강퇴도 막는다.
-         * 실행 중간에 참여 상태를 바꾸면 currentParticipants, 채팅 권한, 실제 현장 인원이 뒤늦게 뒤틀릴 수 있기 때문이다.
+         * 일정이 완료 처리된 뒤에는 승인/거절/강퇴도 막는다.
+         * 완료 이후 참여 상태를 바꾸면 currentParticipants, 채팅 권한, 실제 운영 결과가 뒤늦게 뒤틀릴 수 있기 때문이다.
          */
         if (schedule.getStatus() == ScheduleStatus.completed) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "진행 중인 일정의 참여 상태는 변경할 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "일정완료 상태의 참여 상태는 변경할 수 없습니다.");
+        }
+
+        if (schedule.getStatus() == ScheduleStatus.canceled) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "취소된 일정의 참여 상태는 변경할 수 없습니다.");
         }
 
         /*
