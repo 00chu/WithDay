@@ -19,7 +19,7 @@ export default function Header() {
   const navigate = useNavigate();
 
   const { user: loginUser, isLoggedIn } = useAuthStore();
-  const { mypageQuery } = useMypage(isLoggedIn);
+  const { mypageQuery } = useMypage(undefined, isLoggedIn);
 
   const headerProfileImage =
     mypageQuery.data?.profileImage ||

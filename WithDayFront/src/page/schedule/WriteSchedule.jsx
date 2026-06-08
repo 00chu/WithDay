@@ -172,7 +172,15 @@ const WriteSchedule = () => {
 
   const errorList = flattenErrors(errors);
 
-  const hasError = isSubmitted && Object.keys(errors).length > 0;
+  const handleError = (err) => {
+    console.log(err);
+
+    setOpenSnackbar(false);
+
+    setTimeout(() => {
+      setOpenSnackbar(true);
+    }, 0);
+  };
 
   const errorMessage = errorList.join("\n");
 
@@ -264,20 +272,12 @@ const WriteSchedule = () => {
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  useEffect(() => {
-    setOpenSnackbar(hasError);
-  }, [hasError]);
-
   return (
     <>
       <header className={styles.header}></header>
       <main className={styles.main}>
         <div className={styles.contentWrap}>
-          <form
-            onSubmit={handleSubmit(onSubmit, (err) => {
-              console.log("validation error", err);
-            })}
-          >
+          <form onSubmit={handleSubmit(onSubmit, handleError)}>
             <div className={styles.inputContentWrap}>
               <h2 className={styles.inputTitle}>기본 정보</h2>
               <div className={styles.sectionContent}>
@@ -761,6 +761,9 @@ const WriteSchedule = () => {
         anchorOrigin={{
           vertical: "top",
           horizontal: "center",
+        }}
+        style={{
+          top: "90px",
         }}
         action={
           <IconButton

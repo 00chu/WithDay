@@ -1307,7 +1307,24 @@ export default function ScheduleDetail() {
                * 비호스트에게는 신청자 목록 API를 호출하지 않고, 상세 응답의 host 요약만 보여준다.
                * 이 분기는 게스트와 일반 로그인 사용자가 모두 볼 수 있는 공개 정보 영역이다.
                */
-              <section className={`${styles.panel} ${styles.hostPanel}`}>
+              <section
+                className={`${styles.panel} ${styles.hostPanel}`}
+                // 공개 프로필 기능 추가 이후 이 패널은 단순 소개 영역이 아니라 "호스트 프로필로 이동하는 카드" 역할도 함께 맡는다.
+                role={data.email ? "button" : undefined}
+                tabIndex={data.email ? 0 : undefined}
+                onClick={() => {
+                  if (data.email) {
+                    navigate(`/mypage/${encodeURIComponent(data.email)}`);
+                  }
+                }}
+                onKeyDown={(event) => {
+                  // 접근성을 위해 마우스 클릭뿐 아니라 Enter/Space 키로도 같은 이동을 지원한다.
+                  if ((event.key === "Enter" || event.key === " ") && data.email) {
+                    event.preventDefault();
+                    navigate(`/mypage/${encodeURIComponent(data.email)}`);
+                  }
+                }}
+              >
                 {hostProfile.profileImage ? (
                   <img
                     src={hostProfile.profileImage}
