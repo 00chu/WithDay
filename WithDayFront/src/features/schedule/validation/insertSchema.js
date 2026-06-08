@@ -112,10 +112,11 @@ export const insertSchema = yup.object({
 
     totalPrice: yup
       .number()
+      .nullable()
+      .required("총액을 입력해주세요.")
       .typeError("숫자를 입력해주세요.")
       .min(0, "금액은 0 이상이어야 합니다.")
-      .max(10000000, "금액은 10,000,000 이하이어야 합니다.")
-      .nullable(),
+      .max(10000000, "금액은 10,000,000 이하이어야 합니다."),
 
     costType: yup
       .string()
@@ -140,12 +141,17 @@ export const insertSchema = yup.object({
           .typeError("일차 값이 올바르지 않습니다.")
           .required("일차는 필수입니다."),
 
-        title: yup.string().required("세부 일정 제목을 입력해주세요.").max(50),
+        title: yup
+          .string()
+          .trim()
+          .required("세부 일정 제목을 입력해주세요.")
+          .max(50, "세부 일정 제목은 50자 이하로 입력해주세요."),
 
         description: yup
           .string()
+          .trim()
           .required("세부 일정 설명을 입력해주세요.")
-          .max(500),
+          .max(500, "세부 일정 설명은 500자 이하로 입력해주세요."),
       }),
     )
     .min(1, "최소 하루 이상의 일정이 필요합니다."),
