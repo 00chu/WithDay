@@ -16,11 +16,23 @@
     </insert>
 
     <select id="findByEmail" parameterType="String" resultType="User">
-        SELECT * FROM `user` WHERE email = #{email}
+        SELECT *
+        FROM `user`
+        WHERE email = #{email}
+          AND status IN ('active', 'admin')
+    </select>
+
+    <select id="findAnyByEmail" parameterType="String" resultType="User">
+        SELECT *
+        FROM `user`
+        WHERE email = #{email}
     </select>
 
     <select id="findUserIdByEmail" parameterType="String" resultType="long">
-        SELECT id FROM `user` WHERE email = #{email}
+        SELECT id
+        FROM `user`
+        WHERE email = #{email}
+          AND status IN ('active', 'admin')
     </select>        
 
     <!-- 현재 nickname + phone에 DB unique 제약조건이 없으므로, 혹시 중복 데이터가 있더라도 한 명만 조회되도록 LIMIT 1 사용 -->
@@ -107,6 +119,30 @@
         WHERE user_id = #{userId}
     </delete>
 
+    <delete id="deleteUserTermsByUserId" parameterType="long">
+        DELETE FROM user_terms
+        WHERE user_id = #{userId}
+    </delete>
+
+    <delete id="deleteNotificationsByUserId" parameterType="long">
+        DELETE FROM notification
+        WHERE receiver_id = #{userId}
+    </delete>
+
+    <update id="closeSchedulesByHostUserId" parameterType="long">
+        UPDATE schedule
+        SET status = 'closed'
+        WHERE user_id = #{userId}
+          AND deleted_at IS NULL
+          AND status = 'recruiting'
+    </update>
+
+    <delete id="deleteNonApprovedParticipationsByUserId" parameterType="long">
+        DELETE FROM participation
+        WHERE user_id = #{userId}
+          AND status &lt;&gt; 'approved'
+    </delete>
+
     <!-- 특정 유저가 특정 약관에 대한 동의 내역을 가지고 있는지 확인 -->
     <select id="countUserTerms" resultType="int">
         SELECT COUNT(*)
@@ -136,6 +172,26 @@
         SET profile_image = #{profileImage}
         WHERE id = #{userId}
     </update>
+
+    <delete id="deleteBookmarksByUserId" parameterType="long">
+        DELETE FROM bookmark
+        WHERE user_id = #{userId}
+    </delete>
+
+    <update id="softDeleteUser">
+        UPDATE `user`
+        SET
+            status = 'suspended',
+            email = #{tombstoneEmail},
+            provider_id = '',
+            phone = NULL,
+            postcode = NULL,
+            address = NULL,
+            detail_address = NULL
+        WHERE id = #{userId}
+          AND status IN ('active', 'admin')
+    </update>
+
     <!--함께한 일정 수(상단 요약 카드의 숫자 계산용) -->
     <select id="getTogetherScheduleCount" parameterType="long" resultType="int">
         SELECT COUNT(DISTINCT t.schedule_id)

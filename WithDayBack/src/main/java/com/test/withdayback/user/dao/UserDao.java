@@ -21,6 +21,9 @@ public interface UserDao {
     // 이메일로 유저찾기
     User findByEmail(String email);
 
+    // suspended 포함 원본 row 조회가 필요한 예외 경로(탈퇴 처리, 운영 점검)에서만 사용한다.
+    User findAnyByEmail(String email);
+
     // 이메일로 유저 ID 찾기
     Long findUserIdByEmail(String email);
     
@@ -62,6 +65,14 @@ public interface UserDao {
     // 유저의 기존 관심사 전체 삭제
     void deleteUserInterests(Long userId);
 
+    void deleteUserTermsByUserId(Long userId);
+
+    int deleteNotificationsByUserId(Long userId);
+
+    int closeSchedulesByHostUserId(Long userId);
+
+    int deleteNonApprovedParticipationsByUserId(Long userId);
+
     // 특정 유저가 특정 약관에 대한 동의 내역을 가지고 있는지 확인
     int countUserTerms(
             @Param("userId") Long userId,
@@ -78,5 +89,12 @@ public interface UserDao {
     int getTogetherScheduleCount(Long userId);
 
     int getMetWitCount(Long userId);
+
+    int deleteBookmarksByUserId(Long userId);
+
+    int softDeleteUser(
+            @Param("userId") Long userId,
+            @Param("tombstoneEmail") String tombstoneEmail
+    );
 
 }

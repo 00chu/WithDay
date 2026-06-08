@@ -55,9 +55,9 @@ const ScheduleItem = ({ schedule }) => {
 
   const statusMap = {
     recruiting: "모집중",
-    closed: "마감",
-    canceled: "취소",
-    completed: "완료",
+    closed: "모집마감",
+    canceled: "일정취소",
+    completed: "일정완료",
   };
 
   const publicMap = {

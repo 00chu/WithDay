@@ -6,7 +6,10 @@ import {
   useApplyScheduleMutation,
   useCancelParticipationMutation,
 } from "../../participation/model/mutations";
-import { SCHEDULE_STATUS } from "./constants";
+import {
+  SCHEDULE_STATUS,
+  getScheduleStatusLabel,
+} from "./constants";
 import { getScheduleEligibility } from "./eligibility";
 
 const isScheduleClosedByDate = (recruitEndDate) => {
@@ -95,7 +98,7 @@ export function useScheduleApplyAction({
 
   const buttonLabel = useMemo(() => {
     if (isHost) return "내가 만든 일정";
-    if (isCompleted) return "일정 진행 중";
+    if (isCompleted) return getScheduleStatusLabel(SCHEDULE_STATUS.COMPLETED);
     if (isActionPending) {
       return canCancel ? "취소 처리 중..." : "신청 중...";
     }
@@ -103,7 +106,11 @@ export function useScheduleApplyAction({
     if (effectiveParticipationStatus === "APPROVED") return "참여 취소";
     if (effectiveParticipationStatus === "REJECTED") return "거절됨";
     if (effectiveParticipationStatus === "KICKED") return "참여 불가";
-    if (isClosed) return "모집 종료";
+    if (isClosed) {
+      return getScheduleStatusLabel(
+        isClosedByDate ? SCHEDULE_STATUS.CLOSED : status,
+      );
+    }
     return "참여 신청하기";
   }, [
     canCancel,
@@ -111,7 +118,9 @@ export function useScheduleApplyAction({
     isCompleted,
     isActionPending,
     isClosed,
+    isClosedByDate,
     isHost,
+    status,
   ]);
 
   const isButtonDisabled =
@@ -131,7 +140,7 @@ export function useScheduleApplyAction({
       : [];
 
   const infoMessage = isCompleted
-    ? "진행 중인 일정은 참여 신청이나 취소를 할 수 없습니다."
+    ? "일정완료 상태의 일정은 참여 신청이나 취소를 할 수 없습니다."
     : "";
 
   const showFeedback = ({ message, severity }) => {
@@ -185,7 +194,7 @@ export function useScheduleApplyAction({
     if (isCompleted) {
       showFeedback({
         severity: "info",
-        message: "진행 중인 일정은 참여 신청이나 취소를 할 수 없습니다.",
+        message: "일정완료 상태의 일정은 참여 신청이나 취소를 할 수 없습니다.",
       });
       return;
     }

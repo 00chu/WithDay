@@ -39,6 +39,7 @@ public class SecurityConfig {
                                 "/users/google-login",
                                 "/users/social-signup",
                                 "/users/email-verification",
+                                "/users/me",
                                 // 공개 프로필 read API 를 permitAll 에 포함하지 않으면 스프링 시큐리티가 먼저 막아 프런트에서 generic 에러로만 보이게 된다.
                                 "/users/profile/**",
                                 "/users/mypage/**",

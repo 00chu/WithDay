@@ -97,13 +97,13 @@ const Dashboard = () => {
           </div>
           <div className={styles.card_content}>
             <div className={styles.statusRow}>
-              <span>시작된 일정</span>
+              <span>완료된 일정</span>
               <strong>
                 {dashboardData.completedScheduleCount.toLocaleString()}
               </strong>
             </div>
             <div className={styles.statusRow}>
-              <span>마감된 일정</span>
+              <span>모집마감 일정</span>
               <strong>
                 {dashboardData.closedScheduleCount.toLocaleString()}
               </strong>
@@ -342,7 +342,7 @@ const ScheduleStatusChart = ({ completed, closed }) => {
       type: "bar",
     },
     title: {
-      text: "시작 / 마감 일정", // 상단 제목
+      text: "완료 / 모집마감 일정", // 상단 제목
       align: "left",
       style: {
         fontSize: "18px",
@@ -350,7 +350,7 @@ const ScheduleStatusChart = ({ completed, closed }) => {
       },
     },
     xaxis: {
-      categories: ["시작된 일정", "마감된 일정"],
+      categories: ["완료된 일정", "모집마감 일정"],
     },
     legend: {
       position: "bottom",

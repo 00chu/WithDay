@@ -25,6 +25,7 @@ import {
   deleteBookmark as deleteBookmarkApi,
   completeSchedule,
   rollbackCompletedSchedule,
+  cancelSchedule,
   fetchScheduleDetail,
   incrementScheduleViewCount,
   deleteSchedule,
@@ -34,7 +35,11 @@ import { useScheduleApplicantsQuery } from "../../features/participation/model/q
 import { useUpdateParticipationStatusMutation } from "../../features/participation/model/mutations";
 import ParticipationFeedback from "../../features/participation/ui/ParticipationFeedback/ParticipationFeedback";
 import HostParticipationList from "../../features/participation/ui/HostParticipationList/HostParticipationList";
-import { SCHEDULE_STATUS } from "../../features/schedule/model/constants";
+import {
+  SCHEDULE_STATUS,
+  SCHEDULE_STATUS_LABELS,
+  getScheduleStatusLabel,
+} from "../../features/schedule/model/constants";
 import { useScheduleApplyAction } from "../../features/schedule/model/useScheduleApplyAction";
 import Button from "../../shared/ui/Button/Button";
 import styles from "./ScheduleDetail.module.css";
@@ -188,10 +193,8 @@ const formatLocation = (schedule) => {
 };
 
 /*
- * 상세 상단 배지에 보여줄 "일정 단계 문구"를 계산한다.
- * 여기서 중요한 점은 completed를 단순 "종료"로 보지 않는다는 것이다.
- * 이번 기능에서는 completed를 "호스트가 일정 시작을 확정했고, 참여/수정/삭제가 잠긴 진행 상태"로 사용하므로
- * 배지 문구도 종료가 아니라 진행중으로 보여줘야 사용자가 현재 제약을 올바르게 이해할 수 있다.
+ * 상세 상단 배지에 보여줄 일정 상태 문구를 계산한다.
+ * 정책상 schedule.status가 가장 우선이고, 날짜는 recruiting 일정이 이미 지났는데 상태 정리가 늦었을 때만 보조적으로 쓴다.
  */
 const resolveSchedulePhase = (schedule) => {
   const today = new Date();
@@ -218,24 +221,17 @@ const resolveSchedulePhase = (schedule) => {
   }
 
   if (normalizedStatus === SCHEDULE_STATUS.CANCELED) {
-    return { label: "취소됨", className: styles.statusClosed };
+    return {
+      label: SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.CANCELED],
+      className: styles.statusClosed,
+    };
   }
 
   if (normalizedStatus === SCHEDULE_STATUS.COMPLETED) {
-    return { label: "진행중", className: styles.statusInProgress };
-  }
-
-  if (endDate instanceof Date && !Number.isNaN(endDate.getTime()) && endDate < today) {
-    return { label: "종료", className: styles.statusClosed };
-  }
-
-  if (
-    startDate instanceof Date &&
-    !Number.isNaN(startDate.getTime()) &&
-    startDate <= today &&
-    (!(endDate instanceof Date) || Number.isNaN(endDate.getTime()) || endDate >= today)
-  ) {
-    return { label: "진행중", className: styles.statusInProgress };
+    return {
+      label: SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.COMPLETED],
+      className: styles.statusInProgress,
+    };
   }
 
   if (
@@ -244,10 +240,35 @@ const resolveSchedulePhase = (schedule) => {
       !Number.isNaN(recruitEndDate.getTime()) &&
       recruitEndDate < today)
   ) {
-    return { label: "모집종료", className: styles.statusClosed };
+    return {
+      label: SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.CLOSED],
+      className: styles.statusClosed,
+    };
   }
 
-  return { label: "모집중", className: styles.statusOpen };
+  if (endDate instanceof Date && !Number.isNaN(endDate.getTime()) && endDate < today) {
+    return {
+      label: SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.COMPLETED],
+      className: styles.statusInProgress,
+    };
+  }
+
+  if (
+    startDate instanceof Date &&
+    !Number.isNaN(startDate.getTime()) &&
+    startDate <= today &&
+    (!(endDate instanceof Date) || Number.isNaN(endDate.getTime()) || endDate >= today)
+  ) {
+    return {
+      label: getScheduleStatusLabel(schedule?.status ?? SCHEDULE_STATUS.RECRUITING),
+      className: styles.statusOpen,
+    };
+  }
+
+  return {
+    label: SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.RECRUITING],
+    className: styles.statusOpen,
+  };
 };
 
 /*
@@ -599,6 +620,27 @@ export default function ScheduleDetail() {
       },
     });
 
+  const { mutateAsync: cancelHostSchedule, isPending: isCancelingSchedule } =
+    useMutation({
+      mutationFn: cancelSchedule,
+      onSuccess: async () => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["schedule-detail", parsedScheduleId],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["schedules"],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["home-schedules"],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["participation"],
+          }),
+        ]);
+      },
+    });
+
   /*
    * 참여 CTA 로직은 별도 hook에서 돌리고, 토스트 표시는 상세 페이지에서 공통으로 처리한다.
    * 이렇게 해야 신청 성공/실패와 호스트 승인/거절 피드백이 같은 Snackbar 위치와 스타일을 공유한다.
@@ -893,10 +935,10 @@ export default function ScheduleDetail() {
     }
 
     /*
-     * 실행은 되돌릴 수는 있지만 영향이 큰 상태 변경이므로 확인창을 둔다.
+     * 완료 처리는 되돌릴 수는 있지만 영향이 큰 상태 변경이므로 확인창을 둔다.
      * 사용자는 이 버튼 한 번으로 이후 참여 취소, 승인/거절, 수정/삭제가 잠긴다는 사실을 인지해야 한다.
      */
-    if (!window.confirm("이 일정을 실행 상태로 변경하시겠습니까?")) {
+    if (!window.confirm("이 일정을 완료 처리하시겠습니까?")) {
       return;
     }
 
@@ -910,11 +952,11 @@ export default function ScheduleDetail() {
        * 성공 후에는 mutation onSuccess에서 캐시가 무효화되고,
        * 상세 재조회가 끝나면 배지/버튼/신청자 관리 영역이 새 상태에 맞게 다시 렌더링된다.
        */
-      showFeedback("success", "일정이 실행 상태로 변경되었습니다.");
+      showFeedback("success", "일정이 완료 처리되었습니다.");
     } catch (requestError) {
       showFeedback(
         "error",
-        resolveRequestErrorMessage(requestError, "일정 실행 처리에 실패했습니다."),
+        resolveRequestErrorMessage(requestError, "일정 완료 처리에 실패했습니다."),
       );
     }
   }, [
@@ -933,7 +975,7 @@ export default function ScheduleDetail() {
       return;
     }
 
-    if (!window.confirm("실행 상태를 취소하시겠습니까?")) {
+    if (!window.confirm("일정완료 상태를 취소하시겠습니까?")) {
       return;
     }
 
@@ -943,11 +985,11 @@ export default function ScheduleDetail() {
         email: authEmail,
       });
 
-      showFeedback("success", "일정 실행이 취소되었습니다.");
+      showFeedback("success", "일정완료 상태가 취소되었습니다.");
     } catch (requestError) {
       showFeedback(
         "error",
-        resolveRequestErrorMessage(requestError, "일정 실행 취소에 실패했습니다."),
+        resolveRequestErrorMessage(requestError, "일정완료 취소에 실패했습니다."),
       );
     }
   }, [
@@ -957,6 +999,39 @@ export default function ScheduleDetail() {
     parsedScheduleId,
     resolveRequestErrorMessage,
     rollbackScheduleExecution,
+    showFeedback,
+  ]);
+
+  const handleCancelSchedule = useCallback(async () => {
+    if (!isLoggedIn || !authEmail) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    if (!window.confirm("이 일정을 취소하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      await cancelHostSchedule({
+        scheduleId: parsedScheduleId,
+        email: authEmail,
+      });
+
+      showFeedback("success", "일정이 취소되었습니다.");
+    } catch (requestError) {
+      showFeedback(
+        "error",
+        resolveRequestErrorMessage(requestError, "일정 취소에 실패했습니다."),
+      );
+    }
+  }, [
+    authEmail,
+    cancelHostSchedule,
+    isLoggedIn,
+    navigate,
+    parsedScheduleId,
+    resolveRequestErrorMessage,
     showFeedback,
   ]);
 
@@ -1032,12 +1107,19 @@ export default function ScheduleDetail() {
   const normalizedScheduleStatus = schedule?.status?.trim()?.toLowerCase() ?? "";
   const isScheduleCompleted = normalizedScheduleStatus === SCHEDULE_STATUS.COMPLETED;
   /*
-   * 실행 버튼 활성 조건은 프론트에서도 먼저 계산한다.
-   * 다만 이것은 UX 보조 장치일 뿐이고, 실제 최소 인원 충족 여부는 백엔드 completeSchedule이 최종 검증한다.
+   * 일정 완료 버튼 활성 조건은 프런트에서도 먼저 계산한다.
+   * 다만 이것은 UX 보조 장치일 뿐이고, 실제 최소 인원 충족 여부와 상태 전이 가능 여부는 백엔드가 최종 검증한다.
    */
-  const canExecuteSchedule =
+  const canCompleteSchedule =
     Number(schedule.currentParticipants ?? 0) >= Number(schedule.minParticipants ?? 0);
-  const isScheduleActionPending = isCompletingSchedule || isRollbackPending;
+  const isScheduleCanceled = normalizedScheduleStatus === SCHEDULE_STATUS.CANCELED;
+  const isScheduleClosed = normalizedScheduleStatus === SCHEDULE_STATUS.CLOSED;
+  const isScheduleRecruiting = normalizedScheduleStatus === SCHEDULE_STATUS.RECRUITING;
+  const isScheduleActionPending =
+    isCompletingSchedule || isRollbackPending || isCancelingSchedule;
+  const isScheduleCancelable = isScheduleRecruiting || isScheduleClosed;
+  const isScheduleCompletable =
+    (isScheduleRecruiting || isScheduleClosed) && canCompleteSchedule;
   const isBookmarked = Boolean(data?.isBookmarked ?? schedule?.isBookmarked);
   const shouldShowHiddenBanner =
     Boolean(data?.hiddenFromPublic) && (viewerIsHost || viewerIsAdmin);
@@ -1093,10 +1175,10 @@ export default function ScheduleDetail() {
 
     /*
      * 수정 버튼은 모집 마감일이 지나면 숨기고,
-     * 추가로 completed 상태에서도 무조건 숨긴다.
+     * 추가로 completed/canceled 상태에서도 무조건 숨긴다.
      * 이렇게 프론트에서 먼저 감추더라도 서버는 updateSchedule에서 다시 차단한다.
      */
-    return !isScheduleCompleted && end >= today;
+    return !isScheduleCompleted && !isScheduleCanceled && end >= today;
   })();
 
   /*
@@ -1495,7 +1577,7 @@ export default function ScheduleDetail() {
             {viewerIsHost ? (
               /*
                * 호스트 관리 버튼은 프론트에서 UX 차단을 먼저 하지만 서버가 최종 권한/상태를 재검증한다.
-               * completed 상태에서는 수정/삭제/상태 변경을 잠그고, 실행 취소만 별도 액션으로 제공한다.
+               * completed 상태에서는 수정/삭제/상태 변경을 잠그고, 일정완료 취소만 별도 액션으로 제공한다.
                */
               <section className={styles.panel}>
                 <div className={styles.panelHeader}>
@@ -1506,7 +1588,7 @@ export default function ScheduleDetail() {
                     variant={isScheduleCompleted ? "outline" : "accent"}
                     disabled={
                       isScheduleActionPending ||
-                      (!isScheduleCompleted && !canExecuteSchedule)
+                      (!isScheduleCompleted && !isScheduleCompletable)
                     }
                     onClick={
                       isScheduleCompleted
@@ -1514,8 +1596,18 @@ export default function ScheduleDetail() {
                         : handleExecuteSchedule
                     }
                   >
-                    {isScheduleCompleted ? "실행 취소" : "일정 실행"}
+                    {isScheduleCompleted ? "완료 취소" : "일정 완료"}
                   </Button>
+
+                  {isScheduleCancelable ? (
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelSchedule}
+                      disabled={isScheduleActionPending}
+                    >
+                      일정 취소
+                    </Button>
+                  ) : null}
 
                   {isEditable ? (
                     <Button
@@ -1539,15 +1631,21 @@ export default function ScheduleDetail() {
                   </Button>
                 </div>
 
-                {viewerIsHost && !isScheduleCompleted && !canExecuteSchedule ? (
+                {viewerIsHost && !isScheduleCompleted && !isScheduleCanceled && !isScheduleCompletable ? (
                   <p className={styles.executionNotice}>
-                    최소 {minParticipants}명이 모여야 일정 실행이 가능합니다.
+                    최소 {minParticipants}명이 모여야 일정 완료 처리가 가능합니다.
                   </p>
                 ) : null}
 
                 {viewerIsHost && isScheduleCompleted ? (
                   <p className={styles.executionNotice}>
-                    진행 중인 일정입니다. 참여 상태 변경, 일정 수정, 삭제는 잠겨 있습니다.
+                    일정완료 상태입니다. 참여 상태 변경, 일정 수정, 삭제는 잠겨 있습니다.
+                  </p>
+                ) : null}
+
+                {viewerIsHost && isScheduleCanceled ? (
+                  <p className={styles.executionNotice}>
+                    일정취소 상태입니다. 추가 신청과 호스트 관리 액션은 제한됩니다.
                   </p>
                 ) : null}
               </section>

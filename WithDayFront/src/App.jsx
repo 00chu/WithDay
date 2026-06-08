@@ -6,6 +6,7 @@ import { useLocation } from "react-router-dom";
 import Home from "./page/home/Home";
 import ExplorePage from "./page/explore/ExplorePage";
 import { useAuthStore } from "./features/auth/store/authStore";
+import { clearAuthSession } from "./features/auth/lib/clearAuthSession";
 import Signup from "./page/login/Signup";
 import Login from "./page/login/Login";
 import SocialExtra from "./page/login/SocialExtra";
@@ -35,7 +36,6 @@ import AdminPage from "./page/admin/AdminPage";
 function App() {
   // 로그인 상태와 토큰 만료 여부를 Zustand에서 가져옴
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const setLogout = useAuthStore((state) => state.setLogout);
   const getTokenRemainingTime = useAuthStore(
     (state) => state.getTokenRemainingTime,
   );
@@ -52,7 +52,7 @@ function App() {
 
     // 남은 시간이 0 이하이면 이미 토큰이 만료된 상태이므로, 바로 로그아웃 처리하고 페이지 새로고침
     if (remainingTime <= 0) {
-      setLogout();
+      void clearAuthSession();
       // 토큰이 만료되어 로그아웃 처리된 후, 로그인 페이지로 리다이렉트될 때 새로고침이 필요한 경우가 있어서, 새로고침도 함께 수행
       window.location.reload();
       return;
@@ -60,14 +60,14 @@ function App() {
 
     // 남은 시간이 양수이면, 해당 시간 후에 로그아웃 처리하는 타이머 설정
     const timer = window.setTimeout(() => {
-      setLogout();
+      void clearAuthSession();
       // 토큰이 만료되어 로그아웃 처리된 후, 로그인 페이지로 리다이렉트될 때 새로고침이 필요한 경우가 있어서, 새로고침도 함께 수행
       window.location.reload();
     }, remainingTime);
 
     // 컴포넌트가 언마운트되거나 로그인 상태가 변경될 때 타이머 정리 (메모리 누수 방지)
     return () => window.clearTimeout(timer);
-  }, [isLoggedIn, getTokenRemainingTime, setLogout]);
+  }, [isLoggedIn, getTokenRemainingTime]);
 
   useEffect(() => {
     const init = async () => {

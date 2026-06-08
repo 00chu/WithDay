@@ -69,9 +69,9 @@ const ScheduleManagementPage = () => {
 
   const statusOptions = [
     { label: "모집중", value: "recruiting" },
-    { label: "마감", value: "closed" },
-    { label: "취소", value: "canceled" },
-    { label: "완료", value: "completed" },
+    { label: "모집마감", value: "closed" },
+    { label: "일정취소", value: "canceled" },
+    { label: "일정완료", value: "completed" },
   ];
 
   const handleReset = () => {

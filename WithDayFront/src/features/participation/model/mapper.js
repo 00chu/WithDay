@@ -1,5 +1,8 @@
 import { dayjs, formatDateRange, getDDay } from "../../../shared/lib/dateUtile";
-import { SCHEDULE_STATUS } from "../../schedule/model/constants";
+import {
+  SCHEDULE_STATUS,
+  SCHEDULE_STATUS_LABELS,
+} from "../../schedule/model/constants";
 import { PARTICIPATION_CATEGORY_LABELS } from "./constants";
 
 /*
@@ -74,53 +77,43 @@ const formatDisplayDDay = (startDate) => {
 
 /*
  * schedule 자체의 모집/진행 상태를 participation 카드에 표시할 짧은 문구로 바꾸는 함수다.
- * participation status와 별개로 "이 일정이 현재 모집중인가, 진행중인가, 종료됐는가"를 알려주기 위해 사용한다.
+ * participation status와 별개로 일정 자체의 현재 상태를 카드에 짧게 보여주기 위한 helper다.
  *
  * 판단 순서가 중요한 이유:
- * - 명시적 schedule.status(canceled/closed/completed)를 우선 반영
- * - 그다음 날짜 기준으로 진행중/종료 여부를 보정
+ * - 명시적 schedule.status(recruiting/closed/completed/canceled)를 우선 반영
+ * - 그다음 날짜 기준 종료 여부를 보정
  * - 마지막 fallback을 모집중으로 둔다
  */
 const resolveSchedulePhase = ({
   endDate,
   recruitEndDate,
   scheduleStatus,
-  startDate,
 }) => {
   const today = dayjs().startOf("day");
   const normalizedStatus = scheduleStatus?.trim()?.toLowerCase() ?? "";
   const end = endDate ? dayjs(endDate).startOf("day") : null;
-  const start = startDate ? dayjs(startDate).startOf("day") : null;
   const recruitEnd = recruitEndDate ? dayjs(recruitEndDate).startOf("day") : null;
 
   if (normalizedStatus === SCHEDULE_STATUS.CANCELED) {
-    return "취소됨";
+    return SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.CANCELED];
   }
 
   if (normalizedStatus === SCHEDULE_STATUS.COMPLETED) {
-    return "진행중";
-  }
-
-  if (end?.isValid() && end.isBefore(today)) {
-    return "종료";
-  }
-
-  if (
-    start?.isValid() &&
-    (start.isSame(today) || start.isBefore(today)) &&
-    (!end?.isValid() || end.isSame(today) || end.isAfter(today))
-  ) {
-    return "진행중";
+    return SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.COMPLETED];
   }
 
   if (
     normalizedStatus === SCHEDULE_STATUS.CLOSED ||
     (recruitEnd?.isValid() && recruitEnd.isBefore(today))
   ) {
-    return "모집종료";
+    return SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.CLOSED];
   }
 
-  return "모집중";
+  if (end?.isValid() && end.isBefore(today)) {
+    return SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.COMPLETED];
+  }
+
+  return SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.RECRUITING];
 };
 
 /*
@@ -134,7 +127,6 @@ export const normalizeMyScheduleItem = (item) => {
     endDate: item.endDate,
     recruitEndDate: item.recruitEndDate,
     scheduleStatus: item.scheduleStatus,
-    startDate: item.startDate,
   });
   const today = dayjs().startOf("day");
   const start = item.startDate ? dayjs(item.startDate).startOf("day") : null;
@@ -142,11 +134,10 @@ export const normalizeMyScheduleItem = (item) => {
     start?.isValid() ? start.diff(today, "day") : Number.POSITIVE_INFINITY;
 
   const resolvePhaseTone = (phase) => {
-    if (phase === "모집중") return "open";
-    if (phase === "모집종료") return "closed";
-    if (phase === "진행중") return "ongoing";
-    if (phase === "취소됨") return "canceled";
-    if (phase === "종료") return "ended";
+    if (phase === SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.RECRUITING]) return "open";
+    if (phase === SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.CLOSED]) return "closed";
+    if (phase === SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.COMPLETED]) return "ongoing";
+    if (phase === SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.CANCELED]) return "canceled";
     return "neutral";
   };
 
