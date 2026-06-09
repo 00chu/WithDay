@@ -470,6 +470,37 @@
   min-width: 0;
 }
 
+.hostProfileAction {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.hostProfileAction:focus-visible {
+  outline: 2px solid var(--color-primary, #2563eb);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.hostAvatarButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hostAvatarButton:hover .hostAvatar {
+  filter: brightness(0.97);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.hostAvatarButton:focus-visible .hostAvatar {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+}
+
 .hostBadge {
   display: block;
   color: var(--color-text-muted, #94a3b8);
@@ -477,11 +508,22 @@
   font-weight: 800;
 }
 
+.hostNameButton {
+  display: inline-flex;
+  margin-top: 4px;
+}
+
 .hostName {
   display: block;
-  margin-top: 4px;
   color: var(--color-text-primary, #1e293b);
   font-size: 1.08rem;
+  transition: color 0.18s ease, text-decoration-color 0.18s ease;
+}
+
+.hostNameButton:hover .hostName {
+  color: var(--color-primary, #2563eb);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
 }
 
 .hostMeta,

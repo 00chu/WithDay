@@ -77,6 +77,8 @@ const COST_TYPE_LABELS = {
   custom: "인당 고정 금액",
 };
 
+const DEFAULT_HOST_PROFILE_IMAGE = "/default-4.png";
+
 /*
  * 이미지가 없는 일정도 hero 영역의 높이와 레이아웃이 무너지면 안 된다.
  * 실제 API 이미지가 없을 때만 쓰는 마지막 fallback이며, 더미 참여자/더미 정보와 달리 레이아웃 안전장치 역할만 한다.
@@ -1244,6 +1246,8 @@ export default function ScheduleDetail() {
    */
   const hostProfile = data.host ?? {};
   const hostName = hostProfile.nickname || "호스트";
+  const hostEmail = data.email?.trim?.() ?? "";
+  const hostProfileImage = hostProfile.profileImage?.trim?.() || DEFAULT_HOST_PROFILE_IMAGE;
   const deadlineLabel = formatDDay(schedule.recruitEndDate);
   const visibleThumbnails = imageUrls.slice(0, MAX_VISIBLE_THUMBNAILS);
   const participantCount = Number(schedule.currentParticipants ?? 0);
@@ -1458,39 +1462,57 @@ export default function ScheduleDetail() {
                */
               <section
                 className={`${styles.panel} ${styles.hostPanel}`}
-                // 공개 프로필 기능 추가 이후 이 패널은 단순 소개 영역이 아니라 "호스트 프로필로 이동하는 카드" 역할도 함께 맡는다.
-                role={data.email ? "button" : undefined}
-                tabIndex={data.email ? 0 : undefined}
-                onClick={() => {
-                  if (data.email) {
-                    navigate(`/mypage/${encodeURIComponent(data.email)}`);
-                  }
-                }}
-                onKeyDown={(event) => {
-                  // 접근성을 위해 마우스 클릭뿐 아니라 Enter/Space 키로도 같은 이동을 지원한다.
-                  if (
-                    (event.key === "Enter" || event.key === " ") &&
-                    data.email
-                  ) {
-                    event.preventDefault();
-                    navigate(`/mypage/${encodeURIComponent(data.email)}`);
-                  }
-                }}
               >
-                {hostProfile.profileImage ? (
+                {hostEmail ? (
+                  <button
+                    type="button"
+                    className={`${styles.hostProfileAction} ${styles.hostAvatarButton}`}
+                    onClick={() => {
+                      navigate(`/mypage/${encodeURIComponent(hostEmail)}`);
+                    }}
+                    aria-label={`${hostName} 프로필 보기`}
+                  >
+                    <img
+                      src={hostProfileImage}
+                      alt={`${hostName} 프로필`}
+                      className={styles.hostAvatar}
+                      onError={(event) => {
+                        /*
+                         * 외부 프로필 이미지가 깨졌을 때도 영역 크기를 유지해야 한다.
+                         * 동일한 기본 이미지를 다시 넣고, 무한 재시도를 막기 위해 onerror를 먼저 끊는다.
+                         */
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = DEFAULT_HOST_PROFILE_IMAGE;
+                      }}
+                    />
+                  </button>
+                ) : (
                   <img
-                    src={hostProfile.profileImage}
+                    src={hostProfileImage}
                     alt={`${hostName} 프로필`}
                     className={styles.hostAvatar}
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = DEFAULT_HOST_PROFILE_IMAGE;
+                    }}
                   />
-                ) : (
-                  <div className={styles.hostAvatar}>
-                    {resolveInitial(hostName)}
-                  </div>
                 )}
                 <div className={styles.hostText}>
                   <span className={styles.hostBadge}>이 일정의 호스트</span>
-                  <strong className={styles.hostName}>{hostName}</strong>
+                  {hostEmail ? (
+                    <button
+                      type="button"
+                      className={`${styles.hostProfileAction} ${styles.hostNameButton}`}
+                      onClick={() => {
+                        navigate(`/mypage/${encodeURIComponent(hostEmail)}`);
+                      }}
+                      aria-label={`${hostName} 마이페이지로 이동`}
+                    >
+                      <strong className={styles.hostName}>{hostName}</strong>
+                    </button>
+                  ) : (
+                    <strong className={styles.hostName}>{hostName}</strong>
+                  )}
                   <p className={styles.hostMeta}>
                     일정 참여 전 호스트가 제공한 모집 조건을 확인해 주세요.
                   </p>
