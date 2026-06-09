@@ -1315,6 +1315,7 @@
 
 @media (max-width: 425px) {
   .cardCompact:global(.homeTicketCard) .deadlinePillBase {
+    top: 12px;
     left: 0;
     margin-left: 0;
 
@@ -1327,11 +1328,14 @@
   }
 
   .cardCompact:global(.homeTicketCard) .genderPill {
+    top: 12px;
     right: 32px;
     font-size: 8px;
     line-height: 17px;
   }
-
+  .cardCompact:global(.homeTicketCard) .bookmarkIndicator {
+    top: 11px;
+  }
   .cardCompact:global(.homeTicketCard) .dateText {
     font-size: 8.8px;
     line-height: 12px;
@@ -1378,6 +1382,7 @@
 
 @media (max-width: 375px) {
   .cardCompact:global(.homeTicketCard) .deadlinePillBase {
+    top: 12px;
     left: 0;
     margin-left: 0;
 
@@ -1390,11 +1395,14 @@
   }
 
   .cardCompact:global(.homeTicketCard) .genderPill {
+    top: 12px;
     right: 31px;
     font-size: 7.6px;
     line-height: 16px;
   }
-
+  .cardCompact:global(.homeTicketCard) .bookmarkIndicator {
+    top: 11px;
+  }
   .cardCompact:global(.homeTicketCard) .dateText {
     font-size: 8.3px;
     line-height: 11px;
@@ -1429,6 +1437,7 @@
 
 @media (max-width: 320px) {
   .cardCompact:global(.homeTicketCard) .deadlinePillBase {
+    top: 12px;
     left: 0;
     margin-left: 0;
 
@@ -1441,6 +1450,7 @@
   }
 
   .cardCompact:global(.homeTicketCard) .genderPill {
+    top: 12px;
     right: 30px;
     font-size: 7.2px;
     line-height: 15px;
@@ -1487,5 +1497,8 @@
     left: 5px;
     bottom: 5px;
     gap: 3px;
+  }
+  .cardCompact:global(.homeTicketCard) .bookmarkIndicator {
+    top: 11px;
   }
 }
