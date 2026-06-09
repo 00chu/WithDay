@@ -170,7 +170,7 @@ export default function ScheduleCard({
 
   const titleLines = splitTextByLength(
     schedule?.title ?? "제목 없는 일정",
-    isMainTicketCard ? 14 : 10
+    isMainTicketCard ? 16 : 10
   );
   const categoryLabel = resolveCategoryLabel(schedule?.category);
   const regionLabel = resolveRegionLabel(schedule?.region);
