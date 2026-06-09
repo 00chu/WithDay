@@ -1,4 +1,4 @@
-name: Deploy Backend to EC2
+name: Deploy Backend to k3s
 
 on:
   push:
@@ -16,11 +16,11 @@ jobs:
       - name: Prepare SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/withday-key.pem
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/withday-key.pem
           chmod 600 ~/.ssh/withday-key.pem
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -T 10 -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy backend on EC2
+      - name: Deploy backend to k3s
         run: |
           ssh -i ~/.ssh/withday-key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
@@ -34,23 +34,34 @@ jobs:
 
             echo "Build backend docker image"
             cd WithDayBack
-            docker build -t withday-backend:latest .
 
-            echo "Stop old container"
-            docker stop withday-backend || true
-            docker rm withday-backend || true
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            IMAGE_NAME="withday-backend:${SHORT_SHA}"
 
-            echo "Run new container"
-            docker run -d \
-              --restart unless-stopped \
-              --name withday-backend \
-              -p 8080:10400 \
-              --env-file /home/ubuntu/withday-backend.env \
-              withday-backend:latest
+            docker build -t ${IMAGE_NAME} .
 
-            echo "Clean unused images"
-            docker image prune -f
+            echo "Export docker image"
+            docker save ${IMAGE_NAME} -o /tmp/withday-backend-${SHORT_SHA}.tar
 
-            echo "Container status"
-            docker ps --filter "name=withday-backend"
+            echo "Import image into k3s containerd"
+            sudo k3s ctr -n k8s.io images import /tmp/withday-backend-${SHORT_SHA}.tar
+
+            echo "Apply Kubernetes manifests"
+            sudo k3s kubectl apply -f k8s/deployment.yaml
+            sudo k3s kubectl apply -f k8s/service.yaml
+
+            echo "Update deployment image"
+            sudo k3s kubectl set image deployment/withday-backend \
+              backend=docker.io/library/${IMAGE_NAME} \
+              -n withday
+
+            echo "Wait for rollout"
+            sudo k3s kubectl rollout status deployment/withday-backend -n withday --timeout=240s
+
+            echo "Clean temporary image archive"
+            rm -f /tmp/withday-backend-${SHORT_SHA}.tar
+
+            echo "Kubernetes status"
+            sudo k3s kubectl get pods -n withday
+            sudo k3s kubectl get svc -n withday
           EOF
