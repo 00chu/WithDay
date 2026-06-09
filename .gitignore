@@ -3,6 +3,7 @@ WithDayBack/.gradle/
 WithDayBack/build/
 WithDayBack/out/
 WithDayBack/bin/
+WithDayBack/src/main/resources/application-local.properties
 
 # --- Frontend (Node/React/Vue 등) ---
 WithDayFront/node_modules/

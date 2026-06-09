@@ -22,7 +22,7 @@ const getScheduleKey = (schedule) =>
   String(
     schedule?.id ??
     schedule?.scheduleId ??
-    `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`
+    `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`,
   );
 
 /*
@@ -78,7 +78,7 @@ export default function Home() {
             <div>
               <h2 className={styles.sectionTitle}>마중 나온 위트들</h2>
               <p className={styles.sectionCaption}>
-                함께 가기 좋은 일정들을 홈에서 먼저 만나보세요
+                함께 가기 좋은 일정들을 홈에서 먼저 만나보세요.
               </p>
             </div>
           </div>
@@ -100,13 +100,17 @@ export default function Home() {
 
         {isError && (
           <div className={clsx(styles.stateBox, styles.errorBox)}>
-            <p>홈 추천 일정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
+            <p>
+              홈 추천 일정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+            </p>
           </div>
         )}
 
         {!isLoading && !isError && featuredSchedules.length === 0 && (
           <div className={styles.homeEmpty}>
-            <h3 className={styles.homeEmptyTitle}>추천할 일정이 아직 없어요.</h3>
+            <h3 className={styles.homeEmptyTitle}>
+              추천할 일정이 아직 없어요.
+            </h3>
             <p className={styles.homeEmptyText}>
               탐색 탭에서 조건을 바꿔 전체 일정을 확인해보세요.
             </p>

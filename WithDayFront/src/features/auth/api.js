@@ -6,7 +6,7 @@ const BASE_URL = import.meta.env.VITE_BACKSERVER;
 
 // 매번 통신할 때마다 전체 주소나 형식을 적기 귀찮으므로(axios사용시 매번 새로 세팅해야함.), 기본 세팅이 완료된 api를 만들어 axios대신 사용.
 export const api = axios.create({
-  baseURL: `http://${BASE_URL}`, // baseURL: 모든 요청 주소 앞에 이 백엔드 주소가 자동으로 붙음 (예: /users/login만 적어도 됨)
+  baseURL: `${BASE_URL}`, // baseURL: 모든 요청 주소 앞에 이 백엔드 주소가 자동으로 붙음 (예: /users/login만 적어도 됨)
 
   // headers: 백엔드에 보내는 데이터는 기본적으로 JSON(글자/객체) 형태라고 정함. (파일 업로드처럼 JSON이 아닌 데이터를 보낼 때는, 해당 함수에서 headers를 덮어씌워서 multipart/form-data로 바꿔줌)
   headers: {
