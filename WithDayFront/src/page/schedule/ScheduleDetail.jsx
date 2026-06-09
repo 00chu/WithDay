@@ -81,7 +81,7 @@ const COST_TYPE_LABELS = {
  * 이미지가 없는 일정도 hero 영역의 높이와 레이아웃이 무너지면 안 된다.
  * 실제 API 이미지가 없을 때만 쓰는 마지막 fallback이며, 더미 참여자/더미 정보와 달리 레이아웃 안전장치 역할만 한다.
  */
-const DEFAULT_IMAGE = "https://placehold.co/800x400?text=No+Image";
+const DEFAULT_IMAGE = "/default-4.png";
 const VIEWED_SCHEDULE_STORAGE_KEY_PREFIX = "viewed_schedule_";
 const MAX_VISIBLE_THUMBNAILS = 3;
 /*
@@ -1135,10 +1135,10 @@ export default function ScheduleDetail() {
     rawImages.length > 0
       ? [...rawImages]
           .sort((a, b) => (b?.isThumbnail ?? 0) - (a?.isThumbnail ?? 0))
-          .map((image) => image?.imageUrl)
+          .map((image) => image?.imageUrl?.trim())
           .filter(Boolean)
-      : schedule.thumbnailImage
-        ? [schedule.thumbnailImage]
+      : schedule.thumbnailImage?.trim()
+        ? [schedule.thumbnailImage.trim()]
         : [DEFAULT_IMAGE];
 
   /*
