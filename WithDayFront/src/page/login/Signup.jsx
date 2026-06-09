@@ -113,6 +113,23 @@ const Signup = () => {
     },
   }); // 여기서 세팅한 폼은 UI의 form 제출 흐름과 연결됨. 현재는 form 기본 제출을 preventDefault로 먼저 막고, handleSubmit(onSubmit)을 통해 React Hook Form 검증을 통과했을 때만 onSubmit 함수로 데이터를 넘겨줌.
 
+  const watchedEmail = watch("email");
+
+  useEffect(() => {
+    if (mailAuth === 0) {
+      return;
+    }
+
+    setMailAuth(0);
+    setMailAuthCode(null);
+    setMailAuthInput("");
+    setTime(180);
+
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+    }
+  }, [watchedEmail]);
+
   // 다음으로 버튼을 눌렀을 때 step 이동 로직
   const handleNextStep = async () => {
     let isStepValid = false;
@@ -356,13 +373,24 @@ const Signup = () => {
         });
       }, 1000);
     } catch (err) {
-      // 토스트 세팅 (err일때)
+      const errMsg =
+        err.response?.data?.message ||
+        err.response?.data ||
+        "이메일 발송에 실패했습니다. 이메일을 확인해주세요.";
+
       setToast({
         open: true,
-        message: "이메일 발송에 실패했습니다. 이메일을 확인해주세요.",
+        message: errMsg,
         severity: "error",
       });
-      setMailAuth(0); // 전송 시작 전으로 되돌림
+
+      setMailAuth(0);
+      setMailAuthCode(null);
+      setMailAuthInput("");
+
+      if (timerRef.current) {
+        window.clearInterval(timerRef.current);
+      }
     }
   };
 

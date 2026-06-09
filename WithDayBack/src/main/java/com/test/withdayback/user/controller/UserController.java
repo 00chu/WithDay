@@ -99,13 +99,18 @@
         public ResponseEntity<?> sendEmailVerification(@RequestBody Map<String, String> request) {
             try {
                 String email = request.get("email");
-                // service에서 인증번호 생성 및 메일 발송
+
+                // service에서 이메일 중복 검사, 인증번호 생성 및 메일 발송
                 String authCode = userService.sendVerificationEmail(email);
 
                 return ResponseEntity.ok(authCode);
+            } catch (RuntimeException e) {
+                // 중복 이메일, 빈 이메일 등 사용자가 수정할 수 있는 요청 오류
+                return ResponseEntity.badRequest().body(e.getMessage());
             } catch (Exception e) {
-                // 500 Internal Server Error: 서버 내부 에러. (예: DB연결 끊김)
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이메일 발송에 실패했습니다.");
+                // 실제 메일 서버 오류 등 서버 내부 오류
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("이메일 발송에 실패했습니다.");
             }
         }
 

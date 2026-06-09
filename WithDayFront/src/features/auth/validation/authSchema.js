@@ -3,6 +3,13 @@ import * as yup from "yup";
 // 가입할때 최소 나이 설정
 const MIN_AGE = 18;
 
+// 비밀번호 정규식: 최소 8자 이상, 영문 대소문자, 숫자, 특수문자 중 3가지 이상 조합
+const PASSWORD_REGEX =
+  /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=[\]{};':"\\|,.<>/?]).{8,}$/;
+
+// 비밀번호 입력 형식 안내 메시지
+const PASSWORD_MESSAGE = "영문, 숫자, 특수문자를 포함한 8자 이상 입력해주세요.";
+
 // 회원가입용 검사 규칙 (Schema), yup.object().shape({ ... }) 형태로 객체 안에 각 필드별 검사 규칙을 작성
 // -> yup 라이브러리의 공식 문법이고 object()는 객체 타입을 의미, shape() 안에 각 필드별로 검사 규칙을 작성
 export const signupSchema = yup.object().shape({
@@ -18,7 +25,7 @@ export const signupSchema = yup.object().shape({
   password: yup
     .string()
     .required("비밀번호는 필수 입력입니다.")
-    .min(8, "비밀번호는 최소 8자리 이상이어야 합니다."),
+    .matches(PASSWORD_REGEX, PASSWORD_MESSAGE),
 
   // yup.ref('password'): 바로 위에 있는 password 필드의 값을 실시간으로 참조(yup이 제공하는 편리한 메서드), 즉 password에 들어간 값.
   // oneOf([A, B], '~~'): 입력한 값이 A or B 중 하나와 같아야 함. '~~'는 검사 실패 시 보여줄 에러 메시지
@@ -288,7 +295,7 @@ export const findPwResetSchema = yup.object().shape({
   newPassword: yup
     .string()
     .required("새 비밀번호를 입력해주세요.")
-    .min(8, "비밀번호는 8자 이상 입력해주세요."),
+    .matches(PASSWORD_REGEX, PASSWORD_MESSAGE),
 
   // oneOf([yup.ref('newPassword')], '~~'): 입력한 값이 newPassword 필드의 값과 일치해야 함. '~~'는 검사 실패 시 보여줄 에러 메시지. (yup이 제공하는 편리한 메서드)
   // null은 빈칸일 때 엉뚱한 에러("일치하지 않습니다")가 먼저 뜨는 걸 막아주기 위해, null 덕분에 빈칸으로 넘어가면 뒤에 있는 required의 "입력해주세요" 에러가 먼저 나옴.
