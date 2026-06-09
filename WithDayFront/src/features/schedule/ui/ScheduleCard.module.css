@@ -1526,7 +1526,7 @@
   height: 32px;
   max-height: 32px;
 
-  font-size: 12px;
+  font-size: 13px;
   line-height: 16px;
 
   overflow: hidden;
@@ -1536,10 +1536,37 @@
 
 .cardCompact:global(.mainTicketCard) .titleLine {
   display: block;
-  height: 16px;
-  line-height: 16px;
+  height: 18px;
+  line-height: 18px;
 
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+@media (max-width: 425px) {
+  .cardCompact:global(.mainTicketCard) .cardTitle {
+    height: 34px;
+    max-height: 34px;
+    font-size: 12.8px;
+    line-height: 17px;
+  }
+
+  .cardCompact:global(.mainTicketCard) .titleLine {
+    height: 17px;
+    line-height: 17px;
+  }
+}
+
+@media (max-width: 320px) {
+  .cardCompact:global(.mainTicketCard) .cardTitle {
+    height: 32px;
+    max-height: 32px;
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  .cardCompact:global(.mainTicketCard) .titleLine {
+    height: 16px;
+    line-height: 16px;
+  }
 }
