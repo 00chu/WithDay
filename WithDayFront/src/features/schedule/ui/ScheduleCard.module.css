@@ -776,6 +776,7 @@
 .cardCompact:global(.homeTicketCard) .overlayPill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
 
   height: 17px;
   min-height: 17px;
@@ -788,7 +789,7 @@
   font-family: Poppins, "Noto Sans KR", sans-serif;
   font-size: 9px;
   font-weight: 700;
-  line-height: 18px;
+  line-height: 1;
   white-space: nowrap;
 
   box-shadow: 0 1px 4px rgba(10, 22, 45, 0.12);
@@ -1372,7 +1373,8 @@
     min-height: 15px;
     padding: 0 6px;
     font-size: 7.8px;
-    line-height: 15px;
+    line-height: 1;
+    justify-content: center;
   }
 
   .cardCompact:global(.homeTicketCard) .thumbnailOverlay {
@@ -1431,7 +1433,8 @@
     min-height: 14px;
     padding: 0 6px;
     font-size: 7.4px;
-    line-height: 14px;
+    line-height: 1;
+    justify-content: center;
   }
 }
 
@@ -1490,7 +1493,8 @@
     min-height: 13px;
     padding: 0 5px;
     font-size: 7px;
-    line-height: 13px;
+    line-height: 1;
+    justify-content: center;
   }
 
   .cardCompact:global(.homeTicketCard) .thumbnailOverlay {
@@ -1524,10 +1528,10 @@
   display: block;
   width: 100%;
   height: 32px;
-  max-height: 40px;
+  max-height: 45px;
 
   font-size: 14.2px;
-  line-height: 20px;
+  line-height: 22px;
 
   overflow: hidden;
   word-break: break-all;
