@@ -115,40 +115,76 @@
 }
 .wishlistCardGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 240px);
-  justify-content: start;
+  grid-template-columns: repeat(1, 220px);
+  justify-content: center;
   align-items: start;
-  gap: 20px 16px;
+  gap: 18px;
   width: 100%;
   min-width: 0;
   overflow: visible;
   padding-bottom: 8px;
 }
 
-@media (max-width: 1024px) and (min-width: 769px) {
+/* 작은 모바일 */
+@media (max-width: 360px) {
   .wishlistCardGrid {
-    grid-template-columns: repeat(auto-fill, 230px);
-    gap: 18px 14px;
-  }
-}
-
-@media (max-width: 768px) and (min-width: 640px) {
-  .wishlistCardGrid {
-    grid-template-columns: repeat(auto-fill, 222px);
-    gap: 16px 14px;
-  }
-}
-
-@media (max-width: 639px) {
-  .wishlistCardGrid {
-    grid-template-columns: repeat(auto-fill, 216px);
-    justify-content: center;
+    grid-template-columns: repeat(1, 204px);
     gap: 14px;
   }
 }
 
-@media (max-width: 360px) {
+/* 640px 이상: 한 줄에 2개 */
+@media (min-width: 640px) {
   .wishlistCardGrid {
-    grid-template-columns: repeat(auto-fill, 204px);
+    grid-template-columns: repeat(2, 222px);
+    gap: 16px 18px;
+  }
+}
+
+/* 768px 이상: 한 줄에 3개 */
+@media (min-width: 768px) {
+  .wishlistCardGrid {
+    grid-template-columns: repeat(3, 222px);
+    gap: 18px 18px;
+  }
+}
+
+/* 769px 이상: 카드 230px 기준 */
+@media (min-width: 769px) {
+  .wishlistCardGrid {
+    grid-template-columns: repeat(3, 230px);
+    gap: 20px 20px;
+  }
+}
+
+/* 1024px 이상: 한 줄에 4개 */
+@media (min-width: 1024px) {
+  .wishlistCardGrid {
+    grid-template-columns: repeat(4, 230px);
+    gap: 20px 20px;
+  }
+}
+
+/* 1025px 이상: 카드 240px 기준 */
+@media (min-width: 1025px) {
+  .wishlistCardGrid {
+    grid-template-columns: repeat(4, 240px);
+    gap: 22px 22px;
+  }
+}
+
+/* 1440px 이상: 한 줄에 5개 */
+@media (min-width: 1440px) {
+  .wishlistCardGrid {
+    grid-template-columns: repeat(5, 240px);
+    gap: 24px 24px;
+  }
+}
+
+/* 2560px 이상: 한 줄에 6개 */
+@media (min-width: 2560px) {
+  .wishlistCardGrid {
+    grid-template-columns: repeat(6, 240px);
+    gap: 26px 28px;
   }
 }

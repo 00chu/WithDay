@@ -36,7 +36,7 @@ const MyPageMain = () => {
     isOwnProfile ? undefined : normalizedTargetEmail,
   );
   const isAdmin = mypageQuery.data?.status === "admin";
-  const [isServiceOpen, setIsServiceOpen] = useState(true);
+  const [isServiceOpen, setIsServiceOpen] = useState(false);
   const [activeServiceTab, setActiveServiceTab] = useState("recommend");
   const [isWitLogInfoOpen, setIsWitLogInfoOpen] = useState(false);
   const queryClient = useQueryClient();

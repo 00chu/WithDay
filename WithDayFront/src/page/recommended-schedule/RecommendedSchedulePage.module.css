@@ -1467,3 +1467,516 @@
     font-size: 11px !important;
   }
 }
+/* =========================================================
+   RecommendedSchedulePage Final Responsive Override
+   - 카드 개수: 탐색/위시리스트 기준
+   - ~639: 1개
+   - 640: 2개
+   - 768: 3개
+   - 1024: 4개
+   - 1440: 5개
+   - 2560: 6개
+   ========================================================= */
+
+/* 페이지 공통 폭 */
+.page {
+  width: min(1580px, calc(100% - 96px));
+  margin: 0 auto;
+  padding: 48px 0 96px;
+  box-sizing: border-box;
+}
+
+/* 카드 그리드 기본: 모바일 1개 */
+.cardGrid {
+  --recommended-card-width: 220px;
+  --recommended-card-height: 276px;
+  --recommended-card-top-height: 149px;
+  --recommended-card-notch-top: 135px;
+  --recommended-card-divider-top: 143px;
+  --recommended-card-title-top: 72px;
+  --recommended-card-thumb-height: 109px;
+
+  display: grid;
+  grid-template-columns: repeat(1, var(--recommended-card-width));
+  justify-content: center;
+  align-items: start;
+  gap: 18px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+  margin: 0 auto;
+  padding-bottom: 8px;
+}
+
+/* 그리드 자식 크기 고정 */
+.cardGrid > * {
+  width: var(--recommended-card-width);
+  min-width: var(--recommended-card-width);
+  max-width: var(--recommended-card-width);
+}
+
+/* 카드 크기 */
+.scheduleCard {
+  width: var(--recommended-card-width);
+  min-width: var(--recommended-card-width);
+  max-width: var(--recommended-card-width);
+
+  height: var(--recommended-card-height);
+  min-height: var(--recommended-card-height);
+  max-height: var(--recommended-card-height);
+}
+
+/* 카드 상단 */
+.cardTop,
+.headerSection {
+  height: var(--recommended-card-top-height);
+}
+
+/* 카드 하단 */
+.cardBottom {
+  top: var(--recommended-card-top-height);
+  height: calc(
+    var(--recommended-card-height) - var(--recommended-card-top-height)
+  );
+}
+
+/* 좌우 원형 홈 */
+.scheduleCard::before,
+.scheduleCard::after {
+  top: var(--recommended-card-notch-top);
+}
+
+/* 점선 */
+.ticketDivider::after {
+  top: var(--recommended-card-divider-top);
+}
+
+/* 제목 위치 */
+.titleRow {
+  margin-top: var(--recommended-card-title-top);
+}
+
+/* 이미지 높이 */
+.thumbnailWrap {
+  height: var(--recommended-card-thumb-height);
+}
+
+/* 데스크톱/태블릿 기본 텍스트 */
+.cardTitle {
+  font-size: 14px;
+  line-height: 19px;
+  max-height: 38px;
+  overflow: hidden;
+}
+
+.cardDescription {
+  height: 28px;
+  max-height: 28px;
+  font-size: 9.5px;
+  line-height: 14px;
+}
+
+/* 320~360 */
+@media (max-width: 360px) {
+  .page {
+    width: min(100% - 28px, 100%);
+    padding: 24px 0 88px;
+  }
+
+  .cardGrid {
+    --recommended-card-width: 204px;
+    --recommended-card-height: 258px;
+    --recommended-card-top-height: 140px;
+    --recommended-card-notch-top: 126px;
+    --recommended-card-divider-top: 134px;
+    --recommended-card-title-top: 67px;
+    --recommended-card-thumb-height: 98px;
+
+    grid-template-columns: repeat(1, var(--recommended-card-width));
+    gap: 14px;
+  }
+
+  .recommendPill {
+    top: 12px;
+    height: 16px;
+    min-height: 16px;
+    padding: 0 7px 0 9px;
+    font-size: 7.8px;
+    line-height: 16px;
+  }
+
+  .genderPill {
+    top: 12px;
+    right: 10px;
+    height: 16px;
+    min-height: 16px;
+    font-size: 7.6px;
+    line-height: 16px;
+  }
+
+  .dateRowContent {
+    left: 10px;
+    top: 38px;
+    gap: 4px;
+  }
+
+  .dateText {
+    font-size: 8.2px;
+    line-height: 11px;
+  }
+
+  .dateIconWrap,
+  .dateIcon,
+  .dateIconWrap svg {
+    width: 10px !important;
+    min-width: 10px;
+    height: 10px !important;
+    font-size: 10px !important;
+  }
+
+  .titleRow {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin-left: 10px;
+  }
+
+  .cardTitle {
+    font-size: 12.4px;
+    line-height: 17px;
+    max-height: 34px;
+  }
+
+  .descriptionRow {
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin-left: 10px;
+    margin-top: 4px;
+  }
+
+  .cardDescription {
+    height: 24px;
+    max-height: 24px;
+    font-size: 8px;
+    line-height: 12px;
+  }
+
+  .thumbnailWrap {
+    left: 10px;
+    right: 10px;
+    top: 10px;
+  }
+
+  .thumbnailOverlay {
+    left: 6px;
+    bottom: 6px;
+    gap: 4px;
+  }
+
+  .overlayPill {
+    height: 15px;
+    min-height: 15px;
+    padding: 0 6px;
+    font-size: 7.5px;
+  }
+}
+
+/* 361~639: 1개 */
+@media (min-width: 361px) and (max-width: 639px) {
+  .page {
+    width: min(100% - 28px, 100%);
+    padding: 28px 0 88px;
+  }
+
+  .cardGrid {
+    --recommended-card-width: 220px;
+    --recommended-card-height: 276px;
+    --recommended-card-top-height: 149px;
+    --recommended-card-notch-top: 135px;
+    --recommended-card-divider-top: 143px;
+    --recommended-card-title-top: 72px;
+    --recommended-card-thumb-height: 109px;
+
+    grid-template-columns: repeat(1, var(--recommended-card-width));
+    gap: 14px;
+  }
+
+  .recommendPill {
+    top: 12px;
+    height: 17px;
+    min-height: 17px;
+    padding: 0 8px 0 10px;
+    font-size: 8.8px;
+    line-height: 17px;
+  }
+
+  .genderPill {
+    top: 12px;
+    right: 12px;
+    height: 17px;
+    min-height: 17px;
+    font-size: 8px;
+    line-height: 17px;
+  }
+
+  .dateRowContent {
+    left: 11px;
+    top: 40px;
+  }
+
+  .dateText {
+    font-size: 8.8px;
+    line-height: 12px;
+  }
+
+  .dateIconWrap,
+  .dateIcon,
+  .dateIconWrap svg {
+    width: 11px !important;
+    min-width: 11px;
+    height: 11px !important;
+    font-size: 11px !important;
+  }
+
+  .titleRow {
+    width: calc(100% - 22px);
+    max-width: calc(100% - 22px);
+    margin-left: 11px;
+  }
+
+  .cardTitle {
+    font-size: 13px;
+    line-height: 18px;
+    max-height: 36px;
+  }
+
+  .descriptionRow {
+    width: calc(100% - 22px);
+    max-width: calc(100% - 22px);
+    margin-left: 11px;
+    margin-top: 5px;
+  }
+
+  .cardDescription {
+    height: 24px;
+    max-height: 24px;
+    font-size: 8.2px;
+    line-height: 12px;
+  }
+
+  .thumbnailWrap {
+    left: 11px;
+    right: 11px;
+    top: 11px;
+  }
+
+  .overlayPill {
+    height: 15px;
+    min-height: 15px;
+    padding: 0 6px;
+    font-size: 7.8px;
+  }
+}
+
+/* 640 이상: 2개 */
+@media (min-width: 640px) {
+  .page {
+    width: min(100% - 40px, 100%);
+  }
+
+  .cardGrid {
+    --recommended-card-width: 222px;
+    --recommended-card-height: 278px;
+    --recommended-card-top-height: 154px;
+    --recommended-card-notch-top: 138px;
+    --recommended-card-divider-top: 146px;
+    --recommended-card-title-top: 76px;
+    --recommended-card-thumb-height: 106px;
+
+    grid-template-columns: repeat(2, var(--recommended-card-width));
+    gap: 16px 18px;
+  }
+}
+
+/* 768 이상: 3개 */
+@media (min-width: 768px) {
+  .page {
+    width: min(100% - 48px, 100%);
+  }
+
+  .cardGrid {
+    --recommended-card-width: 222px;
+    --recommended-card-height: 278px;
+    --recommended-card-top-height: 154px;
+    --recommended-card-notch-top: 138px;
+    --recommended-card-divider-top: 146px;
+    --recommended-card-title-top: 76px;
+    --recommended-card-thumb-height: 106px;
+
+    grid-template-columns: repeat(3, var(--recommended-card-width));
+    gap: 18px 18px;
+  }
+}
+
+/* 769 이상: 3개 유지, 카드 230 */
+@media (min-width: 769px) {
+  .cardGrid {
+    --recommended-card-width: 230px;
+    --recommended-card-height: 288px;
+    --recommended-card-top-height: 166px;
+    --recommended-card-notch-top: 150px;
+    --recommended-card-divider-top: 158px;
+    --recommended-card-title-top: 82px;
+    --recommended-card-thumb-height: 103px;
+
+    grid-template-columns: repeat(3, var(--recommended-card-width));
+    gap: 20px 20px;
+  }
+}
+
+/* 1024 이상: 4개 */
+@media (min-width: 1024px) {
+  .page {
+    width: min(100% - 64px, 100%);
+  }
+
+  .cardGrid {
+    --recommended-card-width: 230px;
+    --recommended-card-height: 288px;
+    --recommended-card-top-height: 166px;
+    --recommended-card-notch-top: 150px;
+    --recommended-card-divider-top: 158px;
+    --recommended-card-title-top: 82px;
+    --recommended-card-thumb-height: 103px;
+
+    grid-template-columns: repeat(4, var(--recommended-card-width));
+    gap: 20px 20px;
+  }
+}
+
+/* 1180 이상: 4개 유지, 홈 카드 기본 크기 */
+@media (min-width: 1180px) {
+  .cardGrid {
+    --recommended-card-width: 240px;
+    --recommended-card-height: 300px;
+    --recommended-card-top-height: 174px;
+    --recommended-card-notch-top: 158px;
+    --recommended-card-divider-top: 166px;
+    --recommended-card-title-top: 86px;
+    --recommended-card-thumb-height: 108px;
+
+    grid-template-columns: repeat(4, var(--recommended-card-width));
+    gap: 22px 22px;
+  }
+}
+
+/* 1440 이상: 5개 */
+@media (min-width: 1440px) {
+  .page {
+    width: min(1360px, calc(100% - 80px));
+  }
+
+  .cardGrid {
+    --recommended-card-width: 240px;
+    --recommended-card-height: 300px;
+    --recommended-card-top-height: 174px;
+    --recommended-card-notch-top: 158px;
+    --recommended-card-divider-top: 166px;
+    --recommended-card-title-top: 86px;
+    --recommended-card-thumb-height: 108px;
+
+    grid-template-columns: repeat(5, var(--recommended-card-width));
+    gap: 24px 24px;
+  }
+}
+
+/* 2560 이상: 6개 */
+@media (min-width: 2560px) {
+  .page {
+    width: min(1580px, calc(100% - 120px));
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(6, var(--recommended-card-width));
+    gap: 26px 28px;
+  }
+}
+
+/* 상단 영역 반응형 */
+@media (max-width: 860px) {
+  .heroSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 22px;
+  }
+
+  .createButton {
+    width: 100%;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+
+  .description {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+}
+
+@media (max-width: 520px) {
+  .heroSection {
+    gap: 16px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+  }
+
+  .title {
+    font-size: 25px;
+    line-height: 1.28;
+  }
+
+  .description {
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .filterSection {
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 4px;
+    margin-bottom: 24px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filterSection::-webkit-scrollbar {
+    display: none;
+  }
+
+  .categoryChip {
+    flex: 0 0 auto;
+    height: 34px;
+    min-width: auto;
+    padding: 0 14px;
+    font-size: 12px;
+  }
+
+  .listHeader {
+    margin-bottom: 16px;
+  }
+
+  .listHeader h2 {
+    font-size: 19px;
+  }
+
+  .listHeader p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}

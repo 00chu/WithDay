@@ -31,7 +31,6 @@ import {
   TagsIcon,
   PhoneIcon,
   MapPinIcon,
-  VenusAndMarsIcon,
 } from "lucide-react";
 const MyPageEdit = () => {
   // authStore에서 로그인 유저 정보 가져오기
@@ -141,7 +140,6 @@ const MyPageEdit = () => {
     defaultValues: {
       nickname: "",
       phone: "",
-      gender: "",
       intro: "",
       profileImage: "",
       interestIds: [],
@@ -188,7 +186,6 @@ const MyPageEdit = () => {
     reset({
       nickname: data.nickname ?? "",
       phone: formatPhoneNumber(data.phone ?? ""),
-      gender: data.gender ? String(data.gender) : "",
       intro: data.intro ?? "",
       profileImage: data.profileImage ?? "",
       interestIds: initialInterestIds,
@@ -269,11 +266,6 @@ const MyPageEdit = () => {
 
     if (!formData.phone.trim()) {
       alert("연락처를 입력해주세요.");
-      return false;
-    }
-
-    if (!formData.gender) {
-      alert("성별을 선택해주세요.");
       return false;
     }
 
@@ -390,7 +382,6 @@ const MyPageEdit = () => {
     const formData = {
       nickname,
       phone: watch("phone"),
-      gender: watch("gender"),
       intro,
       profileImage: watch("profileImage"),
       interestIds: selectedInterestIds,
@@ -410,7 +401,6 @@ const MyPageEdit = () => {
     const payload = {
       nickname: formData.nickname,
       phone: removePhoneHyphen(formData.phone),
-      gender: Number(formData.gender),
       intro: formData.intro,
       profileImage: formData.profileImage,
       interestIds: formData.interestIds,
@@ -754,49 +744,7 @@ const MyPageEdit = () => {
             </div>
           </div>
 
-          {/* 4. 성별*/}
-          <div className={styles.group}>
-            <div className={styles.groupTitle}>
-              <VenusAndMarsIcon size={21} />
-              <span>성별</span>
-            </div>
-            <div className={styles.inputRow}>
-              <span className={styles.fieldLabel}>성별</span>
-              <div className={styles.genderSelectRow}>
-                <button
-                  type="button"
-                  className={`${styles.genderButton} ${
-                    watch("gender") === "1" ? styles.genderButtonSelected : ""
-                  }`}
-                  onClick={() =>
-                    setValue("gender", "1", {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    })
-                  }
-                >
-                  남성
-                </button>
-
-                <button
-                  type="button"
-                  className={`${styles.genderButton} ${
-                    watch("gender") === "2" ? styles.genderButtonSelected : ""
-                  }`}
-                  onClick={() =>
-                    setValue("gender", "2", {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    })
-                  }
-                >
-                  여성
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* 5. 연락처 */}
+          {/* 4. 연락처 */}
           <div className={styles.group}>
             <div className={styles.groupTitle}>
               <PhoneIcon size={18} />
@@ -822,7 +770,7 @@ const MyPageEdit = () => {
             </div>
           </div>
 
-          {/* 6. 주소 */}
+          {/* 5. 주소 */}
           <div className={styles.group}>
             <div className={styles.groupTitle}>
               <MapPinIcon size={20} />
@@ -896,7 +844,7 @@ const MyPageEdit = () => {
             </div>
           </div>
 
-          {/* 7. 비밀번호 */}
+          {/* 6. 비밀번호 */}
           {isLocalUser && (
             <div className={styles.group}>
               <div className={styles.groupTitle}>
@@ -951,7 +899,7 @@ const MyPageEdit = () => {
             </div>
           )}
 
-          {/* 8. 알림 설정 */}
+          {/* 7. 알림 설정 */}
           <div className={styles.group}>
             <div className={styles.groupTitle}>
               <BellIcon size={18} />

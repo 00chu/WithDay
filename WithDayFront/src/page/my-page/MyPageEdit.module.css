@@ -391,7 +391,6 @@
 .inputWrapper,
 .textareaContainer,
 .addressSearchRow,
-.genderSelectRow,
 .notiRow {
   width: 100%;
   min-width: 0;
@@ -662,42 +661,6 @@
   color: var(--color-text-primary);
 }
 
-/*성별*/
-.genderSelectRow {
-  display: flex;
-  flex: 1;
-  gap: 10px;
-}
-
-.genderButton {
-  flex: 1;
-  height: 45px;
-
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background-color: #ffffff;
-  color: var(--color-text-primary);
-
-  font-size: 14px;
-  font-weight: 400;
-  cursor: pointer;
-
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.genderButton:hover {
-  border-color: var(--color-primary);
-}
-
-.genderButtonSelected {
-  border-color: var(--color-primary);
-  background-color: var(--color-primary);
-  color: #ffffff;
-  font-weight: 700;
-}
 /* 회원 정보 수정 페이지 반응형*/
 
 /* 태블릿 이하 */
@@ -801,8 +764,7 @@
 
   .inputWrapper,
   .textareaContainer,
-  .addressSearchRow,
-  .genderSelectRow {
+  .addressSearchRow {
     width: 100%;
   }
 
@@ -840,15 +802,6 @@
   .interestChip {
     padding: 8px 15px;
     font-size: 13px;
-  }
-
-  .genderSelectRow {
-    gap: 8px;
-  }
-
-  .genderButton {
-    height: 44px;
-    font-size: 14px;
   }
 
   .addressSearchRow {
@@ -1006,15 +959,6 @@
   .interestChip {
     padding: 7px 13px;
     font-size: 12px;
-  }
-
-  .genderSelectRow {
-    gap: 8px;
-  }
-
-  .genderButton {
-    height: 42px;
-    font-size: 13px;
   }
 
   .addressSearchRow {
