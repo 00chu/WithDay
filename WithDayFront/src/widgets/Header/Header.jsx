@@ -23,16 +23,16 @@ export default function Header() {
 
   const headerProfileImage = isLoggedIn
     ? mypageQuery.data?.profileImage ||
-    loginUser?.profileImage ||
-    DEFAULT_PROFILE_IMAGE
+      loginUser?.profileImage ||
+      DEFAULT_PROFILE_IMAGE
     : DEFAULT_PROFILE_IMAGE;
 
   const avatarFallback = isLoggedIn
     ? (
-      loginUser?.nickname?.trim()?.charAt(0) ||
-      loginUser?.email?.trim()?.charAt(0) ||
-      ""
-    ).toUpperCase()
+        loginUser?.nickname?.trim()?.charAt(0) ||
+        loginUser?.email?.trim()?.charAt(0) ||
+        ""
+      ).toUpperCase()
     : "";
 
   const handleProfileClick = () => {
@@ -62,15 +62,6 @@ export default function Header() {
   const handleClose = () => {
     setAnchorEl(null);
   };
-
-  console.log("헤더 mypageQuery.data:", mypageQuery?.data);
-  console.log(
-    "헤더 mypageQuery profileImage:",
-    mypageQuery?.data?.profileImage,
-  );
-  console.log("헤더 loginUser:", loginUser);
-  console.log("헤더 loginUser.profileImage:", loginUser?.profileImage);
-  console.log("헤더 최종 이미지:", headerProfileImage);
 
   return (
     <header className={styles.header}>

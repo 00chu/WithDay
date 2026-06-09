@@ -43,7 +43,6 @@ const MyPageEdit = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { editQuery, updateMutation, withdrawMutation } = useMypageEdit();
-  console.log("editQuery.data", editQuery.data);
   const [nickname, setNickname] = useState("단이");
   const [showPw, setShowPw] = useState([false, false, false]);
   const [isNotiOn, setIsNotiOn] = useState(true);
@@ -78,7 +77,7 @@ const MyPageEdit = () => {
 
     return `${onlyNumber.slice(0, 3)}-${onlyNumber.slice(
       3,
-      7
+      7,
     )}-${onlyNumber.slice(7)}`;
   };
 
@@ -86,7 +85,7 @@ const MyPageEdit = () => {
     return String(value).replace(/\D/g, "");
   };
   const [intro, setIntro] = useState(
-    "안녕하세요 단이입니다. 평소 여행을 다니면서 여행기록을 남기는 걸 좋아해요."
+    "안녕하세요 단이입니다. 평소 여행을 다니면서 여행기록을 남기는 걸 좋아해요.",
   );
 
   const maxLength = 8;
@@ -183,7 +182,7 @@ const MyPageEdit = () => {
     const data = editQuery.data;
 
     const initialInterestIds = normalizeInterestIds(
-      data.selectedInterestIds ?? []
+      data.selectedInterestIds ?? [],
     );
 
     reset({
@@ -246,7 +245,7 @@ const MyPageEdit = () => {
       setValue(
         "interestIds",
         current.filter((item) => item !== id),
-        { shouldValidate: true }
+        { shouldValidate: true },
       );
       return;
     }
@@ -371,7 +370,6 @@ const MyPageEdit = () => {
 
       alert("프로필 이미지가 변경되었습니다.");
     } catch (error) {
-      console.error(error);
       alert("프로필 이미지 변경 중 오류가 발생했습니다.");
     } finally {
       setIsImageUploading(false);

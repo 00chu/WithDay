@@ -63,10 +63,6 @@ const ScheduleManagementPage = () => {
   const scheduleList = data?.scheduleList ?? [];
   const totalPage = data?.totalPage ?? 0;
 
-  useEffect(() => {
-    console.log(scheduleList);
-  }, [scheduleList]);
-
   const statusOptions = [
     { label: "모집중", value: "recruiting" },
     { label: "모집마감", value: "closed" },

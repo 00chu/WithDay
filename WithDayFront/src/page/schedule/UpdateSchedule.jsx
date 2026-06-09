@@ -106,10 +106,6 @@ const UpdateSchedule = () => {
   useEffect(() => {
     if (!response) return;
 
-    console.log("🔥 reesponse:", response);
-    console.log("🔥 schedule:", response.schedule);
-    console.log("🔥 details:", response.details);
-
     reset({
       post: {
         email: response.email,
@@ -214,8 +210,6 @@ const UpdateSchedule = () => {
   const errorList = flattenErrors(errors);
 
   const handleError = (err) => {
-    console.log(err);
-
     setOpenSnackbar(false);
 
     setTimeout(() => {
@@ -260,9 +254,7 @@ const UpdateSchedule = () => {
       navigate(`/schedule/${scheduleId}`);
     },
 
-    onError: (err) => {
-      console.error("error: ", err);
-    },
+    onError: (err) => {},
   });
 
   const onSubmit = async (formValues) => {
@@ -828,8 +820,6 @@ const CalendarRange = ({ startDate, endDate, setValue }) => {
   }, [startDate, endDate]);
 
   const handleChange = (item) => {
-    console.log("setValue:", setValue);
-
     const selection = item.selection;
 
     setState([selection]);
