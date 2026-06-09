@@ -81,7 +81,7 @@ const COST_TYPE_LABELS = {
  * 이미지가 없는 일정도 hero 영역의 높이와 레이아웃이 무너지면 안 된다.
  * 실제 API 이미지가 없을 때만 쓰는 마지막 fallback이며, 더미 참여자/더미 정보와 달리 레이아웃 안전장치 역할만 한다.
  */
-const DEFAULT_IMAGE = "https://placehold.co/800x400?text=No+Image";
+const DEFAULT_IMAGE = "/default-4.png";
 const VIEWED_SCHEDULE_STORAGE_KEY_PREFIX = "viewed_schedule_";
 const MAX_VISIBLE_THUMBNAILS = 3;
 /*
@@ -164,7 +164,9 @@ const formatDDay = (dateValue) => {
     return "마감 미정";
   }
 
-  const diffDays = Math.ceil((targetDate.getTime() - today.getTime()) / 86400000);
+  const diffDays = Math.ceil(
+    (targetDate.getTime() - today.getTime()) / 86400000,
+  );
 
   if (diffDays < 0) {
     return "마감";
@@ -246,7 +248,11 @@ const resolveSchedulePhase = (schedule) => {
     };
   }
 
-  if (endDate instanceof Date && !Number.isNaN(endDate.getTime()) && endDate < today) {
+  if (
+    endDate instanceof Date &&
+    !Number.isNaN(endDate.getTime()) &&
+    endDate < today
+  ) {
     return {
       label: SCHEDULE_STATUS_LABELS[SCHEDULE_STATUS.COMPLETED],
       className: styles.statusInProgress,
@@ -257,10 +263,14 @@ const resolveSchedulePhase = (schedule) => {
     startDate instanceof Date &&
     !Number.isNaN(startDate.getTime()) &&
     startDate <= today &&
-    (!(endDate instanceof Date) || Number.isNaN(endDate.getTime()) || endDate >= today)
+    (!(endDate instanceof Date) ||
+      Number.isNaN(endDate.getTime()) ||
+      endDate >= today)
   ) {
     return {
-      label: getScheduleStatusLabel(schedule?.status ?? SCHEDULE_STATUS.RECRUITING),
+      label: getScheduleStatusLabel(
+        schedule?.status ?? SCHEDULE_STATUS.RECRUITING,
+      ),
       className: styles.statusOpen,
     };
   }
@@ -276,7 +286,11 @@ const resolveSchedulePhase = (schedule) => {
  * 상세만 바꾸고 홈/탐색/위시리스트 캐시를 놓치면 화면마다 하트 상태가 어긋나는 문제가 생긴다.
  * 그래서 이 파일은 각 캐시 shape에 맞는 작은 updater를 분리해 같은 토글 결과를 여러 query에 일관되게 반영한다.
  */
-const updateScheduleSummaryBookmarkState = (schedule, targetScheduleId, isBookmarked) => {
+const updateScheduleSummaryBookmarkState = (
+  schedule,
+  targetScheduleId,
+  isBookmarked,
+) => {
   if (!schedule || Number(schedule?.id) !== Number(targetScheduleId)) {
     return schedule;
   }
@@ -297,7 +311,11 @@ const updateScheduleCollectionBookmarkState = (
   }
 
   return schedules.map((schedule) =>
-    updateScheduleSummaryBookmarkState(schedule, targetScheduleId, isBookmarked),
+    updateScheduleSummaryBookmarkState(
+      schedule,
+      targetScheduleId,
+      isBookmarked,
+    ),
   );
 };
 
@@ -387,7 +405,11 @@ export default function ScheduleDetail() {
    * 상세 query key에 email을 포함하는 이유는 같은 일정이라도 viewer별 응답이 다르기 때문이다.
    * viewerIsHost, viewerParticipationStatus, viewerCanAccessChatLink가 모두 사용자 권한에 따라 달라진다.
    */
-  const detailQueryKey = ["schedule-detail", parsedScheduleId, authEmail || "guest"];
+  const detailQueryKey = [
+    "schedule-detail",
+    parsedScheduleId,
+    authEmail || "guest",
+  ];
 
   useEffect(() => {
     if (!Number.isFinite(parsedScheduleId) || parsedScheduleId <= 0) {
@@ -548,60 +570,44 @@ export default function ScheduleDetail() {
    * 화면에서는 이 helper로 문자열을 한 번 정규화해 공통 Snackbar로 보낸다.
    * 이렇게 해두면 각 버튼 핸들러가 에러 파싱 코드를 중복해서 들고 있지 않아도 된다.
    */
-  const resolveRequestErrorMessage = useCallback((requestError, fallbackMessage) => {
-    const responseData = requestError?.response?.data;
+  const resolveRequestErrorMessage = useCallback(
+    (requestError, fallbackMessage) => {
+      const responseData = requestError?.response?.data;
 
-    if (typeof responseData?.message === "string" && responseData.message.trim()) {
-      return responseData.message;
-    }
+      if (
+        typeof responseData?.message === "string" &&
+        responseData.message.trim()
+      ) {
+        return responseData.message;
+      }
 
-    if (typeof responseData === "string" && responseData.trim()) {
-      return responseData;
-    }
+      if (typeof responseData === "string" && responseData.trim()) {
+        return responseData;
+      }
 
-    if (typeof requestError?.message === "string" && requestError.message.trim()) {
-      return requestError.message;
-    }
+      if (
+        typeof requestError?.message === "string" &&
+        requestError.message.trim()
+      ) {
+        return requestError.message;
+      }
 
-    return fallbackMessage;
-  }, []);
-
-  const { mutateAsync: executeSchedule, isPending: isCompletingSchedule } = useMutation({
-    mutationFn: completeSchedule,
-    onSuccess: async () => {
-      /*
-       * 실행 상태 전환은 상세 화면 하나만 바뀌는 일이 아니다.
-       * - 상세: 호스트 버튼, 상태 배지, 참여 버튼 제약이 바뀜
-       * - 탐색/홈: 공개 리스트에서 상태 라벨이 바뀔 수 있음
-       * - 내 일정/신청자 관리: 진행 상태 문구와 제약이 달라짐
-       *
-       * 그래서 schedule-detail만 invalidate하면 다른 화면이 오래된 상태로 남을 수 있어 관련 캐시를 함께 무효화한다.
-       */
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["schedule-detail", parsedScheduleId],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["schedules"],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["home-schedules"],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["participation"],
-        }),
-      ]);
+      return fallbackMessage;
     },
-  });
+    [],
+  );
 
-  const { mutateAsync: rollbackScheduleExecution, isPending: isRollbackPending } =
+  const { mutateAsync: executeSchedule, isPending: isCompletingSchedule } =
     useMutation({
-      mutationFn: rollbackCompletedSchedule,
+      mutationFn: completeSchedule,
       onSuccess: async () => {
         /*
-         * 실행 취소도 실행과 같은 범위의 화면에 영향을 준다.
-         * 특히 completed에서 recruiting/closed로 돌아가면 참여 버튼이 다시 열리거나 계속 막혀야 하므로
-         * 상세/목록/내 일정 캐시를 한 번에 갱신한다.
+         * 실행 상태 전환은 상세 화면 하나만 바뀌는 일이 아니다.
+         * - 상세: 호스트 버튼, 상태 배지, 참여 버튼 제약이 바뀜
+         * - 탐색/홈: 공개 리스트에서 상태 라벨이 바뀔 수 있음
+         * - 내 일정/신청자 관리: 진행 상태 문구와 제약이 달라짐
+         *
+         * 그래서 schedule-detail만 invalidate하면 다른 화면이 오래된 상태로 남을 수 있어 관련 캐시를 함께 무효화한다.
          */
         await Promise.all([
           queryClient.invalidateQueries({
@@ -619,6 +625,34 @@ export default function ScheduleDetail() {
         ]);
       },
     });
+
+  const {
+    mutateAsync: rollbackScheduleExecution,
+    isPending: isRollbackPending,
+  } = useMutation({
+    mutationFn: rollbackCompletedSchedule,
+    onSuccess: async () => {
+      /*
+       * 실행 취소도 실행과 같은 범위의 화면에 영향을 준다.
+       * 특히 completed에서 recruiting/closed로 돌아가면 참여 버튼이 다시 열리거나 계속 막혀야 하므로
+       * 상세/목록/내 일정 캐시를 한 번에 갱신한다.
+       */
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["schedule-detail", parsedScheduleId],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["schedules"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["home-schedules"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["participation"],
+        }),
+      ]);
+    },
+  });
 
   const { mutateAsync: cancelHostSchedule, isPending: isCancelingSchedule } =
     useMutation({
@@ -658,121 +692,126 @@ export default function ScheduleDetail() {
    * 홈 추천, 탐색 목록, 위시리스트 목록이 모두 같은 일정의 저장 상태를 보여주므로,
    * onMutate에서 이 캐시들을 함께 반전해야 사용자가 어느 화면으로 돌아가도 일관된 하트 상태를 본다.
    */
-  const { mutateAsync: toggleBookmark, isPending: isBookmarkPending } = useMutation({
-    mutationFn: async (nextIsBookmarked) => {
-      if (nextIsBookmarked) {
-        return createBookmark(parsedScheduleId);
-      }
+  const { mutateAsync: toggleBookmark, isPending: isBookmarkPending } =
+    useMutation({
+      mutationFn: async (nextIsBookmarked) => {
+        if (nextIsBookmarked) {
+          return createBookmark(parsedScheduleId);
+        }
 
-      return deleteBookmarkApi(parsedScheduleId);
-    },
-    onMutate: async (nextIsBookmarked) => {
-      await Promise.all([
-        queryClient.cancelQueries({ queryKey: detailQueryKey }),
-        queryClient.cancelQueries({ queryKey: ["home-schedules"] }),
-        queryClient.cancelQueries({ queryKey: ["schedules"] }),
-        queryClient.cancelQueries({ queryKey: ["bookmarks", authEmail] }),
-      ]);
+        return deleteBookmarkApi(parsedScheduleId);
+      },
+      onMutate: async (nextIsBookmarked) => {
+        await Promise.all([
+          queryClient.cancelQueries({ queryKey: detailQueryKey }),
+          queryClient.cancelQueries({ queryKey: ["home-schedules"] }),
+          queryClient.cancelQueries({ queryKey: ["schedules"] }),
+          queryClient.cancelQueries({ queryKey: ["bookmarks", authEmail] }),
+        ]);
 
-      const previousDetail = queryClient.getQueryData(detailQueryKey);
-      const previousHomeQueries = queryClient.getQueriesData({
-        queryKey: ["home-schedules"],
-      });
-      const previousScheduleQueries = queryClient.getQueriesData({
-        queryKey: ["schedules"],
-      });
-      const previousBookmarks = queryClient.getQueryData(["bookmarks", authEmail]);
-      const detailSnapshot = previousDetail ?? data;
+        const previousDetail = queryClient.getQueryData(detailQueryKey);
+        const previousHomeQueries = queryClient.getQueriesData({
+          queryKey: ["home-schedules"],
+        });
+        const previousScheduleQueries = queryClient.getQueriesData({
+          queryKey: ["schedules"],
+        });
+        const previousBookmarks = queryClient.getQueryData([
+          "bookmarks",
+          authEmail,
+        ]);
+        const detailSnapshot = previousDetail ?? data;
 
-      queryClient.setQueryData(detailQueryKey, (old) =>
-        updateScheduleDetailBookmarkState(old ?? data, nextIsBookmarked),
-      );
+        queryClient.setQueryData(detailQueryKey, (old) =>
+          updateScheduleDetailBookmarkState(old ?? data, nextIsBookmarked),
+        );
 
-      previousHomeQueries.forEach(([queryKey]) => {
-        queryClient.setQueryData(queryKey, (old) =>
-          updateScheduleCollectionBookmarkState(
+        previousHomeQueries.forEach(([queryKey]) => {
+          queryClient.setQueryData(queryKey, (old) =>
+            updateScheduleCollectionBookmarkState(
+              old,
+              parsedScheduleId,
+              nextIsBookmarked,
+            ),
+          );
+        });
+
+        previousScheduleQueries.forEach(([queryKey]) => {
+          queryClient.setQueryData(queryKey, (old) =>
+            updateScheduleCollectionBookmarkState(
+              old,
+              parsedScheduleId,
+              nextIsBookmarked,
+            ),
+          );
+        });
+
+        queryClient.setQueryData(["bookmarks", authEmail], (old) =>
+          updateBookmarkedSchedulesCache(
             old,
             parsedScheduleId,
             nextIsBookmarked,
+            detailSnapshot,
           ),
         );
-      });
 
-      previousScheduleQueries.forEach(([queryKey]) => {
-        queryClient.setQueryData(queryKey, (old) =>
-          updateScheduleCollectionBookmarkState(
-            old,
-            parsedScheduleId,
-            nextIsBookmarked,
+        return {
+          previousDetail,
+          previousHomeQueries,
+          previousScheduleQueries,
+          previousBookmarks,
+        };
+      },
+      onError: (requestError, nextIsBookmarked, context) => {
+        /*
+         * optimistic update는 빠른 대신 실패 시 복구 책임이 크다.
+         * 그래서 onMutate에서 저장한 snapshot을 그대로 되돌려 각 화면이 서버 진실과 다시 맞도록 한다.
+         */
+        if (context?.previousDetail !== undefined) {
+          queryClient.setQueryData(detailQueryKey, context.previousDetail);
+        }
+
+        context?.previousHomeQueries?.forEach(([queryKey, cachedData]) => {
+          queryClient.setQueryData(queryKey, cachedData);
+        });
+
+        context?.previousScheduleQueries?.forEach(([queryKey, cachedData]) => {
+          queryClient.setQueryData(queryKey, cachedData);
+        });
+
+        if (context?.previousBookmarks !== undefined) {
+          queryClient.setQueryData(
+            ["bookmarks", authEmail],
+            context.previousBookmarks,
+          );
+        }
+
+        showFeedback(
+          "error",
+          resolveRequestErrorMessage(
+            requestError,
+            "위시 상태 변경에 실패했습니다. 잠시 후 다시 시도해 주세요.",
           ),
         );
-      });
+      },
+      onSuccess: async (response) => {
+        const successMessage = response?.isBookmarked
+          ? "위시리스트에 저장했어요"
+          : "위시리스트에서 삭제했어요";
+        showFeedback("success", successMessage);
 
-      queryClient.setQueryData(["bookmarks", authEmail], (old) =>
-        updateBookmarkedSchedulesCache(
-          old,
-          parsedScheduleId,
-          nextIsBookmarked,
-          detailSnapshot,
-        ),
-      );
-
-      return {
-        previousDetail,
-        previousHomeQueries,
-        previousScheduleQueries,
-        previousBookmarks,
-      };
-    },
-    onError: (requestError, nextIsBookmarked, context) => {
-      /*
-       * optimistic update는 빠른 대신 실패 시 복구 책임이 크다.
-       * 그래서 onMutate에서 저장한 snapshot을 그대로 되돌려 각 화면이 서버 진실과 다시 맞도록 한다.
-       */
-      if (context?.previousDetail !== undefined) {
-        queryClient.setQueryData(detailQueryKey, context.previousDetail);
-      }
-
-      context?.previousHomeQueries?.forEach(([queryKey, cachedData]) => {
-        queryClient.setQueryData(queryKey, cachedData);
-      });
-
-      context?.previousScheduleQueries?.forEach(([queryKey, cachedData]) => {
-        queryClient.setQueryData(queryKey, cachedData);
-      });
-
-      if (context?.previousBookmarks !== undefined) {
-        queryClient.setQueryData(["bookmarks", authEmail], context.previousBookmarks);
-      }
-
-      showFeedback(
-        "error",
-        resolveRequestErrorMessage(
-          requestError,
-          "위시 상태 변경에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        ),
-      );
-    },
-    onSuccess: async (response) => {
-      const successMessage = response?.isBookmarked
-        ? "위시리스트에 저장했어요"
-        : "위시리스트에서 삭제했어요";
-      showFeedback("success", successMessage);
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: detailQueryKey }),
-        queryClient.invalidateQueries({ queryKey: ["home-schedules"] }),
-        queryClient.invalidateQueries({ queryKey: ["schedules"] }),
-        queryClient.invalidateQueries({ queryKey: ["bookmarks", authEmail] }),
-      ]);
-    },
-  });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: detailQueryKey }),
+          queryClient.invalidateQueries({ queryKey: ["home-schedules"] }),
+          queryClient.invalidateQueries({ queryKey: ["schedules"] }),
+          queryClient.invalidateQueries({ queryKey: ["bookmarks", authEmail] }),
+        ]);
+      },
+    });
 
   const handleDelete = async () => {
     try {
       await deleteSchedule(scheduleId);
-
-      console.log("삭제 성공");
 
       handleClose();
       navigate("/");
@@ -925,7 +964,14 @@ export default function ScheduleDetail() {
         );
       }
     },
-    [authEmail, isLoggedIn, navigate, resolveRequestErrorMessage, showFeedback, updateParticipationStatus],
+    [
+      authEmail,
+      isLoggedIn,
+      navigate,
+      resolveRequestErrorMessage,
+      showFeedback,
+      updateParticipationStatus,
+    ],
   );
 
   const handleExecuteSchedule = useCallback(async () => {
@@ -956,7 +1002,10 @@ export default function ScheduleDetail() {
     } catch (requestError) {
       showFeedback(
         "error",
-        resolveRequestErrorMessage(requestError, "일정 완료 처리에 실패했습니다."),
+        resolveRequestErrorMessage(
+          requestError,
+          "일정 완료 처리에 실패했습니다.",
+        ),
       );
     }
   }, [
@@ -989,7 +1038,10 @@ export default function ScheduleDetail() {
     } catch (requestError) {
       showFeedback(
         "error",
-        resolveRequestErrorMessage(requestError, "일정완료 취소에 실패했습니다."),
+        resolveRequestErrorMessage(
+          requestError,
+          "일정완료 취소에 실패했습니다.",
+        ),
       );
     }
   }, [
@@ -1104,17 +1156,22 @@ export default function ScheduleDetail() {
   const categoryLabel =
     CATEGORY_LABELS[schedule.category] ?? schedule.category ?? "기타";
   const schedulePhase = resolveSchedulePhase(schedule);
-  const normalizedScheduleStatus = schedule?.status?.trim()?.toLowerCase() ?? "";
-  const isScheduleCompleted = normalizedScheduleStatus === SCHEDULE_STATUS.COMPLETED;
+  const normalizedScheduleStatus =
+    schedule?.status?.trim()?.toLowerCase() ?? "";
+  const isScheduleCompleted =
+    normalizedScheduleStatus === SCHEDULE_STATUS.COMPLETED;
   /*
    * 일정 완료 버튼 활성 조건은 프런트에서도 먼저 계산한다.
    * 다만 이것은 UX 보조 장치일 뿐이고, 실제 최소 인원 충족 여부와 상태 전이 가능 여부는 백엔드가 최종 검증한다.
    */
   const canCompleteSchedule =
-    Number(schedule.currentParticipants ?? 0) >= Number(schedule.minParticipants ?? 0);
-  const isScheduleCanceled = normalizedScheduleStatus === SCHEDULE_STATUS.CANCELED;
+    Number(schedule.currentParticipants ?? 0) >=
+    Number(schedule.minParticipants ?? 0);
+  const isScheduleCanceled =
+    normalizedScheduleStatus === SCHEDULE_STATUS.CANCELED;
   const isScheduleClosed = normalizedScheduleStatus === SCHEDULE_STATUS.CLOSED;
-  const isScheduleRecruiting = normalizedScheduleStatus === SCHEDULE_STATUS.RECRUITING;
+  const isScheduleRecruiting =
+    normalizedScheduleStatus === SCHEDULE_STATUS.RECRUITING;
   const isScheduleActionPending =
     isCompletingSchedule || isRollbackPending || isCancelingSchedule;
   const isScheduleCancelable = isScheduleRecruiting || isScheduleClosed;
@@ -1135,10 +1192,10 @@ export default function ScheduleDetail() {
     rawImages.length > 0
       ? [...rawImages]
           .sort((a, b) => (b?.isThumbnail ?? 0) - (a?.isThumbnail ?? 0))
-          .map((image) => image?.imageUrl)
+          .map((image) => image?.imageUrl?.trim())
           .filter(Boolean)
-      : schedule.thumbnailImage
-        ? [schedule.thumbnailImage]
+      : schedule.thumbnailImage?.trim()
+        ? [schedule.thumbnailImage.trim()]
         : [DEFAULT_IMAGE];
 
   /*
@@ -1194,7 +1251,9 @@ export default function ScheduleDetail() {
   const minParticipants = Number(schedule.minParticipants ?? 0);
   const costLabel = `${Number(schedule.totalPrice ?? 0).toLocaleString()}원`;
   const costTypeLabel =
-    COST_TYPE_LABELS[schedule.costType] || schedule.costType || "정산 방식 미정";
+    COST_TYPE_LABELS[schedule.costType] ||
+    schedule.costType ||
+    "정산 방식 미정";
   const genderLimitLabel = formatGenderLimit(schedule.genderLimit);
   const ageRangeLabel = formatAgeRange(schedule.ageMin, schedule.ageMax);
 
@@ -1218,7 +1277,9 @@ export default function ScheduleDetail() {
 
                 <div className={styles.heroBadges}>
                   <span className={styles.categoryBadge}>{categoryLabel}</span>
-                  <span className={schedulePhase.className}>{schedulePhase.label}</span>
+                  <span className={schedulePhase.className}>
+                    {schedulePhase.label}
+                  </span>
                   <span className={styles.ddayBadge}>{deadlineLabel}</span>
                 </div>
 
@@ -1272,19 +1333,23 @@ export default function ScheduleDetail() {
             <section className={`${styles.panel} ${styles.titleSection}`}>
               {shouldShowHiddenBanner ? (
                 <div className={styles.hiddenNoticeBanner}>
-                  이 일정은 비공개로 숨겨져 있으며 호스트 또는 관리자만 확인할 수 있습니다.
+                  이 일정은 비공개로 숨겨져 있으며 호스트 또는 관리자만 확인할
+                  수 있습니다.
                 </div>
               ) : null}
               <div className={styles.titleRow}>
                 <div className={styles.titleContent}>
-                  <h1 className={styles.title}>{schedule.title ?? "제목 없음"}</h1>
+                  <h1 className={styles.title}>
+                    {schedule.title ?? "제목 없음"}
+                  </h1>
                   <div className={styles.metaLine}>
                     <span>
                       <PlaceIcon fontSize="small" /> {locationText}
                     </span>
                     <span>
                       <CalendarTodayIcon fontSize="small" />{" "}
-                      {schedule.startDate || "미정"} ~ {schedule.endDate || "미정"}
+                      {schedule.startDate || "미정"} ~{" "}
+                      {schedule.endDate || "미정"}
                     </span>
                   </div>
                   <div className={styles.socialInfo}>
@@ -1362,7 +1427,9 @@ export default function ScheduleDetail() {
                   <div className={styles.dailyPlanList}>
                     {details.map((detail) => (
                       <article key={detail.id} className={styles.dayCard}>
-                        <span className={styles.dayNumber}>Day {detail.dayNumber}</span>
+                        <span className={styles.dayNumber}>
+                          Day {detail.dayNumber}
+                        </span>
                         <div className={styles.dayContent}>
                           <h3 className={styles.planTitle}>
                             {detail.title || "제목 없음"}
@@ -1401,7 +1468,10 @@ export default function ScheduleDetail() {
                 }}
                 onKeyDown={(event) => {
                   // 접근성을 위해 마우스 클릭뿐 아니라 Enter/Space 키로도 같은 이동을 지원한다.
-                  if ((event.key === "Enter" || event.key === " ") && data.email) {
+                  if (
+                    (event.key === "Enter" || event.key === " ") &&
+                    data.email
+                  ) {
                     event.preventDefault();
                     navigate(`/mypage/${encodeURIComponent(data.email)}`);
                   }
@@ -1414,7 +1484,9 @@ export default function ScheduleDetail() {
                     className={styles.hostAvatar}
                   />
                 ) : (
-                  <div className={styles.hostAvatar}>{resolveInitial(hostName)}</div>
+                  <div className={styles.hostAvatar}>
+                    {resolveInitial(hostName)}
+                  </div>
                 )}
                 <div className={styles.hostText}>
                   <span className={styles.hostBadge}>이 일정의 호스트</span>
@@ -1438,7 +1510,9 @@ export default function ScheduleDetail() {
                 </div>
 
                 {isApprovedApplicantsLoading ? (
-                  <p className={styles.sideNotice}>승인 참여자를 불러오는 중입니다.</p>
+                  <p className={styles.sideNotice}>
+                    승인 참여자를 불러오는 중입니다.
+                  </p>
                 ) : approvedApplicants.length > 0 ? (
                   <div className={styles.avatarList}>
                     {approvedApplicants.slice(0, 8).map((applicant) =>
@@ -1454,18 +1528,24 @@ export default function ScheduleDetail() {
                           key={applicant.participationId}
                           className={styles.participantAvatar}
                         >
-                          {resolveInitial(applicant.nickname || applicant.email)}
+                          {resolveInitial(
+                            applicant.nickname || applicant.email,
+                          )}
                         </div>
                       ),
                     )}
                     {approvedApplicants.length > 8 ? (
-                      <div className={`${styles.participantAvatar} ${styles.moreAvatar}`}>
+                      <div
+                        className={`${styles.participantAvatar} ${styles.moreAvatar}`}
+                      >
                         +{approvedApplicants.length - 8}
                       </div>
                     ) : null}
                   </div>
                 ) : (
-                  <p className={styles.sideNotice}>아직 승인된 참여자가 없습니다.</p>
+                  <p className={styles.sideNotice}>
+                    아직 승인된 참여자가 없습니다.
+                  </p>
                 )}
               </section>
             )}
@@ -1568,7 +1648,9 @@ export default function ScheduleDetail() {
                   ) : null}
 
                   {applyInfoMessage ? (
-                    <p className={styles.summaryApplyMessage}>{applyInfoMessage}</p>
+                    <p className={styles.summaryApplyMessage}>
+                      {applyInfoMessage}
+                    </p>
                   ) : null}
                 </div>
               </div>
@@ -1631,27 +1713,36 @@ export default function ScheduleDetail() {
                   </Button>
                 </div>
 
-                {viewerIsHost && !isScheduleCompleted && !isScheduleCanceled && !isScheduleCompletable ? (
+                {viewerIsHost &&
+                !isScheduleCompleted &&
+                !isScheduleCanceled &&
+                !isScheduleCompletable ? (
                   <p className={styles.executionNotice}>
-                    최소 {minParticipants}명이 모여야 일정 완료 처리가 가능합니다.
+                    최소 {minParticipants}명이 모여야 일정 완료 처리가
+                    가능합니다.
                   </p>
                 ) : null}
 
                 {viewerIsHost && isScheduleCompleted ? (
                   <p className={styles.executionNotice}>
-                    일정완료 상태입니다. 참여 상태 변경, 일정 수정, 삭제는 잠겨 있습니다.
+                    일정완료 상태입니다. 참여 상태 변경, 일정 수정, 삭제는 잠겨
+                    있습니다.
                   </p>
                 ) : null}
 
                 {viewerIsHost && isScheduleCanceled ? (
                   <p className={styles.executionNotice}>
-                    일정취소 상태입니다. 추가 신청과 호스트 관리 액션은 제한됩니다.
+                    일정취소 상태입니다. 추가 신청과 호스트 관리 액션은
+                    제한됩니다.
                   </p>
                 ) : null}
               </section>
             ) : null}
 
-            {isLoggedIn && authEmail && viewerIsHost && !isApplicantsForbidden ? (
+            {isLoggedIn &&
+            authEmail &&
+            viewerIsHost &&
+            !isApplicantsForbidden ? (
               /*
                * 신청자 관리 목록은 로그인한 호스트에게만 렌더링한다.
                * 여기서 내려가는 applicants에는 전화번호/성별/나이 같은 개인정보가 포함될 수 있으므로 비호스트 분기와 절대 섞으면 안 된다.
@@ -1727,8 +1818,11 @@ export default function ScheduleDetail() {
         <DialogTitle sx={{ pb: 2 }}>로그인이 필요합니다</DialogTitle>
 
         <DialogContent sx={{ px: 4, py: 2 }}>
-          <DialogContentText sx={{ fontSize: "15px", color: "#555", lineHeight: 1.7 }}>
-            위시리스트 기능은 로그인 후 이용할 수 있습니다. 로그인 페이지로 이동하시겠습니까?
+          <DialogContentText
+            sx={{ fontSize: "15px", color: "#555", lineHeight: 1.7 }}
+          >
+            위시리스트 기능은 로그인 후 이용할 수 있습니다. 로그인 페이지로
+            이동하시겠습니까?
           </DialogContentText>
         </DialogContent>
 

@@ -10,6 +10,8 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import Button from "../../../../shared/ui/Button/Button";
 import styles from "./JoinedScheduleCard.module.css";
 
+const DEFAULT_THUMBNAIL = "/default-4.png";
+
 const resolvePrimaryAction = (item) => {
   /*
    * 카드의 주 액션은 "사용자가 지금 가장 자연스럽게 해야 할 일"을 기준으로 고른다.
@@ -137,29 +139,20 @@ function JoinedScheduleCard({ item, onAction, isActionLoading = false }) {
       aria-label={`${item.title} 일정 카드`}
     >
       <div className={styles.thumbnailWrap}>
-        {item.hasThumbnail ? (
-          <img
-            src={item.thumbnailSrc}
-            alt={`${item.title} 썸네일`}
-            className={styles.thumbnail}
-            loading="lazy"
-            onError={(event) => {
-              /*
-               * 외부 이미지 URL 만료나 삭제로 로드가 실패해도 카드 높이를 유지해야 한다.
-               * 로컬 hero fallback으로 교체해 리스트 레이아웃이 흔들리지 않게 한다.
-               */
-              event.currentTarget.src = "/hero.png";
-            }}
-          />
-        ) : (
-          /*
-           * 썸네일이 없는 일정은 이미지 영역을 비우지 않고 브랜드 텍스트 placeholder를 보여준다.
-           * 이 카드 리스트는 여러 탭에서 재사용되므로 빈 이미지로 인한 높이 차이를 피하는 것이 중요하다.
-           */
-          <div className={styles.thumbnailPlaceholder} aria-hidden="true">
-            <span>wit</span>
-          </div>
-        )}
+        <img
+          src={item.thumbnailSrc || DEFAULT_THUMBNAIL}
+          alt={`${item.title} 썸네일`}
+          className={styles.thumbnail}
+          loading="lazy"
+          onError={(event) => {
+            /*
+             * 외부 이미지 URL 만료나 삭제로 로드가 실패해도 카드 높이를 유지해야 한다.
+             * 썸네일이 없을 때도 동일한 기본 이미지를 보여주고, 깨진 이미지가 반복 로드되지 않도록 onerror를 먼저 끊는다.
+             */
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = DEFAULT_THUMBNAIL;
+          }}
+        />
       </div>
 
       <div className={styles.content}>
