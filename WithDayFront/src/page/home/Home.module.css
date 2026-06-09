@@ -305,7 +305,7 @@
    ========================= */
 
 .main {
-  padding: 28px 0 120px;
+  padding: 28px 0 0;
   background-color: #f8fafb;
   min-width: 0;
 }
