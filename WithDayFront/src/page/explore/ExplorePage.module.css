@@ -138,7 +138,8 @@
   padding: 0;
 }
 
-.muiSelect :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline) {
+.muiSelect
+  :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline) {
   border-color: var(--color-border);
 }
 
@@ -428,5 +429,46 @@
 
   .resetButton {
     width: 100%;
+  }
+}
+
+/* ─── 탐색 카드 그리드: 메인 홈 티켓 카드 재사용 ─────────────── */
+.exploreCardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 240px);
+  justify-content: start;
+  align-items: start;
+  gap: 20px 16px;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+  padding-bottom: 8px;
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .exploreCardGrid {
+    grid-template-columns: repeat(auto-fill, 230px);
+    gap: 18px 14px;
+  }
+}
+
+@media (max-width: 768px) and (min-width: 640px) {
+  .exploreCardGrid {
+    grid-template-columns: repeat(auto-fill, 222px);
+    gap: 16px 14px;
+  }
+}
+
+@media (max-width: 639px) {
+  .exploreCardGrid {
+    grid-template-columns: repeat(auto-fill, 216px);
+    justify-content: center;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .exploreCardGrid {
+    grid-template-columns: repeat(auto-fill, 204px);
   }
 }
