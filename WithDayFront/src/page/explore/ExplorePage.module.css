@@ -148,9 +148,13 @@
   border-width: 1px;
 }
 
-.muiSelect :global(.MuiSelect-select) {
+.muiSelect :global(.MuiSelect-select),
+.muiSelect
+  :global(
+    .MuiSelect-select.MuiSelect-outlined.MuiInputBase-input.MuiOutlinedInput-input
+  ) {
   min-width: 0;
-  padding: 10px 40px 10px 12px !important;
+  padding: 10px 40px 10px 12px;
   font-size: 0.9rem;
   color: var(--color-text-primary);
 }
@@ -379,6 +383,12 @@
 }
 
 @media (max-width: 767px) {
+  .main {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
   .banner {
     margin: 14px 0;
   }
@@ -388,38 +398,112 @@
   }
 
   .filterPanel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     padding: 14px;
     border-radius: var(--radius-md);
+    overflow: visible;
+    box-sizing: border-box;
   }
 
   .searchRow {
-    grid-template-columns: minmax(0, 1fr);
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .searchInputWrapper {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+
+  .searchInput {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .searchButton {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
   }
 
   .filterBar {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
-    overflow-x: auto;
-    padding: 2px 2px 10px;
-    scroll-snap-type: x proximity;
-  }
-
-  .filterBar::-webkit-scrollbar {
-    display: none;
+    width: 100%;
+    min-width: 0;
+    margin-top: 14px;
+    padding: 0;
+    overflow: visible;
+    scroll-snap-type: none;
   }
 
   .filterField {
-    flex: 0 0 150px;
-    scroll-snap-align: start;
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    scroll-snap-align: unset;
+  }
+
+  .muiFormControl,
+  .muiSelect,
+  .muiSelect :global(.MuiInputBase-root) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .muiSelect :global(.MuiSelect-select),
+  .muiSelect
+    :global(
+      .MuiSelect-select.MuiSelect-outlined.MuiInputBase-input.MuiOutlinedInput-input
+    ) {
+    min-width: 0;
+    padding: 9px 34px 9px 10px;
+    font-size: 0.82rem;
   }
 
   .dateRangeField {
-    flex-basis: 282px;
-    min-width: 282px;
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dateRangeInputs {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    gap: 6px;
+    padding: 0 10px;
+    box-sizing: border-box;
+  }
+
+  .dateValueSlot {
+    width: 100%;
+    min-width: 0;
   }
 
   .dateValueText {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 0.82rem;
+  }
+
+  .dateDivider {
+    font-size: 0.82rem;
   }
 
   .selectedFilterRow {
@@ -427,10 +511,132 @@
     align-items: stretch;
   }
 
+  .selectedChipList {
+    width: 100%;
+    min-width: 0;
+  }
+
   .resetButton {
     width: 100%;
   }
 }
+
+@media (max-width: 375px) {
+  .filterPanel {
+    padding: 12px;
+  }
+
+  .filterBar {
+    gap: 8px;
+  }
+
+  .filterLabel {
+    font-size: 0.72rem;
+  }
+
+  .searchInputWrapper {
+    min-height: 42px;
+    padding: 0 10px;
+  }
+
+  .searchInput {
+    font-size: 0.84rem;
+  }
+
+  .searchInput::placeholder {
+    font-size: 0.82rem;
+  }
+
+  .searchButton {
+    min-height: 40px;
+  }
+
+  .dateRangeInputs {
+    min-height: 40px;
+    padding: 0 9px;
+    gap: 5px;
+  }
+
+  .dateValueText {
+    font-size: 0.8rem;
+  }
+
+  .muiSelect :global(.MuiSelect-select),
+  .muiSelect
+    :global(
+      .MuiSelect-select.MuiSelect-outlined.MuiInputBase-input.MuiOutlinedInput-input
+    ) {
+    font-size: 0.8rem;
+    padding: 9px 32px 9px 9px;
+  }
+}
+
+@media (max-width: 340px) {
+  .filterPanel {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .filterBar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .bannerTitle {
+    font-size: 1.08rem;
+  }
+
+  .searchInputWrapper {
+    min-height: 40px;
+    padding: 0 9px;
+    gap: 6px;
+  }
+
+  .searchIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .searchInput {
+    font-size: 0.8rem;
+  }
+
+  .searchInput::placeholder {
+    font-size: 0.76rem;
+  }
+
+  .searchButton {
+    min-height: 39px;
+    font-size: 0.82rem;
+  }
+
+  .filterLabel {
+    font-size: 0.7rem;
+  }
+
+  .muiSelect :global(.MuiSelect-select),
+  .muiSelect
+    :global(
+      .MuiSelect-select.MuiSelect-outlined.MuiInputBase-input.MuiOutlinedInput-input
+    ) {
+    font-size: 0.76rem;
+    padding: 8px 30px 8px 8px;
+  }
+
+  .dateRangeInputs {
+    padding: 0 8px;
+    gap: 4px;
+  }
+
+  .dateValueText {
+    font-size: 0.76rem;
+  }
+
+  .dateDivider {
+    font-size: 0.76rem;
+  }
+}
+
 /* ─── 탐색 카드 그리드: 홈 티켓 카드 크기 유지 ─────────────── */
 .exploreCardGrid {
   display: grid;
