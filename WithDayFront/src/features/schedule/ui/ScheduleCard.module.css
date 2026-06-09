@@ -1322,3 +1322,173 @@
     overflow-wrap: anywhere;
   }
 }
+/* =========================
+   Explore Mobile Typography
+   - 탐색 화면 카드만 모바일 폰트 보정
+   - 카드 크기는 그대로 두고 글자/알약만 줄임
+   ========================= */
+
+@media (max-width: 425px) {
+  .cardCompact:global(.exploreTicketCard) .deadlinePillBase {
+    height: 17px;
+    min-height: 17px;
+    padding: 0 8px 0 10px;
+    font-size: 8.8px;
+    line-height: 17px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .genderPill {
+    right: 32px;
+    font-size: 8px;
+    line-height: 17px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .dateText {
+    font-size: 8.8px;
+    line-height: 12px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .dateIcon,
+  .cardCompact:global(.exploreTicketCard) .dateIconWrap {
+    width: 11px;
+    min-width: 11px;
+    height: 11px;
+    font-size: 11px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .cardTitle {
+    font-size: 13.4px;
+    line-height: 18px;
+    max-height: 36px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .titleLine {
+    height: 18px;
+    line-height: 18px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .cardDescription {
+    height: 26px;
+    max-height: 26px;
+    font-size: 8.7px;
+    line-height: 13px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .overlayPill {
+    height: 15px;
+    min-height: 15px;
+    padding: 0 6px;
+    font-size: 7.8px;
+    line-height: 15px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .thumbnailOverlay {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 375px) {
+  .cardCompact:global(.exploreTicketCard) .deadlinePillBase {
+    height: 16px;
+    min-height: 16px;
+    padding: 0 7px 0 9px;
+    font-size: 8.3px;
+    line-height: 16px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .genderPill {
+    right: 31px;
+    font-size: 7.6px;
+    line-height: 16px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .dateText {
+    font-size: 8.3px;
+    line-height: 11px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .cardTitle {
+    font-size: 12.9px;
+    line-height: 17px;
+    max-height: 34px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .titleLine {
+    height: 17px;
+    line-height: 17px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .cardDescription {
+    height: 24px;
+    max-height: 24px;
+    font-size: 8.2px;
+    line-height: 12px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .overlayPill {
+    height: 14px;
+    min-height: 14px;
+    padding: 0 6px;
+    font-size: 7.4px;
+    line-height: 14px;
+  }
+}
+
+@media (max-width: 320px) {
+  .cardCompact:global(.exploreTicketCard) .deadlinePillBase {
+    height: 15px;
+    min-height: 15px;
+    padding: 0 7px 0 8px;
+    font-size: 7.8px;
+    line-height: 15px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .genderPill {
+    right: 30px;
+    font-size: 7.2px;
+    line-height: 15px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .bookmarkIcon {
+    width: 14px;
+    height: 14px;
+    font-size: 14px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .dateText {
+    font-size: 8px;
+    line-height: 11px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .cardTitle {
+    font-size: 12.2px;
+    line-height: 16px;
+    max-height: 32px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .titleLine {
+    height: 16px;
+    line-height: 16px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .cardDescription {
+    height: 22px;
+    max-height: 22px;
+    font-size: 7.8px;
+    line-height: 11px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .overlayPill {
+    height: 13px;
+    min-height: 13px;
+    padding: 0 5px;
+    font-size: 7px;
+    line-height: 13px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .thumbnailOverlay {
+    left: 5px;
+    bottom: 5px;
+    gap: 3px;
+  }
+}
