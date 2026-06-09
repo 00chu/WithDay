@@ -857,5 +857,4 @@ public class UserService {
         long timestamp = System.currentTimeMillis();
         return "deleted+" + userId + "+" + timestamp + "@withdrawn.withday.local";
     }
-
 }
