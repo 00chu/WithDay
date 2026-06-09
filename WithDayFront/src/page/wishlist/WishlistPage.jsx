@@ -3,14 +3,13 @@ import clsx from "clsx";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import { fetchBookmarkedSchedules } from "../../features/schedule/api";
 import ScheduleCard from "../../features/schedule/ui/ScheduleCard";
-import ScheduleCardGrid from "../../shared/ui/ScheduleCardGrid/ScheduleCardGrid";
 import styles from "./WishlistPage.module.css";
 
 const getScheduleKey = (schedule) =>
   String(
     schedule?.id ??
-      schedule?.scheduleId ??
-      `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`,
+    schedule?.scheduleId ??
+    `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`,
   );
 
 export default function WishlistPage() {
@@ -64,14 +63,16 @@ export default function WishlistPage() {
             </p>
           </div>
 
-          <ScheduleCardGrid>
+          <div className={styles.wishlistCardGrid}>
             {schedules.map((schedule) => (
               <ScheduleCard
                 key={getScheduleKey(schedule)}
                 schedule={schedule}
+                variant="compact"
+                className="homeTicketCard mainTicketCard"
               />
             ))}
-          </ScheduleCardGrid>
+          </div>
         </section>
       )}
     </main>

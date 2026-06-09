@@ -776,6 +776,7 @@
 .cardCompact:global(.homeTicketCard) .overlayPill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
 
   height: 17px;
   min-height: 17px;
@@ -788,7 +789,7 @@
   font-family: Poppins, "Noto Sans KR", sans-serif;
   font-size: 9px;
   font-weight: 700;
-  line-height: 18px;
+  line-height: 1;
   white-space: nowrap;
 
   box-shadow: 0 1px 4px rgba(10, 22, 45, 0.12);
@@ -1372,7 +1373,8 @@
     min-height: 15px;
     padding: 0 6px;
     font-size: 7.8px;
-    line-height: 15px;
+    line-height: 1;
+    justify-content: center;
   }
 
   .cardCompact:global(.homeTicketCard) .thumbnailOverlay {
@@ -1431,7 +1433,8 @@
     min-height: 14px;
     padding: 0 6px;
     font-size: 7.4px;
-    line-height: 14px;
+    line-height: 1;
+    justify-content: center;
   }
 }
 
@@ -1490,7 +1493,8 @@
     min-height: 13px;
     padding: 0 5px;
     font-size: 7px;
-    line-height: 13px;
+    line-height: 1;
+    justify-content: center;
   }
 
   .cardCompact:global(.homeTicketCard) .thumbnailOverlay {
@@ -1504,7 +1508,7 @@
 }
 /* =========================
    Main Home Card Title Fix
-   - 메인 카드 제목만 보정
+   - 메인 카드 제목 전체 표시
    - 탐색 exploreTicketCard 영향 없음
    ========================= */
 
@@ -1512,34 +1516,50 @@
   width: calc(100% - 24px);
   max-width: calc(100% - 24px);
   margin-left: 12px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .cardCompact:global(.mainTicketCard) .titleGroup {
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .cardCompact:global(.mainTicketCard) .cardTitle {
   display: block;
   width: 100%;
-  height: 32px;
-  max-height: 32px;
+  height: auto;
+  max-height: none;
 
-  font-size: 12px;
-  line-height: 16px;
+  margin: 0;
 
-  overflow: hidden;
-  word-break: break-all;
+  font-size: 14px;
+  line-height: 19px;
+
+  overflow: visible;
+  white-space: normal;
+  word-break: keep-all;
   overflow-wrap: anywhere;
 }
 
 .cardCompact:global(.mainTicketCard) .titleLine {
-  display: block;
-  height: 16px;
-  line-height: 16px;
+  display: inline;
+  height: auto;
+  line-height: inherit;
 
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+}
+@media (max-width: 425px) {
+  .cardCompact:global(.mainTicketCard) .cardTitle {
+    font-size: 13px;
+    line-height: 18px;
+  }
+}
+
+@media (max-width: 320px) {
+  .cardCompact:global(.mainTicketCard) .cardTitle {
+    font-size: 12.4px;
+    line-height: 17px;
+  }
 }
