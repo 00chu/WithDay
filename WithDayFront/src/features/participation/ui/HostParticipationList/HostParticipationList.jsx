@@ -22,6 +22,7 @@ function HostParticipationList({
   errorMessage,
   emptyMessage,
   hostEmail,
+  onProfileClick,
   onItemAction,
   activeStatus,
   onStatusChange,
@@ -110,6 +111,7 @@ function HostParticipationList({
               key={item.participationId}
               item={item}
               hostEmail={hostEmail}
+              onProfileClick={onProfileClick}
               onAction={onItemAction}
               isActionLoading={isActionLoading}
               isReadOnly={isReadOnly}
