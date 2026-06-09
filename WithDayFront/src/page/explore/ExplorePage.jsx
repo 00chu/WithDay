@@ -9,7 +9,6 @@ import Select from "@mui/material/Select";
 import styles from "./ExplorePage.module.css";
 import Button from "../../shared/ui/Button/Button";
 import ScheduleCard from "../../features/schedule/ui/ScheduleCard";
-import ScheduleCardGrid from "../../shared/ui/ScheduleCardGrid/ScheduleCardGrid";
 import { fetchSchedules } from "../../features/schedule/api";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import { getDetailRegion, getRegion } from "../../features/region/api";
@@ -56,8 +55,8 @@ const DEFAULT_FILTERS = Object.freeze({
 const getScheduleKey = (schedule) =>
   String(
     schedule?.id ??
-      schedule?.scheduleId ??
-      `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`,
+    schedule?.scheduleId ??
+    `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`,
   );
 
 const normalizeText = (value) => value?.trim() ?? "";
@@ -534,15 +533,16 @@ export default function ExplorePage() {
         {!isLoading &&
           !isError &&
           (Array.isArray(schedules) && schedules.length > 0 ? (
-            <ScheduleCardGrid>
+            <div className={styles.exploreCardGrid}>
               {schedules.map((schedule) => (
-                /*
-                 * 탐색 탭은 기본 ScheduleCard variant를 사용한다.
-                 * ScheduleCardGrid가 반응형 열 수를 담당하므로 카드 컴포넌트에는 데이터(schedule)만 넘긴다.
-                 */
-                <ScheduleCard key={getScheduleKey(schedule)} schedule={schedule} />
+                <ScheduleCard
+                  key={getScheduleKey(schedule)}
+                  schedule={schedule}
+                  variant="compact"
+                  className="homeTicketCard"
+                />
               ))}
-            </ScheduleCardGrid>
+            </div>
           ) : (
             <div className={styles.noData}>조건에 맞는 일정이 없습니다.</div>
           ))}
