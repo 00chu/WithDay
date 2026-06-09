@@ -51,7 +51,7 @@ jobs:
           echo "Add EC2 host to known_hosts"
           ssh-keyscan -T 20 -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts || true
 
-      - name: Prepare remote upload directory
+      - name: Prepare remote directories
         run: |
           ssh \
             -o StrictHostKeyChecking=no \
@@ -63,11 +63,14 @@ jobs:
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
 
-            echo "Prepare upload directory"
+            echo "Prepare deploy directories"
             mkdir -p /home/ubuntu/deploy-images
+            mkdir -p /home/ubuntu/deploy-manifests
 
-            echo "Remove old image archives"
+            echo "Remove old deploy files"
             rm -f /home/ubuntu/deploy-images/withday-backend-*.tar
+            rm -f /home/ubuntu/deploy-manifests/deployment.yaml
+            rm -f /home/ubuntu/deploy-manifests/service.yaml
 
             echo "Disk usage"
             df -h
@@ -88,6 +91,28 @@ jobs:
             /tmp/withday-backend-${IMAGE_TAG}.tar \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/deploy-images/withday-backend-${IMAGE_TAG}.tar
 
+      - name: Upload k3s manifests to EC2
+        run: |
+          scp \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=10 \
+            -o ConnectTimeout=30 \
+            -i ~/.ssh/withday-key.pem \
+            WithDayBack/k8s/deployment.yaml \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/deploy-manifests/deployment.yaml
+
+          scp \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=10 \
+            -o ConnectTimeout=30 \
+            -i ~/.ssh/withday-key.pem \
+            WithDayBack/k8s/service.yaml \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/deploy-manifests/service.yaml
+
       - name: Deploy image to k3s
         run: |
           ssh \
@@ -102,17 +127,7 @@ jobs:
 
             IMAGE_TAG="${IMAGE_TAG}"
             IMAGE_TAR="/home/ubuntu/deploy-images/withday-backend-${IMAGE_TAG}.tar"
-
-            echo "========================================"
-            echo "Move to project"
-            echo "========================================"
-            cd ~/WithDay
-
-            echo "========================================"
-            echo "Pull latest source and manifests"
-            echo "========================================"
-            git fetch origin main
-            git reset --hard origin/main
+            MANIFEST_DIR="/home/ubuntu/deploy-manifests"
 
             echo "========================================"
             echo "Before deploy system status"
@@ -122,9 +137,11 @@ jobs:
             uptime
 
             echo "========================================"
-            echo "Check uploaded image archive"
+            echo "Check uploaded files"
             echo "========================================"
             ls -lh "\${IMAGE_TAR}"
+            ls -lh "\${MANIFEST_DIR}/deployment.yaml"
+            ls -lh "\${MANIFEST_DIR}/service.yaml"
 
             echo "========================================"
             echo "Check k3s service"
@@ -148,6 +165,12 @@ jobs:
                 sudo k3s kubectl get nodes --request-timeout=120s
               fi
             done
+
+            echo "========================================"
+            echo "Ensure namespace exists"
+            echo "========================================"
+            sudo k3s kubectl create namespace withday \
+              --dry-run=client -o yaml | sudo k3s kubectl apply --validate=false --request-timeout=120s -f -
 
             echo "========================================"
             echo "Import Docker image into k3s containerd"
@@ -177,20 +200,18 @@ jobs:
             echo "========================================"
             echo "Apply Kubernetes manifests"
             echo "========================================"
-            cd ~/WithDay/WithDayBack
-
-            if ! sudo k3s kubectl apply --validate=false --request-timeout=120s -f k8s/deployment.yaml; then
+            if ! sudo k3s kubectl apply --validate=false --request-timeout=120s -f "\${MANIFEST_DIR}/deployment.yaml"; then
               echo "Deployment apply failed. Restart k3s and retry once."
               sudo systemctl restart k3s
               sleep 40
-              sudo k3s kubectl apply --validate=false --request-timeout=120s -f k8s/deployment.yaml
+              sudo k3s kubectl apply --validate=false --request-timeout=120s -f "\${MANIFEST_DIR}/deployment.yaml"
             fi
 
-            if ! sudo k3s kubectl apply --validate=false --request-timeout=120s -f k8s/service.yaml; then
+            if ! sudo k3s kubectl apply --validate=false --request-timeout=120s -f "\${MANIFEST_DIR}/service.yaml"; then
               echo "Service apply failed. Restart k3s and retry once."
               sudo systemctl restart k3s
               sleep 40
-              sudo k3s kubectl apply --validate=false --request-timeout=120s -f k8s/service.yaml
+              sudo k3s kubectl apply --validate=false --request-timeout=120s -f "\${MANIFEST_DIR}/service.yaml"
             fi
 
             echo "========================================"
@@ -256,7 +277,7 @@ jobs:
             done
 
             echo "========================================"
-            echo "Clean uploaded image archive"
+            echo "Clean uploaded files"
             echo "========================================"
             rm -f "\${IMAGE_TAR}"
 
