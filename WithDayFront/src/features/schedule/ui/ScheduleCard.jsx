@@ -168,10 +168,10 @@ export default function ScheduleCard({
     schedule?.description?.trim() || "일정 소개가 아직 등록되지 않았어요.";
   const isMainTicketCard = String(className ?? "").includes("mainTicketCard");
 
-  const titleLines = splitTextByLength(
-    schedule?.title ?? "제목 없는 일정",
-    isMainTicketCard ? 16 : 10
-  );
+  const titleText = schedule?.title ?? "제목 없는 일정";
+  const titleLines = isMainTicketCard
+    ? [titleText]
+    : splitTextByLength(titleText, 10);
   const categoryLabel = resolveCategoryLabel(schedule?.category);
   const regionLabel = resolveRegionLabel(schedule?.region);
   const genderLabel = resolveGenderLimitLabel(schedule?.genderLimit);
