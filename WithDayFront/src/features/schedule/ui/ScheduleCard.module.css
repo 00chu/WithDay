@@ -217,61 +217,6 @@
   font-size: 0.84rem;
 }
 
-.cardCompact:global(.homeTicketCard) .cardTitle {
-  position: static;
-  width: 100%;
-  min-height: 0;
-  max-height: 40px;
-  height: auto;
-
-  margin: 0;
-
-  color: #000000;
-  font-family: Poppins, "Noto Sans KR", sans-serif;
-  font-size: 15.5px;
-  font-weight: 600;
-  line-height: 20px;
-  letter-spacing: -0.02em;
-
-  white-space: normal;
-  word-break: break-all;
-  overflow-wrap: anywhere;
-
-  overflow: hidden;
-}
-
-.cardCompact:global(.homeTicketCard) .titleLine {
-  display: block;
-  height: 20px;
-
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.cardTitleCompact {
-  font-size: 1.06rem;
-}
-
-.cardCompact:global(.homeTicketCard) .cardDescription {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  height: 28px;
-  min-height: 0;
-  max-height: 28px;
-
-  margin: 0;
-
-  color: #000000;
-  font-family: Poppins, "Noto Sans KR", sans-serif;
-  font-size: 9px;
-  font-weight: 400;
-  line-height: 14px;
-  letter-spacing: -0.01em;
-
-  overflow: hidden;
-}
 .cardDescriptionCompact {
   font-size: 0.78rem;
 }
@@ -413,11 +358,8 @@
 
 .cardCompact:global(.homeTicketCard) {
   --home-card-bg: #ffffff;
-  --home-card-hover-bg: #f0faf9;
   --home-card-dark: #0a162d;
-  --home-card-mint: #daf1f1;
   --home-card-point: #1d9a99;
-  --home-card-line: #d7dce2;
   --home-card-page-bg: #f8fafb;
 
   display: block;
@@ -761,8 +703,6 @@
   overflow-wrap: anywhere;
 
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
 }
 
 .cardCompact:global(.homeTicketCard) .cardDescription {
@@ -973,11 +913,6 @@
     padding: 0;
   }
 
-  .cardCompact:global(.homeTicketCard) .softPill,
-  .cardCompact:global(.homeTicketCard) .metaPill,
-  .cardCompact:global(.homeTicketCard) .overlayPill {
-    font-size: inherit;
-  }
   .cardCompact:global(.homeTicketCard) .ticketDivider::after {
     top: 143px;
     left: 11px;
@@ -1052,334 +987,6 @@
    - homeTicketCard 전용 모바일/태블릿 위치 보정
    ========================= */
 
-/* 태블릿 / 작은 노트북 */
-@media (max-width: 1024px) and (min-width: 640px) {
-  .cardTop {
-    padding: 15px 15px 13px;
-  }
-
-  .cardBottom {
-    padding: 13px 15px 15px;
-  }
-
-  .dateText {
-    font-size: 0.88rem;
-  }
-
-  .cardCompact:global(.homeTicketCard) {
-    width: 230px;
-    min-width: 230px;
-    max-width: 230px;
-
-    height: 288px;
-    min-height: 288px;
-    max-height: 288px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .cardTop,
-  .cardCompact:global(.homeTicketCard) .headerSection {
-    height: 166px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .cardBottom {
-    top: 166px;
-    height: 122px;
-  }
-
-  .cardCompact:global(.homeTicketCard)::before,
-  .cardCompact:global(.homeTicketCard)::after {
-    top: 150px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .ticketDivider::after {
-    top: 158px;
-    left: 18px;
-    right: 18px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .dateRowContent {
-    left: 12px;
-    top: 41px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .titleRow {
-    width: 206px;
-    margin-left: 12px;
-    margin-top: 82px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .descriptionRow {
-    width: 200px;
-    max-width: 206px;
-    margin-left: 12px;
-    margin-top: 8px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .thumbnailWrap {
-    left: 12px;
-    right: 12px;
-    top: 10px;
-    height: 103px;
-  }
-}
-
-/* 모바일 */
-@media (max-width: 639px) {
-  .card {
-    min-width: 0;
-  }
-
-  .cardTop {
-    gap: 10px;
-    padding: 14px 14px 12px;
-  }
-
-  .cardBottom {
-    padding: 12px 14px 14px;
-  }
-
-  .ticketDivider {
-    height: 30px;
-  }
-
-  .ticketDivider::after {
-    left: 18px;
-    right: 18px;
-  }
-
-  .topRow {
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .metaActionGroup {
-    gap: 6px;
-  }
-
-  .softPill,
-  .metaPill {
-    min-height: 25px;
-    padding: 0 9px;
-    font-size: 0.72rem;
-  }
-
-  .bookmarkIndicator {
-    width: 20px;
-    height: 20px;
-  }
-
-  .bookmarkIcon {
-    font-size: 1rem;
-  }
-
-  .dateRowContent {
-    gap: 6px;
-    margin: 0 0 5px 2px;
-  }
-
-  .dateText {
-    font-size: 0.84rem;
-    line-height: 1.25;
-  }
-
-  .dateIcon {
-    font-size: 0.8rem;
-  }
-
-  .cardTitle {
-    font-size: 1.04rem;
-    line-height: 1.35;
-  }
-
-  .cardDescription,
-  .cardDescriptionCompact {
-    display: block;
-    overflow: hidden;
-    font-size: 0.76rem;
-    line-height: 1.45;
-    max-height: 2.25rem;
-  }
-
-  .thumbnailWrap {
-    aspect-ratio: 16 / 10;
-  }
-
-  .thumbnailOverlay {
-    left: 6px;
-    right: 6px;
-    bottom: 6px;
-    gap: 5px;
-    max-width: none;
-  }
-
-  .overlayPill {
-    min-height: 23px;
-    padding: 0 8px;
-    font-size: 0.7rem;
-  }
-
-  /* 홈 티켓 카드: 모바일에서는 카드 전체를 살짝 줄이고 내부 좌표도 함께 보정 */
-  .cardCompact:global(.homeTicketCard) {
-    width: 216px;
-    min-width: 216px;
-    max-width: 216px;
-
-    height: 270px;
-    min-height: 270px;
-    max-height: 270px;
-
-    box-shadow: 0 1px 7px rgba(10, 22, 45, 0.1);
-    flex: 0 0 auto;
-  }
-
-  .cardCompact:global(.homeTicketCard) .cardTop,
-  .cardCompact:global(.homeTicketCard) .headerSection {
-    height: 146px;
-    padding: 0;
-  }
-
-  .cardCompact:global(.homeTicketCard) .cardBottom {
-    top: 146px;
-    height: 124px;
-    padding: 0;
-  }
-
-  .cardCompact:global(.homeTicketCard)::before,
-  .cardCompact:global(.homeTicketCard)::after {
-    top: 132px;
-    width: 16px;
-    height: 16px;
-  }
-
-  .cardCompact:global(.homeTicketCard)::before {
-    left: -8px;
-  }
-
-  .cardCompact:global(.homeTicketCard)::after {
-    right: -8px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .ticketDivider::after {
-    top: 140px;
-    left: 18px;
-    right: 18px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .deadlinePillBase {
-    left: 0;
-    top: 14px;
-    height: 18px;
-    min-height: 18px;
-    padding: 0 9px 0 11px;
-    font-size: 9.5px;
-    line-height: 18px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .genderPill {
-    right: 34px;
-    top: 14px;
-    height: 18px;
-    min-height: 18px;
-    font-size: 8.5px;
-    line-height: 18px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .bookmarkIndicator {
-    right: 11px;
-    top: 13px;
-    width: 18px;
-    height: 18px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .bookmarkIcon {
-    width: 15px;
-    height: 15px;
-    font-size: 15px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .dateRowContent {
-    left: 11px;
-    top: 39px;
-    gap: 4px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .dateIconWrap {
-    width: 12px;
-    min-width: 12px;
-    height: 12px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .dateIcon {
-    width: 12px;
-    height: 12px;
-    font-size: 12px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .dateText {
-    max-width: 190px;
-    font-size: 9.5px;
-    line-height: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .cardCompact:global(.homeTicketCard) .titleRow {
-    width: 194px;
-    margin-left: 11px;
-    margin-top: 70px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .cardTitle {
-    max-height: 38px;
-    font-size: 14.5px;
-    line-height: 19px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .titleLine {
-    height: 19px;
-    line-height: 19px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .descriptionRow {
-    width: 194px;
-    max-width: 194px;
-    margin-left: 11px;
-    margin-top: 5px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .cardDescription {
-    display: block;
-    height: 28px;
-    max-height: 28px;
-    font-size: 9.5px;
-    line-height: 14px;
-    overflow: hidden;
-  }
-
-  .cardCompact:global(.homeTicketCard) .thumbnailWrap {
-    left: 11px;
-    right: 11px;
-    top: 10px;
-    height: 104px;
-  }
-
-  .cardCompact:global(.homeTicketCard) .thumbnailOverlay {
-    left: 6px;
-    bottom: 6px;
-    gap: 4px;
-    max-width: calc(100% - 12px);
-  }
-
-  .cardCompact:global(.homeTicketCard) .overlayPill {
-    height: 17px;
-    min-height: 17px;
-    padding: 0 7px;
-    font-size: 8.5px;
-    line-height: 17px;
-  }
-}
-
 /* 작은 모바일 */
 @media (max-width: 360px) {
   .cardCompact:global(.homeTicketCard) {
@@ -1437,15 +1044,6 @@
     width: calc(100% - 24px);
     max-width: calc(100% - 24px);
     margin-left: 11px;
-    overflow: hidden;
-  }
-
-  .cardCompact:global(.homeTicketCard) .cardDescription {
-    display: block;
-    height: 28px;
-    max-height: 28px;
-    font-size: 9.5px;
-    line-height: 14px;
     overflow: hidden;
   }
 }
@@ -1677,4 +1275,271 @@
     font-size: 8.5px;
     line-height: 17px;
   }
+}
+@media (min-width: 1440px) {
+  .cardCompact:global(.exploreTicketCard) .titleRow {
+    width: calc(100% - 24px);
+    max-width: calc(100% - 24px);
+    margin-left: 12px;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .descriptionRow {
+    width: calc(100% - 24px);
+    max-width: calc(100% - 24px);
+    margin-left: 12px;
+    overflow: hidden;
+  }
+
+  .cardCompact:global(.exploreTicketCard) .cardDescription {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: 30px;
+    max-height: 30px;
+
+    font-size: 10px;
+    line-height: 15px;
+
+    overflow: hidden;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* =========================
+   Home Ticket Mobile Typography Fix
+   - 홈/탐색 공통 티켓 카드 모바일 폰트 보정
+   - 425 / 375 / 320 대응
+   ========================= */
+
+@media (max-width: 425px) {
+  .cardCompact:global(.homeTicketCard) .deadlinePillBase {
+    top: 12px;
+    left: 0;
+    margin-left: 0;
+
+    height: 17px;
+    min-height: 17px;
+    padding: 0 8px 0 10px;
+
+    font-size: 8.8px;
+    line-height: 17px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .genderPill {
+    top: 12px;
+    right: 32px;
+    font-size: 8px;
+    line-height: 17px;
+  }
+  .cardCompact:global(.homeTicketCard) .bookmarkIndicator {
+    top: 11px;
+  }
+  .cardCompact:global(.homeTicketCard) .dateText {
+    font-size: 8.8px;
+    line-height: 12px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .dateIcon,
+  .cardCompact:global(.homeTicketCard) .dateIconWrap {
+    width: 11px;
+    min-width: 11px;
+    height: 11px;
+    font-size: 11px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .cardTitle {
+    font-size: 13.4px;
+    line-height: 18px;
+    max-height: 36px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .titleLine {
+    height: 18px;
+    line-height: 18px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .cardDescription {
+    height: 26px;
+    max-height: 26px;
+    font-size: 8.7px;
+    line-height: 13px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .overlayPill {
+    height: 15px;
+    min-height: 15px;
+    padding: 0 6px;
+    font-size: 7.8px;
+    line-height: 15px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .thumbnailOverlay {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 375px) {
+  .cardCompact:global(.homeTicketCard) .deadlinePillBase {
+    top: 12px;
+    left: 0;
+    margin-left: 0;
+
+    height: 16px;
+    min-height: 16px;
+    padding: 0 7px 0 9px;
+
+    font-size: 8.3px;
+    line-height: 16px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .genderPill {
+    top: 12px;
+    right: 31px;
+    font-size: 7.6px;
+    line-height: 16px;
+  }
+  .cardCompact:global(.homeTicketCard) .bookmarkIndicator {
+    top: 11px;
+  }
+  .cardCompact:global(.homeTicketCard) .dateText {
+    font-size: 8.3px;
+    line-height: 11px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .cardTitle {
+    font-size: 12.9px;
+    line-height: 17px;
+    max-height: 34px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .titleLine {
+    height: 17px;
+    line-height: 17px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .cardDescription {
+    height: 24px;
+    max-height: 24px;
+    font-size: 8.2px;
+    line-height: 12px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .overlayPill {
+    height: 14px;
+    min-height: 14px;
+    padding: 0 6px;
+    font-size: 7.4px;
+    line-height: 14px;
+  }
+}
+
+@media (max-width: 320px) {
+  .cardCompact:global(.homeTicketCard) .deadlinePillBase {
+    top: 12px;
+    left: 0;
+    margin-left: 0;
+
+    height: 15px;
+    min-height: 15px;
+    padding: 0 7px 0 8px;
+
+    font-size: 7.8px;
+    line-height: 15px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .genderPill {
+    top: 12px;
+    right: 30px;
+    font-size: 7.2px;
+    line-height: 15px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .bookmarkIcon {
+    width: 14px;
+    height: 14px;
+    font-size: 14px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .dateText {
+    font-size: 8px;
+    line-height: 11px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .cardTitle {
+    font-size: 12.2px;
+    line-height: 16px;
+    max-height: 32px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .titleLine {
+    height: 16px;
+    line-height: 16px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .cardDescription {
+    height: 22px;
+    max-height: 22px;
+    font-size: 7.8px;
+    line-height: 11px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .overlayPill {
+    height: 13px;
+    min-height: 13px;
+    padding: 0 5px;
+    font-size: 7px;
+    line-height: 13px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .thumbnailOverlay {
+    left: 5px;
+    bottom: 5px;
+    gap: 3px;
+  }
+  .cardCompact:global(.homeTicketCard) .bookmarkIndicator {
+    top: 11px;
+  }
+}
+/* =========================
+   Main Home Card Title Fix
+   - 메인 카드 제목만 보정
+   - 탐색 exploreTicketCard 영향 없음
+   ========================= */
+
+.cardCompact:global(.mainTicketCard) .titleRow {
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin-left: 12px;
+  overflow: hidden;
+}
+
+.cardCompact:global(.mainTicketCard) .titleGroup {
+  width: 100%;
+  overflow: hidden;
+}
+
+.cardCompact:global(.mainTicketCard) .cardTitle {
+  display: block;
+  width: 100%;
+  height: 32px;
+  max-height: 32px;
+
+  font-size: 12px;
+  line-height: 16px;
+
+  overflow: hidden;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.cardCompact:global(.mainTicketCard) .titleLine {
+  display: block;
+  height: 16px;
+  line-height: 16px;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
