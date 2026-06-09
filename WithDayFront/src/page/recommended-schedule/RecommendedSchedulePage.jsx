@@ -112,7 +112,16 @@ const getRecommendedKey = (item) => {
     }-${schedule?.durationDays ?? "duration"}`,
   );
 };
+const resolveDurationBadgeLabel = (durationDays) => {
+  const days = Number(durationDays ?? 1);
+  const safeDays = Number.isFinite(days) && days > 0 ? days : 1;
 
+  if (safeDays === 1) {
+    return "당일치기";
+  }
+
+  return `${safeDays - 1}박 ${safeDays}일`;
+};
 const RecommendedSchedulePage = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
@@ -260,6 +269,7 @@ const RecommendedScheduleCard = ({ item, onClick }) => {
   const durationDays = Number(schedule?.durationDays ?? 1);
   const safeDurationDays =
     Number.isFinite(durationDays) && durationDays > 0 ? durationDays : 1;
+  const durationBadgeLabel = resolveDurationBadgeLabel(safeDurationDays);
 
   const descriptionText =
     schedule?.description?.trim() || "추천 일정 소개가 아직 등록되지 않았어요.";
@@ -288,7 +298,7 @@ const RecommendedScheduleCard = ({ item, onClick }) => {
           <div className={clsx(styles.infoRow, styles.topRow)}>
             <div className={styles.topMetaGroup}>
               <span className={styles.recommendPill}>
-                추천 {safeDurationDays}일
+                {durationBadgeLabel}
               </span>
             </div>
 
