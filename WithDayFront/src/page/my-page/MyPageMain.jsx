@@ -33,14 +33,13 @@ const MyPageMain = () => {
   const isOwnProfile =
     !normalizedTargetEmail || normalizedTargetEmail === loginUser?.email;
   const { mypageQuery } = useMypage(
-    isOwnProfile ? undefined : normalizedTargetEmail
+    isOwnProfile ? undefined : normalizedTargetEmail,
   );
   const isAdmin = mypageQuery.data?.status === "admin";
   const [isServiceOpen, setIsServiceOpen] = useState(true);
   const [activeServiceTab, setActiveServiceTab] = useState("recommend");
   const [isWitLogInfoOpen, setIsWitLogInfoOpen] = useState(false);
   const queryClient = useQueryClient();
-  console.log("mypageQuery 전체:", mypageQuery);
   const serviceTabs = [
     {
       key: "recommend",
@@ -161,16 +160,10 @@ const MyPageMain = () => {
 
   // 위트 로그는 백엔드가 "보여줘야 할 completed 일정"만 골라서 내려준다는 전제 아래 그대로 렌더한다.
   const mySchedules = mypageQuery.data?.mySchedules ?? [];
-  console.log("상단 요약 값 확인:", {
-    togetherScheduleCount,
-    metWitCount,
-    createdAt: mypage?.createdAt,
-    joinDate,
-  });
   const selectedInterests = allInterests.filter((interest) =>
     selectedInterestIds
       .map(Number)
-      .includes(Number(interest.interestId ?? interest.id))
+      .includes(Number(interest.interestId ?? interest.id)),
   );
   const intro =
     mypage?.intro ||
@@ -180,7 +173,6 @@ const MyPageMain = () => {
       : // 타인 프로필에서 상대에게 수정하라고 안내하면 어색하므로 중립 문구를 쓴다.
         "아직 등록된 소개글이 없습니다.");
 
-  console.log("mySchedules:", mySchedules);
   return (
     <div>
       <section>
@@ -202,7 +194,7 @@ const MyPageMain = () => {
                     // 수정 버튼은 본인 프로필에서만 노출해 1차 UX 차단을 하고, 수정 화면/백엔드가 다시 최종 검증한다.
                     onClick={() =>
                       navigate(
-                        `/mypage/edit/${encodeURIComponent(loginUser.email)}`
+                        `/mypage/edit/${encodeURIComponent(loginUser.email)}`,
                       )
                     }
                     aria-label="프로필 수정"
@@ -326,7 +318,7 @@ const MyPageMain = () => {
 
                     const dateText = formatScheduleDate(
                       schedule.startDate,
-                      schedule.endDate
+                      schedule.endDate,
                     );
 
                     const witCount =

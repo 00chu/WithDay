@@ -156,8 +156,6 @@ const RecommendedScheduleWrite = () => {
       });
     },
     onSuccess: async (res) => {
-      console.log("추천 일정 등록 성공", res);
-
       await queryClient.invalidateQueries({
         queryKey: ["recommended-schedules"],
       });
