@@ -539,7 +539,7 @@ export default function ExplorePage() {
                   key={getScheduleKey(schedule)}
                   schedule={schedule}
                   variant="compact"
-                  className="homeTicketCard"
+                  className="homeTicketCard exploreTicketCard"
                 />
               ))}
             </div>
