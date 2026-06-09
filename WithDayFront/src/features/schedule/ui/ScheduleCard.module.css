@@ -27,7 +27,8 @@
 }
 
 .cardTop,
-.cardBottom {
+.cardBottom,
+.ticketDivider {
   background: var(--color-surface);
   transition: background-color 0.24s ease;
 }
@@ -36,9 +37,9 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px 16px 14px;
   flex: 1 1 auto;
   min-height: 0;
+  padding: 16px 16px 14px;
 }
 
 .cardTopCompact {
@@ -58,8 +59,8 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  min-width: 0;
   width: 100%;
+  min-width: 0;
 }
 
 .topMetaGroup {
@@ -87,7 +88,8 @@
   white-space: nowrap;
 }
 
-.softPill {
+.softPill,
+.metaPill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -110,30 +112,17 @@
 }
 
 .metaPill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  flex-shrink: 0;
   background: var(--color-accent-light);
   color: var(--color-accent-dark);
-  font-size: 0.78rem;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
 }
 
 .deadlinePillBase {
   justify-content: center;
   min-width: 0;
+  margin-left: -16px;
   padding-left: 12px;
   padding-right: 12px;
-  margin-left: -16px;
   border-radius: 0 999px 999px 0;
-  flex-shrink: 0;
 }
 
 .deadlinePill {
@@ -141,32 +130,13 @@
   color: var(--color-text-inverse);
 }
 
-.deadlinePillToday {
+.deadlinePillToday,
+.deadlinePillClosed {
   background: var(--color-status-closed);
   color: var(--color-text-inverse);
 }
 
-.dateText {
-  display: block;
-  flex: 1 1 auto;
-  min-width: 0;
-  color: var(--color-text-secondary);
-  font-size: 0.92rem;
-  font-weight: 700;
-  line-height: 1.28;
-  white-space: normal;
-  word-break: keep-all;
-}
-
-.dateTextCompact {
-  font-size: 0.84rem;
-}
-
 .bookmarkIndicator {
-  /*
-    카드의 하트는 액션 버튼이 아니라 현재 저장 상태를 읽는 시각 신호다.
-    그래서 hover/cursor/pointer 변화를 주지 않고, 카드 전체 클릭과 이벤트가 충돌하지 않도록 pointer-events를 끈다.
-  */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -186,10 +156,9 @@
 }
 
 .titleGroup,
-.dateGroup,
+.dateRow,
 .dateRowContent,
-.descriptionRow,
-.dateRow {
+.descriptionRow {
   min-width: 0;
 }
 
@@ -208,7 +177,7 @@
   justify-content: flex-start;
   width: 100%;
   min-width: 0;
-  margin: 0px 0px 5px 5px;
+  margin: 0 0 5px 5px;
 }
 
 .dateIconWrap {
@@ -232,63 +201,86 @@
   flex-shrink: 0;
 }
 
-.dateChevron {
-  font-size: 1.2rem;
+.dateText {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.28;
+  white-space: normal;
+  word-break: keep-all;
 }
 
-.cardTitle {
-  margin: 0;
-  color: var(--color-text-primary);
-  font-size: 1.22rem;
-  font-weight: 800;
-  line-height: 1.28;
-  letter-spacing: -0.02em;
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
+.dateTextCompact {
+  font-size: 0.84rem;
+}
+
+.cardCompact:global(.homeTicketCard) .cardTitle {
+  position: static;
   width: 100%;
-  min-height: 1.28em;
-  max-height: 1.28em;
-  word-break: keep-all;
+  min-height: 0;
+  max-height: 40px;
+  height: auto;
+
+  margin: 0;
+
+  color: #000000;
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -0.02em;
+
+  white-space: normal;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+
+  overflow: hidden;
+}
+
+.cardCompact:global(.homeTicketCard) .titleLine {
+  display: block;
+  height: 20px;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .cardTitleCompact {
   font-size: 1.06rem;
-  min-height: 1.28em;
-  max-height: 1.28em;
 }
 
-.cardDescription {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: 0.84rem;
-  line-height: 1.45;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-height: calc(1.45em * 2);
-  max-height: calc(1.45em * 2);
-  word-break: break-word;
-  overflow-wrap: anywhere;
+.cardCompact:global(.homeTicketCard) .cardDescription {
+  display: block;
   width: 100%;
-}
+  max-width: 100%;
+  height: 28px;
+  min-height: 0;
+  max-height: 28px;
 
+  margin: 0;
+
+  color: #000000;
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 9px;
+  font-weight: 400;
+  line-height: 14px;
+  letter-spacing: -0.01em;
+
+  overflow: hidden;
+}
 .cardDescriptionCompact {
   font-size: 0.78rem;
-  min-height: calc(1.45em * 2);
-  max-height: calc(1.45em * 2);
 }
 
 .ticketDivider {
   position: relative;
   height: 34px;
-  background: var(--color-surface);
-  transition: background-color 0.24s ease;
-  -webkit-mask-image: radial-gradient(
+  -webkit-mask-image:
+    radial-gradient(
       circle at left center,
       transparent 0 13px,
       var(--color-mask-solid) 13.5px
@@ -301,7 +293,8 @@
   -webkit-mask-size: 51% 100%;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: left, right;
-  mask-image: radial-gradient(
+  mask-image:
+    radial-gradient(
       circle at left center,
       transparent 0 13px,
       var(--color-mask-solid) 13.5px
@@ -335,10 +328,6 @@
 }
 
 .thumbnailWrap {
-  /*
-    썸네일은 height 고정 대신 aspect-ratio로 비율을 고정한다.
-    카드 폭이 모바일/태블릿/데스크탑에서 달라져도 이미지 영역 비율은 동일하게 유지된다.
-  */
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
@@ -360,6 +349,12 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
+}
+
+.thumbnailFallback,
+.cardCompact .thumbnailFallback {
+  object-fit: fill;
+  object-position: center center;
 }
 
 .thumbnailOverlay {
@@ -395,15 +390,6 @@
   font-size: 0.72rem;
 }
 
-.thumbnailFallback {
-  object-fit: fill;
-  object-position: center center;
-}
-
-.cardCompact .thumbnailFallback {
-  object-fit: fill;
-}
-
 @media (hover: hover) and (pointer: fine) {
   .cardInteractive:hover {
     filter: var(--shadow-card-ticket-hover);
@@ -416,18 +402,465 @@
   }
 }
 
-@media (min-width: 640px) and (max-width: 1023px) {
-  .infoRow {
-    gap: 10px;
-  }
+/* =========================
+   Home Card
+   Home.jsx에서 "homeTicketCard" className 필요
+   ========================= */
 
-  .dateRowContent {
-    gap: 7px;
-  }
+.homeTicketCard {
+  position: relative;
+}
 
-  .dateText {
-    font-size: 0.88rem;
-  }
+.cardCompact:global(.homeTicketCard) {
+  --home-card-bg: #ffffff;
+  --home-card-hover-bg: #f0faf9;
+  --home-card-dark: #0a162d;
+  --home-card-mint: #daf1f1;
+  --home-card-point: #1d9a99;
+  --home-card-line: #d7dce2;
+  --home-card-page-bg: #f8fafb;
+
+  display: block;
+  position: relative;
+
+  width: 240px;
+  min-width: 240px;
+  max-width: 240px;
+
+  height: 300px;
+  min-height: 300px;
+  max-height: 300px;
+
+  padding: 0;
+  overflow: visible;
+
+  background: var(--home-card-bg);
+  border: none;
+  border-radius: 0;
+
+  filter: none;
+  transform: none;
+
+  box-shadow: 0 1px 7px rgba(10, 22, 45, 0.1);
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+/* 원형 홈 */
+.cardCompact:global(.homeTicketCard)::before,
+.cardCompact:global(.homeTicketCard)::after {
+  content: "";
+  position: absolute;
+  top: 158px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--home-card-page-bg);
+  z-index: 80;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.cardCompact:global(.homeTicketCard)::before {
+  left: -8px;
+}
+
+.cardCompact:global(.homeTicketCard)::after {
+  right: -8px;
+}
+/*카드 배경 색상*/
+.cardCompact:global(.homeTicketCard):hover {
+  background: #f8f8f8;
+  filter: none;
+  transform: none;
+  box-shadow: 0 1px 7px rgba(10, 22, 45, 0.1);
+}
+
+/* 내부 영역 배경 */
+.cardCompact:global(.homeTicketCard) .cardTop,
+.cardCompact:global(.homeTicketCard) .cardBottom,
+.cardCompact:global(.homeTicketCard) .ticketDivider {
+  background: transparent;
+  transition: none;
+}
+
+.cardCompact:global(.homeTicketCard):hover .cardTop,
+.cardCompact:global(.homeTicketCard):hover .cardBottom,
+.cardCompact:global(.homeTicketCard):hover .ticketDivider {
+  background: transparent;
+}
+
+/* 상단 정보 영역 */
+.cardCompact:global(.homeTicketCard) .cardTop {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 174px;
+  min-height: 0;
+  padding: 0;
+}
+
+.cardCompact:global(.homeTicketCard) .headerSection {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 174px;
+}
+
+.cardCompact:global(.homeTicketCard) .cardBottom {
+  position: absolute;
+  left: 0;
+  top: 174px;
+  width: 100%;
+  height: 126px;
+  padding: 0;
+}
+
+/* 티켓 마스크 제거 + 점선 전용 레이어 */
+.cardCompact:global(.homeTicketCard) .ticketDivider {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.cardCompact:global(.homeTicketCard) .ticketDivider::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 166px;
+  height: 0;
+  border-top: 1px dashed var(--color-border-dark);
+  transform: none;
+  display: block;
+  z-index: 45;
+}
+
+/* 홈 카드 내부 row 기본값 초기화 */
+.cardCompact:global(.homeTicketCard) .infoRow,
+.cardCompact:global(.homeTicketCard) .topRow,
+.cardCompact:global(.homeTicketCard) .dateRow,
+.cardCompact:global(.homeTicketCard) .titleRow,
+.cardCompact:global(.homeTicketCard) .descriptionRow {
+  position: static;
+  display: block;
+  width: auto;
+  min-width: 0;
+  gap: 0;
+  border: none;
+}
+
+/* 마감 텍스트(일반 상태) */
+.cardCompact:global(.homeTicketCard) .deadlinePillBase {
+  position: absolute;
+  left: 0;
+  top: 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  width: auto;
+  min-width: 0;
+  height: 18px;
+  min-height: 18px;
+
+  margin: 0;
+  padding: 0 10px 0 12px;
+
+  border-radius: 0 999px 999px 0;
+  background: var(--color-accent-light);
+  color: var(--color-accent-dark);
+
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+
+  z-index: 20;
+}
+/*마감 임박 알약*/
+.cardCompact:global(.homeTicketCard) .deadlinePillToday {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: 500;
+}
+/*마감 종료 알약*/
+.cardCompact:global(.homeTicketCard) .deadlinePillClosed {
+  background: #e5e7eb;
+  color: #6b7280;
+}
+/* 성별 */
+.cardCompact:global(.homeTicketCard) .topMetaActions,
+.cardCompact:global(.homeTicketCard) .metaActionGroup {
+  position: static;
+  display: block;
+}
+
+.cardCompact:global(.homeTicketCard) .genderPill {
+  position: absolute;
+  right: 38px;
+  top: 13px;
+
+  min-width: 0;
+  height: 18px;
+  min-height: 18px;
+
+  padding: 0;
+  border-radius: 0;
+
+  background: transparent;
+  color: var(--home-card-dark);
+
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 18px;
+
+  z-index: 20;
+}
+
+/* 하트 */
+.cardCompact:global(.homeTicketCard) .bookmarkIndicator {
+  position: absolute;
+  right: 12px;
+  top: 13px;
+
+  width: 18px;
+  height: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #c9cfd8;
+  z-index: 20;
+}
+
+.cardCompact:global(.homeTicketCard):hover .bookmarkIndicator {
+  color: #8fbfc0;
+}
+
+.cardCompact:global(.homeTicketCard) .bookmarkIndicatorActive {
+  color: var(--home-card-point);
+}
+
+.cardCompact:global(.homeTicketCard) .bookmarkIcon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+
+/* 날짜 */
+.cardCompact:global(.homeTicketCard) .dateRowContent {
+  position: absolute;
+  left: 12px;
+  top: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+
+  width: auto;
+  margin: 0;
+  z-index: 20;
+}
+
+.cardCompact:global(.homeTicketCard) .dateIconWrap {
+  width: 13px;
+  min-width: 13px;
+  height: 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+}
+
+.cardCompact:global(.homeTicketCard) .dateIcon {
+  width: 13px;
+  height: 13px;
+  font-size: 13px;
+}
+
+.cardCompact:global(.homeTicketCard) .dateText {
+  width: auto;
+  max-width: none;
+
+  color: #000000;
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 13px;
+
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+.cardCompact:global(.homeTicketCard) .dateChevronWrap {
+  display: none;
+}
+
+/* 제목/내용 */
+.cardCompact:global(.homeTicketCard) .titleRow {
+  position: relative;
+  display: block;
+  margin-top: 86px;
+  width: 216px;
+  margin-left: 12px;
+  z-index: 10;
+}
+
+.cardCompact:global(.homeTicketCard) .descriptionRow {
+  position: relative;
+  display: block;
+  width: 180px;
+  max-width: 210px;
+  margin-left: 12px;
+  margin-top: 10px;
+  z-index: 10;
+
+  overflow: hidden;
+}
+
+.cardCompact:global(.homeTicketCard) .titleGroup {
+  position: static;
+  width: 100%;
+}
+
+.cardCompact:global(.homeTicketCard) .cardTitle {
+  position: static;
+  width: 100%;
+  min-height: 0;
+  max-height: 40px;
+  height: auto;
+
+  margin: 0;
+
+  color: #000000;
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -0.02em;
+
+  white-space: normal;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.cardCompact:global(.homeTicketCard) .cardDescription {
+  display: -webkit-box;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 30px;
+
+  margin: 0;
+
+  color: #344054;
+  font-family: "Noto Sans KR", Poppins, sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 15px;
+  letter-spacing: -0.01em;
+
+  white-space: normal;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+/* 이미지 영역: 카드 내부 여백 통일 */
+.cardCompact:global(.homeTicketCard) .thumbnailWrap {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 10px;
+
+  width: auto;
+  height: 108px;
+  aspect-ratio: auto;
+
+  overflow: hidden;
+  background: #ffffff;
+  z-index: 5;
+
+  border-radius: 0;
+}
+
+.cardCompact:global(.homeTicketCard) .thumbnail {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: cover;
+  object-position: center;
+}
+
+.cardCompact:global(.homeTicketCard) .thumbnailFallback {
+  object-fit: cover;
+}
+
+/* 이미지 칩 */
+.cardCompact:global(.homeTicketCard) .thumbnailOverlay {
+  position: absolute;
+  left: 7px;
+  bottom: 7px;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+
+  max-width: calc(100% - 14px);
+  z-index: 10;
+}
+
+.cardCompact:global(.homeTicketCard) .overlayPill {
+  display: inline-flex;
+  align-items: center;
+
+  height: 17px;
+  min-height: 17px;
+  padding: 0 8px;
+
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--home-card-dark);
+
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 18px;
+  white-space: nowrap;
+
+  box-shadow: 0 1px 4px rgba(10, 22, 45, 0.12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+/*키워드 알약 및 폰트 색상*/
+.cardCompact:global(.homeTicketCard):hover .overlayPill {
+  background: rgba(255, 255, 255, 0.94);
 }
 
 @media (max-width: 639px) {
@@ -457,14 +890,11 @@
 
   .topRow {
     align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
   }
 
   .topMetaActions {
-    gap: 6px;
-  }
-
-  .dateRowContent {
     gap: 6px;
   }
 
@@ -475,8 +905,8 @@
     width: 100%;
   }
 
-  .topRow {
-    justify-content: space-between;
+  .dateRowContent {
+    gap: 6px;
   }
 
   .softPill,
@@ -510,8 +940,6 @@
   .cardDescription,
   .cardDescriptionCompact {
     font-size: 0.78rem;
-    min-height: calc(1.45em * 2);
-    max-height: calc(1.45em * 2);
   }
 
   .thumbnailOverlay {
@@ -526,47 +954,95 @@
     padding: 0 9px;
     font-size: 0.72rem;
   }
-}
 
-@media (max-width: 420px) {
-  .topMetaActions,
-  .thumbnailOverlay {
-    gap: 6px;
+  .cardCompact:global(.homeTicketCard) {
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+    height: 276px;
+    min-height: 276px;
+    max-height: 276px;
   }
 
-  .softPill,
-  .metaPill {
-    font-size: 0.7rem;
+  .cardCompact:global(.homeTicketCard) .cardTop,
+  .cardCompact:global(.homeTicketCard) .headerSection {
+    height: 149px;
+    padding: 0;
   }
 
-  .deadlinePillBase {
-    padding-left: 9px;
-    padding-right: 9px;
+  .cardCompact:global(.homeTicketCard) .cardBottom {
+    top: 149px;
+    height: 127px;
+    padding: 0;
   }
 
-  .dateText {
-    font-size: 0.82rem;
+  .cardCompact:global(.homeTicketCard) .softPill,
+  .cardCompact:global(.homeTicketCard) .metaPill,
+  .cardCompact:global(.homeTicketCard) .overlayPill {
+    font-size: inherit;
+  }
+  .cardCompact:global(.homeTicketCard) .ticketDivider::after {
+    top: 143px;
+    left: 11px;
+    right: 11px;
   }
 
-  .dateRowContent {
-    gap: 5px;
+  .cardCompact:global(.homeTicketCard) .dateRowContent {
+    left: 11px;
+    top: 40px;
   }
 
-  .dateChevron {
-    font-size: 1.1rem;
+  .cardCompact:global(.homeTicketCard) .titleRow {
+    margin-top: 72px;
+    width: 194px;
+    margin-left: 11px;
   }
 
-  .cardTitle {
-    font-size: 1rem;
+  .cardCompact:global(.homeTicketCard) .descriptionRow {
+    width: 198px;
+    margin-left: 11px;
+    margin-top: 5px;
   }
 
-  .cardDescription,
-  .cardDescriptionCompact {
-    font-size: 0.74rem;
+  .cardCompact:global(.homeTicketCard) .thumbnailWrap {
+    left: 11px;
+    right: 11px;
+    top: 11px;
+    height: 109px;
   }
 
-  .bookmarkIndicator {
-    width: 20px;
-    height: 20px;
+  .cardCompact:global(.homeTicketCard) .deadlinePillBase {
+    left: 11px;
+    top: 16px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .genderPill {
+    right: 34px;
+    top: 15px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .bookmarkIndicator {
+    right: 11px;
+    top: 11px;
+  }
+  .cardCompact:global(.homeTicketCard)::before,
+  .cardCompact:global(.homeTicketCard)::after {
+    top: 135px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .cardCompact:global(.homeTicketCard)::before {
+    left: -8px;
+  }
+
+  .cardCompact:global(.homeTicketCard)::after {
+    right: -8px;
+  }
+
+  .cardCompact:global(.homeTicketCard) .ticketDivider::after {
+    top: 143px;
+    left: 19px;
+    right: 19px;
   }
 }

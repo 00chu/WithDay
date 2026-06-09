@@ -21,8 +21,8 @@ const MAX_HOME_ITEMS = 8;
 const getScheduleKey = (schedule) =>
   String(
     schedule?.id ??
-      schedule?.scheduleId ??
-      `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`
+    schedule?.scheduleId ??
+    `${schedule?.title ?? "schedule"}-${schedule?.startDate ?? "unknown"}`
   );
 
 /*
@@ -125,7 +125,7 @@ export default function Home() {
                 key={getScheduleKey(schedule)}
                 schedule={schedule}
                 variant="compact"
-                className={styles.homeCard}
+                className={clsx(styles.homeCard, "homeTicketCard")}
               />
             ))}
           </div>

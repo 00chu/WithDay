@@ -78,7 +78,9 @@
   border-radius: 999px;
   background: var(--color-border);
   cursor: pointer;
-  transition: width 0.2s ease, background-color 0.2s ease;
+  transition:
+    width 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .carouselDotActive {
@@ -264,7 +266,6 @@
   .sectionTitle {
     font-size: 1.45rem;
   }
-
 }
 
 @media (max-width: 767px) {
@@ -297,5 +298,245 @@
     grid-template-columns: none;
     grid-auto-flow: column;
     grid-auto-columns: minmax(238px, 25%);
+  }
+}
+/* =========================
+   Home - Figma Layout
+   ========================= */
+
+.main {
+  padding: 28px 0 120px;
+  background-color: #f8fafb;
+  min-width: 0;
+}
+
+.heroSection {
+  width: min(1092px, calc(100% - 48px));
+  margin: 0 auto 46px;
+}
+
+.carousel {
+  position: relative;
+  width: 100%;
+  height: 330px;
+  overflow: hidden;
+  box-shadow: none;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.carouselSlide {
+  flex: 0 0 100%;
+  height: 330px;
+  aspect-ratio: auto;
+}
+
+.carouselImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.carouselFooter {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.carouselCaption {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #0a162d;
+}
+
+.carouselSubcaption {
+  display: none;
+}
+
+.carouselDots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding-top: 3px;
+}
+
+.carouselDot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: #d9d9d9;
+}
+
+.carouselDotActive {
+  width: 6px;
+  background: #1d9a99;
+}
+
+.section {
+  width: min(1092px, calc(100% - 48px));
+  margin: 0 auto 32px;
+  min-width: 0;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.sectionTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionAccent {
+  width: 4px;
+  height: 35px;
+  min-height: 35px;
+  border-radius: 0;
+  background: #1d9a99;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #0a162d;
+}
+
+.sectionCaption {
+  display: none;
+}
+
+.moreButton {
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #0a162d;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cardRail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  grid-auto-columns: 200px;
+  gap: 23px;
+
+  overflow-x: auto;
+  overflow-y: visible;
+
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
+  padding: 0 0 16px;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+}
+
+.cardRail::-webkit-scrollbar {
+  height: 8px;
+}
+
+.cardRail::-webkit-scrollbar-thumb {
+  background: rgba(10, 22, 45, 0.18);
+  border-radius: 999px;
+}
+
+.homeCard {
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+  height: 250px !important;
+  scroll-snap-align: start;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 16px 0 96px;
+  }
+
+  .heroSection,
+  .section {
+    width: calc(100% - 32px);
+  }
+
+  .carousel {
+    height: 210px;
+  }
+
+  .carouselSlide {
+    height: 210px;
+    aspect-ratio: auto;
+  }
+
+  .carouselCaption {
+    font-size: 13px;
+  }
+
+  .sectionTitle {
+    font-size: 17px;
+  }
+
+  .cardRail {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: 200px;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 0 0 16px;
+    scroll-snap-type: x proximity;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .heroSection,
+  .section {
+    width: calc(100% - 48px);
+  }
+
+  .carousel {
+    height: 280px;
+  }
+
+  .carouselSlide {
+    height: 280px;
+    aspect-ratio: auto;
+  }
+
+  .cardRail {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: 200px;
+    gap: 20px;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 0 0 16px;
+    scroll-snap-type: x proximity;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cardRail {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 200px;
+    gap: 23px;
   }
 }
