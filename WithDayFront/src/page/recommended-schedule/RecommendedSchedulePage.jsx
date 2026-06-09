@@ -37,15 +37,15 @@ const GENDER_LIMIT_LABELS = {
   female: "여",
 };
 
-const DEFAULT_THUMBNAIL = "/hero.png";
+const DEFAULT_THUMBNAIL = "/default-4.png";
 
 // DB/API 카테고리 값을 화면용 한글 라벨로 변환
 const resolveCategoryLabel = (category) => {
   return (
     CATEGORY_LABELS[
-      String(category ?? "")
-        .trim()
-        .toLowerCase()
+    String(category ?? "")
+      .trim()
+      .toLowerCase()
     ] ?? "기타"
   );
 };
@@ -54,9 +54,9 @@ const resolveCategoryLabel = (category) => {
 const resolveGenderLimitLabel = (genderLimit) => {
   return (
     GENDER_LIMIT_LABELS[
-      String(genderLimit ?? "")
-        .trim()
-        .toLowerCase()
+    String(genderLimit ?? "")
+      .trim()
+      .toLowerCase()
     ] ?? "남·녀"
   );
 };
@@ -108,9 +108,8 @@ const getRecommendedKey = (item) => {
 
   return String(
     schedule?.id ??
-      `${schedule?.title ?? "recommended"}-${
-        schedule?.region ?? "unknown"
-      }-${schedule?.durationDays ?? "duration"}`,
+    `${schedule?.title ?? "recommended"}-${schedule?.region ?? "unknown"
+    }-${schedule?.durationDays ?? "duration"}`,
   );
 };
 

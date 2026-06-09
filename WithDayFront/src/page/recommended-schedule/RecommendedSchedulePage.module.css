@@ -135,21 +135,21 @@
 
 .cardGrid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(auto-fill, 240px);
+  justify-content: start;
+  align-items: start;
+  gap: 20px 16px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   margin: 0 auto;
   overflow: visible;
-  align-items: stretch;
-  justify-items: stretch;
 }
 
 .cardGrid > * {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
+  width: 240px;
+  max-width: 240px;
+  min-width: 240px;
 }
 
 /* ─── 상태 박스 ───────────────────────────────────────────── */
@@ -519,20 +519,6 @@
   flex: 0 0 auto;
 }
 
-/* ─── Hover ─────────────────────────────────────────────── */
-
-@media (hover: hover) and (pointer: fine) {
-  .scheduleCard:hover {
-    filter: var(--shadow-card-ticket-hover);
-  }
-
-  .scheduleCard:hover .cardTop,
-  .scheduleCard:hover .cardBottom,
-  .scheduleCard:hover .ticketDivider {
-    background: var(--color-surface-hover);
-  }
-}
-
 /* ─── 반응형 ─────────────────────────────────────────────── */
 
 @media (max-width: 1439px) {
@@ -734,5 +720,705 @@
 
   .overlayPill:first-child {
     max-width: calc(100% - 66px);
+  }
+}
+/* =========================
+   Recommended Card - Main Ticket Style Override
+   - 추천 일정 문구/데이터는 유지
+   - 카드 외형만 메인 카드와 통일
+   ========================= */
+
+.scheduleCard {
+  --recommended-card-bg: #ffffff;
+  --recommended-card-dark: #0a162d;
+  --recommended-card-point: #1d9a99;
+  --recommended-card-page-bg: #f8fafb;
+
+  position: relative;
+  display: block;
+
+  width: 240px;
+  min-width: 240px;
+  max-width: 240px;
+
+  height: 300px;
+  min-height: 300px;
+  max-height: 300px;
+
+  padding: 0;
+  overflow: visible;
+
+  background: var(--recommended-card-bg);
+  border: none;
+  border-radius: 0;
+
+  filter: none;
+  box-shadow: 0 1px 7px rgba(10, 22, 45, 0.1);
+
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.scheduleCard::before,
+.scheduleCard::after {
+  content: "";
+  position: absolute;
+  top: 158px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--recommended-card-page-bg);
+  z-index: 80;
+  pointer-events: none;
+}
+
+.scheduleCard::before {
+  left: -8px;
+}
+
+.scheduleCard::after {
+  right: -8px;
+}
+
+.scheduleCard:hover {
+  background: #f8f8f8;
+  filter: none;
+  box-shadow: 0 1px 7px rgba(10, 22, 45, 0.1);
+}
+
+.scheduleCard:hover .cardTop,
+.scheduleCard:hover .cardBottom,
+.scheduleCard:hover .ticketDivider {
+  background: transparent;
+}
+
+.cardTop,
+.cardBottom,
+.ticketDivider {
+  background: transparent;
+  transition: none;
+}
+
+.cardTop {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 174px;
+  min-height: 0;
+  padding: 0;
+}
+
+.headerSection {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 174px;
+}
+
+.cardBottom {
+  position: absolute;
+  left: 0;
+  top: 174px;
+  width: 100%;
+  height: 126px;
+  padding: 0;
+}
+
+.ticketDivider {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.ticketDivider::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 166px;
+  height: 0;
+  border-top: 1px dashed var(--color-border-dark);
+  transform: none;
+  display: block;
+  z-index: 45;
+}
+
+.infoRow,
+.topRow,
+.dateRow,
+.titleRow,
+.descriptionRow {
+  position: static;
+  display: block;
+  width: auto;
+  min-width: 0;
+  gap: 0;
+  border: none;
+}
+
+/* 좌측 추천 기간 배지 */
+.recommendPill {
+  position: absolute;
+  left: 0;
+  top: 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  width: auto;
+  min-width: 0;
+  height: 18px;
+  min-height: 18px;
+
+  margin: 0;
+  padding: 0 10px 0 12px;
+
+  border-radius: 0 999px 999px 0;
+  background: var(--color-accent-light);
+  color: var(--color-accent-dark);
+
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+
+  z-index: 20;
+}
+
+/* 우측 성별 */
+.topMetaActions {
+  position: static;
+  display: block;
+}
+
+.genderPill {
+  position: absolute;
+  right: 12px;
+  top: 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 0;
+  height: 18px;
+  min-height: 18px;
+
+  padding: 0;
+  border-radius: 0;
+
+  background: transparent;
+  color: var(--recommended-card-dark);
+
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 18px;
+
+  z-index: 20;
+}
+
+/* 날짜 / 코스 */
+.dateRowContent {
+  position: absolute;
+  left: 12px;
+  top: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+
+  width: auto;
+  margin: 0;
+  z-index: 20;
+}
+
+.dateIconWrap {
+  width: 13px;
+  min-width: 13px;
+  height: 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #000000;
+}
+
+.dateIcon {
+  width: 13px;
+  height: 13px;
+  font-size: 13px;
+}
+
+.dateText {
+  width: auto;
+  max-width: none;
+
+  color: #000000;
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 13px;
+
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+/* 제목 */
+.titleRow {
+  position: relative;
+  display: block;
+  margin-top: 86px;
+  width: calc(100% - 24px);
+  margin-left: 12px;
+  z-index: 10;
+}
+
+.titleGroup {
+  position: static;
+  width: 100%;
+}
+
+.cardTitle {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: none;
+
+  margin: 0;
+
+  color: #000000;
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 19px;
+  letter-spacing: -0.02em;
+
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 설명 */
+.descriptionRow {
+  position: relative;
+  display: block;
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin-left: 12px;
+  margin-top: 8px;
+  z-index: 10;
+
+  overflow: hidden;
+}
+
+.cardDescription {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 28px;
+  max-height: 28px;
+
+  margin: 0;
+
+  color: #344054;
+  font-family: "Noto Sans KR", Poppins, sans-serif;
+  font-size: 9.5px;
+  font-weight: 400;
+  line-height: 14px;
+  letter-spacing: -0.01em;
+
+  white-space: normal;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+/* 이미지 */
+.thumbnailWrap {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 10px;
+
+  width: auto;
+  height: 108px;
+  aspect-ratio: auto;
+
+  overflow: hidden;
+  background: #ffffff;
+  z-index: 5;
+
+  border-radius: 0;
+}
+
+.thumbnail {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: cover;
+  object-position: center;
+}
+
+.thumbnailFallback {
+  object-fit: cover;
+}
+
+/* 이미지 위 지역/카테고리 알약 */
+.thumbnailOverlay {
+  position: absolute;
+  left: 7px;
+  right: auto;
+  bottom: 7px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+
+  max-width: calc(100% - 14px);
+  overflow: visible;
+  z-index: 10;
+}
+
+.overlayPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  height: 17px;
+  min-height: 17px;
+  padding: 0 8px;
+
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--recommended-card-dark);
+
+  font-family: Poppins, "Noto Sans KR", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+
+  box-shadow: 0 1px 4px rgba(10, 22, 45, 0.12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.overlayPill:first-child {
+  flex: 0 1 auto;
+  max-width: calc(100% - 46px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.overlayPill:last-child {
+  flex: 0 0 auto;
+}
+@media (max-width: 1024px) and (min-width: 769px) {
+  .cardGrid {
+    grid-template-columns: repeat(auto-fill, 230px);
+    gap: 18px 14px;
+  }
+
+  .cardGrid > * {
+    width: 230px;
+    max-width: 230px;
+    min-width: 230px;
+  }
+
+  .scheduleCard {
+    width: 230px;
+    min-width: 230px;
+    max-width: 230px;
+    height: 288px;
+    min-height: 288px;
+    max-height: 288px;
+  }
+
+  .cardTop,
+  .headerSection {
+    height: 166px;
+  }
+
+  .cardBottom {
+    top: 166px;
+    height: 122px;
+  }
+
+  .scheduleCard::before,
+  .scheduleCard::after {
+    top: 150px;
+  }
+
+  .ticketDivider::after {
+    top: 158px;
+  }
+
+  .titleRow {
+    margin-top: 82px;
+  }
+
+  .thumbnailWrap {
+    height: 103px;
+  }
+}
+
+@media (max-width: 768px) and (min-width: 640px) {
+  .cardGrid {
+    grid-template-columns: repeat(auto-fill, 222px);
+    gap: 16px 14px;
+  }
+
+  .cardGrid > * {
+    width: 222px;
+    max-width: 222px;
+    min-width: 222px;
+  }
+
+  .scheduleCard {
+    width: 222px;
+    min-width: 222px;
+    max-width: 222px;
+    height: 278px;
+    min-height: 278px;
+    max-height: 278px;
+  }
+
+  .cardTop,
+  .headerSection {
+    height: 154px;
+  }
+
+  .cardBottom {
+    top: 154px;
+    height: 124px;
+  }
+
+  .scheduleCard::before,
+  .scheduleCard::after {
+    top: 138px;
+  }
+
+  .ticketDivider::after {
+    top: 146px;
+  }
+
+  .titleRow {
+    margin-top: 76px;
+  }
+
+  .thumbnailWrap {
+    height: 106px;
+  }
+}
+
+@media (max-width: 639px) {
+  .cardGrid {
+    grid-template-columns: repeat(auto-fill, 220px);
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .cardGrid > * {
+    width: 220px;
+    max-width: 220px;
+    min-width: 220px;
+  }
+
+  .scheduleCard {
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+    height: 276px;
+    min-height: 276px;
+    max-height: 276px;
+  }
+
+  .cardTop,
+  .headerSection {
+    height: 149px;
+  }
+
+  .cardBottom {
+    top: 149px;
+    height: 127px;
+  }
+
+  .scheduleCard::before,
+  .scheduleCard::after {
+    top: 135px;
+  }
+
+  .ticketDivider::after {
+    top: 143px;
+    left: 19px;
+    right: 19px;
+  }
+
+  .recommendPill {
+    top: 12px;
+    left: 0;
+    height: 17px;
+    min-height: 17px;
+    padding: 0 8px 0 10px;
+    font-size: 8.8px;
+    line-height: 17px;
+  }
+
+  .genderPill {
+    top: 12px;
+    right: 12px;
+    font-size: 8px;
+    line-height: 17px;
+  }
+
+  .dateRowContent {
+    left: 11px;
+    top: 40px;
+  }
+
+  .dateText {
+    font-size: 8.8px;
+    line-height: 12px;
+  }
+
+  .dateIcon,
+  .dateIconWrap {
+    width: 11px;
+    min-width: 11px;
+    height: 11px;
+    font-size: 11px;
+  }
+
+  .titleRow {
+    width: calc(100% - 22px);
+    max-width: calc(100% - 22px);
+    margin-left: 11px;
+    margin-top: 72px;
+  }
+
+  .cardTitle {
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  .descriptionRow {
+    width: calc(100% - 22px);
+    max-width: calc(100% - 22px);
+    margin-left: 11px;
+    margin-top: 5px;
+  }
+
+  .cardDescription {
+    height: 24px;
+    max-height: 24px;
+    font-size: 8.2px;
+    line-height: 12px;
+  }
+
+  .thumbnailWrap {
+    left: 11px;
+    right: 11px;
+    top: 11px;
+    height: 109px;
+  }
+
+  .overlayPill {
+    height: 15px;
+    min-height: 15px;
+    padding: 0 6px;
+    font-size: 7.8px;
+    line-height: 1;
+  }
+}
+
+@media (max-width: 360px) {
+  .cardGrid {
+    grid-template-columns: repeat(auto-fill, 204px);
+  }
+
+  .cardGrid > * {
+    width: 204px;
+    max-width: 204px;
+    min-width: 204px;
+  }
+
+  .scheduleCard {
+    width: 204px;
+    min-width: 204px;
+    max-width: 204px;
+    height: 258px;
+    min-height: 258px;
+    max-height: 258px;
+  }
+
+  .cardTop,
+  .headerSection {
+    height: 140px;
+  }
+
+  .cardBottom {
+    top: 140px;
+    height: 118px;
+  }
+
+  .scheduleCard::before,
+  .scheduleCard::after {
+    top: 126px;
+  }
+
+  .ticketDivider::after {
+    top: 134px;
+  }
+
+  .titleRow {
+    margin-top: 67px;
+  }
+
+  .thumbnailWrap {
+    height: 98px;
+  }
+
+  .cardTitle {
+    font-size: 12.4px;
+    line-height: 17px;
+  }
+}
+@media (max-width: 1439px) and (min-width: 1025px) {
+  .cardGrid {
+    grid-template-columns: repeat(auto-fill, 240px);
+    justify-content: start;
+    align-items: start;
+    gap: 20px 16px;
+  }
+
+  .cardGrid > * {
+    width: 240px;
+    max-width: 240px;
+    min-width: 240px;
   }
 }
