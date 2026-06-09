@@ -258,8 +258,6 @@ const RecommendedScheduleEdit = () => {
       navigate(`/recommended-schedules/${parsedRecommendedId}`);
     },
     onError: (err) => {
-      console.error("error: ", err);
-
       const errorMessage =
         err?.response?.data?.message ??
         err?.response?.data ??

@@ -177,8 +177,6 @@ const WriteSchedule = () => {
   const errorList = flattenErrors(errors);
 
   const handleError = (err) => {
-    console.log(err);
-
     setOpenSnackbar(false);
 
     setTimeout(() => {
@@ -255,12 +253,9 @@ const WriteSchedule = () => {
       return insertSchedule(postData, filesData, detailScheduleData);
     },
     onSuccess: (res) => {
-      console.log("등록 성공", res);
       navigate("/");
     },
-    onError: (err) => {
-      console.error("error: ", err);
-    },
+    onError: (err) => {},
   });
 
   const onSubmit = async (formValues) => {
@@ -802,8 +797,6 @@ const CalendarRange = ({ startDate, endDate, setValue }) => {
   ]);
 
   const handleChange = (item) => {
-    console.log("setValue:", setValue);
-
     const selection = item.selection;
 
     setState([selection]);

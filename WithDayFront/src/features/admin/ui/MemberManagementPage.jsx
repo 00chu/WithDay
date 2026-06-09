@@ -27,10 +27,6 @@ const MemberManagementPage = () => {
   const memberList = data?.memberList ?? [];
   const totalPage = data?.totalPage ?? 0;
 
-  useEffect(() => {
-    console.log(memberList);
-  }, [memberList]);
-
   // register - 일반 input을 form에 등록.
   /* 
   control - 외부 컴포넌트 (mui select ...)는 register로 제어 X
