@@ -131,7 +131,7 @@ const MyPageMain = () => {
 
   const nickname = mypage?.nickname || "닉네임";
   const email = mypage?.email || loginUser?.email || "이메일 정보 없음";
-  const profileImage = mypage?.profileImage || "/default-profile-240.png";
+  const profileImage = mypage?.profileImage || "/logo.png";
   const selectedInterestIds = mypage?.selectedInterestIds ?? [];
   const allInterests = mypage?.allInterests ?? [];
 

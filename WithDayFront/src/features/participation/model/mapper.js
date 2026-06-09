@@ -5,6 +5,8 @@ import {
 } from "../../schedule/model/constants";
 import { PARTICIPATION_CATEGORY_LABELS } from "./constants";
 
+const DEFAULT_MY_SCHEDULE_THUMBNAIL = "/default-4.png";
+
 /*
  * mapper 레이어는 "서버 응답 shape"를 "UI에서 직접 쓰기 좋은 shape"로 변환한다.
  * 이 파일이 필요한 이유는 백엔드 필드명과 프런트 화면 표현이 항상 1:1로 맞지 않기 때문이다.
@@ -159,7 +161,7 @@ export const normalizeMyScheduleItem = (item) => {
     schedulePhase,
     myRole: item.host ? "host" : undefined,
     thumbnail: item.thumbnail ?? "",
-    thumbnailSrc: item.thumbnail?.trim() || "/hero.png",
+    thumbnailSrc: item.thumbnail?.trim() || DEFAULT_MY_SCHEDULE_THUMBNAIL,
     hasThumbnail: Boolean(item.thumbnail?.trim()),
     isUpcomingSoon:
       Number.isFinite(daysUntilStart) &&
