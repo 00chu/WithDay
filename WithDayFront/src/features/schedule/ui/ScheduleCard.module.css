@@ -703,8 +703,6 @@
   overflow-wrap: anywhere;
 
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
 }
 
 .cardCompact:global(.homeTicketCard) .cardDescription {
@@ -915,11 +913,6 @@
     padding: 0;
   }
 
-  .cardCompact:global(.homeTicketCard) .softPill,
-  .cardCompact:global(.homeTicketCard) .metaPill,
-  .cardCompact:global(.homeTicketCard) .overlayPill {
-    font-size: inherit;
-  }
   .cardCompact:global(.homeTicketCard) .ticketDivider::after {
     top: 143px;
     left: 11px;
@@ -1051,15 +1044,6 @@
     width: calc(100% - 24px);
     max-width: calc(100% - 24px);
     margin-left: 11px;
-    overflow: hidden;
-  }
-
-  .cardCompact:global(.homeTicketCard) .cardDescription {
-    display: block;
-    height: 28px;
-    max-height: 28px;
-    font-size: 9.5px;
-    line-height: 14px;
     overflow: hidden;
   }
 }
@@ -1322,59 +1306,64 @@
     overflow-wrap: anywhere;
   }
 }
+
 /* =========================
-   Explore Mobile Typography
-   - 탐색 화면 카드만 모바일 폰트 보정
-   - 카드 크기는 그대로 두고 글자/알약만 줄임
+   Home Ticket Mobile Typography Fix
+   - 홈/탐색 공통 티켓 카드 모바일 폰트 보정
+   - 425 / 375 / 320 대응
    ========================= */
 
 @media (max-width: 425px) {
-  .cardCompact:global(.exploreTicketCard) .deadlinePillBase {
+  .cardCompact:global(.homeTicketCard) .deadlinePillBase {
+    left: 0;
+    margin-left: 0;
+
     height: 17px;
     min-height: 17px;
     padding: 0 8px 0 10px;
+
     font-size: 8.8px;
     line-height: 17px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .genderPill {
+  .cardCompact:global(.homeTicketCard) .genderPill {
     right: 32px;
     font-size: 8px;
     line-height: 17px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .dateText {
+  .cardCompact:global(.homeTicketCard) .dateText {
     font-size: 8.8px;
     line-height: 12px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .dateIcon,
-  .cardCompact:global(.exploreTicketCard) .dateIconWrap {
+  .cardCompact:global(.homeTicketCard) .dateIcon,
+  .cardCompact:global(.homeTicketCard) .dateIconWrap {
     width: 11px;
     min-width: 11px;
     height: 11px;
     font-size: 11px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .cardTitle {
+  .cardCompact:global(.homeTicketCard) .cardTitle {
     font-size: 13.4px;
     line-height: 18px;
     max-height: 36px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .titleLine {
+  .cardCompact:global(.homeTicketCard) .titleLine {
     height: 18px;
     line-height: 18px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .cardDescription {
+  .cardCompact:global(.homeTicketCard) .cardDescription {
     height: 26px;
     max-height: 26px;
     font-size: 8.7px;
     line-height: 13px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .overlayPill {
+  .cardCompact:global(.homeTicketCard) .overlayPill {
     height: 15px;
     min-height: 15px;
     padding: 0 6px;
@@ -1382,50 +1371,54 @@
     line-height: 15px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .thumbnailOverlay {
+  .cardCompact:global(.homeTicketCard) .thumbnailOverlay {
     gap: 4px;
   }
 }
 
 @media (max-width: 375px) {
-  .cardCompact:global(.exploreTicketCard) .deadlinePillBase {
+  .cardCompact:global(.homeTicketCard) .deadlinePillBase {
+    left: 0;
+    margin-left: 0;
+
     height: 16px;
     min-height: 16px;
     padding: 0 7px 0 9px;
+
     font-size: 8.3px;
     line-height: 16px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .genderPill {
+  .cardCompact:global(.homeTicketCard) .genderPill {
     right: 31px;
     font-size: 7.6px;
     line-height: 16px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .dateText {
+  .cardCompact:global(.homeTicketCard) .dateText {
     font-size: 8.3px;
     line-height: 11px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .cardTitle {
+  .cardCompact:global(.homeTicketCard) .cardTitle {
     font-size: 12.9px;
     line-height: 17px;
     max-height: 34px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .titleLine {
+  .cardCompact:global(.homeTicketCard) .titleLine {
     height: 17px;
     line-height: 17px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .cardDescription {
+  .cardCompact:global(.homeTicketCard) .cardDescription {
     height: 24px;
     max-height: 24px;
     font-size: 8.2px;
     line-height: 12px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .overlayPill {
+  .cardCompact:global(.homeTicketCard) .overlayPill {
     height: 14px;
     min-height: 14px;
     padding: 0 6px;
@@ -1435,50 +1428,54 @@
 }
 
 @media (max-width: 320px) {
-  .cardCompact:global(.exploreTicketCard) .deadlinePillBase {
+  .cardCompact:global(.homeTicketCard) .deadlinePillBase {
+    left: 0;
+    margin-left: 0;
+
     height: 15px;
     min-height: 15px;
     padding: 0 7px 0 8px;
+
     font-size: 7.8px;
     line-height: 15px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .genderPill {
+  .cardCompact:global(.homeTicketCard) .genderPill {
     right: 30px;
     font-size: 7.2px;
     line-height: 15px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .bookmarkIcon {
+  .cardCompact:global(.homeTicketCard) .bookmarkIcon {
     width: 14px;
     height: 14px;
     font-size: 14px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .dateText {
+  .cardCompact:global(.homeTicketCard) .dateText {
     font-size: 8px;
     line-height: 11px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .cardTitle {
+  .cardCompact:global(.homeTicketCard) .cardTitle {
     font-size: 12.2px;
     line-height: 16px;
     max-height: 32px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .titleLine {
+  .cardCompact:global(.homeTicketCard) .titleLine {
     height: 16px;
     line-height: 16px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .cardDescription {
+  .cardCompact:global(.homeTicketCard) .cardDescription {
     height: 22px;
     max-height: 22px;
     font-size: 7.8px;
     line-height: 11px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .overlayPill {
+  .cardCompact:global(.homeTicketCard) .overlayPill {
     height: 13px;
     min-height: 13px;
     padding: 0 5px;
@@ -1486,7 +1483,7 @@
     line-height: 13px;
   }
 
-  .cardCompact:global(.exploreTicketCard) .thumbnailOverlay {
+  .cardCompact:global(.homeTicketCard) .thumbnailOverlay {
     left: 5px;
     bottom: 5px;
     gap: 3px;
