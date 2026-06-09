@@ -1502,3 +1502,44 @@
     top: 11px;
   }
 }
+/* =========================
+   Main Home Card Title Fix
+   - 메인 카드 제목만 보정
+   - 탐색 exploreTicketCard 영향 없음
+   ========================= */
+
+.cardCompact:global(.mainTicketCard) .titleRow {
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin-left: 12px;
+  overflow: hidden;
+}
+
+.cardCompact:global(.mainTicketCard) .titleGroup {
+  width: 100%;
+  overflow: hidden;
+}
+
+.cardCompact:global(.mainTicketCard) .cardTitle {
+  display: block;
+  width: 100%;
+  height: 32px;
+  max-height: 32px;
+
+  font-size: 12px;
+  line-height: 16px;
+
+  overflow: hidden;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.cardCompact:global(.mainTicketCard) .titleLine {
+  display: block;
+  height: 16px;
+  line-height: 16px;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
