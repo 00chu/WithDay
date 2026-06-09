@@ -88,6 +88,16 @@
   font-family: var(--font-family-base);
 }
 
+:global(html) {
+  scrollbar-gutter: stable;
+}
+
+@supports not (scrollbar-gutter: stable) {
+  :global(html) {
+    overflow-y: scroll;
+  }
+}
+
 :global(body) {
   margin: 0;
   padding: 0;

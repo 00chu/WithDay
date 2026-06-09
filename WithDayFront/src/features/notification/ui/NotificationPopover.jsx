@@ -26,8 +26,8 @@ export default function NotificationPopover({ open, anchorEl, handleClose }) {
             left: isMobile ? "50%" : undefined,
             transform: isMobile ? "translate(-50%, -50%)" : undefined,
 
-            width: isMobile ? "calc(100vw - 24px)" : 480,
-            maxWidth: isMobile ? "calc(100vw - 24px)" : 480,
+            width: isMobile ? "calc(100% - 24px)" : 480,
+            maxWidth: isMobile ? "calc(100% - 24px)" : 480,
             maxHeight: isMobile ? "80vh" : 600,
 
             overflowY: "auto",
