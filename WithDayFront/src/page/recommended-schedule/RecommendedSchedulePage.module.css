@@ -1422,3 +1422,48 @@
     min-width: 240px;
   }
 }
+/* =========================
+   Recommended Card Detail Polish
+   - 추천 알약 색상
+   - 날짜 아이콘 크기 보정
+   ========================= */
+
+.recommendPill {
+  background: #fff3c4;
+  color: #7a5200;
+}
+
+.dateIconWrap {
+  width: 13px;
+  min-width: 13px;
+  height: 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #000000;
+  flex-shrink: 0;
+}
+
+.dateIcon,
+.dateIconWrap svg {
+  width: 13px !important;
+  height: 13px !important;
+  font-size: 13px !important;
+  display: block;
+}
+@media (max-width: 639px) {
+  .dateIconWrap {
+    width: 11px;
+    min-width: 11px;
+    height: 11px;
+  }
+
+  .dateIcon,
+  .dateIconWrap svg {
+    width: 11px !important;
+    height: 11px !important;
+    font-size: 11px !important;
+  }
+}
