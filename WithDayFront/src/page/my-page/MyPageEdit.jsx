@@ -64,7 +64,7 @@ const MyPageEdit = () => {
   const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
   const [withdrawErrorToastOpen, setWithdrawErrorToastOpen] = useState(false);
 
-  const DEFAULT_PROFILE_IMAGE = "/default-profile-240.png";
+  const DEFAULT_PROFILE_IMAGE = "/logo.png";
   const formatPhoneNumber = (value = "") => {
     const onlyNumber = String(value).replace(/\D/g, "").slice(0, 11);
 
@@ -550,7 +550,7 @@ const MyPageEdit = () => {
                   src={
                     profilePreview ||
                     editQuery.data?.profileImage ||
-                    "/default-profile-240.png"
+                    "/logo.png"
                   }
                   alt="프로필"
                   className={styles.avatar}

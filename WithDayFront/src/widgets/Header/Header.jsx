@@ -13,7 +13,7 @@ import NotificationPopover from "../../features/notification/ui/NotificationPopo
 import Badge from "@mui/material/Badge";
 import { getNotificationCount } from "../../features/notification/api";
 
-const DEFAULT_PROFILE_IMAGE = "/default-profile-240.png";
+const DEFAULT_PROFILE_IMAGE = "/logo.png";
 
 export default function Header() {
   const navigate = useNavigate();
