@@ -25,7 +25,7 @@ const CATEGORY_LABELS = {
   etc: "기타",
 };
 
-const defaultThumbnail = "/default-1.png";
+const defaultThumbnail = "/default-2.png";
 
 /*
  * 백엔드 응답 필드가 화면별로 조금씩 다를 수 있어 가능한 썸네일 후보를 순서대로 확인한다.
