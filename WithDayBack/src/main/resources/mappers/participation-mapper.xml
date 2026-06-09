@@ -132,24 +132,26 @@
         s.max_participants AS max_people,
         <include refid="normalizedStatus" /> AS db_status,
         s.status AS schedule_status,
-        CASE WHEN s.user_id = u.id THEN TRUE ELSE FALSE END AS host
+        FALSE AS host,
+        'participant' AS my_role
     </sql>
 
     <!--
         사용자가 신청했거나 참여 중인 일정 목록이다.
         프론트 탭에서 넘긴 statuses 목록으로 참여 상태를 필터링하고,
+        로그인 사용자의 participation row만 읽되 schedule.host와 같은 본인 호스팅 일정은 제외한다.
         삭제된 일정과 이미 종료된 일정은 내 일정 목록에서 제외한다.
     -->
     <select id="getMyParticipations" resultType="com.test.withdayback.participation.dto.MyScheduleResponseDTO">
         SELECT
             <include refid="myScheduleColumns" />
         FROM participation p
-        INNER JOIN user u ON u.id = p.user_id
         INNER JOIN schedule s ON s.id = p.schedule_id
         LEFT JOIN schedule_image si
                ON si.schedule_id = s.id
               AND si.is_thumbnail = 1
-        WHERE u.email = #{email}
+        WHERE p.user_id = #{userId}
+          AND s.user_id != #{userId}
           AND s.deleted_at IS NULL
           AND (s.end_date IS NULL OR s.end_date >= CURDATE())
           AND <include refid="normalizedStatus" /> IN
@@ -161,7 +163,7 @@
 
     <!--
         사용자가 호스트로 만든 일정 목록이다.
-        이 목록은 participation row가 없기 때문에 participation_id를 NULL로 내려준다.
+        이 목록은 schedule.user_id 기준으로 읽어오므로, participation row가 없어도 호스팅 탭에서 일관되게 조회된다.
         프론트는 host=true와 participationId=null 조합을 보고 취소/삭제가 아니라 상세 이동만 제공한다.
         호스팅 탭은 "진행 중 일정"과 "마감된 일정"을 프론트에서 나눠 보여줘야 하므로,
         여기서는 end_date로 미리 잘라내지 않고 삭제되지 않은 일정 전체를 내려준다.
@@ -182,13 +184,13 @@
             s.max_participants AS max_people,
             s.status AS db_status,
             s.status AS schedule_status,
-            TRUE AS host
+            TRUE AS host,
+            'host' AS my_role
         FROM schedule s
-        INNER JOIN user u ON u.id = s.user_id
         LEFT JOIN schedule_image si
                ON si.schedule_id = s.id
               AND si.is_thumbnail = 1
-        WHERE u.email = #{email}
+        WHERE s.user_id = #{userId}
           AND s.deleted_at IS NULL
         ORDER BY s.start_date ASC, s.id DESC
     </select>

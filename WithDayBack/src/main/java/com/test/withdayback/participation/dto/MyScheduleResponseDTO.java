@@ -46,4 +46,7 @@ public class MyScheduleResponseDTO {
 
     // 이 카드가 내가 만든 일정인지 구분한다. host=true이면 취소/삭제 대신 상세 관리 화면으로 이동한다.
     private Boolean host;
+
+    // 화면과 필터링에서 내 역할을 더 명확히 구분하기 위한 값이다. host / participant 로 내려준다.
+    private String myRole;
 }

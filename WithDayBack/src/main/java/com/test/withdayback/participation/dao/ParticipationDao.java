@@ -42,12 +42,12 @@ public interface ParticipationDao {
 
     // 내 일정 페이지의 참여중/신청중 탭 목록을 가져온다.
     List<MyScheduleResponseDTO> getMyParticipations(
-            @Param("email") String email,
+            @Param("userId") Long userId,
             @Param("statuses") List<String> statuses
     );
 
     // 내 일정 페이지의 호스팅 탭 목록을 가져온다.
-    List<MyScheduleResponseDTO> getMyHostingSchedules(@Param("email") String email);
+    List<MyScheduleResponseDTO> getMyHostingSchedules(@Param("userId") Long userId);
 
     // 사용자가 본인 참여를 CANCELED 상태로 바꿀 때 사용한다.
     int cancelParticipation(
