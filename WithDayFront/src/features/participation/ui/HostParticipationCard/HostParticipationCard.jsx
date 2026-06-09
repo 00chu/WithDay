@@ -119,6 +119,7 @@ const formatCreatedAt = (value) => {
 function HostParticipationCard({
   item,
   hostEmail,
+  onProfileClick,
   onAction,
   isActionLoading,
   isReadOnly = false,
@@ -143,6 +144,15 @@ function HostParticipationCard({
       ? `만 ${item.fullAge}세`
       : "확인 불가";
   const createdAtLabel = formatCreatedAt(item.createdAt);
+  const canOpenProfile = Boolean(onProfileClick && item.email?.trim());
+
+  const handleOpenProfile = () => {
+    if (!canOpenProfile) {
+      return;
+    }
+
+    onProfileClick(item.email);
+  };
 
   return (
     <div className={styles.card}>
@@ -157,20 +167,50 @@ function HostParticipationCard({
 
       <div className={styles.cardBody}>
         <div className={hostStyles.profileHeader}>
-          <div className={hostStyles.avatar} aria-hidden="true">
-            {item.profileImage?.trim() ? (
-              <img src={item.profileImage} alt="" />
-            ) : (
-              <span>{resolveInitial(item.nickname)}</span>
-            )}
-          </div>
+          {canOpenProfile ? (
+            <button
+              type="button"
+              className={`${hostStyles.profileAction} ${hostStyles.avatarButton}`}
+              onClick={handleOpenProfile}
+              aria-label={`${item.nickname || item.email} 프로필 보기`}
+            >
+              <div className={hostStyles.avatar} aria-hidden="true">
+                {item.profileImage?.trim() ? (
+                  <img src={item.profileImage} alt="" />
+                ) : (
+                  <span>{resolveInitial(item.nickname)}</span>
+                )}
+              </div>
+            </button>
+          ) : (
+            <div className={hostStyles.avatar} aria-hidden="true">
+              {item.profileImage?.trim() ? (
+                <img src={item.profileImage} alt="" />
+              ) : (
+                <span>{resolveInitial(item.nickname)}</span>
+              )}
+            </div>
+          )}
 
           <div className={hostStyles.profileSummary}>
             {/*
               닉네임만 간결하게 보여준다.
               이전 보조 설명 문구는 카드 밀도를 높이고 개인정보 영역을 과하게 설명해 제거했다.
             */}
-            <h3 className={styles.cardTitle}>{item.nickname}</h3>
+            {canOpenProfile ? (
+              <button
+                type="button"
+                className={`${hostStyles.profileAction} ${hostStyles.nameButton}`}
+                onClick={handleOpenProfile}
+                aria-label={`${item.nickname || item.email} 마이페이지로 이동`}
+              >
+                <h3 className={`${styles.cardTitle} ${hostStyles.participantName}`}>
+                  {item.nickname}
+                </h3>
+              </button>
+            ) : (
+              <h3 className={styles.cardTitle}>{item.nickname}</h3>
+            )}
           </div>
         </div>
 

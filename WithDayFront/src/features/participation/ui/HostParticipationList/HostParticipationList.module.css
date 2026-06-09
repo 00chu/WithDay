@@ -36,6 +36,39 @@
   margin-bottom: 16px;
 }
 
+.profileAction {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profileAction:focus-visible {
+  outline: 2px solid var(--color-primary, #2563eb);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+.avatarButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.avatarButton:hover .avatar {
+  filter: brightness(0.97);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.avatarButton:focus-visible .avatar {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+}
+
 .avatar {
   width: 56px;
   height: 56px;
@@ -59,6 +92,26 @@
 
 .profileSummary {
   min-width: 0;
+}
+
+.nameButton {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  max-width: 100%;
+}
+
+.nameButton:hover .participantName {
+  color: var(--color-primary, #2563eb);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.participantName {
+  display: block;
+  margin: 0;
+  color: inherit;
+  transition: color 0.18s ease, text-decoration-color 0.18s ease;
 }
 
 .detailGrid {

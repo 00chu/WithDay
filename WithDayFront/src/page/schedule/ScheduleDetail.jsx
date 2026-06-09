@@ -403,6 +403,18 @@ export default function ScheduleDetail() {
    */
   const authEmail = authUser?.email?.trim() ?? "";
   const parsedScheduleId = Number(scheduleId);
+  const navigateToMyPage = useCallback(
+    (email) => {
+      const normalizedEmail = email?.trim?.() ?? "";
+
+      if (!normalizedEmail) {
+        return;
+      }
+
+      navigate(`/mypage/${encodeURIComponent(normalizedEmail)}`);
+    },
+    [navigate],
+  );
   /*
    * 상세 query key에 email을 포함하는 이유는 같은 일정이라도 viewer별 응답이 다르기 때문이다.
    * viewerIsHost, viewerParticipationStatus, viewerCanAccessChatLink가 모두 사용자 권한에 따라 달라진다.
@@ -1467,9 +1479,7 @@ export default function ScheduleDetail() {
                   <button
                     type="button"
                     className={`${styles.hostProfileAction} ${styles.hostAvatarButton}`}
-                    onClick={() => {
-                      navigate(`/mypage/${encodeURIComponent(hostEmail)}`);
-                    }}
+                    onClick={() => navigateToMyPage(hostEmail)}
                     aria-label={`${hostName} 프로필 보기`}
                   >
                     <img
@@ -1503,9 +1513,7 @@ export default function ScheduleDetail() {
                     <button
                       type="button"
                       className={`${styles.hostProfileAction} ${styles.hostNameButton}`}
-                      onClick={() => {
-                        navigate(`/mypage/${encodeURIComponent(hostEmail)}`);
-                      }}
+                      onClick={() => navigateToMyPage(hostEmail)}
                       aria-label={`${hostName} 마이페이지로 이동`}
                     >
                       <strong className={styles.hostName}>{hostName}</strong>
@@ -1538,7 +1546,31 @@ export default function ScheduleDetail() {
                 ) : approvedApplicants.length > 0 ? (
                   <div className={styles.avatarList}>
                     {approvedApplicants.slice(0, 8).map((applicant) =>
-                      applicant.profileImage ? (
+                      applicant.email?.trim() ? (
+                        <button
+                          key={applicant.participationId}
+                          type="button"
+                          className={`${styles.hostProfileAction} ${styles.participantAvatarButton}`}
+                          onClick={() => navigateToMyPage(applicant.email)}
+                          aria-label={`${
+                            applicant.nickname || applicant.email
+                          } 프로필 보기`}
+                        >
+                          {applicant.profileImage ? (
+                            <img
+                              src={applicant.profileImage}
+                              alt={`${applicant.nickname || "참여자"} 프로필`}
+                              className={styles.participantAvatar}
+                            />
+                          ) : (
+                            <div className={styles.participantAvatar}>
+                              {resolveInitial(
+                                applicant.nickname || applicant.email,
+                              )}
+                            </div>
+                          )}
+                        </button>
+                      ) : applicant.profileImage ? (
                         <img
                           key={applicant.participationId}
                           src={applicant.profileImage}
@@ -1775,6 +1807,7 @@ export default function ScheduleDetail() {
                 errorMessage={applicantsErrorMessage}
                 emptyMessage={`${HOST_STATUS_LABELS[applicantStatus] ?? "선택한 상태"} 신청자가 없습니다.`}
                 hostEmail={authEmail}
+                onProfileClick={navigateToMyPage}
                 onItemAction={handleApplicantAction}
                 activeStatus={applicantStatus}
                 onStatusChange={setApplicantStatus}

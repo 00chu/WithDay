@@ -501,6 +501,22 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
 }
 
+.participantAvatarButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.participantAvatarButton:hover .participantAvatar {
+  filter: brightness(0.97);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.participantAvatarButton:focus-visible .participantAvatar {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+}
+
 .hostBadge {
   display: block;
   color: var(--color-text-muted, #94a3b8);
