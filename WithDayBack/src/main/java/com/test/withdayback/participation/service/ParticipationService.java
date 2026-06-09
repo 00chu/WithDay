@@ -61,7 +61,12 @@ public class ParticipationService {
             return List.of();
         }
 
-        return participationDao.getMyParticipations(normalizedEmail, normalizedStatuses);
+        Long userId = userDao.findUserIdByEmail(normalizedEmail);
+        if (userId == null) {
+            return List.of();
+        }
+
+        return participationDao.getMyParticipations(userId, normalizedStatuses);
     }
 
     /*
@@ -74,7 +79,12 @@ public class ParticipationService {
             return List.of();
         }
 
-        return participationDao.getMyHostingSchedules(normalizedEmail);
+        Long userId = userDao.findUserIdByEmail(normalizedEmail);
+        if (userId == null) {
+            return List.of();
+        }
+
+        return participationDao.getMyHostingSchedules(userId);
     }
 
     /*

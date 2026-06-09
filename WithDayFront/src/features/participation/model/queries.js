@@ -108,6 +108,16 @@ const resolveMyScheduleTabFetcher = (tab) => {
   return MY_SCHEDULE_TAB_FETCHERS[tab] ?? MY_SCHEDULE_TAB_FETCHERS.participating;
 };
 
+const filterMySchedulesByRole = (items, tab) => {
+  const list = Array.isArray(items) ? items : [];
+
+  if (tab === "hosting") {
+    return list.filter((item) => item.myRole === "host");
+  }
+
+  return list.filter((item) => item.myRole !== "host");
+};
+
 /*
  * 현재 탭 하나만 조회하는 내 일정 query hook이다.
  * 탭을 query key에 포함시켜 참여중/신청중/호스팅 캐시가 서로 섞이지 않게 분리한다.
@@ -128,7 +138,8 @@ export const useMySchedulesQuery = (email, activeTab = "participating") => {
     ),
     queryFn: () => queryFn({ email: normalizedEmail }),
     enabled: Boolean(normalizedEmail),
-    select: normalizeMyScheduleList,
+    select: (items) =>
+      filterMySchedulesByRole(normalizeMyScheduleList(items), normalizedTab),
     staleTime: 1000 * 60,
   });
 };

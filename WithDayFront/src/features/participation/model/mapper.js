@@ -159,7 +159,7 @@ export const normalizeMyScheduleItem = (item) => {
     scheduleStatus: item.scheduleStatus ?? "",
     recruitEndDate: item.recruitEndDate ?? "",
     schedulePhase,
-    myRole: item.host ? "host" : undefined,
+    myRole: item.myRole ?? (item.host ? "host" : "participant"),
     thumbnail: item.thumbnail ?? "",
     thumbnailSrc: item.thumbnail?.trim() || DEFAULT_MY_SCHEDULE_THUMBNAIL,
     hasThumbnail: Boolean(item.thumbnail?.trim()),

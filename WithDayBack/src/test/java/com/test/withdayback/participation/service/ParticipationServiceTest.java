@@ -22,10 +22,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,6 +48,33 @@ class ParticipationServiceTest {
 
     @InjectMocks
     private ParticipationService participationService;
+
+    @Test
+    void getMyParticipationsResolvesUserIdAndUsesStatusFilters() {
+        when(userDao.findUserIdByEmail("user@withday.test")).thenReturn(29L);
+        when(participationDao.getMyParticipations(29L, List.of("APPROVED", "KICKED")))
+                .thenReturn(List.of());
+
+        List<?> result = participationService.getMyParticipations(
+                "user@withday.test",
+                List.of("approved", "kicked")
+        );
+
+        assertEquals(0, result.size());
+        verify(userDao).findUserIdByEmail("user@withday.test");
+        verify(participationDao).getMyParticipations(29L, List.of("APPROVED", "KICKED"));
+    }
+
+    @Test
+    void getMyHostingSchedulesReturnsEmptyWhenUserMissing() {
+        when(userDao.findUserIdByEmail("missing@withday.test")).thenReturn(null);
+
+        List<?> result = participationService.getMyHostingSchedules("missing@withday.test");
+
+        assertEquals(0, result.size());
+        verify(userDao).findUserIdByEmail("missing@withday.test");
+        verifyNoInteractions(participationDao);
+    }
 
     @Test
     void cancelParticipationChangesApprovedToCanceledAndReopensSchedule() {
