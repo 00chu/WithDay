@@ -13,6 +13,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        run: echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Build backend docker image on GitHub runner
+        working-directory: WithDayBack
+        run: |
+          docker build -t withday-backend:${IMAGE_TAG} .
+          docker save withday-backend:${IMAGE_TAG} -o /tmp/withday-backend-${IMAGE_TAG}.tar
+
       - name: Prepare SSH key
         run: |
           mkdir -p ~/.ssh
@@ -20,46 +32,44 @@ jobs:
           chmod 600 ~/.ssh/withday-key.pem
           ssh-keyscan -T 10 -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy backend to k3s
+      - name: Upload image archive to EC2
         run: |
-          ssh -i ~/.ssh/withday-key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          scp -i ~/.ssh/withday-key.pem \
+            /tmp/withday-backend-${IMAGE_TAG}.tar \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/withday-backend-${IMAGE_TAG}.tar
+
+      - name: Deploy image to k3s
+        run: |
+          ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+            -i ~/.ssh/withday-key.pem \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
             set -e
 
             echo "Move to project"
             cd ~/WithDay
 
-            echo "Pull latest source"
+            echo "Pull latest manifests"
             git fetch origin main
             git reset --hard origin/main
 
-            echo "Build backend docker image"
-            cd WithDayBack
-
-            SHORT_SHA=$(git rev-parse --short HEAD)
-            IMAGE_NAME="withday-backend:${SHORT_SHA}"
-
-            docker build -t ${IMAGE_NAME} .
-
-            echo "Export docker image"
-            docker save ${IMAGE_NAME} -o /tmp/withday-backend-${SHORT_SHA}.tar
-
             echo "Import image into k3s containerd"
-            sudo k3s ctr -n k8s.io images import /tmp/withday-backend-${SHORT_SHA}.tar
+            sudo k3s ctr -n k8s.io images import /tmp/withday-backend-${IMAGE_TAG}.tar
 
             echo "Apply Kubernetes manifests"
+            cd WithDayBack
             sudo k3s kubectl apply -f k8s/deployment.yaml
             sudo k3s kubectl apply -f k8s/service.yaml
 
             echo "Update deployment image"
             sudo k3s kubectl set image deployment/withday-backend \
-              backend=docker.io/library/${IMAGE_NAME} \
+              backend=docker.io/library/withday-backend:${IMAGE_TAG} \
               -n withday
 
             echo "Wait for rollout"
             sudo k3s kubectl rollout status deployment/withday-backend -n withday --timeout=240s
 
             echo "Clean temporary image archive"
-            rm -f /tmp/withday-backend-${SHORT_SHA}.tar
+            rm -f /tmp/withday-backend-${IMAGE_TAG}.tar
 
             echo "Kubernetes status"
             sudo k3s kubectl get pods -n withday
