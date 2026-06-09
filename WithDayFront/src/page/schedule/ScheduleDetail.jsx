@@ -107,6 +107,33 @@ const resolveInitial = (value) => {
   return normalizedValue ? normalizedValue.charAt(0).toUpperCase() : "?";
 };
 
+const normalizeEmail = (value) => {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+};
+
+const getApplicantEmail = (applicant) => {
+  return (
+    applicant?.email ??
+    applicant?.userEmail ??
+    applicant?.applicantEmail ??
+    applicant?.memberEmail ??
+    ""
+  );
+};
+
+const isSameEmail = (left, right) => {
+  const normalizedLeft = normalizeEmail(left);
+  const normalizedRight = normalizeEmail(right);
+
+  return (
+    normalizedLeft !== "" &&
+    normalizedRight !== "" &&
+    normalizedLeft === normalizedRight
+  );
+};
+
 const formatGenderLimit = (genderLimit) => {
   /*
    * schedule.genderLimit은 참여 가능 조건이므로 원본 enum을 그대로 노출하지 않는다.
@@ -1259,7 +1286,19 @@ export default function ScheduleDetail() {
   const hostProfile = data.host ?? {};
   const hostName = hostProfile.nickname || "호스트";
   const hostEmail = data.email?.trim?.() ?? "";
-  const hostProfileImage = hostProfile.profileImage?.trim?.() || DEFAULT_HOST_PROFILE_IMAGE;
+  const hostProfileImage =
+    hostProfile.profileImage?.trim?.() || DEFAULT_HOST_PROFILE_IMAGE;
+  const visibleApprovedApplicants = hostEmail
+    ? approvedApplicants.filter(
+        (applicant) => !isSameEmail(getApplicantEmail(applicant), hostEmail),
+      )
+    : approvedApplicants;
+
+  const visibleApplicants = hostEmail
+    ? applicants.filter(
+        (applicant) => !isSameEmail(getApplicantEmail(applicant), hostEmail),
+      )
+    : applicants;
   const deadlineLabel = formatDDay(schedule.recruitEndDate);
   const visibleThumbnails = imageUrls.slice(0, MAX_VISIBLE_THUMBNAILS);
   const participantCount = Number(schedule.currentParticipants ?? 0);
@@ -1472,9 +1511,7 @@ export default function ScheduleDetail() {
                * 비호스트에게는 신청자 목록 API를 호출하지 않고, 상세 응답의 host 요약만 보여준다.
                * 이 분기는 게스트와 일반 로그인 사용자가 모두 볼 수 있는 공개 정보 영역이다.
                */
-              <section
-                className={`${styles.panel} ${styles.hostPanel}`}
-              >
+              <section className={`${styles.panel} ${styles.hostPanel}`}>
                 {hostEmail ? (
                   <button
                     type="button"
@@ -1535,7 +1572,7 @@ export default function ScheduleDetail() {
                 <div className={styles.panelHeader}>
                   <h2 className={styles.subTitle}>승인 참여자</h2>
                   <span className={styles.panelCount}>
-                    {approvedApplicants.length} / {maxParticipants}
+                    {visibleApprovedApplicants.length} / {maxParticipants}
                   </span>
                 </div>
 
@@ -1543,9 +1580,9 @@ export default function ScheduleDetail() {
                   <p className={styles.sideNotice}>
                     승인 참여자를 불러오는 중입니다.
                   </p>
-                ) : approvedApplicants.length > 0 ? (
+                ) : visibleApprovedApplicants.length > 0 ? (
                   <div className={styles.avatarList}>
-                    {approvedApplicants.slice(0, 8).map((applicant) =>
+                    {visibleApprovedApplicants.slice(0, 8).map((applicant) =>
                       applicant.email?.trim() ? (
                         <button
                           key={applicant.participationId}
@@ -1588,11 +1625,11 @@ export default function ScheduleDetail() {
                         </div>
                       ),
                     )}
-                    {approvedApplicants.length > 8 ? (
+                    {visibleApprovedApplicants.length > 8 ? (
                       <div
                         className={`${styles.participantAvatar} ${styles.moreAvatar}`}
                       >
-                        +{approvedApplicants.length - 8}
+                        +{visibleApprovedApplicants.length - 8}
                       </div>
                     ) : null}
                   </div>
@@ -1802,7 +1839,7 @@ export default function ScheduleDetail() {
                * 여기서 내려가는 applicants에는 전화번호/성별/나이 같은 개인정보가 포함될 수 있으므로 비호스트 분기와 절대 섞으면 안 된다.
                */
               <HostParticipationList
-                items={applicants}
+                items={visibleApplicants}
                 loading={isApplicantsLoading}
                 errorMessage={applicantsErrorMessage}
                 emptyMessage={`${HOST_STATUS_LABELS[applicantStatus] ?? "선택한 상태"} 신청자가 없습니다.`}

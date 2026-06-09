@@ -342,11 +342,18 @@
 
 /* 가로 정렬 컨테이너 */
 .card_info_row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "location location"
+    "date people";
+  gap: 8px 12px;
+
   font-size: 13px;
   color: var(--color-text-muted, #6b7280);
+
+  min-width: 0;
+  white-space: normal;
 }
 
 /* 아이콘 + 텍스트 */
@@ -354,17 +361,42 @@
   display: flex;
   align-items: center;
   gap: 5px;
+
+  min-width: 0;
+  overflow: hidden;
+}
+
+.card_info_item span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card_info_item svg {
+  flex-shrink: 0;
   color: var(--color-primary);
 }
 
-/* 세로 구분선 */
+/* 지역 */
+.card_info_item:nth-child(1) {
+  grid-area: location;
+}
+
+/* 날짜 */
+.card_info_item:nth-child(3) {
+  grid-area: date;
+}
+
+/* 위트 수 */
+.card_info_item:nth-child(5) {
+  grid-area: people;
+  justify-self: end;
+}
+
+/* 줄바꿈 레이아웃에서는 구분선 숨김 */
 .card_divider {
-  width: 1px;
-  height: 12px;
-  background-color: var(--color-border, #e5e7eb);
+  display: none;
 }
 .serviceAccordion {
   margin-top: 40px;

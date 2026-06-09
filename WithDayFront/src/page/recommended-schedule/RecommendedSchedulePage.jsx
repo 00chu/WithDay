@@ -43,9 +43,9 @@ const DEFAULT_THUMBNAIL = "/default-4.png";
 const resolveCategoryLabel = (category) => {
   return (
     CATEGORY_LABELS[
-    String(category ?? "")
-      .trim()
-      .toLowerCase()
+      String(category ?? "")
+        .trim()
+        .toLowerCase()
     ] ?? "기타"
   );
 };
@@ -54,9 +54,9 @@ const resolveCategoryLabel = (category) => {
 const resolveGenderLimitLabel = (genderLimit) => {
   return (
     GENDER_LIMIT_LABELS[
-    String(genderLimit ?? "")
-      .trim()
-      .toLowerCase()
+      String(genderLimit ?? "")
+        .trim()
+        .toLowerCase()
     ] ?? "남·녀"
   );
 };
@@ -108,8 +108,9 @@ const getRecommendedKey = (item) => {
 
   return String(
     schedule?.id ??
-    `${schedule?.title ?? "recommended"}-${schedule?.region ?? "unknown"
-    }-${schedule?.durationDays ?? "duration"}`,
+      `${schedule?.title ?? "recommended"}-${
+        schedule?.region ?? "unknown"
+      }-${schedule?.durationDays ?? "duration"}`,
   );
 };
 const resolveDurationBadgeLabel = (durationDays) => {
@@ -152,6 +153,29 @@ const RecommendedSchedulePage = () => {
     });
   }, [recommendedSchedules, selectedCategory]);
 
+  const selectedCategoryLabel = useMemo(() => {
+    return (
+      CATEGORY_OPTIONS.find((category) => category.value === selectedCategory)
+        ?.label ?? "전체"
+    );
+  }, [selectedCategory]);
+
+  const listTitle = selectedCategory
+    ? `추천 ${selectedCategoryLabel} 일정 목록`
+    : "추천 일정 목록";
+
+  const listDescription = isLoading
+    ? selectedCategory
+      ? `추천 ${selectedCategoryLabel} 일정을 불러오는 중입니다.`
+      : "추천 일정을 불러오는 중입니다."
+    : selectedCategory
+      ? `${filteredSchedules.length}개의 추천 ${selectedCategoryLabel} 일정이 준비되어 있어요.`
+      : `${filteredSchedules.length}개의 추천 일정이 준비되어 있어요.`;
+
+  const emptyMessage = selectedCategory
+    ? `아직 등록된 추천 ${selectedCategoryLabel} 일정이 없습니다.`
+    : "아직 등록된 추천 일정이 없습니다.";
+
   // 관리자만 추천 일정 생성 페이지로 이동 가능
   const handleCreateClick = () => {
     navigate("/recommended-schedules/write");
@@ -169,8 +193,8 @@ const RecommendedSchedulePage = () => {
           <h1 className={styles.title}>추천 일정에서 시작해보세요</h1>
 
           <p className={styles.description}>
-            WithDay가 준비한 추천 일정을 확인하고, 마음에 드는 코스를 내
-            일정 글쓰기에 템플릿처럼 사용할 수 있어요.
+            WithDay가 준비한 추천 일정을 확인하고, 마음에 드는 코스를 내 일정
+            글쓰기에 템플릿처럼 사용할 수 있어요.
           </p>
         </div>
 
@@ -194,8 +218,7 @@ const RecommendedSchedulePage = () => {
             key={category.value || "all"}
             type="button"
             className={clsx(styles.categoryChip, {
-              [styles.categoryChipActive]:
-                selectedCategory === category.value,
+              [styles.categoryChipActive]: selectedCategory === category.value,
             })}
             onClick={() => setSelectedCategory(category.value)}
           >
@@ -206,12 +229,8 @@ const RecommendedSchedulePage = () => {
 
       <section className={styles.listHeader}>
         <div>
-          <h2>추천 일정 목록</h2>
-          <p>
-            {isLoading
-              ? "추천 일정을 불러오는 중입니다."
-              : `${filteredSchedules.length}개의 추천 일정이 준비되어 있어요.`}
-          </p>
+          <h2>{listTitle}</h2>
+          <p>{listDescription}</p>
         </div>
       </section>
 
@@ -230,7 +249,7 @@ const RecommendedSchedulePage = () => {
 
       {!isLoading && !isError && filteredSchedules.length === 0 && (
         <section className={styles.stateBox}>
-          <p>아직 등록된 추천 일정이 없습니다.</p>
+          <p>{emptyMessage}</p>
         </section>
       )}
 
@@ -297,9 +316,7 @@ const RecommendedScheduleCard = ({ item, onClick }) => {
         <div className={styles.headerSection}>
           <div className={clsx(styles.infoRow, styles.topRow)}>
             <div className={styles.topMetaGroup}>
-              <span className={styles.recommendPill}>
-                {durationBadgeLabel}
-              </span>
+              <span className={styles.recommendPill}>{durationBadgeLabel}</span>
             </div>
 
             <div className={styles.topMetaActions}>
@@ -313,9 +330,7 @@ const RecommendedScheduleCard = ({ item, onClick }) => {
                 <CalendarMonthIcon className={styles.dateIcon} />
               </span>
 
-              <span className={styles.dateText}>
-                {safeDurationDays}일 코스
-              </span>
+              <span className={styles.dateText}>{safeDurationDays}일 코스</span>
             </div>
           </div>
 
