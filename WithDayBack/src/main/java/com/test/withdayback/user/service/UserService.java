@@ -258,6 +258,20 @@ public class UserService {
 
     // 이메일 인증번호 발송
     public String sendVerificationEmail(String receiverEmail) {
+        if (receiverEmail == null || receiverEmail.trim().isEmpty()) {
+            throw new RuntimeException("이메일을 입력해주세요.");
+        }
+
+        // 사용자가 실수로 이메일 앞뒤에 공백을 넣어도 같은 이메일로 처리하기 위해 trim 처리
+        String normalizedEmail = receiverEmail.trim();
+
+        // 이미 가입된 active/admin 계정이면 회원가입 이메일 인증 자체를 막음
+        User existingUser = userDao.findByEmail(normalizedEmail);
+
+        if (existingUser != null) {
+            throw new RuntimeException("이미 해당 이메일로 가입된 계정이 존재합니다.");
+        }
+
         Random r = new Random();
         StringBuilder sb = new StringBuilder(); // 문자열을 효율적으로 이어 붙이기 위한 객체
 
@@ -273,11 +287,12 @@ public class UserService {
                 sb.append((char) (r.nextInt(26) + 97)); // 아스키코드 97('a')를 기준으로 랜덤 소문자 변환 후 추가
             }
         }
+
         // 조립된 6자리 인증번호 추출 (예: 3Bf8a1)
         String authCode = sb.toString();
 
-        // 개발 단계 확인용 로그. 배포 전에는 삭제해야 함. - 물론 실제 프로젝트가 아닌 학원 프로젝트이니 배포할때도 남겨놓음.
-        System.out.println("[이메일 인증번호] " + receiverEmail + " : " + authCode);
+        // 개발 단계 확인용 로그.
+        // System.out.println("[이메일 인증번호] " + normalizedEmail + " : " + authCode);
 
         // 메일 수신 시 적용될 HTML 양식 작성
         String emailTitle = "[WithDay] 회원가입 이메일 인증번호입니다.";
@@ -286,7 +301,8 @@ public class UserService {
                 + "<h3>화면으로 돌아가 인증번호를 입력해 주세요.</h3>";
 
         // 실제 메일 발송(EmailSender: 외부 메일 전송 함수)
-        emailSender.sendMail(emailTitle, receiverEmail, emailContent);
+        // receiverEmail 원본값 대신 앞뒤 공백이 제거된 normalizedEmail로 발송
+        emailSender.sendMail(emailTitle, normalizedEmail, emailContent);
 
         // 프론트에서의 입력값과 비교할 수 있게 인증번호 반환
         return authCode;
@@ -477,8 +493,8 @@ public class UserService {
         // 조립된 6자리 인증번호 추출 (예: 3Bf8a1)
         String authCode = sb.toString();
 
-        // 개발 단계 확인용 로그. 배포 전에는 삭제해야 함. - 물론 실제 프로젝트가 아닌 학원 프로젝트이니 배포할때도 남겨놓음.
-        System.out.println("[비밀번호 찾기 인증번호] " + email + " : " + authCode);
+        // 개발 단계 확인용 로그.
+        // System.out.println("[비밀번호 찾기 인증번호] " + email + " : " + authCode);
 
         // 메일 수신 시 적용될 HTML 양식 작성
         String emailTitle = "[WithDay] 비밀번호 재설정 인증번호입니다.";
