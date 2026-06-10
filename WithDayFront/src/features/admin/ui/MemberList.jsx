@@ -10,10 +10,10 @@ import { useState } from "react";
 import { releaseUser, roleChange, suspendUser } from "../api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-const MemberList = ({ memberList, page, setPage, totalPage }) => {
+const MemberList = ({ memberList, page, setPage, totalPage, totalMembers }) => {
   return (
     <div className={styles.member_list}>
-      <label className={styles.member_count}>총 {memberList.length}명</label>
+      <label className={styles.member_count}>총 {totalMembers}명</label>
       <ul className={styles.member_item_title}>
         <li className={styles.member_profile}>회원</li>
         <li className={styles.member_email}>이메일</li>
@@ -164,7 +164,9 @@ const MemberItem = ({ member }) => {
       </li>
       <li className={styles.member_email}>{member.email}</li>
       <li className={styles.member_route}>{member.provider}</li>
-      <li className={styles.member_gender}>{member.gender ? "남" : "여"}</li>
+      <li className={styles.member_gender}>
+        {member.gender == 1 ? "남" : "여"}
+      </li>
       <li className={styles.member_birthday}>{member.birthday}</li>
       <li className={styles.member_status}>
         {member.status === "admin"

@@ -56,7 +56,7 @@ const GENDER_LABELS = {
   female: "여성",
 };
 
-const DEFAULT_IMAGE = "/hero.png";
+const DEFAULT_IMAGE = "/default-4.png";
 const MAX_VISIBLE_THUMBNAILS = 3;
 
 const formatLocation = (schedule) => {

@@ -9,12 +9,18 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateSchedulePublic, deleteSchedule } from "../api";
 
-const ScheduleList = ({ scheduleList = [], page, setPage, totalPage }) => {
+const ScheduleList = ({
+  scheduleList = [],
+  page,
+  setPage,
+  totalPage,
+  totalSchedules,
+}) => {
   const isMobile = window.innerWidth <= 768;
 
   return (
     <div className={styles.scheduleList}>
-      <label className={styles.scheduleCount}>총 {scheduleList.length}건</label>
+      <label className={styles.scheduleCount}>총 {totalSchedules}건</label>
 
       <ul className={styles.scheduleHeader}>
         <li style={{ flex: 3 }}>일정명</li>

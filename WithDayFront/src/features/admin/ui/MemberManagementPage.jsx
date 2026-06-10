@@ -1,6 +1,6 @@
 import styles from "./MemberManagementPage.module.css";
 import { useQuery } from "@tanstack/react-query";
-import { selectAllMember } from "../api";
+import { getDashboardData, selectAllMember } from "../api";
 import { useEffect, useState } from "react";
 import MemberList from "./MemberList";
 import { Input } from "../../../shared/ui/Form/Form";
@@ -22,6 +22,11 @@ const MemberManagementPage = () => {
   const { data } = useQuery({
     queryKey: ["memberList", searchParams, page],
     queryFn: () => selectAllMember({ ...searchParams, page, size }),
+  });
+
+  const { data: dashboardData } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => getDashboardData(),
   });
 
   const memberList = data?.memberList ?? [];
@@ -146,6 +151,7 @@ const MemberManagementPage = () => {
         page={page}
         setPage={setPage}
         totalPage={totalPage}
+        totalMembers={dashboardData?.nowTotalUserCount || 0}
       />
     </main>
   );
