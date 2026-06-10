@@ -50,7 +50,6 @@
   font-size: 15px;
   line-height: 1.65;
   font-weight: 650;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
