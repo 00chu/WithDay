@@ -10,6 +10,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   deploy:
@@ -23,6 +24,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: WithDayFront/package-lock.json
+
+      - name: Create frontend production env
+        working-directory: WithDayFront
+        run: |
+          cat > .env.production << EOF
+          VITE_BACKSERVER=${{ vars.VITE_BACKSERVER }}
+          VITE_GOOGLE_CLIENT_ID=${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_ONESIGNAL_APP_ID=${{ vars.VITE_ONESIGNAL_APP_ID }}
+          EOF
+
+          echo "Created .env.production"
+          sed -E 's/(=).+$/=\*\*\*/' .env.production
 
       - name: Install dependencies
         working-directory: WithDayFront
