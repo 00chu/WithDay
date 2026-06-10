@@ -201,18 +201,18 @@ const RecommendedScheduleWrite = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const handleCostTypeChange = (type) => {
-    setValue("post.costType", type, {
+    setValue("recommendedSchedule.costType", type, {
       shouldDirty: true,
       shouldValidate: true,
     });
 
     if (type === "free") {
-      setValue("post.totalPrice", 0, {
+      setValue("recommendedSchedule.totalPrice", 0, {
         shouldDirty: true,
         shouldValidate: true,
       });
     } else {
-      setValue("post.totalPrice", null, {
+      setValue("recommendedSchedule.totalPrice", null, {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -658,18 +658,6 @@ const RecommendedScheduleWrite = () => {
                   <li>정산 방식</li>
                   <li className={styles.costSharingContent}>
                     <div className={styles.costSharing}>
-                      <Button
-                        type="button"
-                        variant={
-                          costType === "per_person" ? "primary" : "outline"
-                        }
-                        onClick={() =>
-                          setValue("recommendedSchedule.costType", "per_person")
-                        }
-                      >
-                        총액 1 / N<div className={styles.desc}>나누어 지불</div>
-                      </Button>
-
                       <Button
                         type="button"
                         variant={

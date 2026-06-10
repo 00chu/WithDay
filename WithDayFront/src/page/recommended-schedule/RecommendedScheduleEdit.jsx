@@ -239,18 +239,18 @@ const RecommendedScheduleEdit = () => {
   };
 
   const handleCostTypeChange = (type) => {
-    setValue("post.costType", type, {
+    setValue("recommendedSchedule.costType", type, {
       shouldDirty: true,
       shouldValidate: true,
     });
 
     if (type === "free") {
-      setValue("post.totalPrice", 0, {
+      setValue("recommendedSchedule.totalPrice", 0, {
         shouldDirty: true,
         shouldValidate: true,
       });
     } else {
-      setValue("post.totalPrice", null, {
+      setValue("recommendedSchedule.totalPrice", null, {
         shouldDirty: true,
         shouldValidate: true,
       });
