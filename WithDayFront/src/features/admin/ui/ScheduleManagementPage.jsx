@@ -1,6 +1,6 @@
 import styles from "./MemberManagementPage.module.css";
 import { useQuery } from "@tanstack/react-query";
-import { selectAllSchedule } from "../api";
+import { getDashboardData, selectAllSchedule } from "../api";
 import { useEffect, useState } from "react";
 import { Input } from "../../../shared/ui/Form/Form";
 import Button from "../../../shared/ui/Button/Button";
@@ -24,6 +24,11 @@ const ScheduleManagementPage = () => {
       detailRegion: "",
       status: "",
     },
+  });
+
+  const { data: dashboardData } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => getDashboardData(),
   });
 
   const region = watch("region");
@@ -164,6 +169,7 @@ const ScheduleManagementPage = () => {
         page={page}
         setPage={setPage}
         totalPage={totalPage}
+        totalSchedules={dashboardData?.nowTotalScheduleCount || 0}
       />
     </main>
   );
