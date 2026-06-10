@@ -42,6 +42,7 @@ import {
 } from "../../features/schedule/model/constants";
 import { useScheduleApplyAction } from "../../features/schedule/model/useScheduleApplyAction";
 import Button from "../../shared/ui/Button/Button";
+import NotFoundPage from "../not-found/NotFoundPage";
 import styles from "./ScheduleDetail.module.css";
 
 import {
@@ -1160,9 +1161,7 @@ export default function ScheduleDetail() {
   });
 
   if (!Number.isFinite(parsedScheduleId) || parsedScheduleId <= 0) {
-    return (
-      <div className={styles.container}>유효하지 않은 일정 경로입니다.</div>
-    );
+    return <NotFoundPage />;
   }
 
   if (isLoading) {
@@ -1171,18 +1170,20 @@ export default function ScheduleDetail() {
 
   if (isError) {
     const errorStatus = error?.response?.status;
+    if (errorStatus === 404) {
+      return <NotFoundPage />;
+    }
+
     const errorMessage =
-      errorStatus === 404
-        ? "일정을 찾을 수 없습니다."
-        : (error?.response?.data?.message ??
-          error?.response?.data ??
-          "데이터를 불러오는 데 실패했습니다.");
+      error?.response?.data?.message ??
+      error?.response?.data ??
+      "데이터를 불러오는 데 실패했습니다.";
 
     return <div className={styles.container}>{errorMessage}</div>;
   }
 
   if (!data?.schedule) {
-    return <div className={styles.container}>일정 정보가 없습니다.</div>;
+    return <NotFoundPage />;
   }
 
   /*
