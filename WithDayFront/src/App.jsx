@@ -24,6 +24,7 @@ import MySchedulePage from "./page/my-schedule/MySchedulePage";
 import MyPageMain from "./page/my-page/MyPageMain";
 import MyPageEdit from "./page/my-page/MyPageEdit";
 import WishlistPage from "./page/wishlist/WishlistPage";
+import NotFoundPage from "./page/not-found/NotFoundPage";
 
 import OneSignal from "./shared/lib/oneSignal";
 import Header from "./widgets/Header/Header";
@@ -117,6 +118,7 @@ function App() {
             <Route path="/signup/extra" element={<SocialExtra />} />
             <Route path="/find-id" element={<FindId />} />
             <Route path="/find-pw" element={<FindPw />} />
+            <Route path="/not-found" element={<NotFoundPage />} />
             <Route
               path="/recommended-schedules"
               element={
@@ -238,6 +240,7 @@ function App() {
                 </PrivateRoute>
               }
             />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </LayoutContainer>
       </main>
