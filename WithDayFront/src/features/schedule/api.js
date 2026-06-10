@@ -80,7 +80,7 @@ export const rollbackCompletedSchedule = async ({ scheduleId, email }) => {
     null,
     {
       params: normalizedEmail ? { email: normalizedEmail } : {},
-    },
+    }
   );
 
   return data;
@@ -224,9 +224,9 @@ export const insertSchedule = async (post, images, detailSchedule) => {
     recruitEndDate: formatDate(post.recruitEndDate),
   };
 
-  console.log(post);
-  console.log(images);
-  console.log(detailSchedule);
+  // console.log(post);
+  // console.log(images);
+  // console.log(detailSchedule);
 
   formData.append(
     "data",
@@ -238,8 +238,8 @@ export const insertSchedule = async (post, images, detailSchedule) => {
           email: post.email,
         }),
       ],
-      { type: "application/json" },
-    ),
+      { type: "application/json" }
+    )
   );
 
   // 이미지파일 넣음
@@ -257,7 +257,7 @@ export const updateSchedule = async (
   post,
   images,
   detailSchedule,
-  deletedImageIds,
+  deletedImageIds
 ) => {
   const formData = new FormData();
 
@@ -285,13 +285,13 @@ export const updateSchedule = async (
     deletedImageIds: deletedImageIds ?? [],
   };
 
-  console.log("🔥 최종 payload", payload);
+  // console.log("🔥 최종 payload", payload);
 
   formData.append(
     "data",
     new Blob([JSON.stringify(payload)], {
       type: "application/json",
-    }),
+    })
   );
 
   images.forEach((file) => {
