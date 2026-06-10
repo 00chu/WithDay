@@ -164,7 +164,9 @@ const MemberItem = ({ member }) => {
       </li>
       <li className={styles.member_email}>{member.email}</li>
       <li className={styles.member_route}>{member.provider}</li>
-      <li className={styles.member_gender}>{member.gender ? "남" : "여"}</li>
+      <li className={styles.member_gender}>
+        {member.gender == 1 ? "남" : "여"}
+      </li>
       <li className={styles.member_birthday}>{member.birthday}</li>
       <li className={styles.member_status}>
         {member.status === "admin"
