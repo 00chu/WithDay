@@ -9,49 +9,48 @@ const CAROUSEL_ITEMS = [
     id: "withday-night",
     image: "/carousel.png",
     title: "지도에는 없는 길, 우리라는 이름으로 걷다",
-    description: "가볍게 식사부터, 주말 여행까지 한 번에 둘러보세요.",
+    description: "밥 한 끼부터 주말 여행까지, 같이 갈 위트를 찾아보세요.",
   },
   {
     id: "withday-museum",
-    image:
-      "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=1400&q=80",
-    title: "취향이 닿는 순간, 일정은 더 쉬워집니다",
-    description: "탐색 탭으로 이어지는 일정들을 홈에서 먼저 추천합니다.",
+    image: "/artGallery",
+    title: "전시회는 좋은데, 감상평 혼잣말은 좀 그렇잖아요",
+    description: "취향 맞는 사람과 전시·문화 일정을 함께 즐겨보세요.",
   },
   {
     id: "withday-travel",
     image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
-    title: "이번 주말 같이 떠나는 근교 여행",
-    description: "양양과 강릉처럼 가볍게 다녀올 일정을 만나보세요.",
+      "/scenery",
+    title: "이번 주말도 집콕? 그건 날씨한테 예의가 아니죠",
+    description: "근교 여행, 당일치기, 가벼운 나들이 일정을 만나보세요.",
   },
   {
     id: "withday-dining",
     image:
-      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1400&q=80",
-    title: "퇴근 후 모이는 맛집 번개",
-    description: "한 끼 식사도 부담 없이 함께할 사람을 찾을 수 있어요.",
+      "/izakaya",
+    title: "맛집은 찾았는데 같이 갈 사람이 없다면",
+    description: "퇴근 후 한 끼, 카페, 술집 번개까지 부담 없이 시작해보세요.",
   },
   {
     id: "withday-activity",
     image:
-      "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=1400&q=80",
-    title: "몸을 움직이는 액티비티 모집",
-    description: "러닝, 서핑, 클라이밍처럼 활기 있는 일정을 둘러보세요.",
+      "/trip",
+    title: "운동은 싫지만 액티비티는 또 못 참지",
+    description: "등산, 러닝, 서핑, 클라이밍처럼 움직이는 일정을 둘러보세요.",
   },
   {
     id: "withday-culture",
     image:
-      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=80",
-    title: "전시와 공연으로 채우는 하루",
-    description: "취향 맞는 사람과 문화 일정을 더 편하게 계획해보세요.",
+      "/concert",
+    title: "공연 끝나고 ‘와 좋았다’만 하기 아쉽다면",
+    description: "같은 취향의 위트와 공연·축제·전시 이야기를 나눠보세요.",
   },
   {
     id: "withday-gathering",
     image:
-      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=80",
-    title: "새로운 사람을 만나는 소규모 모임",
-    description: "카페 대화부터 동네 산책까지 자연스러운 만남을 준비했어요.",
+      "/busStop",
+    title: "새로운 사람? 부담 없이, 어색함은 짧게",
+    description: "동네 산책, 카페 대화, 소규모 모임을 가볍게 시작해보세요.",
   },
 ];
 
