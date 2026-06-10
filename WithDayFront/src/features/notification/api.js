@@ -13,8 +13,8 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
 
-  console.log("인터셉터 실행");
-  console.log("토큰:", token);
+  // console.log("인터셉터 실행");
+  // console.log("토큰:", token);
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
