@@ -166,7 +166,9 @@ export default function ScheduleCard({
   const isCompact = variant === "compact";
   const descriptionText =
     schedule?.description?.trim() || "일정 소개가 아직 등록되지 않았어요.";
-  const isMainTicketCard = String(className ?? "").includes("mainTicketCard");
+  const isMainTicketCard =
+    String(className ?? "").includes("mainTicketCard") ||
+    String(className ?? "").includes("homeMainTicketCard");
 
   const titleText = schedule?.title ?? "제목 없는 일정";
   const titleLines = isMainTicketCard

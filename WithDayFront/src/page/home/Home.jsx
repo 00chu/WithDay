@@ -129,7 +129,7 @@ export default function Home() {
                 key={getScheduleKey(schedule)}
                 schedule={schedule}
                 variant="compact"
-                className={clsx(styles.homeCard, "homeTicketCard mainTicketCard")}
+                className={clsx(styles.homeCard, "homeTicketCard homeMainTicketCard")}
               />
             ))}
           </div>
