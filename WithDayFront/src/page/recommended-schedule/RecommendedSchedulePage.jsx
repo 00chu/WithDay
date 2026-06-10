@@ -43,9 +43,9 @@ const DEFAULT_THUMBNAIL = "/default-4.png";
 const resolveCategoryLabel = (category) => {
   return (
     CATEGORY_LABELS[
-      String(category ?? "")
-        .trim()
-        .toLowerCase()
+    String(category ?? "")
+      .trim()
+      .toLowerCase()
     ] ?? "기타"
   );
 };
@@ -54,9 +54,9 @@ const resolveCategoryLabel = (category) => {
 const resolveGenderLimitLabel = (genderLimit) => {
   return (
     GENDER_LIMIT_LABELS[
-      String(genderLimit ?? "")
-        .trim()
-        .toLowerCase()
+    String(genderLimit ?? "")
+      .trim()
+      .toLowerCase()
     ] ?? "남·녀"
   );
 };
@@ -108,9 +108,8 @@ const getRecommendedKey = (item) => {
 
   return String(
     schedule?.id ??
-      `${schedule?.title ?? "recommended"}-${
-        schedule?.region ?? "unknown"
-      }-${schedule?.durationDays ?? "duration"}`,
+    `${schedule?.title ?? "recommended"}-${schedule?.region ?? "unknown"
+    }-${schedule?.durationDays ?? "duration"}`,
   );
 };
 const resolveDurationBadgeLabel = (durationDays) => {
@@ -316,7 +315,14 @@ const RecommendedScheduleCard = ({ item, onClick }) => {
         <div className={styles.headerSection}>
           <div className={clsx(styles.infoRow, styles.topRow)}>
             <div className={styles.topMetaGroup}>
-              <span className={styles.recommendPill}>{durationBadgeLabel}</span>
+              <span
+                className={clsx(styles.recommendPill, {
+                  [styles.recommendPillOneDay]: safeDurationDays === 1,
+                  [styles.recommendPillMultiDay]: safeDurationDays > 1,
+                })}
+              >
+                {durationBadgeLabel}
+              </span>
             </div>
 
             <div className={styles.topMetaActions}>

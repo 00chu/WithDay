@@ -370,8 +370,6 @@
   padding: 0 8px 0 10px;
 
   border-radius: 0 999px 999px 0;
-  background: #fff3c4;
-  color: #7a5200;
 
   font-family: Poppins, "Noto Sans KR", sans-serif;
   font-size: 8.8px;
@@ -381,6 +379,16 @@
   white-space: nowrap;
 
   z-index: 20;
+}
+
+.recommendPillOneDay {
+  background: #1d9a99;
+  color: #ffffff;
+}
+
+.recommendPillMultiDay {
+  background: #c1dee3;
+  color: #1d9a99;
 }
 
 /* 우측 성별 */
