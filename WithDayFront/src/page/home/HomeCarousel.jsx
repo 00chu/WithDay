@@ -38,7 +38,7 @@ const CAROUSEL_ITEMS = [
   {
     id: "withday-culture",
     image: "/concert.png",
-    title: "공연 끝나고 ‘와 좋았다’만 하기 아쉽다면",
+    title: "공연 끝나고 ‘와 지웅짜 좋았다’만 하기 아쉽다면",
     description: "같은 취향의 위트와 공연·축제·전시 이야기를 나눠보세요.",
   },
   {
