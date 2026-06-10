@@ -10,6 +10,9 @@ export default function NotificationPopover({ open, anchorEl, handleClose }) {
       open={open}
       anchorEl={anchorEl}
       onClose={handleClose}
+      // 헤더 알림은 기준 요소에 붙는 팝오버라 body scroll lock이 필요 없다.
+      // 기본 scroll lock이 scrollbar 보정용 padding-right를 body에 주입해서 레이아웃이 흔들리므로 여기서 끈다.
+      disableScrollLock
       anchorOrigin={{
         vertical: "bottom",
         horizontal: "right",
