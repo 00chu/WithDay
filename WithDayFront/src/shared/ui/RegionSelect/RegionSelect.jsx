@@ -62,6 +62,7 @@ export default function RegionSelect({
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
+        disableScrollLock
         PaperProps={{ className: styles.menuPaper }}
       >
         {options.map((option) => (

@@ -156,7 +156,12 @@ const ScheduleItem = ({ schedule }) => {
           <MoreVertIcon />
         </IconButton>
 
-        <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleMenuClose}
+          disableScrollLock
+        >
           <MenuItem onClick={handleTogglePublic}>
             {schedule.isPublic === 1 ? "비공개로 변경" : "공개로 변경"}
           </MenuItem>

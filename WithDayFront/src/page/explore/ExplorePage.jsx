@@ -141,6 +141,7 @@ const buildFilterChips = (filters) => {
 };
 
 const FILTER_MENU_PROPS = {
+  disableScrollLock: true,
   PaperProps: {
     style: {
       maxHeight: 320,

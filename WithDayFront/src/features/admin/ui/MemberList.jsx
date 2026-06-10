@@ -185,7 +185,12 @@ const MemberItem = ({ member }) => {
               <MoreVertIcon />
             </IconButton>
 
-            <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleMenuClose}
+              disableScrollLock
+            >
               <MenuItem onClick={handleRoleChange}>
                 {member.status === "active" ? "관리자로 변경" : ""}
               </MenuItem>
