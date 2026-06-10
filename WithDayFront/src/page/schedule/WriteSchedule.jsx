@@ -243,7 +243,7 @@ const WriteSchedule = () => {
   }, [startDate, recruitEndDate, setValue]);
 
   const formatNumber = (value) => {
-    if (!value) return "";
+    if (value === null || value === undefined || value === "") return "";
     return Number(value).toLocaleString();
   };
 
@@ -270,6 +270,25 @@ const WriteSchedule = () => {
   };
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  const handleCostTypeChange = (type) => {
+    setValue("post.costType", type, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+
+    if (type === "free") {
+      setValue("post.totalPrice", 0, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    } else {
+      setValue("post.totalPrice", null, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  };
 
   return (
     <>
@@ -662,6 +681,7 @@ const WriteSchedule = () => {
                           type="text"
                           className={styles.costInput}
                           value={formatNumber(field.value ?? "")}
+                          disabled={costType === "free"}
                           onChange={(e) => {
                             let value = e.target.value.replace(/[^0-9]/g, "");
 
@@ -689,7 +709,7 @@ const WriteSchedule = () => {
                         variant={
                           costType === "per_person" ? "primary" : "outline"
                         }
-                        onClick={() => setValue("post.costType", "per_person")}
+                        onClick={() => handleCostTypeChange("per_person")}
                       >
                         총액 1 / N<div className={styles.desc}>나누어 지불</div>
                       </Button>
@@ -699,9 +719,7 @@ const WriteSchedule = () => {
                         variant={
                           costType === "host_covered" ? "primary" : "outline"
                         }
-                        onClick={() =>
-                          setValue("post.costType", "host_covered")
-                        }
+                        onClick={() => handleCostTypeChange("host_covered")}
                       >
                         호스트 지불
                         <div className={styles.desc}>호스트 전액 부담</div>
@@ -710,7 +728,7 @@ const WriteSchedule = () => {
                       <Button
                         type="button"
                         variant={costType === "free" ? "primary" : "outline"}
-                        onClick={() => setValue("post.costType", "free")}
+                        onClick={() => handleCostTypeChange("free")}
                       >
                         무료
                         <div className={styles.desc}>비용 없음</div>
@@ -719,7 +737,7 @@ const WriteSchedule = () => {
                       <Button
                         type="button"
                         variant={costType === "custom" ? "primary" : "outline"}
-                        onClick={() => setValue("post.costType", "custom")}
+                        onClick={() => handleCostTypeChange("custom")}
                       >
                         인당 고정
                         <div className={styles.desc}>정해진 금액 지불</div>
