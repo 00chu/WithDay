@@ -574,3 +574,171 @@
   flex-direction: row-reverse;
   justify-content: space-between;
 }
+
+/* ─── 추천 일정 상세 대표 이미지 모바일 보정 ───────────────────────── */
+
+/* 전체 화면 제목이 모바일에서 과하게 커지지 않도록 기본값부터 살짝 낮춤 */
+.title {
+  font-size: clamp(1.45rem, 3.2vw, 2.15rem);
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+
+/* 768px 이하는 기존 상세보기처럼 이미지 영역을 안정적으로 유지 */
+@media screen and (max-width: 768px) {
+  .heroImageWrap {
+    aspect-ratio: 16 / 9;
+    min-height: 220px;
+  }
+
+  .heroImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+  }
+
+  .title {
+    font-size: 1.55rem;
+    line-height: 1.22;
+  }
+}
+
+/* 425px 포함 모바일: 이미지 박스 높이를 확보해서 대표 이미지가 너무 얇게 잘리지 않도록 보정 */
+@media screen and (max-width: 480px) {
+  .heroImageWrap {
+    aspect-ratio: auto;
+    height: clamp(238px, 62vw, 280px);
+    min-height: 0;
+  }
+
+  .heroImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+  }
+
+  /*
+   * 기존 max-width: 480px 구간에서 ddayBadge의 margin-left가 0으로 풀려 있었기 때문에
+   * 추천 기간 배지가 오른쪽으로 밀리지 않았음. 다시 오른쪽 정렬되도록 복구.
+   */
+  .ddayBadge {
+    margin-left: auto;
+  }
+
+  .heroBadges {
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    gap: 7px;
+    flex-wrap: nowrap;
+  }
+
+  .categoryBadge,
+  .ddayBadge,
+  .statusOpen {
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .imageNav {
+    width: 36px;
+    height: 36px;
+  }
+
+  .prevBtn {
+    left: 12px;
+  }
+
+  .nextBtn {
+    right: 12px;
+  }
+
+  .imageCount {
+    right: 12px;
+    bottom: 12px;
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+
+  .title {
+    font-size: 1.38rem;
+    line-height: 1.22;
+    letter-spacing: -0.035em;
+  }
+}
+
+/* 375px 이하: 이미지 높이와 배지 크기를 한 번 더 줄여서 답답함 방지 */
+@media screen and (max-width: 375px) {
+  .heroImageWrap {
+    height: clamp(226px, 64vw, 250px);
+  }
+
+  .heroBadges {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    gap: 6px;
+  }
+
+  .categoryBadge,
+  .ddayBadge,
+  .statusOpen {
+    min-height: 28px;
+    padding: 0 9px;
+    font-size: 0.7rem;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+}
+
+/* 320px 대응: 이미지 영역과 배지/버튼 크기를 초소형 화면에 맞게 보정 */
+@media screen and (max-width: 340px) {
+  .heroImageWrap {
+    height: 218px;
+  }
+
+  .heroBadges {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    gap: 5px;
+  }
+
+  .categoryBadge,
+  .ddayBadge,
+  .statusOpen {
+    min-height: 26px;
+    padding: 0 8px;
+    font-size: 0.66rem;
+  }
+
+  .imageNav {
+    width: 32px;
+    height: 32px;
+  }
+
+  .prevBtn {
+    left: 10px;
+  }
+
+  .nextBtn {
+    right: 10px;
+  }
+
+  .imageCount {
+    right: 10px;
+    bottom: 10px;
+    font-size: 0.7rem;
+  }
+
+  .title {
+    font-size: 1.22rem;
+  }
+}
