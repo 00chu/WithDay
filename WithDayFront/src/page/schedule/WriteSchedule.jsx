@@ -291,6 +291,8 @@ const WriteSchedule = () => {
     }
   };
 
+  const minError = errors?.post?.minParticipants;
+
   return (
     <>
       <header className={styles.header}></header>
@@ -423,70 +425,55 @@ const WriteSchedule = () => {
                   <li>최소 인원</li>
 
                   <li>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder={2}
-                      className={
-                        errors?.post?.minParticipants ? styles.errorInput : ""
-                      }
-                      {...register("post.minParticipants", {
-                        setValueAs: (v) => (v === "" ? null : Number(v)),
+                    <Controller
+                      name="post.minParticipants"
+                      control={control}
+                      render={({ field }) => {
+                        const error = errors?.post?.minParticipants;
 
-                        onChange: (e) => {
-                          const onlyNumber = e.target.value.replace(
-                            /[^0-9]/g,
-                            "",
-                          );
-                          e.target.value = onlyNumber;
-                        },
+                        return (
+                          <>
+                            <Input
+                              value={field.value ?? ""}
+                              className={error ? styles.errorInput : ""}
+                              inputMode="numeric"
+                              onChange={(e) => {
+                                const v = e.target.value.replace(/[^0-9]/g, "");
+                                field.onChange(v === "" ? null : Number(v));
+                              }}
+                              onBlur={() => {
+                                const value = field.value;
+                                const max = getValues("post.maxParticipants");
 
-                        onBlur: (e) => {
-                          let value = Number(e.target.value);
-                          const max = getValues("post.maxParticipants");
+                                if (!value || value < 2) {
+                                  field.onChange(null);
+                                  setError("post.minParticipants", {
+                                    message: "최소 2명 이상이어야 합니다.",
+                                  });
+                                  return;
+                                }
 
-                          // ❌ 비정상 → 값 삭제 + 에러
-                          if (!value || value < 2) {
-                            setValue("post.minParticipants", null);
-                            e.target.value = "";
+                                if (max && value > max) {
+                                  field.onChange(null);
+                                  setError("post.minParticipants", {
+                                    message: "최대 인원보다 클 수 없습니다.",
+                                  });
+                                  return;
+                                }
 
-                            setError("post.minParticipants", {
-                              type: "manual",
-                              message: "최소 인원은 2명 이상이어야 합니다.",
-                            });
+                                clearErrors("post.minParticipants");
+                              }}
+                            />
 
-                            return;
-                          }
+                            <span>명</span>
 
-                          if (max && value > max) {
-                            setValue("post.minParticipants", null);
-                            e.target.value = "";
-
-                            setError("post.minParticipants", {
-                              type: "manual",
-                              message:
-                                "최소 인원은 최대 인원을 초과할 수 없습니다.",
-                            });
-
-                            return;
-                          }
-
-                          // ✅ 정상
-                          setValue("post.minParticipants", value);
-                          clearErrors("post.minParticipants");
-                        },
-                      })}
+                            {error && (
+                              <p className={styles.error}>{error.message}</p>
+                            )}
+                          </>
+                        );
+                      }}
                     />
-
-                    <span>명</span>
-
-                    {/* 에러 메시지 */}
-                    {errors?.post?.minParticipants && (
-                      <p className={styles.error}>
-                        {errors.post.minParticipants.message}
-                      </p>
-                    )}
                   </li>
                 </ul>
 
@@ -495,165 +482,202 @@ const WriteSchedule = () => {
                   <li>최대 인원</li>
 
                   <li>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder={100}
-                      className={
-                        errors?.post?.maxParticipants ? styles.errorInput : ""
-                      }
-                      {...register("post.maxParticipants", {
-                        setValueAs: (v) => (v === "" ? null : Number(v)),
+                    <Controller
+                      name="post.maxParticipants"
+                      control={control}
+                      render={({ field }) => {
+                        const error = errors?.post?.maxParticipants;
 
-                        onChange: (e) => {
-                          const onlyNumber = e.target.value.replace(
-                            /[^0-9]/g,
-                            "",
-                          );
-                          e.target.value = onlyNumber;
-                        },
+                        return (
+                          <>
+                            <Input
+                              value={field.value ?? ""}
+                              className={error ? styles.errorInput : ""}
+                              inputMode="numeric"
+                              onChange={(e) => {
+                                const v = e.target.value.replace(/[^0-9]/g, "");
+                                field.onChange(v === "" ? null : Number(v));
+                              }}
+                              onBlur={() => {
+                                const value = field.value;
+                                const min = getValues("post.minParticipants");
 
-                        onBlur: (e) => {
-                          let value = Number(e.target.value);
-                          const min = getValues("post.minParticipants");
+                                if (!value || value < 2) {
+                                  field.onChange(null);
+                                  setError("post.maxParticipants", {
+                                    message:
+                                      "최대 인원은 2명 이상이어야 합니다.",
+                                  });
+                                  return;
+                                }
 
-                          // ❌ 빈값 또는 2 미만 → 삭제 + 에러
-                          if (!value || value < 2) {
-                            setValue("post.maxParticipants", null);
-                            e.target.value = "";
+                                if (value > 100) {
+                                  field.onChange(null);
+                                  setError("post.maxParticipants", {
+                                    message:
+                                      "최대 인원은 100명을 초과할 수 없습니다.",
+                                  });
+                                  return;
+                                }
 
-                            setError("post.maxParticipants", {
-                              type: "manual",
-                              message: "최대 인원은 2명 이상이어야 합니다.",
-                            });
+                                if (min && value < min) {
+                                  field.onChange(null);
+                                  setError("post.maxParticipants", {
+                                    message:
+                                      "최대 인원은 최소 인원보다 작을 수 없습니다.",
+                                  });
+                                  return;
+                                }
 
-                            return;
-                          }
+                                clearErrors("post.maxParticipants");
+                              }}
+                            />
 
-                          // ❌ 100 초과 → 삭제 + 에러
-                          if (value > 100) {
-                            setValue("post.maxParticipants", null);
-                            e.target.value = "";
+                            <span>명</span>
 
-                            setError("post.maxParticipants", {
-                              type: "manual",
-                              message:
-                                "최대 인원은 100명을 초과할 수 없습니다.",
-                            });
-
-                            return;
-                          }
-
-                          // ❌ min보다 작음 → 삭제 + 에러
-                          if (min && value < min) {
-                            setValue("post.maxParticipants", null);
-                            e.target.value = "";
-
-                            setError("post.maxParticipants", {
-                              type: "manual",
-                              message:
-                                "최대 인원은 최소 인원보다 작을 수 없습니다.",
-                            });
-
-                            return;
-                          }
-
-                          // ✅ 정상
-                          setValue("post.maxParticipants", value);
-                          clearErrors("post.maxParticipants");
-                        },
-                      })}
+                            {error && (
+                              <p className={styles.error}>{error.message}</p>
+                            )}
+                          </>
+                        );
+                      }}
                     />
-
-                    <span>명</span>
-
-                    {/* 에러 메시지 */}
-                    {errors?.post?.maxParticipants && (
-                      <p className={styles.error}>
-                        {errors.post.maxParticipants.message}
-                      </p>
-                    )}
                   </li>
                 </ul>
 
-                {/* 최소 연령 */}
+                {/* 최소 나이 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최소 연령</li>
+
                   <li>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="18"
-                      {...register("post.ageMin", {
-                        setValueAs: (v) => (v === "" ? null : Number(v)),
+                    <Controller
+                      name="post.ageMin"
+                      control={control}
+                      render={({ field }) => {
+                        const error = errors?.post?.ageMin;
 
-                        onChange: (e) => {
-                          const onlyNumber = e.target.value.replace(
-                            /[^0-9]/g,
-                            "",
-                          );
-                          e.target.value = onlyNumber;
-                        },
+                        return (
+                          <>
+                            <Input
+                              value={field.value ?? ""}
+                              className={error ? styles.errorInput : ""}
+                              inputMode="numeric"
+                              onChange={(e) => {
+                                const v = e.target.value.replace(/[^0-9]/g, "");
+                                field.onChange(v === "" ? null : Number(v));
+                              }}
+                              onBlur={() => {
+                                let value = field.value;
+                                const max = getValues("post.ageMax");
 
-                        onBlur: (e) => {
-                          let value = e.target.value;
-                          if (value === "") return;
+                                if (!value || value < 18) {
+                                  field.onChange(null);
+                                  setError("post.ageMin", {
+                                    message:
+                                      "최소 연령은 18세 이상이어야 합니다.",
+                                  });
+                                  return;
+                                }
 
-                          value = Number(value);
+                                if (value > 100) {
+                                  field.onChange(null);
+                                  setError("post.ageMin", {
+                                    message:
+                                      "최소 연령은 100세를 초과할 수 없습니다.",
+                                  });
+                                  return;
+                                }
 
-                          if (value < 18) value = 18;
-                          if (value > 100) value = 100;
+                                if (max && value > max) {
+                                  field.onChange(null);
+                                  setError("post.ageMin", {
+                                    message:
+                                      "최소 연령은 최대 연령보다 클 수 없습니다.",
+                                  });
+                                  return;
+                                }
 
-                          const max = getValues("post.ageMax");
-                          if (max && value > max) value = max;
+                                clearErrors("post.ageMin");
+                              }}
+                            />
 
-                          setValue("post.ageMin", value);
-                        },
-                      })}
+                            <span>세</span>
+
+                            {error && (
+                              <p className={styles.error}>{error.message}</p>
+                            )}
+                          </>
+                        );
+                      }}
                     />
-                    <span>세</span>
                   </li>
                 </ul>
 
-                {/* 최대 연령 */}
+                {/* 최대 나이 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최대 연령</li>
+
                   <li>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="100"
-                      {...register("post.ageMax", {
-                        setValueAs: (v) => (v === "" ? null : Number(v)),
+                    <Controller
+                      name="post.ageMax"
+                      control={control}
+                      render={({ field }) => {
+                        const error = errors?.post?.ageMax;
 
-                        onChange: (e) => {
-                          const onlyNumber = e.target.value.replace(
-                            /[^0-9]/g,
-                            "",
-                          );
-                          e.target.value = onlyNumber;
-                        },
+                        return (
+                          <>
+                            <Input
+                              value={field.value ?? ""}
+                              className={error ? styles.errorInput : ""}
+                              inputMode="numeric"
+                              onChange={(e) => {
+                                const v = e.target.value.replace(/[^0-9]/g, "");
+                                field.onChange(v === "" ? null : Number(v));
+                              }}
+                              onBlur={() => {
+                                let value = field.value;
+                                const min = getValues("post.ageMin");
 
-                        onBlur: (e) => {
-                          let value = e.target.value;
-                          if (value === "") return;
+                                if (!value || value < 18) {
+                                  field.onChange(null);
+                                  setError("post.ageMax", {
+                                    message:
+                                      "최대 연령은 18세 이상이어야 합니다.",
+                                  });
+                                  return;
+                                }
 
-                          value = Number(value);
+                                if (value > 100) {
+                                  field.onChange(null);
+                                  setError("post.ageMax", {
+                                    message:
+                                      "최대 연령은 100세를 초과할 수 없습니다.",
+                                  });
+                                  return;
+                                }
 
-                          if (value < 18) value = 18;
-                          if (value > 100) value = 100;
+                                if (min && value < min) {
+                                  field.onChange(null);
+                                  setError("post.ageMax", {
+                                    message:
+                                      "최대 연령은 최소 연령보다 작을 수 없습니다.",
+                                  });
+                                  return;
+                                }
 
-                          const min = getValues("post.ageMin");
-                          if (min && value < min) value = min;
+                                clearErrors("post.ageMax");
+                              }}
+                            />
 
-                          setValue("post.ageMax", value);
-                        },
-                      })}
+                            <span>세</span>
+
+                            {error && (
+                              <p className={styles.error}>{error.message}</p>
+                            )}
+                          </>
+                        );
+                      }}
                     />
-                    <span>세</span>
                   </li>
                 </ul>
 
