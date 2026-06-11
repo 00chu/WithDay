@@ -57,6 +57,7 @@ const WriteSchedule = () => {
     setValue,
     getValues,
     watch,
+    setError,
     control,
     formState: { errors, isSubmitted },
   } = useForm({
@@ -420,12 +421,16 @@ const WriteSchedule = () => {
                 {/* 최소 인원 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최소 인원</li>
+
                   <li>
                     <Input
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder={2}
+                      className={
+                        errors?.post?.minParticipants ? styles.errorInput : ""
+                      }
                       {...register("post.minParticipants", {
                         setValueAs: (v) => (v === "" ? null : Number(v)),
 
@@ -438,34 +443,66 @@ const WriteSchedule = () => {
                         },
 
                         onBlur: (e) => {
-                          let value = e.target.value;
-                          if (value === "") return;
-
-                          value = Number(value);
-
-                          if (value < 2) value = 2;
-                          if (value > 100) value = 100;
-
+                          let value = Number(e.target.value);
                           const max = getValues("post.maxParticipants");
-                          if (max && value > max) value = max;
 
+                          // ❌ 비정상 → 값 삭제 + 에러
+                          if (!value || value < 2) {
+                            setValue("post.minParticipants", null);
+                            e.target.value = "";
+
+                            setError("post.minParticipants", {
+                              type: "manual",
+                              message: "최소 인원은 2명 이상이어야 합니다.",
+                            });
+
+                            return;
+                          }
+
+                          if (max && value > max) {
+                            setValue("post.minParticipants", null);
+                            e.target.value = "";
+
+                            setError("post.minParticipants", {
+                              type: "manual",
+                              message:
+                                "최소 인원은 최대 인원을 초과할 수 없습니다.",
+                            });
+
+                            return;
+                          }
+
+                          // ✅ 정상
                           setValue("post.minParticipants", value);
+                          clearErrors("post.minParticipants");
                         },
                       })}
                     />
+
                     <span>명</span>
+
+                    {/* 에러 메시지 */}
+                    {errors?.post?.minParticipants && (
+                      <p className={styles.error}>
+                        {errors.post.minParticipants.message}
+                      </p>
+                    )}
                   </li>
                 </ul>
 
                 {/* 최대 인원 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최대 인원</li>
+
                   <li>
                     <Input
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder={100}
+                      className={
+                        errors?.post?.maxParticipants ? styles.errorInput : ""
+                      }
                       {...register("post.maxParticipants", {
                         setValueAs: (v) => (v === "" ? null : Number(v)),
 
@@ -478,22 +515,65 @@ const WriteSchedule = () => {
                         },
 
                         onBlur: (e) => {
-                          let value = e.target.value;
-                          if (value === "") return;
-
-                          value = Number(value);
-
-                          if (value < 2) value = 2;
-                          if (value > 100) value = 100;
-
+                          let value = Number(e.target.value);
                           const min = getValues("post.minParticipants");
-                          if (min && value < min) value = min;
 
+                          // ❌ 빈값 또는 2 미만 → 삭제 + 에러
+                          if (!value || value < 2) {
+                            setValue("post.maxParticipants", null);
+                            e.target.value = "";
+
+                            setError("post.maxParticipants", {
+                              type: "manual",
+                              message: "최대 인원은 2명 이상이어야 합니다.",
+                            });
+
+                            return;
+                          }
+
+                          // ❌ 100 초과 → 삭제 + 에러
+                          if (value > 100) {
+                            setValue("post.maxParticipants", null);
+                            e.target.value = "";
+
+                            setError("post.maxParticipants", {
+                              type: "manual",
+                              message:
+                                "최대 인원은 100명을 초과할 수 없습니다.",
+                            });
+
+                            return;
+                          }
+
+                          // ❌ min보다 작음 → 삭제 + 에러
+                          if (min && value < min) {
+                            setValue("post.maxParticipants", null);
+                            e.target.value = "";
+
+                            setError("post.maxParticipants", {
+                              type: "manual",
+                              message:
+                                "최대 인원은 최소 인원보다 작을 수 없습니다.",
+                            });
+
+                            return;
+                          }
+
+                          // ✅ 정상
                           setValue("post.maxParticipants", value);
+                          clearErrors("post.maxParticipants");
                         },
                       })}
                     />
+
                     <span>명</span>
+
+                    {/* 에러 메시지 */}
+                    {errors?.post?.maxParticipants && (
+                      <p className={styles.error}>
+                        {errors.post.maxParticipants.message}
+                      </p>
+                    )}
                   </li>
                 </ul>
 
