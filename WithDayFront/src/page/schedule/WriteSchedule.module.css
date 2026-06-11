@@ -225,8 +225,15 @@
   gap: 10px;
 }
 
+.peopleField > div {
+  width: 100%;
+  flex: 1;
+}
+
 .peopleInfo input {
   text-align: center;
+  width: 100%;
+  flex: 1;
 }
 
 .peopleInfo span {
@@ -871,19 +878,27 @@
 }
 
 .errorInput {
-  border: 1px solid #ff4d4f;
+  border: 1px solid #ff4d4f !important;
   outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.12);
 }
 
-.errorInput:focus {
-  border: 1px solid #ff4d4f;
-  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
-}
-
-.error {
-  color: #ff4d4f;
+.errorText {
   font-size: 12px;
-  margin-top: 4px;
+  color: #ff4d4f;
+  margin-top: 6px;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+}
+
+@media (max-width: 768px) {
+  .errorText {
+    font-size: 12px;
+    margin-top: 8px;
+    padding-left: 2px;
+    color: #ff4d4f;
+    word-break: keep-all;
+  }
 }
 
 /* ========================= */
@@ -1220,6 +1235,19 @@
     gap: 16px;
   }
 
+  .peopleField {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .peopleField > div {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+  }
+
   .peopleInfo {
     margin-bottom: 0;
   }
@@ -1234,8 +1262,9 @@
   }
 
   .peopleInfo input {
-    flex: 1;
     width: 100%;
+    flex: 1;
+    min-width: 0;
   }
 
   /* 성별 버튼 */
