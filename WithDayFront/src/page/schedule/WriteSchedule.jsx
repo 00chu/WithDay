@@ -22,6 +22,7 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import CommonSelect from "../../shared/ui/Select/CommonSelect";
+import RHFNumberInput from "./RHFNumberInput";
 
 registerLocale("ko", ko);
 
@@ -425,32 +426,10 @@ const WriteSchedule = () => {
                   <li>최소 인원</li>
 
                   <li>
-                    <Controller
+                    <RHFNumberInput
                       name="post.minParticipants"
                       control={control}
-                      render={({ field, fieldState }) => {
-                        const error = fieldState.error;
-
-                        return (
-                          <>
-                            <Input
-                              value={field.value ?? ""}
-                              className={error ? styles.errorInput : ""}
-                              inputMode="numeric"
-                              onChange={(e) => {
-                                const v = e.target.value.replace(/[^0-9]/g, "");
-                                field.onChange(v === "" ? null : Number(v));
-                              }}
-                            />
-
-                            <span>명</span>
-
-                            {error && (
-                              <p className={styles.error}>{error.message}</p>
-                            )}
-                          </>
-                        );
-                      }}
+                      suffix="명"
                     />
                   </li>
                 </ul>
@@ -460,32 +439,10 @@ const WriteSchedule = () => {
                   <li>최대 인원</li>
 
                   <li>
-                    <Controller
+                    <RHFNumberInput
                       name="post.maxParticipants"
                       control={control}
-                      render={({ field, fieldState }) => {
-                        const error = fieldState.error;
-
-                        return (
-                          <>
-                            <Input
-                              value={field.value ?? ""}
-                              className={error ? styles.errorInput : ""}
-                              inputMode="numeric"
-                              onChange={(e) => {
-                                const v = e.target.value.replace(/[^0-9]/g, "");
-                                field.onChange(v === "" ? null : Number(v));
-                              }}
-                            />
-
-                            <span>명</span>
-
-                            {error && (
-                              <p className={styles.error}>{error.message}</p>
-                            )}
-                          </>
-                        );
-                      }}
+                      suffix="명"
                     />
                   </li>
                 </ul>
