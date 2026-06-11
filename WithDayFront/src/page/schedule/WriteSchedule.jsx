@@ -424,96 +424,160 @@ const WriteSchedule = () => {
                 {/* 최소 인원 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최소 인원</li>
-
                   <li>
-                    <RHFNumberInput
-                      name="post.minParticipants"
-                      control={control}
-                      suffix="명"
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder={2}
+                      {...register("post.minParticipants", {
+                        setValueAs: (v) => (v === "" ? null : Number(v)),
+
+                        onChange: (e) => {
+                          const onlyNumber = e.target.value.replace(
+                            /[^0-9]/g,
+                            "",
+                          );
+                          e.target.value = onlyNumber;
+                        },
+
+                        onBlur: (e) => {
+                          let value = e.target.value;
+                          if (value === "") return;
+
+                          value = Number(value);
+
+                          if (value < 2) value = 2;
+                          if (value > 100) value = 100;
+
+                          const max = getValues("post.maxParticipants");
+                          if (max && value > max) value = max;
+
+                          setValue("post.minParticipants", value);
+                        },
+                      })}
                     />
+                    <span>명</span>
                   </li>
                 </ul>
 
                 {/* 최대 인원 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최대 인원</li>
-
                   <li>
-                    <RHFNumberInput
-                      name="post.maxParticipants"
-                      control={control}
-                      suffix="명"
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder={100}
+                      {...register("post.maxParticipants", {
+                        setValueAs: (v) => (v === "" ? null : Number(v)),
+
+                        onChange: (e) => {
+                          const onlyNumber = e.target.value.replace(
+                            /[^0-9]/g,
+                            "",
+                          );
+                          e.target.value = onlyNumber;
+                        },
+
+                        onBlur: (e) => {
+                          let value = e.target.value;
+                          if (value === "") return;
+
+                          value = Number(value);
+
+                          if (value < 2) value = 2;
+                          if (value > 100) value = 100;
+
+                          const min = getValues("post.minParticipants");
+                          if (min && value < min) value = min;
+
+                          setValue("post.maxParticipants", value);
+                        },
+                      })}
                     />
+                    <span>명</span>
                   </li>
                 </ul>
 
-                {/* 최소 나이 */}
+                {/* 최소 연령 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최소 연령</li>
-
                   <li>
-                    <Controller
-                      name="post.ageMin"
-                      control={control}
-                      render={({ field, fieldState }) => {
-                        const error = fieldState.error;
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="18"
+                      {...register("post.ageMin", {
+                        setValueAs: (v) => (v === "" ? null : Number(v)),
 
-                        return (
-                          <>
-                            <Input
-                              value={field.value ?? ""}
-                              className={error ? styles.errorInput : ""}
-                              inputMode="numeric"
-                              onChange={(e) => {
-                                const v = e.target.value.replace(/[^0-9]/g, "");
-                                field.onChange(v === "" ? null : Number(v));
-                              }}
-                            />
+                        onChange: (e) => {
+                          const onlyNumber = e.target.value.replace(
+                            /[^0-9]/g,
+                            "",
+                          );
+                          e.target.value = onlyNumber;
+                        },
 
-                            <span>세</span>
+                        onBlur: (e) => {
+                          let value = e.target.value;
+                          if (value === "") return;
 
-                            {error && (
-                              <p className={styles.error}>{error.message}</p>
-                            )}
-                          </>
-                        );
-                      }}
+                          value = Number(value);
+
+                          if (value < 18) value = 18;
+                          if (value > 100) value = 100;
+
+                          const max = getValues("post.ageMax");
+                          if (max && value > max) value = max;
+
+                          setValue("post.ageMin", value);
+                        },
+                      })}
                     />
+                    <span>세</span>
                   </li>
                 </ul>
 
-                {/* 최대 나이 */}
+                {/* 최대 연령 */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최대 연령</li>
-
                   <li>
-                    <Controller
-                      name="post.ageMax"
-                      control={control}
-                      render={({ field, fieldState }) => {
-                        const error = fieldState.error;
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="100"
+                      {...register("post.ageMax", {
+                        setValueAs: (v) => (v === "" ? null : Number(v)),
 
-                        return (
-                          <>
-                            <Input
-                              value={field.value ?? ""}
-                              className={error ? styles.errorInput : ""}
-                              inputMode="numeric"
-                              onChange={(e) => {
-                                const v = e.target.value.replace(/[^0-9]/g, "");
-                                field.onChange(v === "" ? null : Number(v));
-                              }}
-                            />
+                        onChange: (e) => {
+                          const onlyNumber = e.target.value.replace(
+                            /[^0-9]/g,
+                            "",
+                          );
+                          e.target.value = onlyNumber;
+                        },
 
-                            <span>세</span>
+                        onBlur: (e) => {
+                          let value = e.target.value;
+                          if (value === "") return;
 
-                            {error && (
-                              <p className={styles.error}>{error.message}</p>
-                            )}
-                          </>
-                        );
-                      }}
+                          value = Number(value);
+
+                          if (value < 18) value = 18;
+                          if (value > 100) value = 100;
+
+                          const min = getValues("post.ageMin");
+                          if (min && value < min) value = min;
+
+                          setValue("post.ageMax", value);
+                        },
+                      })}
                     />
+                    <span>세</span>
                   </li>
                 </ul>
 
