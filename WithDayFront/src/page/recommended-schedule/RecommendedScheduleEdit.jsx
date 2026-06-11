@@ -63,6 +63,8 @@ const RecommendedScheduleEdit = () => {
     setValue,
     getValues,
     watch,
+    setError,
+    clearErrors,
     control,
     reset,
     formState: { errors, isSubmitted },
@@ -402,6 +404,37 @@ const RecommendedScheduleEdit = () => {
     );
   }
 
+  const validateRange = ({
+    min,
+    max,
+    minField,
+    maxField,
+    minLimit,
+    maxLimit,
+    minMessage,
+    maxMessage,
+    crossMessage,
+  }) => {
+    // 범위 체크
+    if (min != null && (min < minLimit || min > maxLimit)) {
+      setError(minField, { message: minMessage });
+    } else {
+      clearErrors(minField);
+    }
+
+    if (max != null && (max < minLimit || max > maxLimit)) {
+      setError(maxField, { message: maxMessage });
+    } else {
+      clearErrors(maxField);
+    }
+
+    // 교차 체크 (핵심)
+    if (min != null && max != null && min > max) {
+      setError(minField, { message: crossMessage });
+      setError(maxField, { message: crossMessage });
+    }
+  };
+
   return (
     <>
       <header className={styles.header}></header>
@@ -559,163 +592,287 @@ const RecommendedScheduleEdit = () => {
               <h2 className={styles.inputTitle}>인원 및 성별 정보</h2>
 
               <div className={styles.gridContainer}>
+                {/* ================= 최소 인원 ================= */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최소 인원</li>
-                  <li>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder={2}
-                      {...register("recommendedSchedule.minParticipants", {
-                        setValueAs: (v) => (v === "" ? "" : Number(v)),
-                        onChange: (e) => {
-                          const onlyNumber = e.target.value.replace(
-                            /[^0-9]/g,
-                            "",
-                          );
-                          e.target.value = onlyNumber;
-                        },
-                        onBlur: (e) => {
-                          let value = e.target.value;
-                          if (value === "") return;
+                  <li className={styles.peopleField}>
+                    <Controller
+                      name="recommendedSchedule.minParticipants"
+                      control={control}
+                      render={({ field }) => {
+                        const error =
+                          errors?.recommendedSchedule?.minParticipants;
 
-                          value = Number(value);
+                        return (
+                          <div>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              value={field.value ?? ""}
+                              placeholder={2}
+                              className={error ? styles.errorInput : ""}
+                              onChange={(e) => {
+                                const onlyNumber = e.target.value.replace(
+                                  /[^0-9]/g,
+                                  "",
+                                );
+                                field.onChange(
+                                  onlyNumber === "" ? null : Number(onlyNumber),
+                                );
+                              }}
+                              onBlur={() => {
+                                const min = field.value;
+                                const max = getValues(
+                                  "recommendedSchedule.maxParticipants",
+                                );
 
-                          if (value < 2) value = 2;
-                          if (value > 100) value = 100;
+                                if (!min) return;
 
-                          const max = getValues(
-                            "recommendedSchedule.maxParticipants",
-                          );
+                                if (min < 2 || min > 100) {
+                                  setError(
+                                    "recommendedSchedule.minParticipants",
+                                    {
+                                      message:
+                                        "최소 인원은 2~100 사이여야 합니다",
+                                    },
+                                  );
+                                  return;
+                                }
 
-                          if (max && value > max) value = max;
+                                if (max && min > max) {
+                                  setError(
+                                    "recommendedSchedule.minParticipants",
+                                    {
+                                      message:
+                                        "최소 인원은 최대 인원보다 클 수 없습니다",
+                                    },
+                                  );
+                                  return;
+                                }
 
-                          setValue(
-                            "recommendedSchedule.minParticipants",
-                            value,
-                          );
-                        },
-                      })}
+                                clearErrors(
+                                  "recommendedSchedule.minParticipants",
+                                );
+                              }}
+                            />
+
+                            {error && (
+                              <p className={styles.errorText}>
+                                {error.message}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }}
                     />
                     <span>명</span>
                   </li>
                 </ul>
 
+                {/* ================= 최대 인원 ================= */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최대 인원</li>
-                  <li>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder={100}
-                      {...register("recommendedSchedule.maxParticipants", {
-                        setValueAs: (v) => (v === "" ? "" : Number(v)),
-                        onChange: (e) => {
-                          const onlyNumber = e.target.value.replace(
-                            /[^0-9]/g,
-                            "",
-                          );
-                          e.target.value = onlyNumber;
-                        },
-                        onBlur: (e) => {
-                          let value = e.target.value;
-                          if (value === "") return;
+                  <li className={styles.peopleField}>
+                    <Controller
+                      name="recommendedSchedule.maxParticipants"
+                      control={control}
+                      render={({ field }) => {
+                        const error =
+                          errors?.recommendedSchedule?.maxParticipants;
 
-                          value = Number(value);
+                        return (
+                          <div>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              value={field.value ?? ""}
+                              placeholder={100}
+                              className={error ? styles.errorInput : ""}
+                              onChange={(e) => {
+                                const onlyNumber = e.target.value.replace(
+                                  /[^0-9]/g,
+                                  "",
+                                );
+                                field.onChange(
+                                  onlyNumber === "" ? null : Number(onlyNumber),
+                                );
+                              }}
+                              onBlur={() => {
+                                const max = field.value;
+                                const min = getValues(
+                                  "recommendedSchedule.minParticipants",
+                                );
 
-                          if (value < 2) value = 2;
-                          if (value > 100) value = 100;
+                                if (!max) return;
 
-                          const min = getValues(
-                            "recommendedSchedule.minParticipants",
-                          );
+                                if (max < 2 || max > 100) {
+                                  setError(
+                                    "recommendedSchedule.maxParticipants",
+                                    {
+                                      message:
+                                        "최대 인원은 2~100 사이여야 합니다",
+                                    },
+                                  );
+                                  return;
+                                }
 
-                          if (min && value < min) value = min;
+                                if (min && max < min) {
+                                  setError(
+                                    "recommendedSchedule.maxParticipants",
+                                    {
+                                      message:
+                                        "최대 인원은 최소 인원보다 작을 수 없습니다",
+                                    },
+                                  );
+                                  return;
+                                }
 
-                          setValue(
-                            "recommendedSchedule.maxParticipants",
-                            value,
-                          );
-                        },
-                      })}
+                                clearErrors(
+                                  "recommendedSchedule.maxParticipants",
+                                );
+                              }}
+                            />
+
+                            {error && (
+                              <p className={styles.errorText}>
+                                {error.message}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }}
                     />
                     <span>명</span>
                   </li>
                 </ul>
 
+                {/* ================= 최소 연령 ================= */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최소 연령</li>
-                  <li>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="18"
-                      {...register("recommendedSchedule.ageMin", {
-                        setValueAs: (v) => (v === "" ? "" : Number(v)),
-                        onChange: (e) => {
-                          const onlyNumber = e.target.value.replace(
-                            /[^0-9]/g,
-                            "",
-                          );
-                          e.target.value = onlyNumber;
-                        },
-                        onBlur: (e) => {
-                          let value = e.target.value;
-                          if (value === "") return;
+                  <li className={styles.peopleField}>
+                    <Controller
+                      name="recommendedSchedule.ageMin"
+                      control={control}
+                      render={({ field }) => {
+                        const error = errors?.recommendedSchedule?.ageMin;
+                        const max = getValues("recommendedSchedule.ageMax");
 
-                          value = Number(value);
+                        return (
+                          <div>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              value={field.value ?? ""}
+                              placeholder={18}
+                              className={error ? styles.errorInput : ""}
+                              onChange={(e) => {
+                                const onlyNumber = e.target.value.replace(
+                                  /[^0-9]/g,
+                                  "",
+                                );
+                                field.onChange(
+                                  onlyNumber === "" ? null : Number(onlyNumber),
+                                );
+                              }}
+                              onBlur={() => {
+                                const min = field.value;
 
-                          if (value < 18) value = 18;
-                          if (value > 100) value = 100;
+                                if (!min) return;
 
-                          const max = getValues("recommendedSchedule.ageMax");
+                                if (min < 18 || min > 100) {
+                                  setError("recommendedSchedule.ageMin", {
+                                    message:
+                                      "최소 연령은 18~100 사이여야 합니다",
+                                  });
+                                  return;
+                                }
 
-                          if (max && value > max) value = max;
+                                if (max && min > max) {
+                                  setError("recommendedSchedule.ageMin", {
+                                    message:
+                                      "최소 연령은 최대 연령보다 클 수 없습니다",
+                                  });
+                                  return;
+                                }
 
-                          setValue("recommendedSchedule.ageMin", value);
-                        },
-                      })}
+                                clearErrors("recommendedSchedule.ageMin");
+                              }}
+                            />
+
+                            {error && (
+                              <p className={styles.errorText}>
+                                {error.message}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }}
                     />
                     <span>세</span>
                   </li>
                 </ul>
 
+                {/* ================= 최대 연령 ================= */}
                 <ul className={`${styles.inputWrap} ${styles.peopleInfo}`}>
                   <li>최대 연령</li>
-                  <li>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="100"
-                      {...register("recommendedSchedule.ageMax", {
-                        setValueAs: (v) => (v === "" ? "" : Number(v)),
-                        onChange: (e) => {
-                          const onlyNumber = e.target.value.replace(
-                            /[^0-9]/g,
-                            "",
-                          );
-                          e.target.value = onlyNumber;
-                        },
-                        onBlur: (e) => {
-                          let value = e.target.value;
-                          if (value === "") return;
+                  <li className={styles.peopleField}>
+                    <Controller
+                      name="recommendedSchedule.ageMax"
+                      control={control}
+                      render={({ field }) => {
+                        const error = errors?.recommendedSchedule?.ageMax;
+                        const min = getValues("recommendedSchedule.ageMin");
 
-                          value = Number(value);
+                        return (
+                          <div>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              value={field.value ?? ""}
+                              placeholder={100}
+                              className={error ? styles.errorInput : ""}
+                              onChange={(e) => {
+                                const onlyNumber = e.target.value.replace(
+                                  /[^0-9]/g,
+                                  "",
+                                );
+                                field.onChange(
+                                  onlyNumber === "" ? null : Number(onlyNumber),
+                                );
+                              }}
+                              onBlur={() => {
+                                const max = field.value;
 
-                          if (value < 18) value = 18;
-                          if (value > 100) value = 100;
+                                if (!max) return;
 
-                          const min = getValues("recommendedSchedule.ageMin");
+                                if (max < 18 || max > 100) {
+                                  setError("recommendedSchedule.ageMax", {
+                                    message:
+                                      "최대 연령은 18~100 사이여야 합니다",
+                                  });
+                                  return;
+                                }
 
-                          if (min && value < min) value = min;
+                                if (min && max < min) {
+                                  setError("recommendedSchedule.ageMax", {
+                                    message:
+                                      "최대 연령은 최소 연령보다 작을 수 없습니다",
+                                  });
+                                  return;
+                                }
 
-                          setValue("recommendedSchedule.ageMax", value);
-                        },
-                      })}
+                                clearErrors("recommendedSchedule.ageMax");
+                              }}
+                            />
+
+                            {error && (
+                              <p className={styles.errorText}>
+                                {error.message}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }}
                     />
                     <span>세</span>
                   </li>
