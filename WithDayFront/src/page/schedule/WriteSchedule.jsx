@@ -428,8 +428,8 @@ const WriteSchedule = () => {
                     <Controller
                       name="post.minParticipants"
                       control={control}
-                      render={({ field }) => {
-                        const error = errors?.post?.minParticipants;
+                      render={({ field, fieldState }) => {
+                        const error = fieldState.error;
 
                         return (
                           <>
@@ -440,28 +440,6 @@ const WriteSchedule = () => {
                               onChange={(e) => {
                                 const v = e.target.value.replace(/[^0-9]/g, "");
                                 field.onChange(v === "" ? null : Number(v));
-                              }}
-                              onBlur={() => {
-                                const value = field.value;
-                                const max = getValues("post.maxParticipants");
-
-                                if (!value || value < 2) {
-                                  field.onChange(null);
-                                  setError("post.minParticipants", {
-                                    message: "최소 2명 이상이어야 합니다.",
-                                  });
-                                  return;
-                                }
-
-                                if (max && value > max) {
-                                  field.onChange(null);
-                                  setError("post.minParticipants", {
-                                    message: "최대 인원보다 클 수 없습니다.",
-                                  });
-                                  return;
-                                }
-
-                                clearErrors("post.minParticipants");
                               }}
                             />
 
@@ -485,8 +463,8 @@ const WriteSchedule = () => {
                     <Controller
                       name="post.maxParticipants"
                       control={control}
-                      render={({ field }) => {
-                        const error = errors?.post?.maxParticipants;
+                      render={({ field, fieldState }) => {
+                        const error = fieldState.error;
 
                         return (
                           <>
@@ -497,39 +475,6 @@ const WriteSchedule = () => {
                               onChange={(e) => {
                                 const v = e.target.value.replace(/[^0-9]/g, "");
                                 field.onChange(v === "" ? null : Number(v));
-                              }}
-                              onBlur={() => {
-                                const value = field.value;
-                                const min = getValues("post.minParticipants");
-
-                                if (!value || value < 2) {
-                                  field.onChange(null);
-                                  setError("post.maxParticipants", {
-                                    message:
-                                      "최대 인원은 2명 이상이어야 합니다.",
-                                  });
-                                  return;
-                                }
-
-                                if (value > 100) {
-                                  field.onChange(null);
-                                  setError("post.maxParticipants", {
-                                    message:
-                                      "최대 인원은 100명을 초과할 수 없습니다.",
-                                  });
-                                  return;
-                                }
-
-                                if (min && value < min) {
-                                  field.onChange(null);
-                                  setError("post.maxParticipants", {
-                                    message:
-                                      "최대 인원은 최소 인원보다 작을 수 없습니다.",
-                                  });
-                                  return;
-                                }
-
-                                clearErrors("post.maxParticipants");
                               }}
                             />
 
@@ -553,8 +498,8 @@ const WriteSchedule = () => {
                     <Controller
                       name="post.ageMin"
                       control={control}
-                      render={({ field }) => {
-                        const error = errors?.post?.ageMin;
+                      render={({ field, fieldState }) => {
+                        const error = fieldState.error;
 
                         return (
                           <>
@@ -565,39 +510,6 @@ const WriteSchedule = () => {
                               onChange={(e) => {
                                 const v = e.target.value.replace(/[^0-9]/g, "");
                                 field.onChange(v === "" ? null : Number(v));
-                              }}
-                              onBlur={() => {
-                                let value = field.value;
-                                const max = getValues("post.ageMax");
-
-                                if (!value || value < 18) {
-                                  field.onChange(null);
-                                  setError("post.ageMin", {
-                                    message:
-                                      "최소 연령은 18세 이상이어야 합니다.",
-                                  });
-                                  return;
-                                }
-
-                                if (value > 100) {
-                                  field.onChange(null);
-                                  setError("post.ageMin", {
-                                    message:
-                                      "최소 연령은 100세를 초과할 수 없습니다.",
-                                  });
-                                  return;
-                                }
-
-                                if (max && value > max) {
-                                  field.onChange(null);
-                                  setError("post.ageMin", {
-                                    message:
-                                      "최소 연령은 최대 연령보다 클 수 없습니다.",
-                                  });
-                                  return;
-                                }
-
-                                clearErrors("post.ageMin");
                               }}
                             />
 
@@ -621,8 +533,8 @@ const WriteSchedule = () => {
                     <Controller
                       name="post.ageMax"
                       control={control}
-                      render={({ field }) => {
-                        const error = errors?.post?.ageMax;
+                      render={({ field, fieldState }) => {
+                        const error = fieldState.error;
 
                         return (
                           <>
@@ -633,39 +545,6 @@ const WriteSchedule = () => {
                               onChange={(e) => {
                                 const v = e.target.value.replace(/[^0-9]/g, "");
                                 field.onChange(v === "" ? null : Number(v));
-                              }}
-                              onBlur={() => {
-                                let value = field.value;
-                                const min = getValues("post.ageMin");
-
-                                if (!value || value < 18) {
-                                  field.onChange(null);
-                                  setError("post.ageMax", {
-                                    message:
-                                      "최대 연령은 18세 이상이어야 합니다.",
-                                  });
-                                  return;
-                                }
-
-                                if (value > 100) {
-                                  field.onChange(null);
-                                  setError("post.ageMax", {
-                                    message:
-                                      "최대 연령은 100세를 초과할 수 없습니다.",
-                                  });
-                                  return;
-                                }
-
-                                if (min && value < min) {
-                                  field.onChange(null);
-                                  setError("post.ageMax", {
-                                    message:
-                                      "최대 연령은 최소 연령보다 작을 수 없습니다.",
-                                  });
-                                  return;
-                                }
-
-                                clearErrors("post.ageMax");
                               }}
                             />
 

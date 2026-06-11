@@ -69,38 +69,50 @@ export const insertSchema = yup.object({
 
     minParticipants: yup
       .number()
+      .transform((v, o) => (o === "" ? null : v))
+      .nullable()
       .min(2, "최소 인원은 2명 이상이어야 합니다.")
       .max(100, "최소 인원은 100명 이하여야 합니다.")
-      .required(),
+      .required("최소 인원을 입력해주세요."),
 
     maxParticipants: yup
       .number()
+      .transform((v, o) => (o === "" ? null : v))
+      .nullable()
       .min(2, "최대 인원은 2명 이상이어야 합니다.")
       .max(100, "최대 인원은 100명 이하여야 합니다.")
       .test(
-        "max-greater-than-min",
-        "최대 인원은 최소 인원보다 커야 합니다.",
+        "max-gte-min",
+        "최대 인원은 최소 인원보다 작을 수 없습니다.",
         function (value) {
-          return value >= this.parent.minParticipants;
+          const min = this.parent.minParticipants;
+          if (!value || !min) return true;
+          return value >= min;
         },
       )
-      .required(),
+      .required("최대 인원을 입력해주세요."),
 
     ageMin: yup
       .number()
+      .transform((v, o) => (o === "" ? null : v))
+      .nullable()
       .min(18, "최소 나이는 18세 이상이어야 합니다.")
       .max(100, "최소 나이는 100세 이하여야 합니다.")
       .required(),
 
     ageMax: yup
       .number()
+      .transform((v, o) => (o === "" ? null : v))
+      .nullable()
       .min(18, "최대 나이는 18세 이상이어야 합니다.")
       .max(100, "최대 나이는 100세 이하여야 합니다.")
       .test(
         "age-max-check",
         "최대 나이는 최소 나이보다 커야 합니다.",
         function (value) {
-          return value >= this.parent.ageMin;
+          const min = this.parent.ageMin;
+          if (!value || !min) return true;
+          return value >= min;
         },
       )
       .required(),
