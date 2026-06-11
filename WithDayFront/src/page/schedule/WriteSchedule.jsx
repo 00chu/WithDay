@@ -22,7 +22,6 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import CommonSelect from "../../shared/ui/Select/CommonSelect";
-import RHFNumberInput from "./RHFNumberInput";
 
 registerLocale("ko", ko);
 
