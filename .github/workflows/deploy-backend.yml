@@ -24,7 +24,7 @@ jobs:
       # Docker 이미지 빌드
       - name: Build Docker Image
         run: |
-          docker build -t gamjachoi/withday-api:latest .
+          docker build -t gamjachoi/withday-api:latest ./WithDayBack
 
       # Docker Hub Push
       - name: Push Docker Image
