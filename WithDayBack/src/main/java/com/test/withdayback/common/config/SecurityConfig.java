@@ -31,7 +31,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 추가하래서 일단 해놨어요
                         // 💡 일정 상세 조회(schedules/...) 주소를 허용 목록에 추가!
                         .requestMatchers(
-                                "/users/**",
+                                "/api/users/**",
                                 "/users/signup",
                                 "/users/login",
                                 "/users/terms",
