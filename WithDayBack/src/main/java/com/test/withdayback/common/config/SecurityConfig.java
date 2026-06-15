@@ -31,7 +31,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll() // 추가하래서 일단 해놨어요
                         // 💡 일정 상세 조회(schedules/...) 주소를 허용 목록에 추가!
                         .requestMatchers(
-                                "/users/**",
                                 "/users/signup",
                                 "/users/login",
                                 "/users/terms",
@@ -68,7 +67,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // 💡 만약 리액트가 3000번이라면 "http://localhost:3000"도 추가해주는 게 안전합니다.
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173",
-                "https://d3gu1r1uv8f3at.cloudfront.net.net"
+                "https://d3gu1r1uv8f3at.cloudfront.net"
                 ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
