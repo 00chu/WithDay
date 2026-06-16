@@ -202,6 +202,23 @@ const Login = () => {
     googleMutation.mutate(googleData); // 위에서 만든 소셜 로그인 함수에 데이터를 줘서 백엔드로 보냄.
   };
 
+  // 테스트 계정 로그인
+  const handleTestLogin = (userType) => {
+    if (userType === 1) {
+      mutation.mutate({
+        email: "test@test.com",
+        password: "test1234.",
+        autoLogin: true,
+      });
+    } else if (userType === 2) {
+      mutation.mutate({
+        email: "test@test.com",
+        password: "test1234.",
+        autoLogin: true,
+      });
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.card}>
@@ -277,6 +294,26 @@ const Login = () => {
           >
             {mutation.isPending ? "로그인 중..." : "로그인"}{" "}
             {/* 테스트 환경에서는 렉이 없어 로그인 중...은 안보일수 있지만 인터넷이 느린 곳에서 하면 로그인 중...을 확인할 수 있음. */}
+          </Button>
+
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            fullWidth
+            onClick={() => handleTestLogin(1)}
+          >
+            테스트 유저1 로그인
+          </Button>
+
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            fullWidth
+            onClick={() => handleTestLogin(2)}
+          >
+            테스트 유저2 로그인
           </Button>
         </form>
 
