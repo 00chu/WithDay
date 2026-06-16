@@ -32,7 +32,7 @@ WithDay는 국비지원 과정에서 팀 프로젝트로 진행한 여행/일정
 
 ### Infra & CI/CD
 
-- **Deploy**: AWS S3, CloudFront, Docker, Kubernetes
+- **Deploy**: AWS S3, CloudFront, Docker
 - **CI/CD**: GitHub Actions
 
 ## 프로젝트 구조
@@ -46,37 +46,20 @@ WithDay/
  │    └── src/shared/            # 공통 API, 유틸리티, UI 컴포넌트
  └── WithDayBack/                # 백엔드 프로젝트 루트
       ├── src/main/java/com/test/withdayback/ # 도메인별 API 및 서비스 로직
-      ├── src/main/resources/    # 프로파일별 설정 파일 및 MyBatis Mapper XML
-      └── k8s/                   # Kubernetes 배포 설정 파일
+      └── src/main/resources/    # 프로파일별 설정 파일 및 MyBatis Mapper XML
 ```
 
 ## 담당 역할
 
-- **홈 화면 UI 및 일정 카드 구성**: 서비스 진입점의 UI 구조를 구성하고 일정 정보를 직관적으로 보여주는 카드 컴포넌트 구현.
-- **일정 탐색 화면 구현 및 사용자 경험 개선**: 조건별 일정 탐색 UI를 구현하고, 사용자 흐름에 맞춰 화면 상호작용 개선.
-- **일정 참여 신청/취소 화면 흐름 구현**: 사용자의 참여 신청, 취소, 상태 변화가 화면에 반영되도록 UI 흐름 구성.
-- **내 일정 화면 구현**: 참여중 / 신청중 / 호스팅 탭 구조를 분리하여 일정 상태별 데이터를 쉽게 확인할 수 있도록 구성.
-- **위시리스트 데이터 연동**: 사용자가 찜한 일정을 UI에 반영하고 상태 동기화 처리.
-- **모바일 반응형 대응**: 데스크탑 화면을 해치지 않는 선에서 태블릿 및 모바일 환경을 고려한 레이아웃 적용.
-- **프론트엔드 배포 흐름 구성**: GitHub Actions를 활용한 정적 파일 빌드 및 배포 흐름 정리.
-- **API 연동 및 서버 데이터 관리**: Axios와 React Query를 활용해 화면별 서버 데이터 조회 및 상태 동기화 처리.
+- **일정 생성 및 수정 기능 구현**: React Hook Form과 Yup을 활용한 복합 Form 유효성 검증을 적용하고, Multipart 요청을 통해 일정 정보, 상세 일정, 이미지 데이터를 하나의 요청으로 처리하도록 구현.
+- **일정 탐색 및 상세 화면 구현**: React Query와 Axios를 활용하여 일정 목록 및 상세 데이터를 조회하고, 사용자 조건에 따른 일정 탐색 UI와 화면 흐름을 구성.
+- **마이페이지 기능 구현**: 프로필 조회 및 수정, 비밀번호 변경, 관심사 관리, 마이페이지 요약 등 사용자 개인화 기능 구현.
+- **알림 시스템 및 OneSignal Push 알림 구현**: JWT 기반 사용자별 알림 조회, 읽음 처리 및 삭제 기능을 구현하고, OneSignal external_id 연동을 통해 일정 참여 상태 변경 시 실시간 브라우저 Push 알림을 제공.
+- **React Query 기반 서버 상태 관리 및 캐시 최적화**: 사용자별 queryKey 분리를 적용하여 계정 변경 시 캐시 데이터 충돌을 방지하고, invalidateQueries를 활용해 알림 상태 변경 후 UI 데이터를 최신 상태로 동기화.
+- **관리자 페이지 구현**: 관리자 전용 사이드바, 모바일 헤더, 대시보드 및 회원·일정·이용약관·관심사·추천 일정 관리 화면 구현.
+- **프론트엔드 배포 및 운영 환경 구성**: AWS S3와 CloudFront를 활용한 정적 파일 배포 환경을 구성하고, GitHub Actions 기반 CI/CD 파이프라인을 적용하여 자동 배포 환경 구축.
 
-## 실행 방법
 
-### Frontend (WithDayFront)
-
-```bash
-cd WithDayFront
-npm install
-npm run dev
-npm run build
-```
-
-### Backend (WithDayBack)
-
-```bash
-cd WithDayBack
-./gradlew build
 ./gradlew bootRun
 ```
 
@@ -117,21 +100,23 @@ ONESIGNAL_API_KEY=
 
 ## 트러블슈팅
 
-### My Schedule 탭 전환 시 데이터 혼입 현상 해결
+### 로그인 계정 변경 시 이전 사용자의 알림 데이터가 유지되는 문제 해결
 
-- **문제 상황**: `My Schedule` 화면에서 `참여중`, `신청중`, `호스팅` 탭을 빠르게 전환할 때, 이전 탭의 일정 카드가 순간적으로 남아 있거나 다른 탭의 데이터와 섞여 렌더링되는 현상 발생.
-- **원인**: React Query 캐시 키가 탭 상태를 충분히 반영하지 못했고, 리스트 렌더링 경계도 명확하지 않아 이전 탭의 데이터가 재사용되어 보일 수 있는 구조였음.
-- **해결 방법**: React Query의 `queryKey`에 사용자 정보와 `tab` 값을 명시적으로 포함시켜 탭별 캐시가 분리되도록 개선함.
-  ```jsx
-  mySchedulesByTab: (email, tab) => [
-    "participation",
-    "my-schedules",
-    email?.trim() || "guest",
-    tab?.trim() || "participating",
-  ];
-  ```
-  리스트 아이템 `key`에도 탭 구분 값을 포함하여 부적절한 재사용을 방지함.
-- **배운 점**: 조회 기준이 변하는 화면에서는 상태관리 라이브러리의 캐시 전략과 컴포넌트 재사용 경계를 함께 점검해야 함을 체감함. 이후 조회 기준이 바뀌는 화면을 구현할 때 `queryKey` 설계와 렌더링 재사용 경계를 함께 점검하는 기준을 갖게 됨.
+- **문제 상황**: 기존 사용자가 로그아웃한 뒤 다른 계정으로 로그인했을 때, 페이지를 새로고침하지 않으면 이전 사용자의 알림 목록이 화면에 그대로 표시되는 현상이 발생하였습니다.
+- **원인**: React Query의 `queryKey`가 사용자 정보를 포함하지 않은 상태로 구성되어 있어, 계정이 변경되어도 동일한 Query로 인식되었습니다. 이로 인해 이전 로그인 사용자의 알림 캐시 데이터가 새로운 사용자 화면에서 재사용되는 문제가 발생하였습니다.
+- **해결 방법**: `queryKey`에 로그인한 사용자의 이메일 정보를 포함하여 사용자별로 캐시를 분리하였습니다. 또한 `enabled` 옵션을 활용하여 사용자 이메일이 존재할 때만 API 요청이 실행되도록 개선하였습니다.
+
+```jsx
+  const { data: notifications = [], isLoading } = useQuery({
+    queryKey: ["notifications", loginUser?.email],
+    queryFn: getNotifications,
+    enabled: !!loginUser?.email,
+  });
+```
+
+ 이를 통해 계정 변경 시 React Query가 새로운 Query로 인식하여 최신 알림 데이터를 다시 요청하도록 수정하였으며, 로그인 정보가 없는 상태에서 발생하는 불필요한 API 호출도 방지하였습니다.
+- **배운 점**: React Query의 캐시는 `queryKey`를 기준으로 관리된다는 점을 알게 되었습니다. 따라서 사용자, 탭, 필터 등 조회 조건이 변경되는 화면에서는 해당 조건을 `queryKey`에 명확히 포함하여 캐시 범위를 설계해야 한다는 점을 배웠습니다.
+
 
 ## 프로젝트 한 줄 요약
 
