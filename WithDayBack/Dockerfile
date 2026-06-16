@@ -1,5 +1,6 @@
 FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
+# 백엔드 빌드에 필요한 파일들을 복사
 
 COPY gradlew .
 COPY gradle ./gradle
