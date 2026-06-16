@@ -212,7 +212,7 @@ const Login = () => {
       });
     } else if (userType === 2) {
       mutation.mutate({
-        email: "test@test.com",
+        email: "test2@test.com",
         password: "test1234.",
         autoLogin: true,
       });

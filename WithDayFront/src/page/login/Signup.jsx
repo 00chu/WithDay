@@ -352,8 +352,6 @@ const Signup = () => {
       setMailAuthCode(String(res)); // 백엔드가 보내준 인증번호를 문자로 바꿔서 state에 저장
       setMailAuth(2); // 인증번호 발송 완료 및 타이머 작동 상태
 
-      console.log(String(res));
-
       // 1초(1000ms)마다 1씩 값을 내리는 타이머 작동
       timerRef.current = window.setInterval(() => {
         setTime((prev) => {
