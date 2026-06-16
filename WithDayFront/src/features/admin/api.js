@@ -32,7 +32,7 @@ export const updateAdminTerms = async ({ id, version, content }) => {
   return data;
 };
 
-// 관심사 목록 조회
+// 관심사 목록 조회d
 export const getAdminInterests = async () => {
   const { data } = await api.get("/admins/interests");
   return data;
