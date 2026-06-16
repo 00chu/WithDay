@@ -101,7 +101,7 @@ jobs:
             -o ServerAliveCountMax=10 \
             -o ConnectTimeout=30 \
             -i ~/.ssh/withday-key.pem \
-            docker-compose.yml \
+            WithDayBack/docker-compose.yml \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/withday/docker-compose.yml
 
       - name: Deploy
